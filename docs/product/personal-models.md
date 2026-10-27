@@ -60,6 +60,12 @@ brightness, colour, availability, and local scene-light rules. Camera opens the
 existing viewer. Sensor, Cover, and the other profiles retain static geometry.
 Import and preview never inspect or operate household devices.
 
+The Event (remote / button) profile accepts `event.*`. Room modules show the last
+event type and the time in the entity state, formatted in the browser's locale.
+They never send toggle or press commands. Unknown means no event has been received;
+unavailable and disconnected states remain explicit. Restored history is shown
+without an activity pulse, timer or additional subscription.
+
 Portable projects and private backups download as ZIP `.cabane` archives:
 `project.json` plus deduplicated `assets/<sha256>.glb` files. Private documents
 retain draft/published boundaries and mappings but exclude credentials. Legacy

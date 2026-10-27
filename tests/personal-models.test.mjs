@@ -277,12 +277,13 @@ await withModules(async (load) => {
     restored.release();
   });
   test("imported devices reuse controls, camera viewer and light rules; additions create fresh primary slots", () => {
-    for (const profile of ["light", "sensor", "camera", "cover"]) {
+    for (const profile of ["light", "sensor", "camera", "cover", "event"]) {
       const custom = model("floor", profile);
       const definition = api.resolveProjectModels(project([custom]), native).deviceModels[
         custom.id
       ];
       assert.deepEqual(definition.supportedDomains, [profile]);
+      assert.equal(api.parseHomeProjectSchema(project([custom])).valid, true);
       assert.equal(
         definition.interaction.target,
         profile === "camera" ? "camera-viewer" : undefined,
@@ -299,6 +300,12 @@ await withModules(async (load) => {
       const second = createCatalogItem(entry, first.placement, [first], [], first.floorId);
       assert.notEqual(first.entitySlots[0].id, second.entitySlots[0].id);
       assert.equal(first.entitySlots[0].deviceRole, "primary");
+      if (profile === "event") {
+        const saved = project([custom]);
+        saved.sceneItems = [first];
+        assert.equal(api.parseHomeProjectSchema(JSON.parse(JSON.stringify(saved))).valid, true);
+        assert.deepEqual(first.entitySlots[0].compatibleDomains, ["event"]);
+      }
     }
   });
   test("catalog reference and bytes commit atomically, deduplicate across instances and survive publication/reload", async () => {

@@ -481,6 +481,7 @@ export const resolveHomeAssistantBindings = (
 
 export const bindingCanMutate = (binding: ResolvedEntityBinding) =>
   Boolean(
+    binding.domain !== "event" &&
     binding.state?.available &&
     !binding.state.stale &&
     !binding.issues.some((candidate) => candidate.severity === "error"),

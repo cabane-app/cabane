@@ -31,6 +31,7 @@ export const deviceVisualStateForSnapshot = (
   if (!snapshot.available || ["unknown", "unavailable"].includes(snapshot.state)) {
     return "unavailable";
   }
+  if (snapshot.entityId.startsWith("event.")) return "connected-inactive";
   return inactiveStates.has(snapshot.state) ? "connected-inactive" : "connected-active";
 };
 

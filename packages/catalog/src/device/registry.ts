@@ -418,7 +418,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     defaultSize: [0.122, 0.152, 0.048],
     resizePolicy: { kind: "fixed" },
     preferredPlacement: "wall",
-    supportedDomains: ["light", "switch", "input_boolean"],
+    supportedDomains: ["light", "switch", "input_boolean", "event"],
     mountKind: "wall",
     bounds: { min: [-0.061, 0, -0.001], max: [0.061, 0.152, 0.047] },
     outlineContact: true,

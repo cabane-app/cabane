@@ -6,6 +6,41 @@ import { toSnapshots } from "./fixtures/home-assistant.mjs";
 await withModules(async (load) => {
   const controls = await load("/packages/engine/src/home-assistant-controls.ts");
   const states = toSnapshots();
+  const { bindingCanMutate } = await load("/packages/engine/src/home-assistant-resolver.ts");
+  const { deviceVisualStateForSnapshot } = await load("/packages/engine/src/devices.ts");
+
+  test("events display their last type and event timestamp and never offer a command", async () => {
+    const event = {
+      entityId: "event.synthetic_remote",
+      state: "2026-01-01T12:00:00.123+00:00",
+      attributes: { event_type: "short_release", event_types: ["short_release", "long_release"] },
+      available: true,
+      stale: false,
+      lastUpdated: "2026-01-02T12:00:00.000+00:00",
+    };
+    assert.equal(deviceVisualStateForSnapshot(event), "connected-inactive");
+    assert.equal(deviceVisualStateForSnapshot({ ...event, stale: true }), "disconnected");
+    assert.equal(deviceVisualStateForSnapshot({ ...event, available: false }), "unavailable");
+    const reading = controls.entityDisplayValue(event);
+    assert.equal(reading, `short_release · ${new Date(event.state).toLocaleString()}`);
+    assert.equal(bindingCanMutate({ domain: "event", state: event, issues: [] }), false);
+    assert.throws(() => controls.toggleEntityCall(event), /read-only/);
+    assert.throws(() => controls.buttonPressCall(event), /read-only/);
+    assert.equal(
+      controls.entityDisplayValue({ ...event, state: "unknown", available: false }),
+      "No event received",
+    );
+    assert.equal(
+      controls.entityDisplayValue({ ...event, state: "unavailable", available: false }),
+      "Unavailable",
+    );
+    assert.equal(controls.entityDisplayValue({ ...event, stale: true }), "Disconnected");
+    assert.equal(
+      controls.entityDisplayValue({ ...event, state: "bad timestamp" }),
+      "Event time unavailable",
+    );
+    assert.match(controls.entityDisplayValue({ ...event, attributes: {} }), /^Unknown event/);
+  });
 
   test("builds exact supported service calls", () => {
     assert.deepEqual(controls.toggleEntityCall(states["light.demo_ceiling"]), {

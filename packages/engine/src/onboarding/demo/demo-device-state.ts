@@ -11,6 +11,7 @@ const supportedDomains = [
   "cover",
   "sensor",
   "binary_sensor",
+  "event",
   "media_player",
   "lock",
   "alarm_control_panel",
@@ -87,6 +88,10 @@ export function createDemoDeviceState(
       if (reading) attributes.unit_of_measurement = reading[1];
       break;
     }
+    case "event":
+      state = "2026-01-01T12:00:00.000+00:00";
+      Object.assign(attributes, { event_type: "short_release", event_types: ["short_release"] });
+      break;
     case "binary_sensor":
       state = ["occupancy", "presence", "connectivity"].includes(deviceClass ?? "") ? "on" : "off";
       break;

@@ -23,8 +23,11 @@ const steppedValue = (value: number, minimum: number, maximum: number, step: num
   return Number(clamp(stepped, minimum, maximum).toFixed(6));
 };
 
-const domainOf = (entity: EntityStateSnapshot) =>
-  entity.entityId.split(".", 1)[0] as SupportedServiceCall["domain"];
+const domainOf = (entity: EntityStateSnapshot) => {
+  const domain = entity.entityId.split(".", 1)[0];
+  if (domain === "event") throw new Error("Event entities are read-only.");
+  return domain as SupportedServiceCall["domain"];
+};
 
 const valueCall = (
   entity: EntityStateSnapshot,
@@ -402,6 +405,16 @@ export const allLightsOffCall = (
 };
 
 export const entityDisplayValue = (entity: EntityStateSnapshot) => {
+  if (entity.entityId.startsWith("event.")) {
+    if (entity.stale) return "Disconnected";
+    if (entity.state === "unknown") return "No event received";
+    if (!entity.available) return "Unavailable";
+    const timestamp = Date.parse(entity.state);
+    if (!Number.isFinite(timestamp)) return "Event time unavailable";
+    const eventType = entity.attributes.event_type;
+    const label = typeof eventType === "string" && eventType.trim() ? eventType : "Unknown event";
+    return `${label} · ${new Date(timestamp).toLocaleString()}`;
+  }
   const unit = entity.attributes.unit_of_measurement;
   const value = typeof unit === "string" ? `${entity.state} ${unit}` : entity.state;
   return entity.stale ? `${value} · stale` : value;

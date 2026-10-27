@@ -495,6 +495,9 @@
                         "const": "cover"
                       },
                       {
+                        "const": "event"
+                      },
+                      {
                         "const": "fan"
                       },
                       {
@@ -2990,6 +2993,9 @@
                                   "const": "cover"
                                 },
                                 {
+                                  "const": "event"
+                                },
+                                {
                                   "const": "fan"
                                 },
                                 {
@@ -3213,6 +3219,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"
@@ -6546,6 +6555,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"

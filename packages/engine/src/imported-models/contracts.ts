@@ -14,6 +14,7 @@ export const CUSTOM_MODEL_PROFILES = [
   ["light", "Light"],
   ["sensor", "Sensor"],
   ["binary_sensor", "Binary sensor"],
+  ["event", "Event (remote / button)"],
   ["camera", "Camera"],
   ["cover", "Cover"],
   ["switch", "Switch"],

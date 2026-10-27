@@ -420,6 +420,58 @@ await withModules(async (load) => {
     return buildRoomModules(room).find((module) => module.label === label);
   };
 
+  test("event modules render read-only history and update through reconnects and repeated presses", async () => {
+    await withDom(async ({ root, dom }) => {
+      const event = {
+        entityId: "event.synthetic_remote",
+        state: "2026-01-01T12:00:00.123+00:00",
+        attributes: { event_type: "short_release" },
+        available: true,
+        stale: false,
+      };
+      let calls = 0;
+      const render = async (state) =>
+        act(async () =>
+          root.render(
+            React.createElement(RoomModule, {
+              module: {
+                id: "remote",
+                label: "Remote",
+                priority: "primary",
+                sourceOrder: 0,
+                issues: [],
+                entities: [
+                  { slotId: "remote", label: "Remote", domain: "event", state, issues: [] },
+                ],
+              },
+              canMutate: true,
+              focused: true,
+              onCallService: async () => {
+                calls++;
+              },
+            }),
+          ),
+        );
+      const reading = () => dom.window.document.querySelector("output")?.textContent;
+      await render({ ...event, state: "unknown", available: false });
+      assert.equal(reading(), "No event received");
+      await render(event);
+      assert.match(reading(), /short_release/);
+      const initial = reading();
+      await render({ ...event, state: "2026-01-01T12:00:05.123+00:00" });
+      assert.notEqual(reading(), initial);
+      await render({ ...event, stale: true });
+      assert.equal(reading(), "Disconnected");
+      await render({ ...event, state: "unavailable", available: false });
+      assert.equal(reading(), "Unavailable");
+      await render(event);
+      assert.equal(reading(), initial);
+      assert.equal(dom.window.document.querySelectorAll("button,input,select").length, 0);
+      assert.equal(calls, 0);
+      await act(async () => root.render(null));
+    });
+  });
+
   test("renders balanced light, switch, and sensor modules without technical IDs", () => {
     const html = renderModules(connectedRuntimeFixture());
     const document = new JSDOM(html).window.document;

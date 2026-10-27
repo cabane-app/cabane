@@ -91,6 +91,7 @@ function EntityFields({ binding, canMutate, focused, onCallService }: EntityFiel
           onCallService={onCallService}
         />
       );
+    case "event":
     case "sensor":
     case "binary_sensor":
       return <output className="room-module__reading">{readableSensorValue(entity)}</output>;

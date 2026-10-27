@@ -102,3 +102,9 @@ without an assigned area. The cover drives position; a valid contact supplies a
 binary fallback when cover position is unknown. Unmapped opening slots do not
 make a room look unfinished. Changing to a conventional door removes its cover
 profile and browser mapping through ordinary draft reconciliation and history.
+
+Event entities (`event.*`), including Hue remote buttons, can be mapped to newly
+placed Wall switches or personal models with the Event profile. Existing slots
+retain their saved compatible domains; place a new Wall switch when an older
+slot does not offer events. Each slot still maps to one entity. General multiple
+entity editing remains separate. Event bindings are read-only.

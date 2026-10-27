@@ -1,9 +1,9 @@
 {
-  "revision": 11,
-  "fingerprint": "f798695dc616cbcb257c8e255e8beeef24cda3d7a84105282f71b240502df452",
-  "summary": "Support reversible solid structural spaces in room properties",
+  "revision": 12,
+  "fingerprint": "c58f63f1b32e6407621a0f32775ffb5fa175254d6f37413a7709465e40620de8",
+  "summary": "Support read-only event entity slots and imported model profiles",
   "breakingChanges": [
-    "Older clients must update before importing projects containing the room isSolid field."
+    "Older Cabane clients reject event domains and Event custom model profiles. Update the HA panel before importing these workspaces; existing workspaces need no migration."
   ],
   "history": [
     {
@@ -74,6 +74,13 @@
       "summary": "Allow imports and Save with unavailable catalog variants using default visuals",
       "breakingChanges": [
         "Existing projects remain compatible. Missing furnishing and device variants now produce warnings and render the model default while retaining the saved variant ID; missing models retain placeholders. Older panels can reject newer variants until updated through HACS. Structural and unsupported-schema errors remain blocked."
+      ]
+    },
+    {
+      "revision": 11,
+      "summary": "Support reversible solid structural spaces in room properties",
+      "breakingChanges": [
+        "Older clients must update before importing projects containing the room isSolid field."
       ]
     }
   ],

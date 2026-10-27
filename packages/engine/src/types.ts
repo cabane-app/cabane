@@ -29,9 +29,13 @@ export type DeviceDomain =
   | "button"
   | "camera"
   | "sensor"
-  | "binary_sensor";
+  | "binary_sensor"
+  | "event";
 
-export type ControllableDeviceDomain = Exclude<DeviceDomain, "camera" | "sensor" | "binary_sensor">;
+export type ControllableDeviceDomain = Exclude<
+  DeviceDomain,
+  "camera" | "sensor" | "binary_sensor" | "event"
+>;
 
 export interface Assumption {
   id: string;
