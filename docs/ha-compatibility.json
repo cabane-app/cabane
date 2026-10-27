@@ -2585,6 +2585,89 @@
                             }
                           }
                         },
+                        "faceFinishes": {
+                          "optional": true,
+                          "schema": {
+                            "properties": {
+                              "left": {
+                                "optional": true,
+                                "schema": {
+                                  "properties": {
+                                    "color": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "pattern": {
+                                      "optional": false,
+                                      "schema": {
+                                        "anyOf": [
+                                          {
+                                            "const": "dotted-wallpaper"
+                                          },
+                                          {
+                                            "const": "square-tile"
+                                          },
+                                          {
+                                            "const": "striped-wallpaper"
+                                          },
+                                          {
+                                            "const": "subway-tile"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "repeatMeters": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right": {
+                                "optional": true,
+                                "schema": {
+                                  "properties": {
+                                    "color": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "pattern": {
+                                      "optional": false,
+                                      "schema": {
+                                        "anyOf": [
+                                          {
+                                            "const": "dotted-wallpaper"
+                                          },
+                                          {
+                                            "const": "square-tile"
+                                          },
+                                          {
+                                            "const": "striped-wallpaper"
+                                          },
+                                          {
+                                            "const": "subway-tile"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "repeatMeters": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
                         "from": {
                           "optional": false,
                           "schema": {
@@ -6337,6 +6420,89 @@
                               "optional": true,
                               "schema": {
                                 "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "faceFinishes": {
+                        "optional": true,
+                        "schema": {
+                          "properties": {
+                            "left": {
+                              "optional": true,
+                              "schema": {
+                                "properties": {
+                                  "color": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "pattern": {
+                                    "optional": false,
+                                    "schema": {
+                                      "anyOf": [
+                                        {
+                                          "const": "dotted-wallpaper"
+                                        },
+                                        {
+                                          "const": "square-tile"
+                                        },
+                                        {
+                                          "const": "striped-wallpaper"
+                                        },
+                                        {
+                                          "const": "subway-tile"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "repeatMeters": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "right": {
+                              "optional": true,
+                              "schema": {
+                                "properties": {
+                                  "color": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "pattern": {
+                                    "optional": false,
+                                    "schema": {
+                                      "anyOf": [
+                                        {
+                                          "const": "dotted-wallpaper"
+                                        },
+                                        {
+                                          "const": "square-tile"
+                                        },
+                                        {
+                                          "const": "striped-wallpaper"
+                                        },
+                                        {
+                                          "const": "subway-tile"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "repeatMeters": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
                               }
                             }
                           }

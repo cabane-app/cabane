@@ -1,3 +1,4 @@
+import { WALL_SURFACE_PATTERNS } from "../types";
 import { validateWallNiches } from "./wall-niche-rules";
 import { wallLengthPlanUnits } from "../geometry";
 
@@ -83,6 +84,40 @@ export const validateWalls = (
           "Wall edge color must be a non-empty CSS color when supplied.",
         ),
       );
+    }
+    if (rawWall.faceFinishes !== undefined) {
+      const finishes = rawWall.faceFinishes;
+      if (!isObject(finishes))
+        issues.push(
+          issue(
+            "wall.face-finishes",
+            `${wallPath}.faceFinishes`,
+            "Wall face finishes must be an object.",
+          ),
+        );
+      else
+        for (const side of ["left", "right"] as const) {
+          const finish = finishes[side];
+          if (finish === undefined) continue;
+          if (
+            !isObject(finish) ||
+            !WALL_SURFACE_PATTERNS.includes(
+              finish.pattern as (typeof WALL_SURFACE_PATTERNS)[number],
+            ) ||
+            typeof finish.color !== "string" ||
+            !/^#[0-9a-f]{6}$/i.test(finish.color) ||
+            !isFiniteNumber(finish.repeatMeters) ||
+            finish.repeatMeters < 0.1 ||
+            finish.repeatMeters > 5
+          )
+            issues.push(
+              issue(
+                "wall.face-finish",
+                `${wallPath}.faceFinishes.${side}`,
+                "Use a supported wall pattern, six-digit hex color and repeat between 0.1 and 5 meters.",
+              ),
+            );
+        }
     }
     if (rawWall.faceColors !== undefined) {
       if (!isObject(rawWall.faceColors)) {

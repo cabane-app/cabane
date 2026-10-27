@@ -153,6 +153,7 @@ export type FloorEditorAction =
           | "exteriorColor"
           | "edgeColor"
           | "faceColors"
+          | "faceFinishes"
           | "niches"
         >
       >;

@@ -368,6 +368,19 @@
 }
 .construction-inspector button,
 .furnishing-editor-inspector button,
+.construction-inspector .wall-surface-field {
+  display: grid;
+  gap: 10px;
+}
+.construction-inspector .wall-surface-field__pattern {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+.wall-surface-field__length {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .construction-inspector input,
 .furnishing-editor-inspector input {
   font-family: inherit;

@@ -237,6 +237,7 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
     ...(wall.exteriorColor ? { exteriorColor: wall.exteriorColor } : {}),
     ...(wall.edgeColor ? { edgeColor: wall.edgeColor } : {}),
     ...(wall.faceColors ? { faceColors: { ...wall.faceColors } } : {}),
+    ...(wall.faceFinishes ? { faceFinishes: structuredClone(wall.faceFinishes) } : {}),
     ...(wall.niches ? { niches: wall.niches.map((niche) => ({ ...niche })) } : {}),
   }));
   const openings: OpeningSpec[] = input.openings.flatMap((opening, index): OpeningSpec[] => {

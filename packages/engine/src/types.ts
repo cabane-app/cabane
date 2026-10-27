@@ -161,6 +161,19 @@ export interface WallNicheSpec {
   shelfThicknessMeters?: number;
 }
 
+export const WALL_SURFACE_PATTERNS = [
+  "square-tile",
+  "subway-tile",
+  "striped-wallpaper",
+  "dotted-wallpaper",
+] as const;
+export interface WallSurfaceFinish {
+  pattern: (typeof WALL_SURFACE_PATTERNS)[number];
+  color: string;
+  /** Width and height of one complete pattern repeat, in meters. */
+  repeatMeters: number;
+}
+
 export interface WallSpec {
   id: string;
   from: PlanPoint;
@@ -171,6 +184,7 @@ export interface WallSpec {
   heightMeters?: number;
   exteriorColor?: string;
   edgeColor?: string;
+  faceFinishes?: { left?: WallSurfaceFinish; right?: WallSurfaceFinish };
   faceColors?: {
     left?: string;
     right?: string;

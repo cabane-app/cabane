@@ -1,3 +1,4 @@
+import { WALL_SURFACE_PATTERNS } from "../types";
 import { record, keys, string, finite, point } from "./schema-json-values";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
 import { wallNichesSchema } from "./schema-wall-niches";
@@ -17,6 +18,7 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
       "exteriorColor",
       "edgeColor",
       "faceColors",
+      "faceFinishes",
       "niches",
     ],
     path,
@@ -40,6 +42,47 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
   if (candidate.exteriorColor !== undefined)
     string(candidate.exteriorColor, `${path}.exteriorColor`, issues);
   if (candidate.edgeColor !== undefined) string(candidate.edgeColor, `${path}.edgeColor`, issues);
+  if (candidate.faceFinishes !== undefined) {
+    const finishes = record(candidate.faceFinishes, `${path}.faceFinishes`, issues);
+    if (finishes) {
+      keys(finishes, ["left", "right"], `${path}.faceFinishes`, issues);
+      for (const side of ["left", "right"] as const) {
+        if (finishes[side] === undefined) continue;
+        const at = `${path}.faceFinishes.${side}`;
+        const finish = record(finishes[side], at, issues);
+        if (!finish) continue;
+        keys(finish, ["pattern", "color", "repeatMeters"], at, issues);
+        if (
+          !WALL_SURFACE_PATTERNS.includes(finish.pattern as (typeof WALL_SURFACE_PATTERNS)[number])
+        )
+          addProjectIssue(
+            issues,
+            "project.wall-pattern",
+            `${at}.pattern`,
+            "Wall pattern is not supported.",
+          );
+        if (typeof finish.color !== "string" || !/^#[0-9a-f]{6}$/i.test(finish.color))
+          addProjectIssue(
+            issues,
+            "project.wall-pattern-color",
+            `${at}.color`,
+            "Pattern color must be a six-digit hex color.",
+          );
+        if (
+          typeof finish.repeatMeters !== "number" ||
+          !Number.isFinite(finish.repeatMeters) ||
+          finish.repeatMeters < 0.1 ||
+          finish.repeatMeters > 5
+        )
+          addProjectIssue(
+            issues,
+            "project.wall-pattern-scale",
+            `${at}.repeatMeters`,
+            "Pattern repeat must be between 0.1 and 5 meters.",
+          );
+      }
+    }
+  }
   if (candidate.faceColors !== undefined) {
     const colors = record(candidate.faceColors, `${path}.faceColors`, issues);
     if (colors) {

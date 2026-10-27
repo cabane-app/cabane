@@ -697,6 +697,60 @@ await withModules(async (load) => {
       });
   });
 
+  test("wall patterns target one face, edit scale, undo and return to paint", async () => {
+    await withDom(async ({ dom, root }) => {
+      const floor = structuredClone(neutralDemoManifest.floors[0]);
+      const id = floor.walls[0].id;
+      let controller;
+      function Harness() {
+        controller = useConstructEditor(floor);
+        return React.createElement(WallFinishFields, {
+          editor: controller,
+          wall: controller.draft.walls.find((w) => w.id === id),
+          isExterior: true,
+        });
+      }
+      await act(async () => root.render(React.createElement(Harness)));
+      await act(async () => controller.selectWall(id));
+      const d = dom.window.document;
+      const select = d.querySelector('[aria-label="Interior finish"]');
+      await act(async () => {
+        select.value = "subway-tile";
+        select.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+      });
+      const wallNow = () => controller.previewFloor.walls.find((w) => w.id === id);
+      const side = wallFinishSides(
+        controller.draft.walls.find((w) => w.id === id),
+        controller.previewFloor,
+      ).interiorSide;
+      const other = side === "left" ? "right" : "left";
+      assert.equal(wallNow().faceFinishes[side].pattern, "subway-tile");
+      assert.equal(wallNow().faceFinishes[other], undefined);
+      const scale = d.querySelector('[aria-label="Interior pattern repeat"]');
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, "value").set.call(
+          scale,
+          "0.6",
+        );
+        scale.dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+      });
+      await act(async () =>
+        scale.dispatchEvent(new dom.window.FocusEvent("focusout", { bubbles: true })),
+      );
+      assert.equal(wallNow().faceFinishes[side].repeatMeters, 0.6);
+      await act(async () => controller.undo());
+      assert.equal(wallNow().faceFinishes[side].repeatMeters, 1.2);
+      await act(async () => controller.redo());
+      await act(async () => {
+        select.value = "paint";
+        select.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+      });
+      assert.equal(wallNow().faceFinishes, undefined);
+      await act(async () => controller.undo());
+      assert.equal(wallNow().faceFinishes[side].repeatMeters, 0.6);
+    });
+  });
+
   test("wall inspector switches edge color between Auto and Custom", async () => {
     await withDom(async ({ dom, root }) => {
       const changes = [],

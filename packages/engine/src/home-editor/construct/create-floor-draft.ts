@@ -52,6 +52,7 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
     ...(wall.exteriorColor ? { exteriorColor: wall.exteriorColor } : {}),
     ...(wall.edgeColor ? { edgeColor: wall.edgeColor } : {}),
     ...(wall.faceColors ? { faceColors: { ...wall.faceColors } } : {}),
+    ...(wall.faceFinishes ? { faceFinishes: structuredClone(wall.faceFinishes) } : {}),
     ...(wall.niches ? { niches: wall.niches.map((niche) => ({ ...niche })) } : {}),
   })),
   openings: floor.openings.map((opening) => {

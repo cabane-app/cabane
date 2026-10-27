@@ -25,7 +25,7 @@ import {
   ArchitecturalWallGeometryGroup,
   createWallAssemblyPointTest,
 } from "./architecture-geometry/wall-solid-footprints";
-import type { FloorSpec, WallSpec } from "./types";
+import type { FloorSpec, WallSpec, WallSurfaceFinish } from "./types";
 
 /** Generalized version of the original house-wide occupied-grid wall union. */
 export function buildArchitecturalWallGeometries(
@@ -61,6 +61,8 @@ export function buildArchitecturalWallGeometries(
     positions: number[];
     colors: number[];
     indices: number[];
+    uvs: number[];
+    finish?: WallSurfaceFinish;
   };
   const bands = wallSolidBands(floor);
 
@@ -74,7 +76,7 @@ export function buildArchitecturalWallGeometries(
   ) => {
     let buffers = buffersByDirection.get(key);
     if (!buffers) {
-      buffers = { outwardNormal, fadeNormals: [], positions: [], colors: [], indices: [] };
+      buffers = { outwardNormal, fadeNormals: [], positions: [], colors: [], indices: [], uvs: [] };
       buffersByDirection.set(key, buffers);
     }
     for (const normal of fadeNormals) {
@@ -107,12 +109,23 @@ export function buildArchitecturalWallGeometries(
     b: readonly [number, number, number],
     c: readonly [number, number, number],
     color: Color,
+    frame?: ReturnType<typeof wallFrame>,
   ) => {
     const offset = buffers.positions.length / 3;
     // Extend only floor-level vertices to terrain; preserve opening heads,
     // sills and wall tops, and keep doorway cutouts open down to the ground.
     for (const point of [a, b, c]) {
-      buffers.positions.push(point[0], point[1] === 0 ? baseElevationMeters : point[1], point[2]);
+      const y = point[1] === 0 ? baseElevationMeters : point[1];
+      buffers.positions.push(point[0], y, point[2]);
+      const repeat = buffers.finish?.repeatMeters ?? 1;
+      buffers.uvs.push(
+        frame
+          ? ((point[0] - frame.from[0]) * frame.direction[0] +
+              (point[2] - frame.from[1]) * frame.direction[1]) /
+              repeat
+          : 0,
+        y / repeat,
+      );
     }
     for (let vertex = 0; vertex < 3; vertex += 1) buffers.colors.push(color.r, color.g, color.b);
     buffers.indices.push(offset, offset + 1, offset + 2);
@@ -164,7 +177,7 @@ export function buildArchitecturalWallGeometries(
     );
   };
 
-  const wallFaceColor = (
+  const wallFaceSurface = (
     center: Horizontal,
     edge: Horizontal,
     visibleNormal: Horizontal,
@@ -183,14 +196,22 @@ export function buildArchitecturalWallGeometries(
       if (owner && alignment <= owner.alignment) continue;
       owner = { wall, alignment };
     }
-    if (!owner) return fallback;
-    if (owner.alignment < 0.999) return customColor(wallEdgeFinish(owner.wall, interiorColor));
+    if (!owner) return { color: fallback };
+    if (owner.alignment < 0.999)
+      return { color: customColor(wallEdgeFinish(owner.wall, interiorColor)) };
     const normal = wallData.get(owner.wall)!.frame.normal;
     const side =
       visibleNormal[0] * normal[0] + visibleNormal[1] * normal[1] >= 0 ? "left" : "right";
-    return customColor(
-      wallFaceFinish(owner.wall, side, outside, outside ? exteriorColor : interiorColor),
-    );
+    const finish = owner.wall.faceFinishes?.[side];
+    return {
+      color: finish
+        ? customColor("white")
+        : customColor(
+            wallFaceFinish(owner.wall, side, outside, outside ? exteriorColor : interiorColor),
+          ),
+      finish,
+      frame: wallData.get(owner.wall)!.frame,
+    };
   };
 
   const belowContact = wallLevelContact(neighbors.below, "top");
@@ -259,8 +280,7 @@ export function buildArchitecturalWallGeometries(
               floor.coordinates,
             );
             const outside = !pointInsideFloorFootprint(planSample, floor);
-            const buffers = buffersFor(fadeNormalAt(center, band.activeWalls));
-            const color = wallFaceColor(
+            const face = wallFaceSurface(
               center,
               edge,
               candidate,
@@ -268,12 +288,20 @@ export function buildArchitecturalWallGeometries(
               outside,
               outside ? outsideColor : insideColor,
             );
+            const fadeNormal = fadeNormalAt(center, band.activeWalls);
+            const buffers = face.finish
+              ? buffersFor(
+                  fadeNormal,
+                  `${fadeNormal?.join(":") ?? "interior"}:${JSON.stringify(face.finish)}`,
+                )
+              : buffersFor(fadeNormal);
+            if (face.finish) buffers.finish = face.finish;
             const aBottom = [a[0], band.bottom, a[1]] as const;
             const bBottom = [b[0], band.bottom, b[1]] as const;
             const aTop = [a[0], band.top, a[1]] as const;
             const bTop = [b[0], band.top, b[1]] as const;
-            addTriangle(buffers, aBottom, bTop, bBottom, color);
-            addTriangle(buffers, aBottom, aTop, bTop, color);
+            addTriangle(buffers, aBottom, bTop, bBottom, face.color, face.frame);
+            addTriangle(buffers, aBottom, aTop, bTop, face.color, face.frame);
           }
         }
       }),
@@ -285,6 +313,7 @@ export function buildArchitecturalWallGeometries(
     geometry.userData.preservePlanarFaces = true;
     geometry.setAttribute("position", new Float32BufferAttribute(buffers.positions, 3));
     geometry.setAttribute("color", new Float32BufferAttribute(buffers.colors, 3));
+    geometry.setAttribute("uv", new Float32BufferAttribute(buffers.uvs, 2));
     geometry.setIndex(buffers.indices);
     geometry.computeVertexNormals();
     geometry.computeBoundingBox();
@@ -295,6 +324,7 @@ export function buildArchitecturalWallGeometries(
       : [0, 0];
     return {
       geometry,
+      ...(buffers.finish ? { finish: buffers.finish } : {}),
       outwardNormal: buffers.outwardNormal,
       fadeNormals: buffers.fadeNormals,
       center,

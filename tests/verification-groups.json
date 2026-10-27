@@ -53,6 +53,7 @@
       "runtime-binding-profile.test.mjs",
       "setup-progress.test.mjs",
       "vacuum-flight.test.mjs",
+      "wall-surface-finishes.test.mjs",
       "weather.test.mjs",
       "workspace-startup-routing.test.mjs"
     ]
@@ -133,7 +134,8 @@
       "wall-niche-properties.test.mjs",
       "wall-niches.test.mjs",
       "workspace-publication.test.mjs",
-      "measurement-units.test.mjs"
+      "measurement-units.test.mjs",
+      "wall-surface-finishes.test.mjs"
     ]
   },
   "runtime": {
@@ -189,6 +191,7 @@
       "scene-systems.test.mjs",
       "setup-progress.test.mjs",
       "vacuum-flight.test.mjs",
+      "wall-surface-finishes.test.mjs",
       "weather.test.mjs"
     ]
   },

@@ -31,6 +31,7 @@ export interface EditorWall {
   exteriorColor?: string | undefined;
   edgeColor?: string | undefined;
   faceColors?: WallSpec["faceColors"];
+  faceFinishes?: WallSpec["faceFinishes"];
   niches?: WallSpec["niches"];
 }
 

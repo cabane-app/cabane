@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { WallColorField } from "./WallColorField";
 import { useWallFinishPreview } from "./WallFinishPreview";
 import { wallFinishSides, withoutWallFace, type WallFinishSide } from "./wall-finish-sides";
-import type { EditorWall } from "@cabane/engine";
+import type { EditorWall, WallSurfaceFinish } from "@cabane/engine";
 import type { ConstructEditorController } from "./useConstructEditor";
 import { DebouncedColorInput } from "./DebouncedColorInput";
 
@@ -21,12 +21,27 @@ function WallFinishFieldsView({
   const { exteriorSide, interiorSide, roomLabel } = wallFinishSides(wall, editor.previewFloor);
   const left = wall.faceColors?.left ?? palette.interior;
   const right = wall.faceColors?.right ?? palette.interior;
-  const split = splitRequested || left !== right;
+  const split =
+    splitRequested ||
+    left !== right ||
+    JSON.stringify(wall.faceFinishes?.left) !== JSON.stringify(wall.faceFinishes?.right);
   const update = editor.updateSelectedWallMetadata;
+  const surface = (sides: readonly WallFinishSide[]) => ({
+    finish: wall.faceFinishes?.[sides[0]!],
+    onFinishChange: (finish: WallSurfaceFinish | undefined) => {
+      const next = { ...wall.faceFinishes };
+      for (const side of sides) {
+        if (finish) next[side] = finish;
+        else delete next[side];
+      }
+      update({ faceFinishes: Object.keys(next).length ? next : undefined });
+    },
+  });
   const location = { floorId: editor.previewFloor.id, wallId: wall.id };
   const faceField = (side: WallFinishSide, label: string, inputLabel?: string) => (
     <WallColorField
       key={side}
+      {...surface([side])}
       {...location}
       label={label}
       {...(inputLabel ? { inputLabel } : {})}
@@ -45,6 +60,7 @@ function WallFinishFieldsView({
         <>
           <WallColorField
             {...location}
+            {...surface([exteriorSide])}
             label="Exterior"
             inputLabel="Wall exterior color"
             sides={[exteriorSide]}
@@ -70,6 +86,7 @@ function WallFinishFieldsView({
           {!split && (
             <WallColorField
               {...location}
+              {...surface(["left", "right"])}
               label="Wall"
               inputLabel="Wall color"
               sides={["left", "right"]}
@@ -85,10 +102,16 @@ function WallFinishFieldsView({
               checked={split}
               onChange={(event) => {
                 setSplitRequested(event.target.checked);
-                if (!event.target.checked) update({ faceColors: { left, right: left } });
+                if (!event.target.checked)
+                  update({
+                    faceColors: { left, right: left },
+                    faceFinishes: wall.faceFinishes?.left
+                      ? { left: wall.faceFinishes.left, right: wall.faceFinishes.left }
+                      : undefined,
+                  });
               }}
             />
-            Different colors on each side
+            Different finishes on each side
           </label>
           {split && (
             <>
