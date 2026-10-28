@@ -1,8 +1,13 @@
 # Model lighting
 
-Arrange → Properties → **Lighting** opens the shared visual editor for personal
-GLBs and built-in models. Personal import and Edit model expose the same controls
-in their Lighting section. Lighting is independent of a model's device profile:
+Arrange → Properties → **Edit model** opens **Model Editor** for personal GLBs and
+built-in models. Personal import and My models → Edit open the same surface.
+Model and Lighting are inspector sections around one persistent preview, with one
+Save/Cancel boundary. Personal models expose their definition settings; catalog
+models show catalog information and allow this home's lighting overrides.
+Catalog geometry and profiles remain fixed. Per-copy sizing, orientation, variants
+and Home Assistant connections retain their existing Arrange/Connect owners.
+Lighting is independent of a model's device profile:
 furniture stays furniture and existing TV, sensor and other controls are retained.
 
 A model has one lighting setup per home. Every placed copy uses that setup, with
@@ -23,10 +28,14 @@ Total brightness is shared equally between logical sources, then between the
 samples of each strip. Increasing samples smooths coverage without increasing
 that strip's total brightness.
 
-The dialog uses the available screen width. The preview supports Arrange-style
+The editor uses the available screen width. The preview supports Arrange-style
 pan, orbit and zoom to cursor, plus 3D, Top, Front, Side, Fit and Focus source.
-The inspector scrolls independently on desktop and stacks below the preview on
-small screens. Night preview and preview brightness simulate illumination
+The inspector scrolls independently on desktop and below a persistent preview on
+small screens. Camera controls and instructions stay outside the working canvas.
+Switching sections retains manual camera navigation; explicit view/Fit actions or
+model dimension changes reframe the model. Very short mobile viewports can scroll
+the combined workspace to keep every control reachable.
+Night preview and preview brightness simulate illumination
 locally, including off at 0%, without operating Home Assistant devices.
 
 Select a source or preview marker, then drag its move gizmo. Strips expose separate
@@ -66,8 +75,14 @@ stripping them.
 
 ## Rendering
 
-Selected surfaces use instance-owned materials; geometry and texture resources
-stay shared. Original built-in model glow implementations remain catalog-owned.
+Selected runtime surfaces use instance-owned materials; geometry and texture
+resources stay shared. The editor has a single material controller per mounted
+geometry revision. It owns preview material clones until that geometry unmounts;
+source edits, brightness, glow selection and hover update those same materials.
+The shared surface owner supplies target identities to picking and preview
+materials. Original built-in model glow implementations remain catalog-owned.
+Preview lighting state drives light fixtures, while unrelated primary device
+visuals use a separate synthetic preview state. Authoring never operates HA.
 
 Customized and imported sources use a pool of unshadowed point lights. Only
 positive-intensity sources take active slots. The pool grows to the largest
@@ -81,8 +96,11 @@ imported PBR materials. Surface glow changes appearance and does not illuminate
 receivers by itself. True rectangular area emission, area shadows and bloom are
 not implemented. Three.js RectAreaLight does not support native toon materials.
 
-Implementation: [shared editor](../../apps/web/src/model-lighting/ModelLightingEditor.tsx),
-[dialog](../../apps/web/src/model-lighting/ModelLightingDialog.tsx),
+Implementation: [shared workspace](../../apps/web/src/model-editor/ModelEditorWorkspace.tsx),
+[dialog](../../apps/web/src/model-editor/ModelEditorDialog.tsx),
+[entry routing](../../apps/web/src/model-editor/ProjectModelEditor.tsx),
+[save coordinator](../../apps/web/src/model-editor/save-model-editor.ts),
+[preview material owner](../../packages/engine/src/model-lighting/preview-materials.ts),
 [lighting owner](../../packages/engine/src/model-lighting),
 [scene illumination](../../packages/engine/src/HomeAssistantSceneLighting.tsx),
 [active light pool](../../packages/engine/src/SceneLightPool.tsx).

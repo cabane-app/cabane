@@ -325,7 +325,7 @@ await withModules(async (load) => {
       });
       await dom.until(() => dom.document.querySelector('[role="alert"]'));
       assert.equal(dom.button("Save changes").disabled, true);
-      assert.equal(dom.document.querySelector("input").value, model.name);
+      assert.equal(dom.document.querySelector(".model-import-fields input").value, model.name);
       await dom.click("Cancel");
       assert.equal(dom.document.querySelector("dialog"), null);
       assert.equal(dom.document.activeElement, opener);

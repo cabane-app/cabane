@@ -60,7 +60,9 @@
       "weather.test.mjs",
       "workspace-startup-routing.test.mjs",
       "model-lighting.test.mjs",
-      "model-lighting-ui.test.mjs"
+      "model-lighting-ui.test.mjs",
+      "model-editor.test.mjs",
+      "model-editor-browser.test.mjs"
     ]
   },
   "construct": {

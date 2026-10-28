@@ -20,8 +20,13 @@ export function LightingCamera({
   // Source edits must not move the camera; only an explicit view request does.
   const focusRef = useRef(focus);
   focusRef.current = focus;
+  const applied = useRef<{ request: typeof request; span: number } | null>(null);
   useLayoutEffect(() => {
     if (!controls.current || !(camera instanceof PerspectiveCamera)) return;
+    // Canvas layout changes update its aspect, never replay a named view over user navigation.
+    if (applied.current?.request === request && applied.current.span === span) return;
+    if (!size.width || !size.height) return;
+    applied.current = { request, span };
     const target = request.view === "Focus" ? new Vector3(...focusRef.current) : new Vector3();
     const directions: Partial<Record<LightingView, [number, number, number]>> = {
       "3D": [1, 0.75, 1.2],

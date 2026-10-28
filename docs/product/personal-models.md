@@ -162,8 +162,19 @@ Implementation: [import owner](../../packages/engine/src/imported-models/index.t
 
 [Back to product overview](../../PRODUCT_SPEC.md).
 
-Personal import and Edit model expose **Model** and **Lighting** sections. The
-Lighting section shares the visual placement, surface selection and local preview
-used by built-in models. See [model lighting](model-lighting.md).
+Personal import, My models → Edit, and Arrange → Properties → Edit model open the
+same **Model Editor**. Its Model and Lighting inspector sections share one persistent
+preview and one draft. Model settings include name, profile, preferred placement,
+uniform dimensions and orientation. Definition changes affect every copy in this
+home; copy placement and Home Assistant relationships remain in Arrange and Connect.
+Save applies model and lighting changes in one undoable edit. Opening, switching
+sections and cancelling an unsaved draft do not write project data or mappings.
+Storage failures keep the editor open; a revision conflict asks the user to reopen
+the workspace. Missing assets block Save and offer model-pack recovery.
+
+The preview owns one cloned GLB hierarchy and a set of mutable preview materials.
+The immutable asset lease retains geometry and textures until the editor closes.
+Model/Lighting transitions do not remount a canvas or reparent the hierarchy.
+See [model lighting](model-lighting.md) for the shared tools and catalog capabilities.
 
 Changing an imported model’s profile replaces only its primary control slot. Optional independent sensor readings retain their slot IDs, visibility and private mappings on every copy, including conversions between furniture and devices. Published mappings remain intact until Apply.

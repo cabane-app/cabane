@@ -6,5 +6,6 @@
   "laser-device-performance.test.mjs": 10467,
   "native-first-launch.test.mjs": 6339,
   "workspace-open-ui.test.mjs": 3743,
-  "workspace-backup-browser.test.mjs": 1702
+  "workspace-backup-browser.test.mjs": 1702,
+  "model-editor-browser.test.mjs": 5300
 }

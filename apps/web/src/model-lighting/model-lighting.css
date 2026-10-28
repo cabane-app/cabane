@@ -32,17 +32,6 @@
   line-height: 1.5;
   margin-block: 8px 0;
 }
-.lighting-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 24px;
-  align-items: start;
-}
-.lighting-preview-column {
-  position: sticky;
-  top: 0;
-  min-width: 0;
-}
 .lighting-stage {
   height: max(360px, calc(100dvh - 400px));
   position: relative;
@@ -62,24 +51,25 @@
   cursor: inherit;
 }
 .lighting-stage__hint {
-  position: absolute;
-  bottom: 0;
-  inset-inline: 0;
+  flex: none;
+  min-height: 36px;
   margin: 0;
-  padding: 10px 12px;
+  padding: 8px 0;
   background: var(--editor-paper, #faf7ef);
   color: var(--editor-ink, #354738);
   font-size: 0.8125rem;
   pointer-events: none;
 }
 .lighting-view-tools {
-  position: absolute;
-  top: 12px;
-  inset-inline: 12px;
+  flex: none;
+  margin-bottom: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   align-items: center;
+}
+.lighting-focus-compact {
+  display: none;
 }
 .lighting-view-tools .editor-button {
   background: var(--editor-paper, #faf7ef);
@@ -114,10 +104,6 @@
 }
 .lighting-fields {
   min-width: 0;
-  max-height: calc(100dvh - 320px);
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  padding-inline-end: 8px;
 }
 .lighting-fields fieldset {
   margin: 0 0 24px;
@@ -273,56 +259,6 @@
   color: var(--editor-ink-muted, #53604e);
   line-height: 1.6;
 }
-.model-lighting-dialog {
-  width: calc(100% - 32px);
-  max-width: none;
-  max-height: calc(100dvh - 32px);
-  overflow: auto;
-  border: 1px solid var(--editor-line, #c9cabc);
-  border-radius: 14px;
-  padding: 24px;
-  background: var(--editor-paper, #faf7ef);
-  color: var(--editor-ink, #354738);
-  font:
-    var(--editor-text-control, 0.875rem)/1.5 "Roboto",
-    sans-serif;
-  box-sizing: border-box;
-}
-.model-lighting-dialog::backdrop {
-  background: #22332766;
-}
-.model-lighting-dialog header,
-.model-lighting-dialog footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.model-lighting-dialog h2 {
-  font-size: 1.35rem;
-  margin: 0;
-}
-.model-lighting-dialog header {
-  margin-block-end: 12px;
-}
-.model-lighting-dialog footer {
-  position: sticky;
-  bottom: -24px;
-  padding-block: 16px;
-  background: var(--editor-paper, #faf7ef);
-  margin-block-start: 16px;
-  flex-wrap: wrap;
-}
-.lighting-save-actions {
-  display: flex;
-  gap: 8px;
-  margin-inline-start: auto;
-}
-.lighting-scope {
-  margin-block: 0 20px;
-  line-height: 1.6;
-  color: var(--editor-ink-muted, #53604e);
-}
 .lighting-warning {
   padding: 10px 12px;
   border: 1px solid #ac814c;
@@ -333,68 +269,6 @@
 .model-lighting-editor :is(button, input, select, summary, .lighting-stage):focus-visible {
   outline: 2px solid var(--editor-accent, #395a3d);
   outline-offset: 3px;
-}
-.model-import-dialog.model-lighting-dialog {
-  width: calc(100% - 32px);
-}
-.model-editor-sections {
-  margin-block: 12px 20px;
-}
-.model-import-dialog .lighting-enable label {
-  flex-direction: row;
-}
-.model-import-dialog .lighting-enable input {
-  width: 18px;
-  min-height: 18px;
-}
-.model-import-dialog .model-lighting-editor {
-  margin: 0;
-}
-
-@media (max-width: 900px) {
-  .lighting-layout {
-    grid-template-columns: minmax(0, 1fr) 300px;
-    gap: 16px;
-  }
-  .lighting-view-tools {
-    top: 8px;
-    inset-inline: 8px;
-  }
-}
-@media (max-width: 700px) {
-  .lighting-layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
-  }
-  .lighting-preview-column {
-    position: static;
-  }
-  .lighting-stage {
-    height: clamp(280px, 46dvh, 440px);
-  }
-  .lighting-fields {
-    max-height: none;
-    overflow: visible;
-    padding: 0;
-  }
-  .model-lighting-dialog {
-    width: calc(100% - 16px);
-    max-height: calc(100dvh - 16px);
-    padding: 16px;
-  }
-  .model-lighting-dialog footer {
-    bottom: -16px;
-  }
-  .model-import-dialog.model-lighting-dialog {
-    width: calc(100% - 16px);
-  }
-  .lighting-fields input:not([type="checkbox"]),
-  .lighting-fields select {
-    font-size: 16px;
-  }
-  .lighting-source-actions .editor-button {
-    flex: 1;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .model-lighting-editor * {

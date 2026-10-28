@@ -7,7 +7,7 @@ import { LightingStageScene, type LightingSceneProps } from "./LightingStageScen
 import { sourceLabel, sourcePosition } from "./lighting-layout";
 import type { LightingView } from "./LightingCamera";
 
-export function LightingStage(props: LightingSceneProps & { step: number }) {
+export function LightingStage(props: LightingSceneProps & { step: number; editing: boolean }) {
   const [request, setRequest] = useState<{ view: LightingView; key: number }>({
     view: "3D",
     key: 0,
@@ -23,6 +23,7 @@ export function LightingStage(props: LightingSceneProps & { step: number }) {
   const nudge = (event: KeyboardEvent<HTMLDivElement>) => {
     if (
       props.disabled ||
+      !props.editing ||
       !source ||
       (event.target !== event.currentTarget && (event.target as HTMLElement).tagName !== "CANVAS")
     )
@@ -54,11 +55,41 @@ export function LightingStage(props: LightingSceneProps & { step: number }) {
     : "source";
   return (
     <>
+      <div className="lighting-view-tools" role="group" aria-label="Preview camera">
+        {(["3D", "Top", "Front", "Side"] as const).map((name) => (
+          <EditorButton
+            key={name}
+            aria-pressed={request.view === name}
+            disabled={props.disabled}
+            onClick={() => view(name)}
+          >
+            {name}
+          </EditorButton>
+        ))}
+        <EditorButton
+          aria-label="Fit model in preview"
+          title="Fit model"
+          disabled={props.disabled}
+          onClick={() => view("Fit")}
+        >
+          <EditorIcon name="resize" />
+        </EditorButton>
+        {props.editing && (
+          <EditorButton
+            aria-label="Focus source"
+            disabled={!source || props.disabled}
+            onClick={() => view("Focus")}
+          >
+            <span className="lighting-focus-wide">Focus source</span>
+            <span className="lighting-focus-compact">Focus</span>
+          </EditorButton>
+        )}
+      </div>
       <div
         className="lighting-stage"
         data-picking={props.picking ?? "orbit"}
         tabIndex={0}
-        aria-label="Interactive lighting preview"
+        aria-label="Interactive model preview"
         onKeyDown={nudge}
         onPointerDown={(event) => {
           if ((event.target as HTMLElement).tagName === "CANVAS")
@@ -78,67 +109,48 @@ export function LightingStage(props: LightingSceneProps & { step: number }) {
           <LightingStageScene
             {...props}
             throughGlass={throughGlass}
-            markers={markers}
+            markers={props.editing && markers}
             night={night}
             request={request}
             rotate={rotate}
           />
         </Canvas>
-        <div className="lighting-view-tools" role="group" aria-label="Preview camera">
-          {(["3D", "Top", "Front", "Side"] as const).map((name) => (
-            <EditorButton
-              key={name}
-              aria-pressed={request.view === name}
-              disabled={props.disabled}
-              onClick={() => view(name)}
-            >
-              {name}
-            </EditorButton>
-          ))}
-          <EditorButton
-            aria-label="Fit model in preview"
-            title="Fit model"
-            disabled={props.disabled}
-            onClick={() => view("Fit")}
-          >
-            <EditorIcon name="resize" />
-          </EditorButton>
-          <EditorButton disabled={!source || props.disabled} onClick={() => view("Focus")}>
-            Focus source
-          </EditorButton>
-        </div>
-        <p className="lighting-stage__hint" role="status">
-          {props.picking === "surface"
-            ? "Click a surface to add or remove glow."
-            : props.picking === "position"
-              ? "Place " + label + " · Click the model."
-              : "Drag to pan · Right-drag to orbit · Scroll to zoom"}
-        </p>
       </div>
+      <p className="lighting-stage__hint" role="status">
+        {props.picking === "surface"
+          ? "Click a surface to add or remove glow."
+          : props.picking === "position"
+            ? "Place " + label + " · Click the model."
+            : "Drag to pan · Right-drag to orbit · Scroll to zoom"}
+      </p>
       <div className="lighting-preview-options">
-        {source?.kind === "strip" && (
+        {props.editing && source?.kind === "strip" && (
           <EditorButton aria-pressed={rotate} onClick={() => setRotate(!rotate)}>
             <EditorIcon name={rotate ? "move" : "rotateRight"} />
             {rotate ? "Move endpoint" : "Rotate strip"}
           </EditorButton>
         )}
 
-        <label>
-          <input
-            type="checkbox"
-            checked={throughGlass}
-            onChange={(event) => setThroughGlass(event.target.checked)}
-          />
-          Pick through glass
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={markers}
-            onChange={(event) => setMarkers(event.target.checked)}
-          />
-          Show handles
-        </label>
+        {props.editing && (
+          <>
+            <label>
+              <input
+                type="checkbox"
+                checked={throughGlass}
+                onChange={(event) => setThroughGlass(event.target.checked)}
+              />
+              Pick through glass
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={markers}
+                onChange={(event) => setMarkers(event.target.checked)}
+              />
+              Show handles
+            </label>
+          </>
+        )}
         <label>
           <input
             type="checkbox"

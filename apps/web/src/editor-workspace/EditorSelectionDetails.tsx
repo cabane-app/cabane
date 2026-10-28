@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { saveModelLighting } from "../model-lighting/save-model-lighting";
+import { saveModelEditor } from "../model-editor/save-model-editor";
 import { ownerProjectRegistries } from "../project-runtime";
-import { ModelLightingDialog } from "../model-lighting/ModelLightingDialog";
+import { ProjectModelEditor } from "../model-editor/ProjectModelEditor";
 import type { ManifestIssue } from "@cabane/engine";
 import { OpeningDetails } from "../editor-preview/construct/OpeningDetails";
 import { ConstructionSelectionProperties } from "../editor-preview/construct/ConstructionSelectionProperties";
@@ -166,20 +166,17 @@ export function EditorSelectionDetails({
         </div>
       )}
       {lightingModel && (
-        <ModelLightingDialog
+        <ProjectModelEditor
           key={lightingModel}
           project={snapshot.project}
           modelId={lightingModel}
           native={ownerProjectRegistries}
           onCancel={() => setLightingModel(null)}
-          onSave={(light) =>
-            saveModelLighting(
-              workspace,
-              lightingModel,
-              light,
-              ownerProjectRegistries,
-              replaceEditorsFromProject,
-            )
+          onSave={(change) =>
+            saveModelEditor(workspace, change, ownerProjectRegistries, (next) => {
+              replaceEditorsFromProject(next.project);
+              workspace.commit(next);
+            })
           }
         />
       )}

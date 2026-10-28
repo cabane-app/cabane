@@ -7,6 +7,13 @@ import type { ModelPreviewEntry } from "./model-preview-entry";
 
 const noop = () => undefined;
 const emptyStates = {};
+const previewOnState = {
+  entityId: "light.preview" as const,
+  state: "on",
+  attributes: {},
+  available: true,
+  stale: false,
+};
 
 /** Renders registry geometry without room, network, or binding-runtime dependencies. */
 export function ModelVisual({
@@ -17,14 +24,11 @@ export function ModelVisual({
   previewOn?: boolean;
 }) {
   const lightingState = useModelLightingState();
+  // A lighting simulation drives light fixtures, independently of TV/fan/etc. visuals.
+  const lightFixture =
+    entry.kind === "device" && entry.definition.supportedDomains.includes("light");
   const previewState = previewOn
-    ? (lightingState?.state ?? {
-        entityId: "light.preview" as const,
-        state: "on",
-        attributes: {},
-        available: true,
-        stale: false,
-      })
+    ? ((lightFixture ? lightingState?.state : undefined) ?? previewOnState)
     : undefined;
   if (entry.kind === "procedural") {
     const Component = entry.definition.component;

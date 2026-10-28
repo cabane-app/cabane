@@ -3,7 +3,7 @@ import { Line, TransformControls } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Group, Quaternion, Vector3, type Mesh, type Material, type BufferGeometry } from "three";
 import {
-  controlModelLightMaterials,
+  controlPreviewLightMaterials,
   ModelLightingStateContext,
   importedLightSources,
   modelLightSources,
@@ -20,6 +20,7 @@ import { lightingModelHit } from "./lighting-picking";
 import { lightingError, sourcePosition, type LightingSelection } from "./lighting-layout";
 
 export type LightingSceneProps = {
+  geometryKey: unknown;
   children: ReactNode;
   bounds: DeviceModelBounds;
   light: CustomModelLight | null;
@@ -51,6 +52,7 @@ export function LightingStageScene({
   night,
   request,
   rotate,
+  geometryKey,
 }: LightingSceneProps & {
   rotate: boolean;
   throughGlass: boolean;
@@ -65,14 +67,21 @@ export function LightingStageScene({
   const highlighted = picking === "surface" ? hoveredSurface : undefined;
   const invalidate = useThree((scene) => scene.invalidate);
   const span = Math.max(...bounds.max.map((n, i) => n - bounds.min[i]));
+  const controller = useRef<ReturnType<typeof controlPreviewLightMaterials> | null>(null);
   useLayoutEffect(() => {
     if (!geometry.current) return;
     onSurfaces(modelLightingSurfaces(geometry.current));
-    const materials = controlModelLightMaterials(geometry.current, light ?? {}, highlighted);
-    materials.update(state, light?.color ?? "#ffe3b4");
+    const materials = controlPreviewLightMaterials(geometry.current);
+    controller.current = materials;
+    return () => {
+      controller.current = null;
+      materials.dispose();
+    };
+  }, [geometryKey, onSurfaces]);
+  useLayoutEffect(() => {
+    controller.current?.update(light, state, highlighted);
     invalidate();
-    return () => materials.dispose();
-  }, [children, light, state, highlighted, invalidate, onSurfaces]);
+  }, [geometryKey, light, state, highlighted, invalidate]);
   const hitFor = (event: ThreeEvent<MouseEvent>) =>
     geometry.current
       ? lightingModelHit(geometry.current, event.intersections, throughGlass)
