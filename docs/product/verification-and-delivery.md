@@ -275,6 +275,11 @@ One normal Arrange browser smoke imports a textured GLB into My models. A separa
 20 rooms, 100 simulated bindings and shared textured resources. Node tests cover
 Blender/Three.js skill exports, material/format validation, support normalization,
 elevation/resize history transactions, resource lifetimes and archive integrity.
+The focused Model Editor Chromium smoke checks a real textured GLB's single canvas,
+parent hierarchy and material identity across tool changes, manual camera continuity,
+and desktop/mobile layouts. Node/DOM coverage owns the model/catalog capability,
+combined Save/Undo, failure/retry, conflict, missing-asset and focus/cancel matrices.
+Preview material tests verify clone reuse and shared texture/geometry preservation.
 The generation guide runs in DOM tests, including unavailable/rejected clipboard
 handling and focus restoration. Installation and
 generation are verified independently in the public skill repository. Storage

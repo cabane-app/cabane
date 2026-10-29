@@ -15,10 +15,8 @@ import { withModules } from "./test-server.mjs";
 import { withStorageDom } from "./dom-test-environment.mjs";
 
 await withModules(async (load) => {
-  const { ModelLightingDialog } = await load(
-    "/apps/web/src/model-lighting/ModelLightingDialog.tsx",
-  );
-  const { saveModelLighting } = await load("/apps/web/src/model-lighting/save-model-lighting.ts");
+  const { ProjectModelEditor } = await load("/apps/web/src/model-editor/ProjectModelEditor.tsx");
+  const { saveModelEditor } = await load("/apps/web/src/model-editor/save-model-editor.ts");
   const { useEditorWorkspace } = await load("/apps/web/src/editor-preview/useEditorWorkspace.ts");
   const { ownerProjectRegistries } = await load("/apps/web/src/project-runtime.ts");
   const api = await load("/packages/engine/src/index.ts");
@@ -105,7 +103,7 @@ await withModules(async (load) => {
       let error;
       await React.act(async () => {
         try {
-          await saveModelLighting(workspace, modelId, light, native, () => {});
+          await saveModelEditor(workspace, { kind: "catalog", modelId, light }, native);
         } catch (caught) {
           error = caught;
         }
@@ -116,6 +114,8 @@ await withModules(async (load) => {
     }));
   test("missing original assets block lighting saves, preserve the draft and restore focus on cancel", () =>
     withStorageDom(async (dom) => {
+      dom.window.HTMLElement.prototype.attachEvent = () => {};
+      dom.window.HTMLElement.prototype.detachEvent = () => {};
       const custom = {
         id: "custom:11111111-2222-4333-8444-555555555555",
         name: "Missing model",
@@ -153,7 +153,7 @@ await withModules(async (load) => {
       function Harness() {
         const [open, setOpen] = useState(true);
         return open
-          ? React.createElement(ModelLightingDialog, {
+          ? React.createElement(ProjectModelEditor, {
               project,
               modelId: custom.id,
               native: { furnishingModels: {}, deviceModels: {} },
@@ -170,7 +170,7 @@ await withModules(async (load) => {
         return { unmount: () => root.unmount() };
       });
       await dom.until(() => dom.document.querySelector('[role="alert"]'));
-      assert.equal(dom.button("Save for 1 copy").disabled, true);
+      assert.equal(dom.button("Save changes").disabled, true);
       assert.deepEqual(project, before);
       assert.equal(saves, 0);
       await dom.click("Cancel");

@@ -210,6 +210,7 @@
     "owners": [
       "packages/engine/src/imported-models",
       "apps/web/src/custom-models",
+      "apps/web/src/model-editor",
       "apps/web/src/workspaces/ha-model-assets.ts"
     ],
     "interfaces": [
@@ -510,6 +511,7 @@
     "title": "Shared model lighting",
     "spec": "docs/product/model-lighting.md",
     "owners": [
+      "apps/web/src/model-editor",
       "apps/web/src/model-lighting",
       "packages/engine/src/model-lighting",
       "packages/engine/src/HomeAssistantSceneLighting.tsx",
@@ -526,11 +528,12 @@
           "lightingSlotForItem",
           "modelLightingSurfaces",
           "modelLightingSurfaceAt",
-          "controlModelLightMaterials"
+          "controlModelLightMaterials",
+          "controlPreviewLightMaterials"
         ]
       }
     ],
-    "invariant": "Keep one model lighting setup per home and one connection per placed copy. Preserve original furniture/device identity and controls. Native overrides never mutate the shared catalog. Source transforms and instance-owned glow use the same preview/runtime contract. Save and Undo include independent lighting identities and draft-only mapping cleanup; never operate HA during authoring. Preserve legacy declarations and mixed point/strip transforms. Only on sources occupy the reusable pool; grow capacity without an arbitrary floor cutoff and retain slots across state changes.",
+    "invariant": "Keep one model lighting setup per home and one connection per placed copy. Preserve original furniture/device identity and controls. Native overrides never mutate the shared catalog. Source transforms and instance-owned glow use the same preview/runtime contract. Save and Undo include independent lighting identities and draft-only mapping cleanup; never operate HA during authoring. Preserve legacy declarations and mixed point/strip transforms. Only on sources occupy the reusable pool; grow capacity without an arbitrary floor cutoff and retain slots across state changes. Model Editor owns one draft/save boundary and one persistent preview scene per model. Preview material clones have that scene lifetime; tool, source, glow and brightness changes update existing resources. Camera layout changes preserve manual navigation. Model definitions affect all copies; instance placement/variants and connections retain their owners.",
     "checks": ["verify:workspace", "verify:runtime", "build:panel"]
   }
 ]

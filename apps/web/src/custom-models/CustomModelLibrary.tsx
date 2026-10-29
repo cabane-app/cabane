@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import {
   CUSTOM_MODEL_LIMITS,
-  editModelLighting,
   createCabaneModelPack,
   createModelAssetRepository,
   downloadCabaneBytes,
@@ -15,7 +14,7 @@ import {
 } from "@cabane/engine";
 import { ownerProjectRegistries } from "../project-runtime";
 import { EditorButton } from "../editor-chrome/EditorButton";
-import { editCustomModel } from "./edit-custom-model";
+import { saveModelEditor } from "../model-editor/save-model-editor";
 import { ModelImportDialog } from "./ModelImportDialog";
 import { useEditorWorkspace } from "../editor-preview/useEditorWorkspace";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
@@ -215,22 +214,20 @@ export function CustomModelLibrary({
         <ModelImportDialog
           key={editingModel.id}
           existingModel={editingModel}
+          copyCount={
+            workspace.snapshot.project.sceneItems.filter((item) => item.modelId === editingModel.id)
+              .length
+          }
           missingModelOptions={[]}
           onCancel={onCloseEditor}
           onImport={async (model) => {
             if (disabled) throw new Error("The editor is busy. Try again when it is ready.");
-            const next = editModelLighting(
-              editCustomModel(workspace.snapshot, model),
-              model.id,
-              model.light ?? null,
+            await saveModelEditor(
+              workspace,
+              { kind: "personal", model },
               ownerProjectRegistries,
+              onEditSnapshot,
             );
-            onEditSnapshot(next);
-            const saved = await workspace.flush();
-            if (saved.status !== "saved")
-              throw new Error(
-                "Could not save the model. Your draft is kept in memory. Retry Save changes, or close and use Undo to revert.",
-              );
             onCloseEditor();
           }}
         />

@@ -49,7 +49,7 @@ test(
       await (
         await chooser
       ).setFiles({ name: "Personal desk.glb", mimeType: "model/gltf-binary", buffer: bytes });
-      const dialog = page.getByRole("dialog", { name: "Import GLB", exact: true });
+      const dialog = page.getByRole("dialog", { name: "Model Editor", exact: true });
       await dialog
         .getByText("Original materials and textures are preserved.", { exact: false })
         .waitFor();

@@ -139,7 +139,7 @@ export function FurnishingProperties({
       </fieldset>
       {onEditLighting && (
         <fieldset>
-          <legend>Lighting</legend>
+          <legend>Model</legend>
           <div className="furnishing-lighting-action">
             <p className="editor-properties-note">
               {definition.lighting
@@ -147,8 +147,8 @@ export function FurnishingProperties({
                 : "No lighting"}
             </p>
             <EditorButton onClick={onEditLighting}>
-              <EditorIcon name="lighting" />
-              Edit lighting
+              <EditorIcon name="settings" />
+              Edit model
             </EditorButton>
           </div>
           {definition.lighting && onConnectLighting && (
