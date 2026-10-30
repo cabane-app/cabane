@@ -1,9 +1,9 @@
 {
-  "revision": 22,
-  "fingerprint": "e0d0d78e1f46b0bebf7f69d8ab4b223713c3644b2b3d7a49fb494e91d1f2dd6b",
-  "summary": "Allow eligible manual connections before room area setup",
+  "revision": 23,
+  "fingerprint": "bd7617e7f1158ea789f88e9dc38bda808b730f34f1c7b7fc937f25d581b9c8c2",
+  "summary": "Conditional state visibility on models",
   "breakingChanges": [
-    "No saved fields, slot IDs or schema versions change. Every eligible manual function and reading can now map across Home Assistant areas or before its room has an area association. Older clients may report these mappings as unmapped until their frontend or panel is updated; no migration or device command is involved."
+    "Update older Cabane clients and the Home Assistant integration before opening projects using if-present map visibility. Existing boolean visibility settings remain supported."
   ],
   "history": [
     {
@@ -151,6 +151,13 @@
       "summary": "Add persistent Arrange item groups",
       "breakingChanges": [
         "Existing homes remain supported. Homes saved with scene-item group metadata require an updated frontend and matching Home Assistant panel. Groups preserve individual models, lighting and connections without a schema-version or asset migration; older clients retain unsupported-field protection."
+      ]
+    },
+    {
+      "revision": 22,
+      "summary": "Allow eligible manual connections before room area setup",
+      "breakingChanges": [
+        "No saved fields, slot IDs or schema versions change. Every eligible manual function and reading can now map across Home Assistant areas or before its room has an area association. Older clients may report these mappings as unmapped until their frontend or panel is updated; no migration or device command is involved."
       ]
     }
   ],

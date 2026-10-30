@@ -1,33 +1,11 @@
+import { useSceneOverlay } from "./SceneOverlayLayout";
 import { RoomDisconnectedIcon } from "../RoomDisconnectedIcon";
 import { useHoveredRoom, useRoomHoverTarget } from "./RoomHover";
 import { Html } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
-import { Vector3 } from "three";
 import { planPointToWorld, polygonCentroid } from "../geometry";
 import type { FloorSpec, RoomSpec } from "../types";
 import { RoomStatusBadges, roomStatusAccessibleText } from "./RoomStatusBadges";
 import type { RoomStatusMap, RoomStatusSummary } from "./model";
-
-const DESKTOP_OVERLAY_LIMIT = 10;
-const COMPACT_OVERLAY_LIMIT = 6;
-const COMPACT_VIEWPORT_WIDTH = 760;
-const OVERLAY_COLLISION_GAP = 4;
-const OVERLAY_COLLISION_HEIGHT = 48;
-const RETAINED_DISTANCE_BONUS = 0.12;
-
-export interface RoomStatusOverlayCandidate {
-  readonly id: string;
-  readonly screenX: number;
-  readonly screenY: number;
-  readonly distanceFromCenter: number;
-  readonly labelWidth: number;
-  readonly priority: number;
-  readonly inViewport: boolean;
-}
-
-export const roomStatusOverlayLimitForWidth = (width: number) =>
-  width < COMPACT_VIEWPORT_WIDTH ? COMPACT_OVERLAY_LIMIT : DESKTOP_OVERLAY_LIMIT;
 
 export const roomStatusOverlayPriority = (summary: RoomStatusSummary) => {
   if (summary.doorOpen || summary.heating || summary.cooling) return 3;
@@ -49,36 +27,6 @@ const roomStatusOverlayLabelWidth = (roomName: string, summary: RoomStatusSummar
   return Math.min(246, Math.max(88, statusWidth, nameWidth));
 };
 
-const candidatesOverlap = (left: RoomStatusOverlayCandidate, right: RoomStatusOverlayCandidate) =>
-  Math.abs(left.screenX - right.screenX) <
-    (left.labelWidth + right.labelWidth) / 2 + OVERLAY_COLLISION_GAP &&
-  Math.abs(left.screenY - right.screenY) < OVERLAY_COLLISION_HEIGHT;
-
-export const selectRoomStatusOverlayIds = (
-  candidates: readonly RoomStatusOverlayCandidate[],
-  limit: number,
-  retainedIds: ReadonlySet<string> = new Set(),
-) => {
-  const selected: RoomStatusOverlayCandidate[] = [];
-  const ranked = candidates
-    .filter((candidate) => candidate.inViewport)
-    .sort(
-      (left, right) =>
-        right.priority - left.priority ||
-        left.distanceFromCenter -
-          (retainedIds.has(left.id) ? RETAINED_DISTANCE_BONUS : 0) -
-          (right.distanceFromCenter - (retainedIds.has(right.id) ? RETAINED_DISTANCE_BONUS : 0)) ||
-        left.id.localeCompare(right.id),
-    );
-
-  for (const candidate of ranked) {
-    if (selected.length >= limit) break;
-    if (selected.some((visible) => candidatesOverlap(candidate, visible))) continue;
-    selected.push(candidate);
-  }
-  return new Set(selected.map((candidate) => candidate.id));
-};
-
 export const roomStatusOverlayPosition = (
   room: RoomSpec,
   floor: FloorSpec,
@@ -91,6 +39,7 @@ export const shouldShowRoomStatusOverlays = (mode: "overview" | "room" | "walk")
   mode === "overview";
 
 export function RoomStatusOverlayButton({
+  labelRef,
   hovered = false,
   onHover,
   roomName,
@@ -98,6 +47,7 @@ export function RoomStatusOverlayButton({
   onSelect,
   visible = true,
 }: {
+  labelRef?: import("react").Ref<HTMLButtonElement>;
   hovered?: boolean;
   onHover?: (hovered: boolean) => void;
   roomName: string;
@@ -108,6 +58,7 @@ export function RoomStatusOverlayButton({
   const statusText = roomStatusAccessibleText(summary);
   return (
     <button
+      ref={labelRef}
       type="button"
       className="room-status-overlay"
       data-visible={visible}
@@ -144,72 +95,62 @@ export function RoomStatusOverlays({
 }) {
   const hoveredRoom = useHoveredRoom();
   const setRoomHover = useRoomHoverTarget();
-  const { camera, size } = useThree();
-  const [visibleIds, setVisibleIds] = useState<ReadonlySet<string>>(() => new Set());
-  const visibleIdsRef = useRef<ReadonlySet<string>>(visibleIds);
-  const projected = useMemo(() => new Vector3(), []);
-  const overlayRooms = useMemo(
-    () =>
-      floor.rooms.map((room) => {
-        const roomName = roomNames[room.id] ?? room.name;
-        return {
-          room,
-          roomName,
-          position: roomStatusOverlayPosition(room, floor),
-        };
-      }),
-    [floor, roomNames],
-  );
-
-  useFrame(() => {
-    const candidates = overlayRooms.map(({ room, roomName, position }) => {
-      const summary = summaries[room.id];
-      projected.set(...position).project(camera);
-      return {
-        id: room.id,
-        screenX: ((projected.x + 1) * size.width) / 2,
-        screenY: ((1 - projected.y) * size.height) / 2,
-        distanceFromCenter: Math.hypot(projected.x, projected.y),
-        labelWidth: roomStatusOverlayLabelWidth(roomName, summary),
-        priority: roomStatusOverlayPriority(summary),
-        inViewport:
-          projected.z >= -1 &&
-          projected.z <= 1 &&
-          Math.abs(projected.x) <= 1.04 &&
-          Math.abs(projected.y) <= 1.08,
-      };
-    });
-    const next = selectRoomStatusOverlayIds(
-      candidates,
-      roomStatusOverlayLimitForWidth(size.width),
-      visibleIdsRef.current,
-    );
-    if (
-      next.size === visibleIdsRef.current.size &&
-      [...next].every((id) => visibleIdsRef.current.has(id))
-    )
-      return;
-    visibleIdsRef.current = next;
-    setVisibleIds(next);
-  });
 
   return floor.rooms.map((room) => (
-    <Html
-      key={`room-status-${room.id}`}
-      position={roomStatusOverlayPosition(room, floor)}
-      center
-      zIndexRange={[8, 0]}
-      pointerEvents="auto"
-      wrapperClass="room-status-overlay-anchor"
-    >
-      <RoomStatusOverlayButton
-        hovered={hoveredRoom === room.id}
-        onHover={(hovered) => setRoomHover(hovered ? room.id : null)}
-        roomName={roomNames[room.id] ?? room.name}
-        summary={summaries[room.id]}
-        visible={visibleIds.has(room.id)}
-        onSelect={() => onSelectRoom(room.id)}
-      />
-    </Html>
+    <RoomStatusOverlay
+      key={room.id}
+      room={room}
+      floor={floor}
+      roomName={roomNames[room.id] ?? room.name}
+      summary={summaries[room.id]}
+      hovered={hoveredRoom === room.id}
+      onHover={(hovered) => setRoomHover(hovered ? room.id : null)}
+      onSelect={() => onSelectRoom(room.id)}
+    />
   ));
+}
+
+function RoomStatusOverlay({
+  room,
+  floor,
+  roomName,
+  summary,
+  hovered,
+  onHover,
+  onSelect,
+}: {
+  room: RoomSpec;
+  floor: FloorSpec;
+  roomName: string;
+  summary: RoomStatusSummary;
+  hovered: boolean;
+  onHover: (hovered: boolean) => void;
+  onSelect: () => void;
+}) {
+  const { anchorRef, labelRef, visible } = useSceneOverlay<HTMLButtonElement>({
+    id: `room:${room.id}`,
+    labelWidth: roomStatusOverlayLabelWidth(roomName, summary),
+    labelHeight: 48,
+    priority: roomStatusOverlayPriority(summary),
+  });
+  return (
+    <group ref={anchorRef} position={roomStatusOverlayPosition(room, floor)}>
+      <Html
+        center
+        zIndexRange={[8, 0]}
+        pointerEvents="auto"
+        wrapperClass="room-status-overlay-anchor"
+      >
+        <RoomStatusOverlayButton
+          labelRef={labelRef}
+          hovered={hovered}
+          onHover={onHover}
+          roomName={roomName}
+          summary={summary}
+          visible={visible}
+          onSelect={onSelect}
+        />
+      </Html>
+    </group>
+  );
 }

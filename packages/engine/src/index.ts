@@ -1,3 +1,4 @@
+export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";
 export * from "./types";
 export { isAuxiliaryEntitySlot } from "./entity-slot-roles";

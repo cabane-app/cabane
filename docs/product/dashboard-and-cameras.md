@@ -383,4 +383,8 @@ a decorative status visualization, not robot localization: external cleaning has
 no inferred destination and remains at the authored location. The destination is
 not persisted or written to HA. The activity studio includes a simulated vacuum.
 
+Item state visibility offers Always, Never, and Only if present. Existing true/false choices retain Always/Never behavior. Only if present requires a fresh, available state: booleans must be true/on, numbers must be greater than zero, and text must be nonempty and active (not off, closed, absent, idle, standby, unknown, unavailable or none). Missing, stale and unavailable values are hidden in this mode.
+
+Room labels, connection states and attached readings share one screen-space collision check and the existing viewport-dependent overlay limit. Card dimensions include multiple readings and wrapped labels; the layout follows camera movement, floor elevation and viewport resizing.
+
 Opted-in item readings appear above the furniture or device in the 3D map, with the authored label, state and reported unit. Unavailable, stale and unconnected readings show status text instead of a last-known value. These badges are non-interactive and hidden in Walk and editor previews. Auxiliary fridge/freezer telemetry does not become the room’s ambient temperature or presence. Map visibility and dashboard visibility are independent.

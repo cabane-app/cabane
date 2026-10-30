@@ -27,3 +27,7 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+
+.item-entity-readings[hidden] {
+  display: none;
+}

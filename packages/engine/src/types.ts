@@ -79,7 +79,7 @@ export interface EntityBindingSlotSpec {
   presentation: {
     label: string;
     /** Opt-in reading badge above the item; does not change dashboard visibility. */
-    showInScene?: boolean;
+    showInScene?: boolean | "if-present";
     dashboardRole: "primary" | "secondary" | "diagnostic" | "hidden";
   };
   sceneLight?: {

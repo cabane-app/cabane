@@ -3506,6 +3506,9 @@
                                 "schema": {
                                   "anyOf": [
                                     {
+                                      "const": "if-present"
+                                    },
+                                    {
                                       "const": false
                                     },
                                     {
@@ -3743,6 +3746,9 @@
                                     "optional": true,
                                     "schema": {
                                       "anyOf": [
+                                        {
+                                          "const": "if-present"
+                                        },
                                         {
                                           "const": false
                                         },
@@ -4203,6 +4209,9 @@
                                     "optional": true,
                                     "schema": {
                                       "anyOf": [
+                                        {
+                                          "const": "if-present"
+                                        },
                                         {
                                           "const": false
                                         },
@@ -7418,6 +7427,9 @@
                                     "schema": {
                                       "anyOf": [
                                         {
+                                          "const": "if-present"
+                                        },
+                                        {
                                           "const": false
                                         },
                                         {
@@ -7877,6 +7889,9 @@
                                     "optional": true,
                                     "schema": {
                                       "anyOf": [
+                                        {
+                                          "const": "if-present"
+                                        },
                                         {
                                           "const": false
                                         },

@@ -1,3 +1,4 @@
+import { showEntityStateInScene } from "./entity-slot-visibility";
 import { omitUndefinedProperties } from "./defined-properties";
 import { coverPosition } from "./cover-state";
 import { bindingDomainMatchRank } from "./binding-slot-compatibility";
@@ -324,7 +325,7 @@ export const resolveHomeAssistantBindings = (
           continue;
         }
         const resolved = resolveEntity({ entityId, descriptor, room, manifest, profile, runtime });
-        if (spec.presentation.showInScene) sceneEntities.push(resolved);
+        if (showEntityStateInScene(spec, resolved.state)) sceneEntities.push(resolved);
         if (spec.presentation.dashboardRole !== "hidden") {
           sections[spec.presentation.dashboardRole].push(resolved);
         }
@@ -360,7 +361,7 @@ export const resolveHomeAssistantBindings = (
             runtime,
           });
           entities.push(resolved);
-          if (spec.presentation.showInScene) sceneEntities.push(resolved);
+          if (showEntityStateInScene(spec, resolved.state)) sceneEntities.push(resolved);
           deviceIssues.push(...resolved.issues);
         }
         const primarySlot = slot.entitySlots.find(

@@ -125,13 +125,14 @@ export const validateEntitySlot = (
   } else {
     if (
       rawSlot.presentation.showInScene !== undefined &&
-      typeof rawSlot.presentation.showInScene !== "boolean"
+      typeof rawSlot.presentation.showInScene !== "boolean" &&
+      rawSlot.presentation.showInScene !== "if-present"
     ) {
       issues.push(
         issue(
           "slot.map-visibility",
           `${slotPath}.presentation.showInScene`,
-          "Map visibility must be boolean.",
+          "Map visibility must be boolean or if-present.",
         ),
       );
     }

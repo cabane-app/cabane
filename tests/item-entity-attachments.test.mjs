@@ -25,6 +25,9 @@ await withModules(async (load) => {
   const { DeviceMappingInspector } = await load(
     "/packages/engine/src/home-assistant-mapping/DeviceMappingInspector.tsx",
   );
+  const { DeviceConnectionWorkbench } = await load(
+    "/packages/engine/src/home-assistant-mapping/DeviceConnectionWorkbench.tsx",
+  );
   const { addReadingToSnapshot } = await load("/apps/web/src/editor-connect/add-reading.ts");
   const { furnishingEditorReducer, createFurnishingEditorState } = await load(
     "/apps/web/src/editor-preview/furnish/editor-state.ts",
@@ -299,6 +302,90 @@ await withModules(async (load) => {
       ["Stale", "Unavailable"],
     );
   });
+  test("conditional state badges persist and show only meaningful, usable states", () => {
+    const project = projectFixture();
+    const reading = project.sceneItems[1].entitySlots[0];
+    reading.presentation.showInScene = "if-present";
+    assert.equal(engine.validateHomeProject(project, registries).valid, true);
+    const parsed = engine.parseHomeProject(engine.serializeHomeProject(project));
+    assert.equal(parsed.valid, true, JSON.stringify(parsed.issues));
+    assert.equal(
+      parsed.project.sceneItems[1].entitySlots[0].presentation.showInScene,
+      "if-present",
+    );
+    assert.equal(
+      engine.validateHomeManifest(engine.composeHomeManifest(project, registries), {
+        deviceModels: devices,
+      }).canRender,
+      true,
+    );
+    const state = {
+      entityId: "sensor.fixture",
+      state: "1",
+      attributes: {},
+      available: true,
+      stale: false,
+    };
+    for (const value of ["true", "on", "1", "0.1", "42", "open", "home", "playing"]) {
+      assert.equal(
+        itemEntityReadings([reading], { [reading.id]: { ...state, state: value } }).length,
+        1,
+        value,
+      );
+    }
+    for (const value of [
+      "false",
+      "off",
+      "0",
+      "-2",
+      "0.0",
+      "closed",
+      "not_home",
+      "idle",
+      "unknown",
+      "unavailable",
+      "",
+      "  ",
+      "Infinity",
+    ]) {
+      assert.equal(
+        itemEntityReadings([reading], { [reading.id]: { ...state, state: value } }).length,
+        0,
+        value,
+      );
+    }
+    for (const invalid of [undefined, { ...state, stale: true }, { ...state, available: false }]) {
+      assert.equal(
+        itemEntityReadings([reading], invalid ? { [reading.id]: invalid } : {}).length,
+        0,
+      );
+    }
+    const { project: connectedProject, profile, runtime } = connectionFixture();
+    const control = connectedProject.sceneItems[0].entitySlots[0];
+    control.presentation.showInScene = "if-present";
+    const manifest = engine.composeHomeManifest(connectedProject, registries);
+    for (const value of ["0", "4"]) {
+      const entityId = profile.entityIdsBySlotId[control.id];
+      const resolved = engine.resolveHomeAssistantBindings(
+        manifest,
+        profile,
+        {
+          ...runtime,
+          entityStates: {
+            ...runtime.entityStates,
+            [entityId]: { ...runtime.entityStates[entityId], state: value },
+          },
+        },
+        devices,
+      );
+      assert.equal(
+        resolved.rooms[manifest.floors[0].rooms[0].id].sceneEntities.some(
+          (binding) => binding.slotId === control.id,
+        ),
+        value === "4",
+      );
+    }
+  });
   test("TV switch alternatives preserve existing slots, dispatch switch commands, and do not override unrelated domains", () => {
     for (const modelId of ["television", "wall-television", "compact-wall-television"]) {
       const { project, profile, runtime } = connectionFixture();
@@ -546,19 +633,36 @@ await withModules(async (load) => {
       await act(async () => root.render(React.createElement(Harness)));
       assert.match(document.body.textContent, /Connections/);
       assert.match(document.body.textContent, /Connected/);
-      assert.equal(document.querySelector("select"), null);
+      assert.equal(document.querySelectorAll("select").length, 4);
       await act(async () =>
         [...document.querySelectorAll("button")]
           .find((button) => button.textContent.includes("Add reading"))
           .click(),
       );
       assert.equal(added, 1);
-      assert.equal(document.querySelector("select"), null);
+      assert.equal(document.querySelectorAll("select").length, 4);
       await act(async () => document.querySelector(".item-connection-link").click());
       assert.equal(selected, "fridge-control");
-      await act(async () =>
-        document.querySelector('[aria-label="Show fridge-temperature on model"]').click(),
+      const visibilitySelect = document.querySelector(
+        '[aria-label="Show fridge-temperature on model"]',
       );
+      assert.deepEqual(
+        [...visibilitySelect.options].map((option) => option.textContent),
+        ["Always", "Never", "Only if present"],
+      );
+      await act(async () => {
+        visibilitySelect.value = "if-present";
+        visibilitySelect.dispatchEvent(new document.defaultView.Event("change", { bubbles: true }));
+      });
+      assert.equal(
+        current.entitySlots.find((slot) => slot.id === "fridge-temperature").presentation
+          .showInScene,
+        "if-present",
+      );
+      await act(async () => {
+        visibilitySelect.value = "never";
+        visibilitySelect.dispatchEvent(new document.defaultView.Event("change", { bubbles: true }));
+      });
       assert.equal(
         current.entitySlots.find((slot) => slot.id === "fridge-temperature").presentation
           .showInScene,
@@ -578,9 +682,6 @@ await withModules(async (load) => {
   });
 
   test("the workbench searches sensor and parent device names, filters eligible types and adds a named reading", async () => {
-    const { DeviceConnectionWorkbench } = await load(
-      "/packages/engine/src/home-assistant-mapping/DeviceConnectionWorkbench.tsx",
-    );
     const { project, manifest, runtime, profile: initialProfile } = connectionFixture();
     const item = project.sceneItems[0];
     const room = engine
@@ -658,9 +759,11 @@ await withModules(async (load) => {
         document.querySelector('.connection-source[aria-label^="sensor.furniture"]').click(),
       );
       assert.ok(document.querySelector(".reading-connection-confirm"));
-      await act(async () =>
-        document.querySelector('.reading-connection-confirm [role="switch"]').click(),
-      );
+      await act(async () => {
+        const select = document.querySelector(".reading-connection-confirm select");
+        select.value = "if-present";
+        select.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+      });
       await act(async () =>
         document
           .querySelector(".reading-connection-confirm")
@@ -668,7 +771,7 @@ await withModules(async (load) => {
       );
       assert.deepEqual(added, {
         entityId: "sensor.furniture",
-        presentation: { label: "sensor.furniture", showInScene: false },
+        presentation: { label: "sensor.furniture", showInScene: "if-present" },
       });
     });
     const unmapped = { ...initialProfile, roomAreaIds: {} };

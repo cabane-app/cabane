@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  SceneStateVisibilitySelect,
   ConnectionIcon,
   DeviceCategoryIcon,
   connectionSlotLabel,
@@ -40,7 +41,6 @@ function ItemConnectionRow({
   const current = connections?.profile.entityIdsBySlotId[slot.id];
   const summary = connections && entityConnectionSummary(current, connections.runtime);
   const label = connectionSlotLabel(slot, item.modelId);
-  const visible = slot.presentation.showInScene === true;
   return (
     <div className="item-entity-slots__entry">
       <>
@@ -88,21 +88,14 @@ function ItemConnectionRow({
           <ConnectionIcon name={current ? "check" : "link"} />
           {summary?.status ?? "Not connected"}
         </p>
-        <div className="connection-visibility">
-          <span>{isAuxiliaryEntitySlot(slot) ? "Show on model" : "Show state on model"}</span>
-          <button
-            type="button"
-            role="switch"
-            aria-label={`Show ${label} on model`}
-            aria-checked={visible}
-            onClick={() =>
-              onChange({ ...slot, presentation: { ...slot.presentation, showInScene: !visible } })
-            }
-          >
-            <ConnectionIcon name={visible ? "eye" : "hidden"} />
-            {visible ? "On" : "Off"}
-          </button>
-        </div>
+        <SceneStateVisibilitySelect
+          label={isAuxiliaryEntitySlot(slot) ? "Show on model" : "Show state on model"}
+          accessibleLabel={`Show ${label} on model`}
+          value={slot.presentation.showInScene}
+          onChange={(showInScene) =>
+            onChange({ ...slot, presentation: { ...slot.presentation, showInScene } })
+          }
+        />
         {menu && (
           <div className="item-connection-menu" role="group" aria-label={`${label} actions`}>
             <button

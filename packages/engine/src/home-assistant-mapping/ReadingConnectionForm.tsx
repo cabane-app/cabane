@@ -1,3 +1,4 @@
+import { SceneStateVisibilitySelect } from "./SceneStateVisibilitySelect";
 import { useState } from "react";
 import type { EntityId, HomeAssistantRuntimeSnapshot, RuntimeBindingProfile } from "../types";
 import { newReadingDescriptor } from "./connection-candidates";
@@ -26,7 +27,7 @@ export function ReadingConnectionForm({
 }) {
   const [entityId, setEntityId] = useState<EntityId | null>(null);
   const [label, setLabel] = useState("");
-  const [showInScene, setShowInScene] = useState(true);
+  const [showInScene, setShowInScene] = useState<ReadingPresentation["showInScene"]>(true);
   if (!entityId)
     return (
       <div className="reading-connection-form">
@@ -80,18 +81,12 @@ export function ReadingConnectionForm({
           required
         />
       </label>
-      <label className="connection-visibility">
-        <span>Show on model</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={showInScene}
-          onClick={() => setShowInScene(!showInScene)}
-        >
-          <ConnectionIcon name={showInScene ? "eye" : "hidden"} />
-          {showInScene ? "On" : "Off"}
-        </button>
-      </label>
+      <SceneStateVisibilitySelect
+        label="Show on model"
+        value={showInScene}
+        onChange={setShowInScene}
+        disabled={disabled}
+      />
       <div className="reading-connection-confirm__actions">
         <button type="button" onClick={onCancel}>
           Cancel

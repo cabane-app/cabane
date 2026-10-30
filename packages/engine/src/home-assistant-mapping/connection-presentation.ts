@@ -67,5 +67,5 @@ export function entityConnectionSummary(
 
 export interface ReadingPresentation {
   label: string;
-  showInScene: boolean;
+  showInScene: boolean | "if-present";
 }
