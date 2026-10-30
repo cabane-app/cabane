@@ -50,7 +50,10 @@ await withModules(async (load) => {
     ...overrides,
   });
   const headerProps = (overrides = {}) => {
-    const project = { floors: [{ id: "floor" }] };
+    const project = {
+      home: { name: "Test home" },
+      floors: [{ id: "floor", name: "Ground floor" }],
+    };
     return {
       mode: "furnish",
       activeFloorId: "floor",

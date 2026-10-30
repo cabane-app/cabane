@@ -423,7 +423,7 @@ await withModules(async (load) => {
       const chosen = [];
       let browse;
       function Harness() {
-        const [browsing, onBrowse] = useState({ room: "all", query: "" });
+        const [browsing, onBrowse] = useState({ room: "all", query: "", view: "categories" });
         browse = onBrowse;
         return React.createElement(ArrangeCatalog, {
           ...ownerProjectRegistries,
@@ -434,14 +434,19 @@ await withModules(async (load) => {
         });
       }
       await act(async () => root.render(React.createElement(Harness)));
+      assert.ok(document.querySelector('[aria-label="Catalog categories"]'));
+      assert.equal(document.querySelector(".catalog-grid"), null);
+      const chooseRoom = async (name) => {
+        await act(async () => document.querySelector(".catalog-navigation button")?.click());
+        await act(async () =>
+          document.querySelector(`.catalog-categories [aria-label="${name}"]`).click(),
+        );
+      };
+      await chooseRoom("All items");
       assert.ok(document.querySelector('[aria-label="Add Television"]'));
       assert.ok(document.querySelector('[aria-label="Add Motorized blind"]'));
       assert.ok(document.querySelector('[aria-label="Add Wooden crib · 70 × 140"]'));
-      const room = (name) =>
-        [...document.querySelectorAll(".catalog-rooms button")].find(
-          (button) => button.textContent === name,
-        );
-      await act(async () => room("Living room").click());
+      await chooseRoom("Living room");
       assert.equal(document.querySelector("input").placeholder, "Search all items…");
       assert.equal(document.querySelector('[aria-label="Add Wooden crib · 70 × 140"]'), null);
       await act(async () => document.querySelector('[aria-label="Add Television"]').click());
@@ -451,7 +456,7 @@ await withModules(async (load) => {
         document.querySelector('[aria-label="Add Television"]'),
         "model stays available for another copy",
       );
-      await act(async () => room("Office").click());
+      await chooseRoom("Office");
       assert.ok(document.querySelector('[aria-label="Add Oak desk"]'));
       await act(async () => document.querySelector('[aria-label="Add Oak desk"]').click());
       assert.equal(chosen[1].modelId, "oak-desk");
@@ -477,7 +482,7 @@ await withModules(async (load) => {
           ],
         ],
       ]) {
-        await act(async () => room(roomName).click());
+        await chooseRoom(roomName);
         for (const [label, modelId] of appliances) {
           const card = document.querySelector(`[aria-label="Add ${label}"]`);
           assert.ok(card, label);
@@ -486,10 +491,10 @@ await withModules(async (load) => {
           assert.equal(chosen.at(-1).kind, "device");
         }
       }
-      await act(async () => room("All items").click());
+      await chooseRoom("All items");
       assert.ok(document.querySelector('[aria-label="Add Wooden crib · 70 × 140"]'));
       assert.ok(document.querySelector('[aria-label="Add Weather station"]'));
-      await act(async () => room("Devices").click());
+      await chooseRoom("Devices");
       assert.equal(document.querySelector("input").placeholder, "Search all items…");
       assert.equal(document.querySelector('[aria-label="Add Wooden crib · 70 × 140"]'), null);
       assert.ok(document.querySelector('[aria-label="Add Television"]'));
@@ -618,7 +623,7 @@ await withModules(async (load) => {
             enabled: true,
             furnishingModels: controller.furnishingModels,
             deviceModels: controller.deviceModels,
-            browsing: controller.catalogBrowsing,
+            browsing: { ...controller.catalogBrowsing, view: "items" },
             onBrowse: controller.setCatalogBrowsing,
             error: controller.catalogError,
             onChoose: controller.addCatalogItem,

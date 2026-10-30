@@ -1,11 +1,6 @@
 import type { FloorEditorTool } from "@cabane/engine";
-import { EditorToolGroup, type EditorToolOption } from "./EditorToolGroup";
-
-const tools = [
-  { tool: "niche", icon: "niche", label: "Niche" },
-  { tool: "hedge", icon: "hedge", label: "Boundary", shortcut: "H" },
-  { tool: "pool", icon: "pool", label: "Pool", shortcut: "P" },
-] as const satisfies readonly EditorToolOption[];
+import { EditorToolGroup } from "./EditorToolGroup";
+import { decorationTools } from "./construction-tool-options";
 
 export function DecorationsTools(props: {
   tool: FloorEditorTool;
@@ -18,7 +13,7 @@ export function DecorationsTools(props: {
       label="Decorations"
       panelLabel="Decoration tools"
       icon="decorations"
-      tools={tools}
+      tools={decorationTools}
     />
   );
 }

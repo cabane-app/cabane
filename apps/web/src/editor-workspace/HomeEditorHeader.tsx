@@ -112,6 +112,7 @@ export function HomeEditorHeader({
           className="editor-close"
           disabled={editingLocked || unsettled || !hasSaved}
           title={hasSaved ? "Back to Home" : "Save your home before returning to Home"}
+          aria-label={closing ? "Returning to Home" : "Back"}
           onClick={() => void closeEditor()}
         >
           <EditorIcon name="back" />
@@ -183,6 +184,10 @@ export function HomeEditorHeader({
             </button>
           </div>
         )}
+      </div>
+      <div className="editor-mobile-home">
+        <strong>{snapshot.project.home.name}</strong>
+        <span>{snapshot.project.floors.find((floor) => floor.id === activeFloorId)?.name}</span>
       </div>
       {walkError && <p role="alert">{walkError}</p>}
       <EditorModeNav mode={shortcutsMode ? "shortcuts" : mode} onModeChange={onModeTabChange} />

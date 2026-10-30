@@ -20,18 +20,13 @@ import { composeOwnerProjectManifest, ownerProjectRegistries } from "./project-r
 import type { EditorOpenRequest } from "./editor-connect/useConnectEditor";
 import { downloadConnectData } from "./editor-connect/profile-transfer";
 import { CONNECT_RETURN_KEY, readEditorReturn } from "./editor-connect/connect-navigation";
-import { editorPath, editorRoutes, mobileEditorPath, workspaceHomePath } from "./editor-routes";
+import { editorPath, editorRoutes, workspaceHomePath } from "./editor-routes";
 import { exportWorkspaceBackup } from "./workspaces/workspace-transfer";
 import { RoutedHomeEditor } from "./RoutedHomeEditor";
 import {
   ShortcutDeviceIcon,
   ShortcutThumbnailSurface,
 } from "./editor-action-bar/ShortcutDeviceIcon";
-import {
-  MobileEditorPrompt,
-  mobileEditorPromptDismissed,
-  mobileEditorViewport,
-} from "./mobile-editor/MobileEditorPrompt";
 
 export function ConnectedProduct({
   record: initialRecord,
@@ -42,7 +37,6 @@ export function ConnectedProduct({
   recoveryRaw,
   initialRequest,
   onboarding,
-  demoWorkspaceId,
 }: {
   record: HomeProjectRecord;
   lifecycle: HomeProjectLifecycle;
@@ -55,7 +49,6 @@ export function ConnectedProduct({
   recoveryRaw?: string | undefined;
   initialRequest?: EditorOpenRequest;
   onboarding?: OnboardingOptions;
-  demoWorkspaceId: string | null;
 }) {
   const [record, setRecord] = useState(initialRecord);
   const publishedManifest = useMemo(
@@ -94,13 +87,7 @@ export function ConnectedProduct({
   }, []);
   const openEditor = async (request: EditorOpenRequest) => {
     await toolStorage.flush();
-    const path =
-      (request.mode === "construct" || request.mode === "furnish") &&
-      !request.panel &&
-      mobileEditorViewport() &&
-      !mobileEditorPromptDismissed()
-        ? mobileEditorPath(record.homeId, request.mode)
-        : editorPath(request, record.homeId);
+    const path = editorPath(request, record.homeId);
     void navigate(path, { state: { editorRequest: request } });
   };
   const origin = homeAssistantUrl ? normalizeWorkspaceBindingOrigin(homeAssistantUrl) : null;
@@ -244,31 +231,22 @@ export function ConnectedProduct({
         <Route
           path="/workspaces/:workspaceId/mobile-editor"
           element={
-            <MobileEditorPrompt workspaceId={record.homeId} demoWorkspaceId={demoWorkspaceId} />
+            <Navigate
+              to={editorPath(
+                {
+                  mode:
+                    new URLSearchParams(location.search).get("mode") === "arrange"
+                      ? "furnish"
+                      : "construct",
+                },
+                record.homeId,
+              )}
+              replace
+            />
           }
         />
-        {editorRoutes.map(({ path, handle }) => (
-          <Route
-            key={path}
-            path={path}
-            element={
-              (handle.mode === "construct" || handle.mode === "furnish") &&
-              !handle.panel &&
-              mobileEditorViewport() &&
-              !mobileEditorPromptDismissed() ? (
-                path === "/build" ? (
-                  <MobileEditorPrompt
-                    workspaceId={record.homeId}
-                    demoWorkspaceId={demoWorkspaceId}
-                  />
-                ) : (
-                  <Navigate to={mobileEditorPath(record.homeId, handle.mode)} replace />
-                )
-              ) : (
-                editor
-              )
-            }
-          />
+        {editorRoutes.map(({ path }) => (
+          <Route key={path} path={path} element={editor} />
         ))}
         <Route path="*" element={<Navigate to={workspaceHomePath(record.homeId)} replace />} />
       </Routes>

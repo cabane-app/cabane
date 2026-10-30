@@ -21,10 +21,6 @@ export const editorRoutes = [
   },
 ] satisfies { path: string; handle: EditorOpenRequest }[];
 
-export function mobileEditorPath(workspaceId: string, mode: "construct" | "furnish"): string {
-  return `${workspaceHomePath(workspaceId)}/mobile-editor?mode=${mode === "furnish" ? "arrange" : "construct"}`;
-}
-
 export function editorRequestForPath(pathname: string): EditorOpenRequest | null {
   return matchRoutes(editorRoutes, pathname)?.[0].route.handle ?? null;
 }

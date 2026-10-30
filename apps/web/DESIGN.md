@@ -198,6 +198,8 @@ Connect uses a restrained stack of working surfaces: sage devices behind warm-pa
 
 Motion in source rows, connection rows and type filters is a short background transition (160ms, ease-out), enabled only when reduced motion is not requested. The sidecar records the exact observed shadows and transition.
 
+Construct and Arrange on phones keep the canvas visible above a compact bottom dock. Tools, Catalog, Properties and Issues share one full-screen native dialog with a contextual title, underlined tabs and a Done action. Tool and catalog category cards use the existing SVG family on quiet paper surfaces. Catalog category navigation also applies on desktop; choosing a category reveals the full-width model grid with a clear Categories back action.
+
 ## Shapes
 
 Controls, rows and working surfaces use softly curved corners with the extracted radii in frontmatter. Fields are compact, source rows span their available column, and broad surfaces use a gentler outer radius. Existing editor fields and buttons retain subtle borders. The source picker uses surface color to group its borderless controls.

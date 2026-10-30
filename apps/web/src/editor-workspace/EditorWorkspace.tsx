@@ -4,7 +4,6 @@ import { WallFinishPreviewProvider } from "../editor-preview/construct/WallFinis
 import type { BuildTutorialStep, ManifestIssue } from "@cabane/engine";
 import {
   FloorPicker,
-  createBrowserUuid,
   floorRemovalDisabledReason,
   normalizeWorkspaceBindingOrigin,
   resolveHomeAssistantBindings,
@@ -13,7 +12,7 @@ import {
   useCabaneDom,
 } from "@cabane/engine";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FloorManagementDialog } from "../editor-floors";
+import { EditorFloorDialog } from "./EditorFloorDialog";
 import { useBuildTutorial } from "../editor-onboarding/useBuildTutorial";
 import { installedWalkTools } from "../walk-tools";
 import { EditorCompletionDialogs } from "./EditorCompletionDialogs";
@@ -21,6 +20,8 @@ import { EditorSelectionDetails } from "./EditorSelectionDetails";
 import { ConnectInspector } from "../editor-connect/ConnectInspector";
 import { EditorSidebar } from "./EditorSidebar";
 import { EditorValidationPanel } from "./EditorValidationPanel";
+import { EditorPanels } from "./EditorPanels";
+import { useMobileEditorViewport } from "./useMobileEditorViewport";
 import { EditorPanelControls } from "./EditorPanelControls";
 import { editorPanelSelection, useEditorPanels } from "./useEditorPanels";
 
@@ -41,7 +42,6 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
   const { repairIssue, repairMessage, repairError, itemLabel } = controller.repairs;
   const placementError = controller.furnishingEditor.placementError ?? repairError;
   const {
-    executeProjectAction,
     editorProject,
     northOrientation,
     setActionBarItems,
@@ -50,7 +50,6 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     activeFloorId,
     stairPlacement,
     stairDialog,
-    floorDialog,
     setFloorDialog,
     floorReferences,
     mode,
@@ -102,6 +101,9 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     setActionBarPanelOpen(requestedActionBar);
   }, [requestedActionBar]);
   const shortcutsMode = props.navigation ? requestedActionBar : actionBarPanelOpen;
+  const mobileViewport = useMobileEditorViewport();
+  const mobileEditor =
+    mobileViewport && !shortcutsMode && (mode === "construct" || mode === "furnish");
   const sidebar = useRef<HTMLElement>(null);
   useEffect(() => {
     const content = sidebar.current?.querySelector<HTMLElement>(".editor-sidebar-content");
@@ -122,8 +124,10 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     editorPanelSelection(controller, shortcutsMode),
     panelBusy,
     displayedContextualIssues.length > 0,
+    `${mode}:${activeFloorId}:${shortcutsMode}`,
   );
   const panelIssues = displayedContextualIssues;
+  const { closeMobilePanel } = panels;
   const panelsDisabled =
     editingLocked || publishOpen || previewOpen || northOrientation.active || panelBusy;
   const issuesExpanded = panels.issuesOpen;
@@ -256,20 +260,22 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     if (constructEditor.tool !== "select" || stairPlacement) setWalkStartFloor(null);
   }, [constructEditor.tool, stairPlacement]);
   const placingWalkStart = mode === "construct" && walkStartFloor === activeFloorId;
+  const canvasTask =
+    reference.adjusting ||
+    northOrientation.active ||
+    placingWalkStart ||
+    controller.floorZoneDrawing.active ||
+    controller.poolDrawing.active;
+  useEffect(() => {
+    if (canvasTask) closeMobilePanel();
+  }, [canvasTask, closeMobilePanel]);
+
   const floorControlsDisabled =
     editingLocked ||
     northOrientation.active ||
     (unsettled && !reference.adjusting) ||
-    Boolean(floorDialog);
+    Boolean(controller.floorDialog);
   const removeDisabledReason = floorRemovalDisabledReason(snapshot.project.floors, activeFloorId);
-  const addFloor = (below: boolean, duplicate: boolean) => {
-    const id = `floor-${createBrowserUuid()}`;
-    executeProjectAction({
-      type: below ? "add-floor-below" : "add-floor-above",
-      id,
-      ...(duplicate ? { sourceFloorId: activeFloorId } : {}),
-    });
-  };
   return (
     <WallFinishPreviewProvider palette={editorProject.home.palette}>
       <main
@@ -279,8 +285,13 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
         data-properties-open={panels.propertiesOpen}
         data-has-issues={panelIssues.length > 0}
         data-issues-expanded={issuesExpanded}
+        data-mobile-editor={mobileEditor}
         data-mobile-panel={
-          panels.mobileSurface === "issues" && !panelIssues.length ? "tools" : panels.mobileSurface
+          mobileEditor && !panels.mobileOpen
+            ? "closed"
+            : panels.mobileSurface === "issues" && !panelIssues.length
+              ? "tools"
+              : panels.mobileSurface
         }
       >
         {!shortcutsMode && (
@@ -336,41 +347,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
               </label>
             ))}
         </div>
-        {floorDialog && (
-          <FloorManagementDialog
-            action={floorDialog}
-            onRemove={!removeDisabledReason ? () => setFloorDialog("remove") : undefined}
-            removeDisabledReason={removeDisabledReason}
-            name={snapshot.project.floors.find((floor) => floor.id === activeFloorId)!.name}
-            height={
-              snapshot.project.floors.find((floor) => floor.id === activeFloorId)!
-                .floorToFloorHeightMeters
-            }
-            itemCount={
-              snapshot.project.sceneItems.filter((item) => item.floorId === activeFloorId).length
-            }
-            stairCount={
-              snapshot.project.stairs.filter(
-                (stair) =>
-                  stair.upperFloorId === activeFloorId || stair.lowerFloorId === activeFloorId,
-              ).length
-            }
-            onCancel={() => setFloorDialog(null)}
-            onSave={(name, height, duplicate = false) => {
-              if (floorDialog === "add-above" || floorDialog === "add-below") {
-                addFloor(floorDialog === "add-below", duplicate);
-                setFloorDialog(null);
-                return;
-              }
-              executeProjectAction(
-                floorDialog === "remove"
-                  ? { type: "remove-floor", floorId: activeFloorId }
-                  : { type: "rename-floor", floorId: activeFloorId, name, heightMeters: height },
-              );
-              setFloorDialog(null);
-            }}
-          />
-        )}
+        <EditorFloorDialog controller={controller} removeDisabledReason={removeDisabledReason} />
         <HomeEditorHeader
           referenceAdjusting={reference.adjusting}
           {...controller}
@@ -400,55 +377,77 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
           </ShortcutThumbnailSurface>
         )}
 
-        <EditorSidebar
-          {...controller}
-          onSelectPlacedItem={(id) => {
-            controller.furnishingEditor.select(id);
-            panels.openProperties();
-          }}
-          sidebar={sidebar}
-          iconUrl={iconUrl}
-          shortcutsMode={shortcutsMode}
-          floorControlsDisabled={floorControlsDisabled}
-          addFloorAbove={() => setFloorDialog("add-above")}
-          addFloorBelow={() => setFloorDialog("add-below")}
-          tutorial={tutorial}
-          tutorialBusy={tutorialBusy}
-          activateTutorial={activateTutorial}
-          stairLiveIssues={stairLiveIssues}
-          importWorkspace={importWorkspace}
-          placingWalkStart={placingWalkStart}
-          setWalkStartFloor={setWalkStartFloor}
-          onHomeAssistantSettings={props.onHomeAssistantSettings}
-        />
         <AgentPilotPanel
           workspaceId={props.initialRecord.homeId}
           controller={controller}
           open={agentPilotOpen}
           onClose={closeAgentPilot}
         />
-        <EditorSelectionDetails
-          {...controller}
-          open={panels.propertiesOpen && !shortcutsMode}
-          onCollapse={collapseProperties}
-          liveStairIssues={stairLiveIssues}
+        <EditorPanels
+          mobile={mobileEditor}
+          mode={shortcutsMode ? "shortcuts" : mode}
+          floorName={constructEditor.previewFloor.name}
+          panels={panels}
+          issueCount={panelIssues.length}
           disabled={panelsDisabled}
-        />
-        <div inert={editingLocked || publishOpen || previewOpen || northOrientation.active}>
-          <EditorValidationPanel
-            issues={panelIssues}
-            expanded={panels.issuesExpanded}
-            onToggle={panels.toggleIssues}
-            disabled={panelBusy}
-            onRepair={repairIssue}
-            itemLabel={itemLabel}
-            onSelect={(issue) => {
-              setActionBarPanelOpen(false);
-              panels.openProperties();
-              controller.focusIssue(issue);
+        >
+          <EditorSidebar
+            {...controller}
+            onMobileToolChoose={panels.closeMobilePanel}
+            addCatalogItem={(entry) => {
+              const result = controller.addCatalogItem(entry);
+              if (result.itemId) panels.closeMobilePanel();
+              return result;
             }}
+            onSelectPlacedItem={(id) => {
+              controller.furnishingEditor.select(id);
+              panels.openProperties();
+            }}
+            sidebar={sidebar}
+            iconUrl={iconUrl}
+            shortcutsMode={shortcutsMode}
+            floorControlsDisabled={floorControlsDisabled}
+            addFloorAbove={() => setFloorDialog("add-above")}
+            addFloorBelow={() => setFloorDialog("add-below")}
+            tutorial={tutorial}
+            tutorialBusy={tutorialBusy}
+            activateTutorial={activateTutorial}
+            stairLiveIssues={stairLiveIssues}
+            importWorkspace={importWorkspace}
+            placingWalkStart={placingWalkStart}
+            setWalkStartFloor={setWalkStartFloor}
+            onHomeAssistantSettings={props.onHomeAssistantSettings}
           />
+          <EditorSelectionDetails
+            {...controller}
+            open={panels.propertiesOpen && !shortcutsMode}
+            onCollapse={collapseProperties}
+            liveStairIssues={stairLiveIssues}
+            disabled={panelsDisabled}
+          />
+          <div
+            className="editor-validation-host"
+            inert={editingLocked || publishOpen || previewOpen || northOrientation.active}
+          >
+            <EditorValidationPanel
+              issues={panelIssues}
+              expanded={panels.issuesExpanded}
+              onToggle={panels.toggleIssues}
+              disabled={panelBusy}
+              onRepair={repairIssue}
+              itemLabel={itemLabel}
+              onSelect={(issue) => {
+                setActionBarPanelOpen(false);
+                if (mobileEditor) panels.closeMobilePanel();
+                else panels.openProperties();
+                controller.focusIssue(issue);
+              }}
+            />
+          </div>
+        </EditorPanels>
+        <div inert={editingLocked || publishOpen || previewOpen || northOrientation.active}>
           <EditorPanelControls
+            mode={shortcutsMode ? "shortcuts" : mode}
             panels={panels}
             issueCount={panelIssues.length}
             disabled={panelsDisabled}

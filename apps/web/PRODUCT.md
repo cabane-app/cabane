@@ -30,6 +30,8 @@ Keep the English UI, Cabane identity, existing typography and palette, and Const
 
 The user approved the Option A interactive layout on 30 October 2026. Use synthetic data for previews and tests. Household identifiers, credentials and screenshots do not belong in Git.
 
+Construct and Arrange on phones use the full-screen panel direction approved on 30 October 2026. Panels open from a compact dock on demand, and the catalog uses category cards on desktop and mobile.
+
 ## Product Principles
 
 - Show the object's function and its selected source, rather than exposing binding internals.

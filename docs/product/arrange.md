@@ -4,13 +4,18 @@ Arrange edits declarative furnishing/device items in 3D or top view. In 2D,
 two-finger trackpad scrolling pans the plan and pinch (Ctrl/Cmd-wheel) zooms
 around the cursor, matching Construct. Its catalog
 supports searching and room-category browsing, visual model previews, and
-creation from supported registry entries. Non-empty searches cover all items,
+creation from supported registry entries. Its initial category view uses room cards
+with item counts on desktop and mobile, plus All items, Devices and My models.
+Choosing a category opens a full-width model grid with a Categories back action.
+Non-empty searches cover all items,
 including devices and personal models, regardless of the selected category.
 Clearing the search restores that category. Clicking furniture or a device on a visible
 lower floor in 3D switches to that floor and selects the item. Selection exposes rotate, duplicate,
-delete and, for devices with slots, Connect actions. Selection automatically opens
+delete and, for devices with slots, Connect actions. On desktop, selection automatically opens
 the shared right Properties inspector while the catalog remains available on the
-left. Properties edit
+left. On phones, selection enables Properties in the compact bottom dock. Add items
+and Properties open the full-screen panel only on request; a successful catalog
+placement closes it so the newly added object is visible on the canvas. Properties edit
 dimensions and placement. In 3D, a matching elevation button beside the rotation
 controls raises or lowers the selected item while dragged vertically. Release
 commits one undo step; Escape, pointer cancellation, or focus loss restores its

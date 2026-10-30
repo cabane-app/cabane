@@ -85,7 +85,7 @@ Arrange → My models can exchange a model-only ZIP pack (`manifest.json` plus
 
 Construct and Arrange use a shared panel layout. The left sidebar holds tools,
 placement choices, catalog and home settings. Selecting architecture, stairs,
-furniture or devices opens the same right Properties inspector automatically,
+furniture or devices on desktop opens the same right Properties inspector automatically,
 without moving keyboard focus. Changing selection replaces its fields; clicking
 empty canvas clears it. Collapse retains selection and exposes a reopen button;
 a different selection opens it again. Group selection offers its count and existing
@@ -99,9 +99,15 @@ or collapsing it never resizes the canvas or shifts the camera projection; float
 floor and status controls move aside to stay accessible. Undo and Redo share the
 top-right project actions with Reset and Save, separated by a divider. The Construct
 toolbar contains construction tools; Arrange has no separate history toolbar.
-Mobile uses one active bottom sheet for Tools, Properties or Issues, with an
-underlined active tab and a count badge for Issues. Short mobile landscape windows
-put that shared surface on the left to retain canvas height. Panel changes wait
+On phones, Construct and Arrange start with a compact bottom dock and no open panel.
+Build tools or Add items opens a full-screen panel; Properties is available after
+selection, and Issues appears when needed. Panel tabs share that single surface.
+Done and Escape dismiss it while preserving selection and restoring focus to the
+dock. Canvas selection does not open a mobile panel automatically. Choosing a
+construction tool, starting a canvas task, successfully adding an item or locating
+an issue returns to the canvas. Failed catalog placements retain the open panel
+and their recovery message. The same full-screen pattern applies in phone landscape.
+Connect and Shortcuts retain their existing compact surfaces. Panel changes wait
 for active drawing, dragging and marquee gestures to settle. Panel state is
 presentation-only and is not exported or added to history.
 

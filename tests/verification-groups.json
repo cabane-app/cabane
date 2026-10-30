@@ -267,7 +267,8 @@
       "workspace-repository.test.mjs",
       "workspace-routes.test.mjs",
       "workspace-sync-coordinator.test.mjs",
-      "workspace-transfer.test.mjs"
+      "workspace-transfer.test.mjs",
+      "mobile-editor-panels-browser.test.mjs"
     ]
   },
   "full": {

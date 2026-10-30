@@ -1,18 +1,8 @@
 import { DecorationsTools } from "./DecorationsTools";
 import type { FloorEditorTool } from "@cabane/engine";
 import { EditorActionButton } from "./EditorActionButton";
-import { EditorToolGroup, type EditorToolOption } from "./EditorToolGroup";
-
-const wallTools = [
-  { tool: "wall", icon: "wall", label: "Wall", shortcut: "W" },
-  { tool: "virtual-wall", icon: "virtual-wall", label: "Invisible wall" },
-  { tool: "platform", icon: "outdoor-space", label: "Outdoor space" },
-] as const satisfies readonly EditorToolOption[];
-const openingTools = [
-  { tool: "door", icon: "door", label: "Door", shortcut: "D" },
-  { tool: "passage", icon: "passage", label: "Passage", shortcut: "A" },
-  { tool: "window", icon: "window", label: "Window", shortcut: "N" },
-] as const satisfies readonly EditorToolOption[];
+import { EditorToolGroup } from "./EditorToolGroup";
+import { wallTools, openingTools } from "./construction-tool-options";
 
 export interface EditorActionBarProps {
   inert?: boolean | undefined;

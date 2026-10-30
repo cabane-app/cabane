@@ -38,6 +38,7 @@ export function useEditorCatalog({ projection, furnishingEditor, disabled }: Opt
   const [catalogBrowsing, setCatalogBrowsing] = useState<CatalogBrowsing>({
     room: "all",
     query: "",
+    view: "categories",
   });
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [arrangeAnnouncement, setArrangeAnnouncement] = useState("");

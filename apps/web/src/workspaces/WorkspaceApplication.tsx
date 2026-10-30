@@ -218,17 +218,7 @@ export function WorkspaceApplication() {
           </div>
         )}
         {onboarding.loaded ? (
-          <WorkspaceHost
-            key={id}
-            id={id}
-            repository={repository}
-            onboarding={onboarding}
-            demoWorkspaceId={
-              entries.some((entry) => entry.metadata.id === onboarding.state?.demoWorkspaceId)
-                ? (onboarding.state?.demoWorkspaceId ?? null)
-                : null
-            }
-          />
+          <WorkspaceHost key={id} id={id} repository={repository} onboarding={onboarding} />
         ) : (
           <main className="direction-project-loading">Loading your home…</main>
         )}

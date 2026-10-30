@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ConstructionToolCards } from "../editor-chrome/ConstructionToolCards";
 import type { CustomModel } from "@cabane/engine";
 import { CustomModelLibrary } from "../custom-models/CustomModelLibrary";
 import { CustomModelCard } from "../custom-models/CustomModelCard";
@@ -34,6 +35,7 @@ type Props = Pick<
   | "floorNavigation"
   | "activeFloorId"
   | "stairPlacement"
+  | "startStairs"
   | "setStairPlacement"
   | "setFloorDialog"
   | "mode"
@@ -66,6 +68,7 @@ type Props = Pick<
   | "furnishingEditor"
   | "placementFloor"
 > & {
+  onMobileToolChoose: () => void;
   onSelectPlacedItem: (id: string) => void;
   sidebar: React.RefObject<HTMLElement | null>;
   iconUrl: string;
@@ -87,6 +90,7 @@ export function EditorSidebar({
   floorNavigation,
   activeFloorId,
   stairPlacement,
+  startStairs,
   setStairPlacement,
   setFloorDialog,
   mode,
@@ -133,6 +137,7 @@ export function EditorSidebar({
   placingWalkStart,
   setWalkStartFloor,
   onHomeAssistantSettings,
+  onMobileToolChoose,
 }: Props) {
   const [editingModel, setEditingModel] = useState<CustomModel | null>(null);
   return (
@@ -178,6 +183,27 @@ export function EditorSidebar({
             />
           )}
           <EditorModeIntroduction mode={shortcutsMode ? "shortcuts" : mode} />
+          {!shortcutsMode && mode === "construct" && (
+            <ConstructionToolCards
+              inert={editingLocked || unsettled || reference.adjusting}
+              tool={constructEditor.tool}
+              stairsActive={Boolean(stairPlacement)}
+              stairsDisabledReason={
+                snapshot.project.floors.at(-1)?.id === activeFloorId
+                  ? "Add a floor above first."
+                  : undefined
+              }
+              onToolChange={(tool) => {
+                setStairPlacement(null);
+                constructEditor.setTool(tool);
+                onMobileToolChoose();
+              }}
+              onStairs={() => {
+                startStairs();
+                onMobileToolChoose();
+              }}
+            />
+          )}
           {shortcutsMode && (
             <div className="shortcuts-guide">
               <h3>Add a shortcut</h3>
