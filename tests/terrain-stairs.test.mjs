@@ -9,6 +9,7 @@ await withModules(async (load) => {
   const api = await load("/packages/engine/src/index.ts");
   const { makeStairProject, emptyExtensions } = await load("/tests/fixtures/multiple-floors.ts");
   const { ArchitectureScene } = await load("/packages/engine/src/ArchitectureScene.tsx");
+  const { WalkCameraController } = await load("/packages/engine/src/WalkCameraController.tsx");
   const { stableArchitectureModelRegistry } = await load(
     "/packages/catalog/src/architecture/index.ts",
   );
@@ -167,6 +168,103 @@ await withModules(async (load) => {
     });
     assert.equal(ascending.terrain.end, "upper");
     assert.ok(api.deriveStairFlight(project, ascending));
+  });
+
+  test("a closed ground-floor door opens when returning up terrain stairs from the basement level", async () => {
+    const project = projectWithSteps();
+    project.home.terrain.topLeftMeters = project.home.terrain.topRightMeters = -1.9;
+    const ground = project.floors[0];
+    ground.openings[0] = {
+      ...ground.openings[0],
+      kind: "door",
+      variant: "flush",
+      operation: "hinged",
+      finish: "white",
+      leafCount: 1,
+    };
+    project.floors.unshift({
+      ...makeStairProject().floors[1],
+      belowGround: true,
+      openings: [
+        {
+          ...ground.openings[0],
+          id: "basement-exit",
+          wallId: ground.openings[0].wallId.replace("ground-", "first-"),
+        },
+      ],
+    });
+    const levels = api.deriveFloorLevels(project.floors);
+    const poseRef = { current: { x: 4, z: 0.8, yaw: 0, pitch: 0 } };
+    const movementInputRef = { current: { x: 0, y: -1 } };
+    let floorId = ground.id;
+    let automatic = new Set();
+    let reopenedFromBasement = false;
+    const manifest = api.composeHomeManifest(project, emptyExtensions);
+    const render = () => {
+      const openingPositions = Object.fromEntries([...automatic].map((id) => [id, 1]));
+      return React.createElement(
+        "group",
+        null,
+        React.createElement(ArchitectureScene, {
+          ...sceneProps(project),
+          manifest,
+          activeFloorId: floorId,
+          walkMode: true,
+          openingPositions,
+        }),
+        React.createElement(WalkCameraController, {
+          building: manifest,
+          floor: manifest.floors.find((floor) => floor.id === floorId),
+          elevation: levels.find((level) => level.floorId === floorId).elevationMeters,
+          poseRef,
+          movementInputRef,
+          lookInputRef: { current: { x: 0, y: 0 } },
+          lookDeltaRef: { current: { x: 0, y: 0 } },
+          reducedMotion: true,
+          openingPositions,
+          onOpeningsChange(ids) {
+            automatic = ids;
+            if (floorId === project.floors[0].id && ids.has("garden-exit"))
+              reopenedFromBasement = true;
+          },
+          onFloorChange(id) {
+            floorId = id;
+          },
+          onRoomChange() {},
+        }),
+      );
+    };
+    const renderer = await create(render());
+    const advance = async (count) => {
+      for (let i = 0; i < count; i++) {
+        await renderer.update(render());
+        await renderer.advanceFrames(1, 1 / 60);
+      }
+    };
+    try {
+      await advance(1);
+      assert.equal(automatic.has("garden-exit"), true);
+      assert.equal(
+        automatic.has("basement-exit"),
+        false,
+        "a stacked door on another level stays closed",
+      );
+      await advance(119);
+      assert.ok(poseRef.current.z < -3, "walker leaves through the door and reaches terrain");
+      assert.equal(floorId, project.floors[0].id, "outside selects the nearby basement level");
+      assert.equal(automatic.has("garden-exit"), false, "the door closes after departure");
+      reopenedFromBasement = false;
+      movementInputRef.current.y = 1;
+      await advance(120);
+      assert.ok(
+        poseRef.current.z > 0.6,
+        `the ground-floor door must reopen before its threshold: ${JSON.stringify(poseRef.current)}`,
+      );
+      assert.equal(floorId, ground.id);
+      assert.equal(reopenedFromBasement, true, "the door opens before the floor selection changes");
+    } finally {
+      await renderer.unmount();
+    }
   });
 
   for (const [basement, drop, style] of [

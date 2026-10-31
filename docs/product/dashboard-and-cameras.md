@@ -161,6 +161,9 @@ sheets, room sheets, and camera viewing share the normal dashboard surface.
 Visible scene lights respond to compatible light slots. Bound opening states
 control their visual state outside Walk proximity. Every door opens locally near
 the walker regardless of detector or cover state, so that state never blocks passage.
+Proximity uses the walker's actual terrain or stair height across storeys, so an
+entrance opens before the selected floor changes at its threshold. Doors on other
+storeys remain closed when their height puts them out of range.
 On departure or leaving Walk, the door resumes its bound state. Proximity never
 sends a Home Assistant command. Missing HA data keeps the architectural scene usable.
 The demo leaves door contacts and door covers unbound so doors, including the

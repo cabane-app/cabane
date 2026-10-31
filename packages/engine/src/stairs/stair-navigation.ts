@@ -37,6 +37,7 @@ export const prepareBuildingWalk = (building: BuildingGeometry) => {
     ? null
     : createTerrainSurface(building.home?.terrain, building.floors);
   return {
+    levels,
     terrain,
     colliders: new Map(
       building.floors.map((floor) => [
