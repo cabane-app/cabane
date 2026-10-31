@@ -356,7 +356,7 @@
   color: #3e6144;
   background: #e0e6d8;
 }
-.direction-modes [data-mode="shortcuts"][aria-pressed="true"] {
+.direction-modes [data-mode="settings"][aria-pressed="true"] {
   color: #354d41;
   background: #e0e6d8;
 }
@@ -1988,7 +1988,7 @@
   .editor-navigation {
     grid-row: 3;
   }
-  .direction-preview.is-shortcuts .editor-navigation {
+  .direction-preview.is-settings .editor-navigation {
     grid-row: 2;
   }
 }
@@ -2008,7 +2008,7 @@
   .direction-preview__model {
     top: 245px;
   }
-  .direction-preview.is-shortcuts .editor-close {
+  .direction-preview.is-settings .editor-close {
     grid-row: 2;
   }
 }

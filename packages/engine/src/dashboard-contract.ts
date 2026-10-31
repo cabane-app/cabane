@@ -39,6 +39,7 @@ export interface CabaneDashboardProps {
   focusRoomId?: string | undefined;
   mappingRequest?: DashboardMappingRequest | null;
   onEditHome?: ((mode?: EditorMode) => void) | undefined;
+  onOpenSettings?: (() => void) | undefined;
   onCustomizeActionBar?: (() => void) | undefined;
   onExportBrowserData?: (() => void | Promise<void>) | undefined;
   onHomeAssistantSettings?: (() => void) | undefined;

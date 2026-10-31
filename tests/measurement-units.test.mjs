@@ -8,7 +8,7 @@ import { withModules } from "./test-server.mjs";
 await withModules(async (load) => {
   const units = await load("/packages/engine/src/measurement-units.ts");
   const { LengthInput } = await load("/apps/web/src/editor-chrome/LengthInput.tsx");
-  const { WalkPreferences } = await load("/packages/engine/src/WalkPreferences.tsx");
+  const { ScenePreferences } = await load("/packages/engine/src/ScenePreferences.tsx");
   test("length input parses physical units and area conversion squares the scale", () => {
     for (const [text, system, expected] of [
       ["5' 6\"", "metric", 1.6764],
@@ -53,15 +53,8 @@ await withModules(async (load) => {
               showSteppers: true,
               onCommit: (value) => changes.push(value),
             }),
-            createElement(WalkPreferences, {
-              overlayPreferences: {},
-              onOverlayPreferencesChange() {},
-              inverted: false,
-              onChange() {},
-              lightingMode: "day",
-              lightingSource: "Local",
-              onLightingModeChange() {},
-              onClose() {},
+            createElement(ScenePreferences, {
+              section: "editor",
             }),
           ),
         );

@@ -22,7 +22,7 @@ await withModules(async (load) => {
     ...stableDeviceRegistry,
     ...homeExtensions.deviceModels,
   };
-  const { SceneItemRenderer, createSeedProjectRecord } = await load(
+  const { SceneItemRenderer, createSeedProjectRecord, setMeasurementUnits } = await load(
     "/packages/engine/src/index.ts",
   );
   const { useHomeEditorController } = await load(
@@ -108,11 +108,36 @@ await withModules(async (load) => {
         null,
         "Shortcuts does not mount the 3D scene",
       );
-      assert.equal(button("Shortcuts")?.getAttribute("aria-pressed"), "true");
+      assert.equal(button("Settings")?.getAttribute("aria-pressed"), "true");
+      assert.equal(button("Shortcuts")?.getAttribute("aria-current"), "page");
       assert.ok(button("Add shortcut"));
       await act(async () => button("Add shortcut").click());
       await act(async () => button("Add room").click());
       await act(async () => button(ownerHomeProject.floors[0].rooms[0].name).click());
+      assert.ok(button(`Edit ${ownerHomeProject.floors[0].rooms[0].name} shortcut`));
+      await act(async () => button("Editor").click());
+      assert.ok(dom.window.document.querySelector('input[name="measurement-units"]'));
+      await act(async () => dom.window.document.querySelector('input[value="imperial"]').click());
+      await act(async () => button("Orbital view").click());
+      const temperature = [...dom.window.document.querySelectorAll("label")]
+        .find((node) => node.textContent.includes("Temperature"))
+        .querySelector("input");
+      await act(async () => temperature.click());
+      assert.equal(
+        JSON.parse(dom.window.localStorage.getItem("cabane.room-overlays.preferences.v1"))
+          .temperature,
+        false,
+      );
+      await act(async () => button("Explore").click());
+      await act(async () =>
+        dom.window.document.querySelector('.editor-settings input[type="checkbox"]').click(),
+      );
+      assert.equal(
+        JSON.parse(dom.window.localStorage.getItem("cabane.walk.preferences.v1")).invertYAxis,
+        true,
+      );
+      await act(async () => button("Shortcuts").click());
+      assert.equal(dom.window.localStorage.getItem("cabane.measurement-units.v1"), "imperial");
       assert.ok(button(`Edit ${ownerHomeProject.floors[0].rooms[0].name} shortcut`));
       await act(async () => button("Undo").click());
       assert.equal(button(`Edit ${ownerHomeProject.floors[0].rooms[0].name} shortcut`), undefined);
@@ -131,7 +156,10 @@ await withModules(async (load) => {
       assert.equal(closed[0].draft.actionBar, undefined);
       assert.equal(closed[0].published.actionBar, undefined);
     } finally {
-      await act(async () => root.unmount());
+      await act(async () => {
+        setMeasurementUnits("metric");
+        root.unmount();
+      });
       dom.window.close();
       for (const name of names) {
         if (previous[name]) Object.defineProperty(globalThis, name, previous[name]);

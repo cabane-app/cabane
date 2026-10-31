@@ -43,8 +43,8 @@ type Props = Pick<
   | "replaceEditorsFromProject"
 > & {
   referenceAdjusting?: boolean;
-  shortcutsMode: boolean;
-  onModeTabChange: (mode: EditorMode | "shortcuts") => void;
+  settingsMode: boolean;
+  onModeTabChange: (mode: EditorMode | "settings") => void;
 };
 export function HomeEditorHeader({
   referenceAdjusting,
@@ -75,7 +75,7 @@ export function HomeEditorHeader({
   workspace,
   undoProject,
   redoProject,
-  shortcutsMode,
+  settingsMode,
   onModeTabChange,
   replaceEditorsFromProject,
 }: Props) {
@@ -118,7 +118,7 @@ export function HomeEditorHeader({
           <EditorIcon name="back" />
           {closing ? "Returning…" : "Back"}
         </button>
-        {mode !== "connect" && (
+        {!settingsMode && mode !== "connect" && (
           <div className="direction-camera" role="group" aria-label="Camera controls">
             <button
               type="button"
@@ -190,7 +190,7 @@ export function HomeEditorHeader({
         <span>{snapshot.project.floors.find((floor) => floor.id === activeFloorId)?.name}</span>
       </div>
       {walkError && <p role="alert">{walkError}</p>}
-      <EditorModeNav mode={shortcutsMode ? "shortcuts" : mode} onModeChange={onModeTabChange} />
+      <EditorModeNav mode={settingsMode ? "settings" : mode} onModeChange={onModeTabChange} />
       <div className="direction-project-actions" role="group" aria-label="Project actions">
         <EditorActionButton
           icon="undo"
@@ -244,7 +244,7 @@ export function HomeEditorHeader({
           Save
         </EditorButton>
       </div>
-      {mode === "connect" ? null : mode === "construct" ? (
+      {settingsMode || mode === "connect" ? null : mode === "construct" ? (
         <EditorActionBar
           inert={referenceAdjusting}
           tool={constructEditor.tool}

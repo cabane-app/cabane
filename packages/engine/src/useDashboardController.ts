@@ -17,7 +17,7 @@ import { resolveHomeAssistantBindings } from "./home-assistant-resolver";
 
 import { deriveHomePresence } from "./home-presence/model";
 
-import { loadLightingMode, saveLightingMode } from "./WalkPreferences";
+import { loadLightingMode, saveLightingMode } from "./walk-preferences";
 import { resolveSolarLighting, type SolarLightingMode } from "./lighting";
 
 import { readSceneSession, writeSceneSession } from "./navigation";

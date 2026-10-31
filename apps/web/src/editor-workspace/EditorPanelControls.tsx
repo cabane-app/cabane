@@ -12,7 +12,7 @@ export function EditorPanelControls({
   panels: ReturnType<typeof useEditorPanels>;
   issueCount: number;
   disabled: boolean;
-  mode?: EditorMode | "shortcuts";
+  mode?: EditorMode | "settings";
   presentation?: "dock" | "tabs";
 }) {
   const onDemand = mode === "construct" || mode === "furnish";

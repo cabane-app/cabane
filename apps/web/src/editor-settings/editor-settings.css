@@ -1,0 +1,248 @@
+.direction-preview.is-settings {
+  background: var(--preview-paper);
+}
+.is-settings .direction-camera,
+.is-settings .editor-floor-controls,
+.is-settings .editor-action-bar,
+.is-settings .editor-panel-switcher,
+.is-settings .editor-properties-toggle,
+.is-settings .direction-status {
+  display: none;
+}
+.editor-settings {
+  position: absolute;
+  inset: 100px 0 38px var(--editor-rail-width);
+  overflow: auto;
+  padding: 14px clamp(24px, 4vw, 64px) 36px;
+  scrollbar-width: thin;
+  scrollbar-color: #a8aea0 transparent;
+  color: var(--preview-ink);
+}
+.editor-settings__content {
+  max-width: 850px;
+  margin-inline: auto;
+}
+.editor-settings__heading {
+  margin-bottom: 32px;
+}
+.editor-settings__heading h1 {
+  margin: 0 0 8px;
+  font-size: var(--editor-text-heading);
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.editor-settings__heading p {
+  margin: 0;
+  max-width: 65ch;
+  color: #58675e;
+  font-size: var(--editor-text-control);
+}
+.editor-settings__fields {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.settings-navigation {
+  display: grid;
+  gap: 4px;
+}
+.settings-navigation button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--preview-ink);
+  font: inherit;
+  font-size: var(--editor-text-control);
+  text-align: left;
+  cursor: pointer;
+}
+.settings-navigation button:hover:not(:disabled) {
+  background: #eae5d9;
+}
+.settings-navigation button[aria-current="page"] {
+  background: #e8ded0;
+  color: #78482f;
+  font-weight: 600;
+}
+.settings-navigation button > span {
+  flex: 1;
+}
+.settings-navigation .editor-icon {
+  flex: none;
+  width: 19px;
+  height: 19px;
+}
+.settings-navigation button > .editor-icon:last-child {
+  width: 14px;
+  height: 14px;
+}
+.editor-settings .ha-page--embedded {
+  height: auto;
+  overflow: visible;
+  background: transparent;
+}
+.editor-settings .ha-page__content {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+.editor-settings .ha-section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.editor-settings .ha-section {
+  padding-block: 24px;
+}
+.editor-settings .ha-page h2 {
+  font-size: var(--editor-text-body);
+}
+.editor-settings .scene-preferences {
+  max-width: 680px;
+}
+.editor-settings .walk-preferences__group {
+  padding: 0;
+  margin-bottom: 32px;
+}
+.editor-settings .walk-preferences__group h3 {
+  margin-bottom: 12px;
+  color: var(--preview-ink);
+  font-size: var(--editor-text-body);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.editor-settings .walk-preferences__hint {
+  font-size: var(--editor-text-control);
+  line-height: 1.5;
+}
+.editor-settings .walk-preferences__choices {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 540px;
+}
+.editor-settings .walk-preferences__choices span {
+  border-color: var(--editor-line);
+  border-radius: 7px;
+  font-size: var(--editor-text-control);
+  font-weight: 500;
+}
+.editor-settings .walk-preferences__row {
+  min-height: 48px;
+  padding: 12px 0;
+  border: 0;
+  border-radius: 0;
+}
+.editor-settings .walk-preferences__row strong {
+  font-size: var(--editor-text-control);
+  font-weight: 400;
+}
+.editor-settings .walk-preferences__row small {
+  font-size: var(--editor-text-control);
+}
+.editor-settings__saved-note {
+  margin: 8px 0 0;
+  color: #58675e;
+  font-size: var(--editor-text-caption);
+}
+.editor-settings .scene-action-dock {
+  animation: none;
+  transform: none;
+}
+.editor-settings .shortcuts-workspace {
+  position: relative;
+  inset: auto;
+  height: calc(100dvh - 240px);
+  min-height: 440px;
+  padding: 0;
+  background: transparent;
+}
+@media (max-width: 1240px) {
+  .is-settings .editor-navigation,
+  .is-settings .direction-project-actions {
+    grid-row: 2;
+  }
+  .editor-settings {
+    top: 138px;
+  }
+}
+@media (max-width: 760px) {
+  .direction-preview.is-settings .editor-header {
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+  .is-settings .direction-modes {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .is-settings .editor-close {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .is-settings .direction-project-actions {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+  .is-settings .editor-mobile-home {
+    display: none;
+  }
+  .direction-preview.is-settings .direction-rail {
+    display: flex;
+    inset: 126px 0 auto;
+    width: 100%;
+    height: auto;
+    padding: 0 12px 10px;
+    overflow: visible;
+    border: 0;
+  }
+  .is-settings .editor-sidebar-content {
+    overflow: visible;
+  }
+  .is-settings .direction-rail__brand,
+  .is-settings .editor-mode-introduction {
+    display: none;
+  }
+  .settings-navigation {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .settings-navigation button {
+    flex: none;
+    width: auto;
+    min-height: 44px;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .settings-navigation button > .editor-icon:last-child {
+    display: none;
+  }
+  .editor-settings {
+    inset: 194px 0 38px;
+    padding: 16px 20px 28px;
+  }
+  .editor-settings__heading {
+    margin-bottom: 28px;
+  }
+  .editor-settings .walk-preferences__choices {
+    grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+  }
+  .editor-settings .shortcuts-workspace {
+    height: auto;
+    min-height: 470px;
+  }
+  .editor-settings .ha-section__heading,
+  .editor-settings .ha-address-form {
+    flex-wrap: wrap;
+  }
+}

@@ -21,7 +21,7 @@ Home renders published data; the editor reads the draft. Routes are:
 | `/workspaces`                                                              | Library: New, Import, Open, Rename, Duplicate, Export, Delete                                                                                                        |
 | `/open/:workspaceId?ha=<origin>`                                           | Authenticate, open the exact HA-saved home, and enable sync in this browser; optional `view=dashboard` identifies a dashboard link                                   |
 | `/workspaces/:workspaceId`                                                 | Published Home; unapplied homes open Construct                                                                                                                       |
-| `/workspaces/:workspaceId/home-assistant`                                  | HA connection, cross-device storage, full workspace backups                                                                                                          |
+| `/workspaces/:workspaceId/settings/:section`                               | Settings with sidebar navigation for HA, shortcuts, backups, orbital view, editor and Explore                                                                        |
 | `/workspaces/:workspaceId/construct`                                       | 2D architecture editing                                                                                                                                              |
 | `/workspaces/:workspaceId/arrange`                                         | Furniture and device placement                                                                                                                                       |
 | `/workspaces/:workspaceId/mobile-editor?mode=construct` or `?mode=arrange` | Compatibility redirect into Construct or Arrange                                                                                                                     |
@@ -29,10 +29,12 @@ Home renders published data; the editor reads the draft. Routes are:
 | `/workspaces/:workspaceId/connect/rooms`                                   | Room-to-area mapping                                                                                                                                                 |
 | `/workspaces/:workspaceId/connect/devices`                                 | Device and entity-slot mapping                                                                                                                                       |
 
+Legacy workspace `/home-assistant`, `/shortcuts` and `/action-bar` URLs open their matching Settings section. `/settings` opens Home Assistant.
+
 Old unscoped editor paths are not aliases. Missing local workspace IDs offer Open from Home Assistant and the library; absence in this browser is not described as remote deletion. Refresh retains the workspace URL. Mode changes retain edit history within
 a home. Leaving for Home, the library, or another workspace flushes the draft;
 a failed save keeps the editor open. Home offers Workspaces in its three-dot
-scene menu. In Construct, Arrange, Connect, and Shortcuts, the current workspace name beneath
+scene menu. In Construct, Arrange, Connect, and Settings, the current workspace name beneath
 Cabane links back to the library, using the same guarded save-on-exit flow.
 In the library, the whole home card opens its workspace; its three-dot menu keeps
 management actions separate. Each card has separate, non-clickable Connection and Storage rows. The library reports “HA configured” for a stored URL, never a live connection. Storage distinguishes Local only, Saved to HA · sync off, Sync enabled, and Changes pending; the library does not contact HA. Draft and recovery labels remain independent.

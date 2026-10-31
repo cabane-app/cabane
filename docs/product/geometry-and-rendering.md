@@ -2,7 +2,7 @@
 
 ## Visual styles
 
-Menu → Preferences offers Default and Sims styles, saved per
+Settings → Orbital view offers Default and Sims styles, saved per
 browser origin on this device. Default preserves the existing renderer. Sims
 uses a continuous diffuse ramp, flat face normals, a stronger 24-hue material
 palette, no drawn contours, and a stronger directional light with less ambient

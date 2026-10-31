@@ -133,6 +133,7 @@ export { sha256Hex } from "./sha256-digest";
 
 export { DEFAULT_WALL_COLORS } from "./wall-colors";
 
+export { ScenePreferences } from "./ScenePreferences";
 export type { WeatherSource, WeatherPreview } from "./weather";
 export {
   useMeasurementUnits,

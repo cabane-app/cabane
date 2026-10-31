@@ -10,7 +10,7 @@ import {
 import { CabaneDashboard } from "../CabaneDashboard";
 import { DemoHomeAssistantSession, demoLightVisualManifest } from "../DemoHomeAssistantSession";
 import { isNightLighting } from "../lighting";
-import { loadLightingMode } from "../WalkPreferences";
+import { loadLightingMode } from "../walk-preferences";
 import { HomeAssistantConnectionFlow } from "../HomeAssistantConnectionFlow";
 import {
   HomeAssistantRuntimeValueProvider,
@@ -48,6 +48,7 @@ export function CabaneAppExperience({
   renderActionBarDeviceIcon,
   walkTools,
   onEditHome,
+  onOpenSettings,
   onCustomizeActionBar,
   onHomeAssistantSettings,
   onWorkspaces,
@@ -66,6 +67,7 @@ export function CabaneAppExperience({
   homeAssistantUrl: string | null;
   onHomeAssistantUrlChange: (url: string | null) => void;
   onEditHome?: ((mode?: "construct" | "furnish" | "connect") => void) | undefined;
+  onOpenSettings?: (() => void) | undefined;
   onCustomizeActionBar?: () => void;
   onHomeAssistantSettings?: () => void;
   onWorkspaces?: (() => void) | undefined;
@@ -185,6 +187,7 @@ export function CabaneAppExperience({
         personalSetup && targetEntityId && !setupState.record.activated ? target?.roomId : undefined
       }
       onEditHome={onEditHome}
+      onOpenSettings={onOpenSettings}
       onCustomizeActionBar={onCustomizeActionBar}
       onOpenConnect={onOpenConnect}
       onExportBrowserData={onExportBrowserData}

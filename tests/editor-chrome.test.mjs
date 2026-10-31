@@ -91,7 +91,7 @@ await withModules(async (load) => {
       const buttons = [...document.querySelectorAll("button")];
       assert.deepEqual(
         buttons.map((button) => button.textContent),
-        ["Construct", "Arrange", "Connect", "Shortcuts"],
+        ["Construct", "Arrange", "Connect", "Settings"],
       );
       assert.equal(buttons[0].getAttribute("aria-pressed"), "true");
       assert.equal(buttons[2].disabled, false);

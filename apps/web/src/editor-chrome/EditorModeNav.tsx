@@ -6,8 +6,8 @@ export function EditorModeNav({
   mode,
   onModeChange,
 }: {
-  mode: EditorMode | "shortcuts";
-  onModeChange: (mode: EditorMode | "shortcuts") => void;
+  mode: EditorMode | "settings";
+  onModeChange: (mode: EditorMode | "settings") => void;
 }) {
   return (
     <nav className="direction-modes" aria-label="Editor mode">
@@ -40,12 +40,12 @@ export function EditorModeNav({
       </button>
       <button
         type="button"
-        data-mode="shortcuts"
-        aria-pressed={mode === "shortcuts"}
-        onClick={() => onModeChange("shortcuts")}
+        data-mode="settings"
+        aria-pressed={mode === "settings"}
+        onClick={() => onModeChange("settings")}
       >
-        <EditorIcon name="grid" />
-        Shortcuts
+        <EditorIcon name="settings" />
+        Settings
       </button>
     </nav>
   );

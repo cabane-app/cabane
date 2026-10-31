@@ -14,7 +14,7 @@ export function EditorPanels({
   children,
 }: {
   mobile: boolean;
-  mode: EditorMode | "shortcuts";
+  mode: EditorMode | "settings";
   floorName: string;
   panels: ReturnType<typeof useEditorPanels>;
   issueCount: number;

@@ -1,3 +1,6 @@
+import { EditorSettings } from "../editor-settings/EditorSettings";
+import { SettingsNavigation } from "../editor-settings/SettingsNavigation";
+import type { SettingsSection } from "../editor-settings/settings-sections";
 import { EditorDraftStatus } from "./EditorDraftStatus";
 import { roomsForFloor } from "@cabane/engine";
 import { WallFinishPreviewProvider } from "../editor-preview/construct/WallFinishPreview";
@@ -92,40 +95,50 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     mode,
     Object.keys(workspace.snapshot.references ?? {}).length > 0,
   );
-  const requestedActionBar =
-    props.navigation?.request.panel === "action-bar" ||
-    props.initialRequest?.panel === "action-bar";
-  const [actionBarPanelOpen, setActionBarPanelOpen] = useState(requestedActionBar);
+  const request = props.navigation?.request ?? props.initialRequest;
+  const requestedSettings =
+    request?.panel === "settings" ||
+    request?.panel === "action-bar" ||
+    request?.panel === "home-assistant";
+  const requestedSection =
+    request?.settingsSection ?? (request?.panel === "action-bar" ? "shortcuts" : "home-assistant");
+  const [localSettings, setLocalSettings] = useState<SettingsSection | null>(
+    requestedSettings ? requestedSection : null,
+  );
+  const [settingsBusy, setSettingsBusy] = useState(false);
+  const settingsMode = props.navigation ? requestedSettings : localSettings !== null;
+  const settingsSection = props.navigation ? requestedSection : (localSettings ?? "home-assistant");
   const dom = useCabaneDom();
   const iconUrl = useCabaneAssetUrl("cabane-icon.png");
-  useEffect(() => {
-    setActionBarPanelOpen(requestedActionBar);
-  }, [requestedActionBar]);
-  const shortcutsMode = props.navigation ? requestedActionBar : actionBarPanelOpen;
+  const selectSettingsSection = (section: SettingsSection) => {
+    if (settingsBusy || editingLocked || unsettled) return;
+    setLocalSettings(section);
+    props.navigation?.go({ mode, panel: "settings", settingsSection: section });
+  };
   const mobileViewport = useMobileEditorViewport();
   const mobileEditor =
-    mobileViewport && !shortcutsMode && (mode === "construct" || mode === "furnish");
+    mobileViewport && !settingsMode && (mode === "construct" || mode === "furnish");
   const sidebar = useRef<HTMLElement>(null);
   useEffect(() => {
     const content = sidebar.current?.querySelector<HTMLElement>(".editor-sidebar-content");
     if (content) content.scrollTop = 0;
-  }, [mode, shortcutsMode]);
-  const onModeTabChange = (next: EditorMode | "shortcuts") => {
+  }, [mode, settingsMode, settingsSection]);
+  const onModeTabChange = (next: EditorMode | "settings") => {
+    if (settingsBusy || editingLocked) return;
     reference.cancel();
-    if (next === "shortcuts") {
-      setActionBarPanelOpen(true);
-      props.navigation?.go({ mode: "construct", panel: "action-bar" });
+    if (next === "settings") {
+      selectSettingsSection(settingsSection);
     } else {
-      setActionBarPanelOpen(false);
+      setLocalSettings(null);
       selectMode(next);
     }
   };
   const panelBusy = unsettled || controller.marqueeSelecting || Boolean(constructEditor.drawStart);
   const panels = useEditorPanels(
-    editorPanelSelection(controller, shortcutsMode),
+    editorPanelSelection(controller, settingsMode),
     panelBusy,
     displayedContextualIssues.length > 0,
-    `${mode}:${activeFloorId}:${shortcutsMode}`,
+    `${mode}:${activeFloorId}:${settingsMode}`,
   );
   const panelIssues = displayedContextualIssues;
   const { closeMobilePanel } = panels;
@@ -283,9 +296,9 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
         <DevAgentBridge controller={controller} />
       )}
       <main
-        className={`direction-preview${northOrientation.active ? " is-orienting-north" : ""}${shortcutsMode ? " is-shortcuts" : mode === "connect" ? " is-connect" : mode === "construct" ? " is-plan" : ""}`}
+        className={`direction-preview${northOrientation.active ? " is-orienting-north" : ""}${settingsMode ? " is-settings" : mode === "connect" ? " is-connect" : mode === "construct" ? " is-plan" : ""}`}
         data-connect-room={mode === "connect" && Boolean(connect.room)}
-        data-editor-mode={shortcutsMode ? "shortcuts" : mode}
+        data-editor-mode={settingsMode ? "settings" : mode}
         data-properties-open={panels.propertiesOpen}
         data-has-issues={panelIssues.length > 0}
         data-issues-expanded={issuesExpanded}
@@ -298,7 +311,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
               : panels.mobileSurface
         }
       >
-        {!shortcutsMode && (
+        {!settingsMode && (
           <HomeEditorScene
             onStairIssuesChange={setStairLiveIssues}
             onNameFocusHandled={() => setNameFocusRequest(null)}
@@ -309,7 +322,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
           />
         )}
 
-        {!shortcutsMode && mode === "connect" && connect.room && homeAssistantUrl && (
+        {!settingsMode && mode === "connect" && connect.room && homeAssistantUrl && (
           <div
             className="connect-workspace-host"
             inert={editingLocked || publishOpen || previewOpen}
@@ -355,30 +368,41 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
         <HomeEditorHeader
           referenceAdjusting={reference.adjusting}
           {...controller}
-          editingLocked={editingLocked || northOrientation.active}
-          shortcutsMode={shortcutsMode}
+          editingLocked={editingLocked || northOrientation.active || settingsBusy}
+          settingsMode={settingsMode}
           onModeTabChange={onModeTabChange}
         />
-        {shortcutsMode && (
-          <ShortcutThumbnailSurface>
-            <ActionBarEditor
-              walkTools={installedWalkTools}
-              project={editorProject}
-              runtime={runtime}
-              profile={connect.profile}
-              actionMappingEnabled={!!bindingOrigin && runtime.origin === bindingOrigin}
-              deviceModels={deviceModels}
-              roomPictures={roomPictures}
-              roomNames={roomNames}
-              deviceNames={deviceNames}
-              disabled={editingLocked || unsettled || publishOpen || previewOpen}
-              canUndo={workspace.canUndo && !unsettled}
-              canRedo={workspace.canRedo && !unsettled}
-              onUndo={undoProject}
-              onRedo={redoProject}
-              onChange={setActionBarItems}
-            />
-          </ShortcutThumbnailSurface>
+        {settingsMode && (
+          <EditorSettings
+            section={settingsSection}
+            controller={controller}
+            importWorkspace={importWorkspace}
+            onPrepareOrigin={props.onPrepareOrigin}
+            isDemo={props.isDemo ?? false}
+            onCreatePersonal={props.onCreatePersonal ?? (() => undefined)}
+            onBusyChange={setSettingsBusy}
+            shortcuts={
+              <ShortcutThumbnailSurface>
+                <ActionBarEditor
+                  walkTools={installedWalkTools}
+                  project={editorProject}
+                  runtime={runtime}
+                  profile={connect.profile}
+                  actionMappingEnabled={!!bindingOrigin && runtime.origin === bindingOrigin}
+                  deviceModels={deviceModels}
+                  roomPictures={roomPictures}
+                  roomNames={roomNames}
+                  deviceNames={deviceNames}
+                  disabled={editingLocked || unsettled || publishOpen || previewOpen}
+                  canUndo={workspace.canUndo && !unsettled}
+                  canRedo={workspace.canRedo && !unsettled}
+                  onUndo={undoProject}
+                  onRedo={redoProject}
+                  onChange={setActionBarItems}
+                />
+              </ShortcutThumbnailSurface>
+            }
+          />
         )}
 
         <AgentPilotPanel
@@ -389,7 +413,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
         />
         <EditorPanels
           mobile={mobileEditor}
-          mode={shortcutsMode ? "shortcuts" : mode}
+          mode={settingsMode ? "settings" : mode}
           floorName={constructEditor.previewFloor.name}
           panels={panels}
           issueCount={panelIssues.length}
@@ -409,7 +433,14 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             }}
             sidebar={sidebar}
             iconUrl={iconUrl}
-            shortcutsMode={shortcutsMode}
+            settingsMode={settingsMode}
+            settingsNavigation={
+              <SettingsNavigation
+                section={settingsSection}
+                onSelect={selectSettingsSection}
+                disabled={settingsBusy || editingLocked || unsettled}
+              />
+            }
             floorControlsDisabled={floorControlsDisabled}
             addFloorAbove={() => setFloorDialog("add-above")}
             addFloorBelow={() => setFloorDialog("add-below")}
@@ -420,11 +451,11 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             importWorkspace={importWorkspace}
             placingWalkStart={placingWalkStart}
             setWalkStartFloor={setWalkStartFloor}
-            onHomeAssistantSettings={props.onHomeAssistantSettings}
+            onHomeAssistantSettings={() => selectSettingsSection("home-assistant")}
           />
           <EditorSelectionDetails
             {...controller}
-            open={panels.propertiesOpen && !shortcutsMode}
+            open={panels.propertiesOpen && !settingsMode}
             onCollapse={collapseProperties}
             liveStairIssues={stairLiveIssues}
             disabled={panelsDisabled}
@@ -441,7 +472,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
               onRepair={repairIssue}
               itemLabel={itemLabel}
               onSelect={(issue) => {
-                setActionBarPanelOpen(false);
+                setLocalSettings(null);
                 if (mobileEditor) panels.closeMobilePanel();
                 else panels.openProperties();
                 controller.focusIssue(issue);
@@ -451,7 +482,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
         </EditorPanels>
         <div inert={editingLocked || publishOpen || previewOpen || northOrientation.active}>
           <EditorPanelControls
-            mode={shortcutsMode ? "shortcuts" : mode}
+            mode={settingsMode ? "settings" : mode}
             panels={panels}
             issueCount={panelIssues.length}
             disabled={panelsDisabled}
