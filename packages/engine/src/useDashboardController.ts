@@ -138,7 +138,9 @@ export function useDashboardController({
     runtime.origin,
   );
   const selectedRoom = floor.rooms.find((room) => room.id === selectedRoomId);
-  const devicePanelRoom = floor.rooms.find((room) => room.id === devicePanelRoomId);
+  const devicePanelRoom = devicePanelRoomId
+    ? resolvedBindings.rooms[devicePanelRoomId]?.room
+    : undefined;
   const deviceOverlay = selectedDeviceId !== null && devicePanelRoom !== undefined;
   const controlRoom = deviceOverlay ? devicePanelRoom : mode === "room" ? selectedRoom : undefined;
   const walkRoom = floor.rooms.find((room) => room.id === walkRoomId);
@@ -358,7 +360,11 @@ export function useDashboardController({
       walkMode,
       leaveWalkMode,
       selectFloor: floorNavigationSelectFloor,
-      selectRoom,
+      selectRoom: (roomId) => {
+        if (manifest.floors.some((floor) => floor.rooms.some((room) => room.id === roomId)))
+          selectRoom(roomId);
+        else goHome();
+      },
       openDevice: (roomId, deviceId) => {
         setDevicePanelRoomId(roomId);
         setSelectedDeviceId(deviceId);

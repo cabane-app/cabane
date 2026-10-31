@@ -561,7 +561,9 @@
       "apps/web/src/editor-action-bar/ShortcutPicker.tsx",
       "apps/web/src/editor-workspace/useEditorProjectHistory.ts",
       "packages/engine/src/action-bar",
-      "packages/engine/src/home-project/workspace-bindings.ts"
+      "packages/engine/src/home-project/workspace-bindings.ts",
+      "packages/engine/src/action-bar/action-bar-navigation.ts",
+      "packages/engine/src/home-project/action-bar-validation.ts"
     ],
     "interfaces": [
       {
@@ -574,7 +576,7 @@
         ]
       }
     ],
-    "invariant": "Keep shortcut order and kinds portable; scene/script entity IDs belong to origin-scoped draft/published binding profiles. Save publishes both atomically. Activation uses guarded one-shot commands, never toggles.",
+    "invariant": "Keep shortcut order and kinds portable; scene/script entity IDs belong to origin-scoped draft/published binding profiles. Save publishes both atomically. Activation uses guarded one-shot commands, never toggles. Outside-room devices are valid shortcut targets and open the existing non-spatial device control group without selecting a room. Shortcut edit controls wrap within their actual content container.",
     "checks": ["verify:runtime", "verify:workspace"]
   },
   {

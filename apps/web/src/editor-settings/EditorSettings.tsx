@@ -88,6 +88,7 @@ export function EditorSettings({
   return (
     <section
       className="editor-settings"
+      data-settings-section={section}
       aria-labelledby="editor-settings-title"
       inert={editingLocked || publishOpen || previewOpen}
     >

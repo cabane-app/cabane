@@ -373,7 +373,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("rejects a device shortcut when its model has no room sheet", () => {
+  test("allows outside-room device shortcuts and rejects targets with no floor", () => {
     const project = fixtureHomeProject();
     project.sceneItems = project.sceneItems.map((item) =>
       item.id === "wall-switch"
@@ -387,7 +387,16 @@ await withModules(async (load) => {
       items: [{ id: "outside", target: { kind: "device", deviceId: "wall-switch" } }],
     };
     const result = validateHomeProject(project, fixtureHomeExtensions());
-    assert.ok(result.issues.some((issue) => issue.path === "actionBar.items[0].target.deviceId"));
+    assert.equal(
+      result.issues.some((issue) => issue.path === "actionBar.items[0].target.deviceId"),
+      false,
+    );
+    project.sceneItems.find((item) => item.id === "wall-switch").floorId = "missing-floor";
+    assert.ok(
+      validateHomeProject(project, fixtureHomeExtensions()).issues.some(
+        (issue) => issue.path === "actionBar.items[0].target.deviceId",
+      ),
+    );
   });
 
   test("defines a serializable home project without runtime components", () => {

@@ -1,9 +1,9 @@
 {
-  "revision": 27,
-  "fingerprint": "7438347af96fab36b08a7ee845d25d092860385ff5455b5a713377b3bc5795ce",
-  "summary": "Warn about disconnected terrain exits and stabilize terrace clipping",
+  "revision": 28,
+  "fingerprint": "73c03268ab271325cea37e7d4d366680586cce8c6c55a85a4f1bbae13aa2be6d",
+  "summary": "Allow shortcuts to devices outside rooms",
   "breakingChanges": [
-    "No saved fields or migrations change. Terrain exit diagnostics are warning-only and do not block Save. Update the frontend and matching Home Assistant panel for these warnings and the terrace/basement clipping fix."
+    "No saved fields change. Outside-room device shortcuts now validate and open device controls directly. Older panels reject these targets as lacking a room sheet and require the matching update before using them."
   ],
   "history": [
     {
@@ -186,6 +186,13 @@
       "summary": "Add sloped terrain with home-wide corner heights",
       "breakingChanges": [
         "Existing homes retain flat terrain. Homes saved with home.terrain require the updated frontend and matching Home Assistant panel. Older clients retain unsupported-field protection. No floor, asset or binding migration is required."
+      ]
+    },
+    {
+      "revision": 27,
+      "summary": "Warn about disconnected terrain exits and stabilize terrace clipping",
+      "breakingChanges": [
+        "No saved fields or migrations change. Terrain exit diagnostics are warning-only and do not block Save. Update the frontend and matching Home Assistant panel for these warnings and the terrace/basement clipping fix."
       ]
     }
   ],

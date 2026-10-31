@@ -93,11 +93,20 @@ export function ActionBarEditor({
         setCapacity(null);
         return;
       }
-      const size =
-        Number.parseFloat(
-          window.getComputedStyle(bar.current).getPropertyValue("--scene-action-size"),
-        ) || 64;
-      setCapacity(Math.max(2, Math.floor((bar.current.clientWidth - 10 + 6) / (size + 6))));
+      const slot = bar.current.querySelector<HTMLElement>(".scene-action-slot");
+      const dock = bar.current.querySelector<HTMLElement>(".scene-action-bar");
+      if (!slot || !dock) return;
+      const size = Number.parseFloat(window.getComputedStyle(slot).width);
+      if (!Number.isFinite(size) || size <= 0) return;
+      const style = window.getComputedStyle(dock);
+      const gap = Number.parseFloat(style.columnGap) || 0;
+      const inset = [
+        style.paddingLeft,
+        style.paddingRight,
+        style.borderLeftWidth,
+        style.borderRightWidth,
+      ].reduce((total, value) => total + (Number.parseFloat(value) || 0), 0);
+      setCapacity(Math.max(2, Math.floor((bar.current.clientWidth - inset + gap) / (size + gap))));
     };
     measure();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
@@ -309,6 +318,69 @@ export function ActionBarEditor({
         )}
       </div>
       <div className="shortcuts-workspace__bar-zone">
+        {selectedId !== null && !picker && (
+          <div
+            className="shortcuts-workspace__tray"
+            ref={tray}
+            role="group"
+            aria-label={selected ? `Edit ${label(selected)}` : "Add shortcut"}
+          >
+            <button type="button" disabled={disabled} onClick={() => openPicker("built-in")}>
+              <EditorIcon name="grid" />
+              {selected ? "Replace with action" : "Add action"}
+            </button>
+            <button type="button" disabled={disabled} onClick={() => openPicker("room")}>
+              <EditorIcon name="rooms" />
+              {selected ? "Replace with room" : "Add room"}
+            </button>
+            <button type="button" disabled={disabled} onClick={() => openPicker("device")}>
+              <EditorIcon name="devices" />
+              {selected ? "Replace with device" : "Add device"}
+            </button>
+            {(["scene", "script"] as const).map((kind) => (
+              <button key={kind} type="button" disabled={disabled} onClick={() => openPicker(kind)}>
+                <EditorIcon name={kind === "scene" ? "grid" : "chevron"} />
+                {selected ? `Replace with ${kind}` : `Add ${kind}`}
+              </button>
+            ))}
+            {selected && (
+              <div
+                className="shortcuts-workspace__tray-actions"
+                role="group"
+                aria-label="Shortcut position and removal"
+              >
+                <span className="shortcuts-workspace__tray-separator" />
+                <button
+                  type="button"
+                  aria-label="Move left"
+                  disabled={disabled || items[0]?.id === selected.id}
+                  onClick={() => onChange(moveActionBarItem(items, selected.id, -1))}
+                >
+                  <EditorIcon name="chevronLeft" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Move right"
+                  disabled={disabled || items.at(-1)?.id === selected.id}
+                  onClick={() => onChange(moveActionBarItem(items, selected.id, 1))}
+                >
+                  <EditorIcon name="chevron" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Remove shortcut"
+                  disabled={disabled}
+                  onClick={() => {
+                    onChange(removeActionBarItem(items, selected.id));
+                    setSelectedId(null);
+                  }}
+                >
+                  <EditorIcon name="delete" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         <div className="shortcuts-workspace__bar-measure" ref={bar}>
           <nav className="scene-action-dock" aria-label="Draft action bar">
             <div
@@ -367,65 +439,6 @@ export function ActionBarEditor({
             </div>
           </nav>
         </div>
-        {selectedId !== null && !picker && (
-          <div
-            className="shortcuts-workspace__tray"
-            ref={tray}
-            role="group"
-            aria-label={selected ? `Edit ${label(selected)}` : "Add shortcut"}
-          >
-            <button type="button" disabled={disabled} onClick={() => openPicker("built-in")}>
-              <EditorIcon name="grid" />
-              {selected ? "Replace with action" : "Add action"}
-            </button>
-            <button type="button" disabled={disabled} onClick={() => openPicker("room")}>
-              <EditorIcon name="rooms" />
-              {selected ? "Replace with room" : "Add room"}
-            </button>
-            <button type="button" disabled={disabled} onClick={() => openPicker("device")}>
-              <EditorIcon name="devices" />
-              {selected ? "Replace with device" : "Add device"}
-            </button>
-            {(["scene", "script"] as const).map((kind) => (
-              <button key={kind} type="button" disabled={disabled} onClick={() => openPicker(kind)}>
-                <EditorIcon name={kind === "scene" ? "grid" : "chevron"} />
-                {selected ? `Replace with ${kind}` : `Add ${kind}`}
-              </button>
-            ))}
-            {selected && (
-              <>
-                <span className="shortcuts-workspace__tray-separator" />
-                <button
-                  type="button"
-                  aria-label="Move left"
-                  disabled={disabled || items[0]?.id === selected.id}
-                  onClick={() => onChange(moveActionBarItem(items, selected.id, -1))}
-                >
-                  <EditorIcon name="chevronLeft" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Move right"
-                  disabled={disabled || items.at(-1)?.id === selected.id}
-                  onClick={() => onChange(moveActionBarItem(items, selected.id, 1))}
-                >
-                  <EditorIcon name="chevron" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Remove shortcut"
-                  disabled={disabled}
-                  onClick={() => {
-                    onChange(removeActionBarItem(items, selected.id));
-                    setSelectedId(null);
-                  }}
-                >
-                  <EditorIcon name="delete" />
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </div>
     </section>
   );

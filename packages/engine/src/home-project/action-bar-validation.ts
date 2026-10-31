@@ -2,7 +2,6 @@ import { roomsForFloor } from "../outdoor-platforms/platform-rooms";
 import type { DeviceModelRegistry } from "../types";
 import type { ActionBarItem } from "../action-bar/action-bar-config";
 import type { HomeProject } from "./types";
-import { resolvedRoomIdForItem } from "./scene-items";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
 
 const targetKey = (item: ActionBarItem): string => {
@@ -21,13 +20,10 @@ const targetKey = (item: ActionBarItem): string => {
 export function isActionBarDeviceNavigable(
   project: HomeProject,
   deviceId: string,
-  deviceModels?: DeviceModelRegistry,
+  _deviceModels?: DeviceModelRegistry,
 ): boolean {
   const device = project.sceneItems.find((item) => item.id === deviceId);
-  return (
-    device?.kind === "device" &&
-    resolvedRoomIdForItem(device, project, deviceModels?.[device.modelId]) !== null
-  );
+  return device?.kind === "device" && project.floors.some((floor) => floor.id === device.floorId);
 }
 
 export function validateActionBarTargets(
@@ -76,7 +72,7 @@ export function validateActionBarTargets(
         issues,
         "project.action-bar-device-missing",
         `${path}.target.deviceId`,
-        `Device “${item.target.deviceId}” is missing or has no room sheet. Replace or remove its action bar shortcut.`,
+        `Device “${item.target.deviceId}” is missing or has no floor. Replace or remove its action bar shortcut.`,
       );
     }
   });

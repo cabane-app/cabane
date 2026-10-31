@@ -6,6 +6,8 @@
   --editor-text-subheading: 1.25rem;
   --editor-text-heading: 1.5rem;
   --editor-rail-width: 300px;
+  --editor-settings-ink: #67517c;
+  --editor-settings-selected: #e9e1ef;
   --preview-ink: #2e3835;
   --preview-muted: #6f7771;
   --preview-paper: #f5f0e7;
@@ -356,9 +358,9 @@
   color: #3e6144;
   background: #e0e6d8;
 }
-.direction-modes [data-mode="settings"][aria-pressed="true"] {
-  color: #354d41;
-  background: #e0e6d8;
+.direction-modes button[data-mode="settings"][aria-pressed="true"] {
+  color: var(--editor-settings-ink);
+  background: var(--editor-settings-selected);
 }
 .direction-modes [data-mode="connect"] {
   color: #647b83;
