@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
 import { chromium } from "playwright-core";
 import {
@@ -11,7 +12,15 @@ import {
   devAgentRequests,
 } from "./dev-agent-protocol.mjs";
 
-export async function startDevAgent({ root, sessionFile, headed, name, room }) {
+const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
+
+export async function startDevAgent({
+  root = repositoryRoot,
+  sessionFile = join(root, "test-results/dev-agent/session.json"),
+  headed = false,
+  name = "Development home",
+  room,
+} = {}) {
   const roomRequests = devAgentRoomRequests(room);
   const cacheDir = await mkdtemp(join(tmpdir(), "cabane-dev-agent-"));
   const token = randomUUID();

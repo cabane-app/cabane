@@ -33,7 +33,12 @@ LLM call, HA pairing, workspace import or UI navigation.
    `node scripts/dev-agent.mjs batch --file test-results/dev-agent/changes.json`.
    Include `validate_draft` as the last request to check the result in the same call.
 
-4. **Verify** the feature or bug on the prepared scene. `screenshot` captures the
+4. **Verify** the feature or bug on the prepared scene. For visual or UI work,
+   start the runner in a persistent Node REPL instead of the CLI: import
+   `startDevAgent` from the absolute `scripts/dev-agent-server.mjs` path and call
+   `await startDevAgent({room: "6x4"})`. The returned `{page, close}` gives direct
+   Playwright access to the same editor for mode changes, camera control and
+   screenshots. Reuse that page. `screenshot` in the CLI also captures the
    same editor to an ignored PNG; review it for visual checks. Browser control is
    available when testing actual UI behavior. Fixture creation alone is not proof
    of the fix.
