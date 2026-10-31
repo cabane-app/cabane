@@ -506,6 +506,35 @@ const studioDevices: HomeManifest["floors"][number]["rooms"][number]["devices"] 
       support: { kind: "surface" },
     },
   },
+  {
+    id: "fixture-guarded-platform-fan",
+    model: "guarded-platform-fan",
+    entitySlots: [
+      entitySlot(
+        "fixture-guarded-platform-fan-entity",
+        ["fan"],
+        "Guarded platform fan",
+        "secondary",
+      ),
+    ],
+    placement: {
+      at: [1.1, 3.5],
+      elevationMeters: 0,
+      support: { kind: "surface" },
+    },
+  },
+  {
+    id: "fixture-inline-duct-fan",
+    model: "inline-duct-fan",
+    entitySlots: [
+      entitySlot("fixture-inline-duct-fan-entity", ["fan"], "Inline duct fan", "secondary"),
+    ],
+    placement: {
+      at: [1.4, 3.5],
+      elevationMeters: 0,
+      support: { kind: "surface" },
+    },
+  },
 ];
 
 const equippedStudio = {
@@ -588,6 +617,16 @@ export const fixtureCatalogStates: Readonly<Record<EntityId, EntityStateSnapshot
     percentage_step: 10,
     preset_modes: ["normal", "sleep"],
     preset_mode: "normal",
+  }),
+  "fan.fixture_guarded_platform_fan": state("fan.fixture_guarded_platform_fan", "on", {
+    friendly_name: "Guarded platform fan",
+    percentage: 50,
+    percentage_step: 10,
+  }),
+  "fan.fixture_inline_duct_fan": state("fan.fixture_inline_duct_fan", "on", {
+    friendly_name: "Inline duct fan",
+    percentage: 50,
+    percentage_step: 10,
   }),
   "climate.fixture_ac": state("climate.fixture_ac", "cool", {
     friendly_name: "Indoor AC",
@@ -683,6 +722,8 @@ export const equippedFixtureProfile = {
     "fixture-pedestal-fan-entity": "fan.fixture_pedestal_fan",
     "fixture-table-fan-entity": "fan.fixture_table_fan",
     "fixture-ceiling-fan-entity": "fan.fixture_ceiling_fan",
+    "fixture-guarded-platform-fan-entity": "fan.fixture_guarded_platform_fan",
+    "fixture-inline-duct-fan-entity": "fan.fixture_inline_duct_fan",
   },
 };
 

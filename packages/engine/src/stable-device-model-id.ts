@@ -47,6 +47,8 @@ export type StableDeviceModelId =
   | "motorized-blind"
   | "integrated-roller-shutter"
   | "leak-sensor"
+  | "guarded-platform-fan"
+  | "inline-duct-fan"
   | "ceiling-fan"
   | "table-fan"
   | "pedestal-fan"

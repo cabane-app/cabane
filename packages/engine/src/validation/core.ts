@@ -136,6 +136,8 @@ export const STABLE_MODELS = new Set([
   "motorized-blind",
   "integrated-roller-shutter",
   "leak-sensor",
+  "guarded-platform-fan",
+  "inline-duct-fan",
   "ceiling-fan",
   "table-fan",
   "pedestal-fan",
