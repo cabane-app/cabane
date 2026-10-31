@@ -18,7 +18,13 @@ home registers none.
 Scene-item rendering avoids drawing both declarative items and legacy room
 composition for the same declarative project. Missing furnishing and device
 definitions remain warning-level project issues and render editable generic
-placeholders; structural validation errors still block publication. Arrange's
+placeholders in the editor and dashboard, preserving item IDs, placements and binding
+slots. The editor Issues panel gives simple HACS update/restart/reload instructions
+and custom-model reimport guidance. Missing runtime device definitions are warnings,
+including legacy devices, which use a generic placeholder when their size is unknown.
+Structural validation errors still block rendering and publication. Blocking dashboard
+screens retain Workspaces and backup actions, with paths and diagnostics under collapsed
+technical details. Workspace backups include private connections and verified GLB assets. Arrange's
 My models model-pack import resolves those IDs without changing the stable
 catalog registries.
 

@@ -390,7 +390,7 @@ export function LegacyDeviceItemRenderer({
 }: {
   resolvedDevice: ResolvedDeviceBinding;
   floor: FloorSpec;
-  definition: DeviceModelDefinition;
+  definition: DeviceModelDefinition | undefined;
   reducedMotion: boolean;
   walkMode: boolean;
   onInteract: (target: ExtensionInteractionTarget) => void;
@@ -409,9 +409,25 @@ export function LegacyDeviceItemRenderer({
       elevationMeters: resolvedDevice.slot.placement.elevationMeters,
       rotationYRadians: resolvedDevice.slot.placement.rotationYRadians ?? 0,
     },
-    size: definition.defaultSize.map((dimension) => dimension * scale) as [number, number, number],
+    size: (definition?.defaultSize ?? [0.25, 0.25, 0.25]).map((dimension) => dimension * scale) as [
+      number,
+      number,
+      number,
+    ],
     entitySlots: resolvedDevice.slot.entitySlots,
   };
+  if (!definition) {
+    const transform = resolveItemTransform(item.placement, floor);
+    return (
+      <group
+        name={`device-${item.id}`}
+        position={transform.position}
+        rotation={[0, transform.rotationYRadians, 0]}
+      >
+        <MissingSceneItemFallback item={item} />
+      </group>
+    );
+  }
   return (
     <DeviceSceneItem
       item={item}

@@ -83,6 +83,8 @@ const collectionTargetKinds = {
 type TargetCollectionName = keyof typeof collectionTargetKinds;
 
 const defaultCorrections: Readonly<Record<string, string>> = {
+  "project.model-missing":
+    "Update Cabane in HACS, restart Home Assistant, then reload your browser or Companion app. For a custom model, import it again in Arrange → My models.",
   "project.model-lighting-disabled":
     "You can save with this warning. Select the item in Arrange and open Lighting to repair its settings.",
   "project.model-lighting-approximation":

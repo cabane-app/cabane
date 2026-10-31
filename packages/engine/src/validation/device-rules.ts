@@ -46,7 +46,8 @@ export const validateDevice = (
       issue(
         "device.model-extension",
         `${devicePath}.model`,
-        `Device extension "${String(rawDevice.model)}" is not registered.`,
+        `Model “${String(rawDevice.model)}” is unavailable. A placeholder will be shown.`,
+        "warning",
       ),
     );
   }
@@ -62,7 +63,8 @@ export const validateDevice = (
       issue(
         "device.model-registry",
         `${devicePath}.model`,
-        `Stable device model "${rawDevice.model}" is not available in the supplied catalog.`,
+        `Model “${rawDevice.model}” is unavailable. A placeholder will be shown.`,
+        "warning",
       ),
     );
   }

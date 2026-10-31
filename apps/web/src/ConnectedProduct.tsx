@@ -18,7 +18,7 @@ import {
 } from "@cabane/engine";
 import { composeOwnerProjectManifest, ownerProjectRegistries } from "./project-runtime";
 import type { EditorOpenRequest } from "./editor-connect/useConnectEditor";
-import { downloadConnectData } from "./editor-connect/profile-transfer";
+import { downloadWorkspaceArchive } from "./workspaces/download-workspace-archive";
 import { CONNECT_RETURN_KEY, readEditorReturn } from "./editor-connect/connect-navigation";
 import { editorPath, editorRoutes, workspaceHomePath } from "./editor-routes";
 import { exportWorkspaceBackup } from "./workspaces/workspace-transfer";
@@ -179,7 +179,7 @@ export function ConnectedProduct({
               });
             }}
             onExportBrowserData={() =>
-              downloadConnectData(
+              downloadWorkspaceArchive(
                 exportWorkspaceBackup(
                   {
                     name: record.draft.home.name,
@@ -188,8 +188,14 @@ export function ConnectedProduct({
                   },
                   record,
                 ),
-                `${record.homeId}-private-workspace.json`,
-              )
+                `${record.homeId}-backup.cabane`,
+              ).catch((cause) => {
+                setConnectionError(
+                  cause instanceof Error
+                    ? cause.message
+                    : "Could not download the backup. Try again.",
+                );
+              })
             }
           />
         </ShortcutThumbnailSurface>

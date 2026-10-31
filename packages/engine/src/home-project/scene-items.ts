@@ -270,7 +270,7 @@ export const validateSceneItemsAndSupports = (
         issues,
         "project.model-missing",
         `${itemPath}.modelId`,
-        `Model “${item.modelId}” is not registered; a generic placeholder will be shown until it is imported.`,
+        `Model “${item.modelId}” is unavailable. A placeholder is shown. Its placement and connections are kept.`,
       );
     } else {
       const lightingWarning =

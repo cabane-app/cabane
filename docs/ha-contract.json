@@ -1,9 +1,9 @@
 {
-  "revision": 23,
-  "fingerprint": "bd7617e7f1158ea789f88e9dc38bda808b730f34f1c7b7fc937f25d581b9c8c2",
-  "summary": "Conditional state visibility on models",
+  "revision": 24,
+  "fingerprint": "fe2d79851273a95e3c745b292571b0096722c34ea724a3318699f49ba35a14a7",
+  "summary": "Keep homes usable when catalog models are unavailable",
   "breakingChanges": [
-    "Update older Cabane clients and the Home Assistant integration before opening projects using if-present map visibility. Existing boolean visibility settings remain supported."
+    "Unavailable models now render as placeholders while preserving item IDs, placements and connections. Update Cabane in HACS, restart Home Assistant and reload to get this recovery behavior. Structural errors remain blocked; no saved fields or schema versions change."
   ],
   "history": [
     {
@@ -158,6 +158,13 @@
       "summary": "Allow eligible manual connections before room area setup",
       "breakingChanges": [
         "No saved fields, slot IDs or schema versions change. Every eligible manual function and reading can now map across Home Assistant areas or before its room has an area association. Older clients may report these mappings as unmapped until their frontend or panel is updated; no migration or device command is involved."
+      ]
+    },
+    {
+      "revision": 23,
+      "summary": "Conditional state visibility on models",
+      "breakingChanges": [
+        "Update older Cabane clients and the Home Assistant integration before opening projects using if-present map visibility. Existing boolean visibility settings remain supported."
       ]
     }
   ],

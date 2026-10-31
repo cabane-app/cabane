@@ -52,7 +52,7 @@ export function CabaneAppExperience({
   onHomeAssistantSettings,
   onWorkspaces,
   onImportBrowserData,
-  onExportBrowserData = () => undefined,
+  onExportBrowserData,
   bindingManager,
   onOpenConnect,
   constructionApplied = false,
@@ -70,7 +70,7 @@ export function CabaneAppExperience({
   onHomeAssistantSettings?: () => void;
   onWorkspaces?: (() => void) | undefined;
   onImportBrowserData?: (json: string) => BrowserDataImportResult;
-  onExportBrowserData?: () => void;
+  onExportBrowserData?: () => void | Promise<void>;
   bindingManager?: RuntimeBindingProfileManager;
   onOpenConnect?: (view: "rooms" | "devices", roomId?: string | null) => void;
   constructionApplied?: boolean;
