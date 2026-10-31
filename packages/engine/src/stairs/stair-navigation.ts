@@ -1,4 +1,5 @@
 import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
+import { resolveTerrainWalking } from "../navigation/terrain-walking";
 import { prepareWalkColliders } from "../navigation/prepared-walk-colliders";
 import { resolveItemTransform } from "../home-project/placements";
 import { deriveFloorLevels } from "../building/floor-levels";
@@ -121,7 +122,11 @@ export const moveBuildingWalker = (
   furniture: readonly BoxWalkCollider[] = [],
   prepared?: ReturnType<typeof prepareBuildingWalk>,
   registries: StairModelRegistries = {},
-  options: { verticalRange?: WalkVerticalRange; allowUnsupported?: boolean } = {},
+  options: {
+    verticalRange?: WalkVerticalRange;
+    allowUnsupported?: boolean;
+    terrainHeight?: (point: WalkPoint) => number | null;
+  } = {},
 ) => {
   const floor = building.floors.find((f) => f.id === pose.floorId);
   if (!floor) return pose;
@@ -133,7 +138,26 @@ export const moveBuildingWalker = (
   const next = resolveCircleMovement(
     pose,
     movement,
-    walkCollidersForVerticalRange(floorColliders, options.verticalRange),
+    walkCollidersForVerticalRange(
+      options.terrainHeight
+        ? [
+            ...floorColliders,
+            ...building.floors
+              .filter((other) => other.id !== floor.id)
+              .flatMap(
+                (other) =>
+                  prepared?.colliders.get(other.id)?.(openIds, []) ??
+                  deriveWalkColliders(
+                    other,
+                    openIds,
+                    [],
+                    levels.find((level) => level.floorId === other.id)!.elevationMeters,
+                  ),
+              ),
+          ]
+        : floorColliders,
+      options.verticalRange,
+    ),
   );
   const candidate = { ...pose, ...next };
   const flights =
@@ -226,6 +250,14 @@ export const moveBuildingWalker = (
   }
   if (entrance) return { ...candidate, ...entrance };
   if (blockedByFootprint || hasUnsupportedStairAperture(flights, floor.id, plan)) return pose;
+  if (options.terrainHeight)
+    return resolveTerrainWalking(
+      building,
+      pose,
+      candidate,
+      options.terrainHeight,
+      options.allowUnsupported,
+    );
   if (
     floor.id !== building.floors.find((floor) => !floor.belowGround)?.id &&
     !pointOnFloorSupport(plan, floor) &&

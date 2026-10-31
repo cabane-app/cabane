@@ -6,7 +6,12 @@ import { planPointToWorld } from "../geometry";
 import { junctionConnectorInterval } from "../architecture-geometry";
 import { physicalFloor } from "../architecture-geometry/physical-floor";
 
-import { isPoolOutline, POOL_RIM_WIDTH_METERS, poolWorldRing } from "../pools/pool-footprint";
+import {
+  isPoolOutline,
+  POOL_DEPTH_METERS,
+  POOL_RIM_WIDTH_METERS,
+  poolWorldRing,
+} from "../pools/pool-footprint";
 
 import type { FloorSpec, WallSpec } from "../types";
 import { closestPointOnSegment } from "./walk-motion";
@@ -37,6 +42,7 @@ const wallColliderRuns = (
   wall: WallSpec,
   floor: FloorSpec,
   openOpeningIds: ReadonlySet<string>,
+  elevation: number,
 ): SegmentWalkCollider[] => {
   const relevant = floor.openings
     .filter((opening) => opening.wallId === wall.id)
@@ -75,6 +81,8 @@ const wallColliderRuns = (
     from: wallPointAtDistance(wall, start, floor),
     to: wallPointAtDistance(wall, end, floor),
     halfThickness: wall.thicknessMeters / 2,
+    minY: elevation,
+    maxY: elevation + (wall.heightMeters ?? floor.defaultWallHeightMeters),
   }));
 };
 
@@ -145,9 +153,11 @@ const deriveBuiltWalkColliders = (
       from: { x, z },
       to: { x: ring[(index + 1) % ring.length][0], z: ring[(index + 1) % ring.length][1] },
       halfThickness: POOL_RIM_WIDTH_METERS,
+      minY: elevation - POOL_DEPTH_METERS,
+      maxY: elevation + floor.defaultWallHeightMeters,
     }));
   }),
-  ...floor.walls.flatMap((wall) => wallColliderRuns(wall, floor, openOpeningIds)),
+  ...floor.walls.flatMap((wall) => wallColliderRuns(wall, floor, openOpeningIds, elevation)),
   ...floor.wallJunctions.flatMap((junction) => {
     return junction.wallIds.flatMap((wallId) => {
       const wall = floor.walls.find((candidate) => candidate.id === wallId);
@@ -168,6 +178,8 @@ const deriveBuiltWalkColliders = (
           },
           to: { x: from[0] + direction[0] * interval[1], z: from[1] + direction[1] * interval[1] },
           halfThickness: wall.thicknessMeters / 2,
+          minY: elevation,
+          maxY: elevation + (wall.heightMeters ?? floor.defaultWallHeightMeters),
         },
       ];
     });

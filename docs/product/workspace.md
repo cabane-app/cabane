@@ -271,6 +271,14 @@ They must form a contiguous prefix with at least one non-basement (ground) floor
 Omitted classification preserves existing projects. Import/export, drafts, and
 undo/redo retain this flag; derived negative preview elevations are not persisted.
 
+Optional `home.terrain` stores `topLeftMeters`, `topRightMeters`,
+`bottomLeftMeters` and `bottomRightMeters`, each finite and within −100 to 100 m.
+Heights are offsets from the ground-floor datum, with the existing 5 cm outdoor
+drop retained. Corners follow the unrotated plan's building bounds. Drafts,
+publication, workspace sync, import/export and undo/redo retain the settings.
+Omission or four zeros preserves flat terrain; older clients reject the new
+field until updated. Architectural floor elevations and `belowGround` stay unchanged.
+
 Optional `toolState` is namespaced pure JSON in each home project. Tool packages own
 its versioned contents and validation; the engine only exposes the injected
 `WalkToolStorage` interface. Live tool changes save to both draft and published

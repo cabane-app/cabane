@@ -3055,6 +3055,37 @@
                   }
                 }
               },
+              "terrain": {
+                "optional": true,
+                "schema": {
+                  "properties": {
+                    "bottomLeftMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "bottomRightMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "topLeftMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "topRightMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
               "walkStart": {
                 "optional": true,
                 "schema": {

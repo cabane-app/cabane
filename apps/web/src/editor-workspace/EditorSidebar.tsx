@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TerrainSettingsEditor } from "../editor-preview/construct/TerrainSettingsEditor";
 import { ConstructionToolCards } from "../editor-chrome/ConstructionToolCards";
 import type { CustomModel } from "@cabane/engine";
 import { CustomModelLibrary } from "../custom-models/CustomModelLibrary";
@@ -334,6 +335,15 @@ export function EditorSidebar({
                 />
               }
               roof={snapshot.project.home.roof}
+              terrainControls={
+                <TerrainSettingsEditor
+                  value={snapshot.project.home.terrain}
+                  disabled={(snapshot.project.home.apartmentFloor ?? 0) > 0}
+                  onChange={(terrain) =>
+                    executeProjectAction({ type: "update-home-settings", changes: { terrain } })
+                  }
+                />
+              }
               onRoofChange={(roof) =>
                 executeProjectAction({ type: "update-home-settings", changes: { roof } })
               }

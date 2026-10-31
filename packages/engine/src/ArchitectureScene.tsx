@@ -1,4 +1,6 @@
 import { ApartmentFloors } from "./building/ApartmentFloors";
+import { createTerrainSurface } from "./terrain/terrain-surface";
+import { TerrainSurfaceContext } from "./terrain/TerrainSurface";
 import { DioramaGround } from "./architecture-scene/DioramaGround";
 import { worldBoundsForFloorScene } from "./pools";
 import type { HomeManifest } from "./types";
@@ -47,7 +49,14 @@ export const ArchitectureScene = memo(function ArchitectureScene({
       view,
     ),
   );
-  if (view === "whole")
+  const terrain = useMemo(
+    () =>
+      manifest.home.apartmentFloor
+        ? null
+        : createTerrainSurface(manifest.home.terrain, manifest.floors),
+    [manifest.home.terrain, manifest.home.apartmentFloor, manifest.floors],
+  );
+  if (view === "whole" && !terrain)
     manifest.floors
       .filter((floor) => floor.belowGround)
       .forEach((floor) => visible.delete(floor.id));
@@ -110,108 +119,110 @@ export const ArchitectureScene = memo(function ArchitectureScene({
   // illuminate the floor above.
   return (
     <SceneRoomSelection.Provider value={selectedRoomId}>
-      <group name="architecture-scene" position={[0, offset, 0]}>
-        {apartmentFloor > 0 && lowest && contextBounds && view !== "plan" && (
-          <>
-            <ApartmentFloors floor={lowest} count={apartmentFloor} base={base} />
-            <group position={[0, base - apartmentFloor * lowest.floorToFloorHeightMeters, 0]}>
-              <DioramaGround
-                centerX={contextBounds.centerX}
-                centerZ={contextBounds.centerZ}
-                size={Math.max(contextBounds.width, contextBounds.depth) + 7}
-                color={manifest.home.palette.ground}
-                floor={{ ...lowest, pools: [] }}
-              />
-            </group>
-          </>
-        )}
-        {(view === "whole" || view === "walk") && <BuildingRoof manifest={manifest} />}
-        {manifest.floors.map(
-          (floor, index) =>
-            visible.has(floor.id) && (
-              <group
-                key={floor.id}
-                name={`building-floor-${floor.id}`}
-                position={[0, view === "plan" ? 0 : levels[index].elevationMeters, 0]}
-              >
-                <StairSurfaceApertures.Provider value={aperturesByFloor.get(floor.id)!}>
-                  <FloorScene
-                    {...props}
-                    sourceFloor={floor}
-                    platformBelow={manifest.floors[index - 1]}
-                    sceneLightingEnabled={floor.id === active}
-                    below={
-                      visible.has(manifest.floors[index - 1]?.id)
-                        ? manifest.floors[index - 1]
-                        : undefined
-                    }
-                    above={
-                      visible.has(manifest.floors[index + 1]?.id)
-                        ? manifest.floors[index + 1]
-                        : undefined
-                    }
-                    showGround={apartmentFloor === 0 && floor === ground && view !== "plan"}
-                    showCeiling={view === "walk" || (view === "cutaway" && floor.id !== active)}
-                    manifest={floorManifests.get(floor.id)!}
-                    interactionMode={floor.id === active ? props.interactionMode : "editor"}
-                    onSelectRoom={floor.id === active ? props.onSelectRoom : undefined}
-                    onWalkDeviceTargetChange={
-                      floor.id === active ? props.onWalkDeviceTargetChange : undefined
-                    }
-                  />
-                </StairSurfaceApertures.Provider>
+      <TerrainSurfaceContext.Provider value={terrain}>
+        <group name="architecture-scene" position={[0, offset, 0]}>
+          {apartmentFloor > 0 && lowest && contextBounds && view !== "plan" && (
+            <>
+              <ApartmentFloors floor={lowest} count={apartmentFloor} base={base} />
+              <group position={[0, base - apartmentFloor * lowest.floorToFloorHeightMeters, 0]}>
+                <DioramaGround
+                  centerX={contextBounds.centerX}
+                  centerZ={contextBounds.centerZ}
+                  size={Math.max(contextBounds.width, contextBounds.depth) + 7}
+                  color={manifest.home.palette.ground}
+                  floor={{ ...lowest, pools: [] }}
+                />
               </group>
-            ),
-        )}
-        {manifest.stairs.map((stair) => {
-          if (
-            view === "plan"
-              ? stair.lowerFloorId !== active && stair.upperFloorId !== active
-              : !visible.has(stair.lowerFloorId)
-          )
-            return null;
-          const flight = deriveStairFlight(manifest, stair);
-          if (flight && view === "plan")
-            return (
-              <StairPlan key={stair.id} flight={flight} upper={stair.upperFloorId === active} />
-            );
-          if (flight?.shape === "spiral")
-            return (
-              <SpiralStairModel
+            </>
+          )}
+          {(view === "whole" || view === "walk") && <BuildingRoof manifest={manifest} />}
+          {manifest.floors.map(
+            (floor, index) =>
+              visible.has(floor.id) && (
+                <group
+                  key={floor.id}
+                  name={`building-floor-${floor.id}`}
+                  position={[0, view === "plan" ? 0 : levels[index].elevationMeters, 0]}
+                >
+                  <StairSurfaceApertures.Provider value={aperturesByFloor.get(floor.id)!}>
+                    <FloorScene
+                      {...props}
+                      sourceFloor={floor}
+                      platformBelow={manifest.floors[index - 1]}
+                      sceneLightingEnabled={floor.id === active}
+                      below={
+                        visible.has(manifest.floors[index - 1]?.id)
+                          ? manifest.floors[index - 1]
+                          : undefined
+                      }
+                      above={
+                        visible.has(manifest.floors[index + 1]?.id)
+                          ? manifest.floors[index + 1]
+                          : undefined
+                      }
+                      showGround={apartmentFloor === 0 && floor === ground && view !== "plan"}
+                      showCeiling={view === "walk" || (view === "cutaway" && floor.id !== active)}
+                      manifest={floorManifests.get(floor.id)!}
+                      interactionMode={floor.id === active ? props.interactionMode : "editor"}
+                      onSelectRoom={floor.id === active ? props.onSelectRoom : undefined}
+                      onWalkDeviceTargetChange={
+                        floor.id === active ? props.onWalkDeviceTargetChange : undefined
+                      }
+                    />
+                  </StairSurfaceApertures.Provider>
+                </group>
+              ),
+          )}
+          {manifest.stairs.map((stair) => {
+            if (
+              view === "plan"
+                ? stair.lowerFloorId !== active && stair.upperFloorId !== active
+                : !visible.has(stair.lowerFloorId)
+            )
+              return null;
+            const flight = deriveStairFlight(manifest, stair);
+            if (flight && view === "plan")
+              return (
+                <StairPlan key={stair.id} flight={flight} upper={stair.upperFloorId === active} />
+              );
+            if (flight?.shape === "spiral")
+              return (
+                <SpiralStairModel
+                  key={stair.id}
+                  flight={flight}
+                  coordinates={manifest.coordinates}
+                  showUpperGuard={visible.has(stair.upperFloorId)}
+                />
+              );
+            if (flight?.shape === "u-shaped")
+              return (
+                <UShapedStairModel
+                  key={stair.id}
+                  flight={flight}
+                  coordinates={manifest.coordinates}
+                  showUpperGuard={visible.has(stair.upperFloorId)}
+                />
+              );
+            if (flight?.shape === "l-shaped")
+              return (
+                <LShapedStairModel
+                  key={stair.id}
+                  flight={flight}
+                  coordinates={manifest.coordinates}
+                  showUpperGuard={visible.has(stair.upperFloorId)}
+                />
+              );
+            return flight ? (
+              <StraightStairModel
                 key={stair.id}
                 flight={flight}
-                coordinates={manifest.coordinates}
+                plan={view === "plan"}
                 showUpperGuard={visible.has(stair.upperFloorId)}
               />
-            );
-          if (flight?.shape === "u-shaped")
-            return (
-              <UShapedStairModel
-                key={stair.id}
-                flight={flight}
-                coordinates={manifest.coordinates}
-                showUpperGuard={visible.has(stair.upperFloorId)}
-              />
-            );
-          if (flight?.shape === "l-shaped")
-            return (
-              <LShapedStairModel
-                key={stair.id}
-                flight={flight}
-                coordinates={manifest.coordinates}
-                showUpperGuard={visible.has(stair.upperFloorId)}
-              />
-            );
-          return flight ? (
-            <StraightStairModel
-              key={stair.id}
-              flight={flight}
-              plan={view === "plan"}
-              showUpperGuard={visible.has(stair.upperFloorId)}
-            />
-          ) : null;
-        })}
-      </group>
+            ) : null;
+          })}
+        </group>
+      </TerrainSurfaceContext.Provider>
     </SceneRoomSelection.Provider>
   );
 });

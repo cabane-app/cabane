@@ -244,6 +244,7 @@ export const validateHomeProjectSchemaShape = (
         "walkStart",
         "northAngleDegrees",
         "apartmentFloor",
+        "terrain",
       ],
       "home",
       issues,

@@ -1,5 +1,5 @@
 import type { FloorCoordinates, FloorSpec, PlanPoint } from "../types";
-import type { SceneItemSpec } from "../home-project/types";
+import type { HomeProject, SceneItemSpec } from "../home-project/types";
 
 interface StairConnection {
   /** Sides when ascending; omitted means both. */
@@ -53,6 +53,7 @@ export interface StairShapeGeometry {
   runMeters: number;
 }
 export interface BuildingGeometry {
+  home?: Pick<HomeProject["home"], "terrain" | "apartmentFloor">;
   coordinates: FloorCoordinates;
   floors: readonly (Omit<FloorSpec, "footprint"> & { footprint: readonly PlanPoint[] })[];
   stairs: readonly StairSpec[];

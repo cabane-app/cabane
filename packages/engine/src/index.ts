@@ -6,6 +6,7 @@ export * from "./walk-tools";
 export * from "./action-bar/action-bar-config";
 export * from "./action-bar/ha-action-shortcuts";
 export { DEFAULT_ROOF_SETTINGS, type RoofSettings } from "./roof/roof-settings";
+export { FLAT_TERRAIN, type TerrainSettings } from "./terrain/terrain-settings";
 export * from "./room-types";
 export * from "./devices";
 export * from "./geometry";

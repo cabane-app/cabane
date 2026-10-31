@@ -1,9 +1,9 @@
 {
-  "revision": 25,
-  "fingerprint": "80ac61f7c9197304340ea08b2246af7d0bf87897874044cd4fc5f7289a346010",
-  "summary": "Add optional display names for walls, doors, windows and passages; preserve architectural and binding identities.",
+  "revision": 26,
+  "fingerprint": "b806cf8862682b3a1298aeb3e086eb3dacb56e2d2ba033d49e92795d0016757e",
+  "summary": "Add sloped terrain with home-wide corner heights",
   "breakingChanges": [
-    "Older Cabane clients reject projects containing wall or opening name fields. Update the Home Assistant integration and reload all clients before opening a renamed project."
+    "Existing homes retain flat terrain. Homes saved with home.terrain require the updated frontend and matching Home Assistant panel. Older clients retain unsupported-field protection. No floor, asset or binding migration is required."
   ],
   "history": [
     {
@@ -172,6 +172,13 @@
       "summary": "Keep homes usable when catalog models are unavailable",
       "breakingChanges": [
         "Unavailable models now render as placeholders while preserving item IDs, placements and connections. Update Cabane in HACS, restart Home Assistant and reload to get this recovery behavior. Structural errors remain blocked; no saved fields or schema versions change."
+      ]
+    },
+    {
+      "revision": 25,
+      "summary": "Add optional display names for walls, doors, windows and passages; preserve architectural and binding identities.",
+      "breakingChanges": [
+        "Older Cabane clients reject projects containing wall or opening name fields. Update the Home Assistant integration and reload all clients before opening a renamed project."
       ]
     }
   ],

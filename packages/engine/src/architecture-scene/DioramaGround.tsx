@@ -1,8 +1,10 @@
 import { cutStairGroundOpenings } from "../stairs/ground-apertures";
 import { useStairSurfaceApertures } from "../stairs/surface-apertures";
-import { Shape } from "three";
+import { ExtrudeGeometry, Shape } from "three";
 
-import { memo, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
+import { useTerrainSurface } from "../terrain/TerrainSurface";
+import { conformToTerrain } from "../terrain/terrain-geometry";
 
 import { cutPoolOpenings, POOL_DEPTH_METERS } from "../pools";
 
@@ -32,9 +34,9 @@ const roundedDioramaShape = (centerX: number, centerZ: number, size: number, rad
 };
 
 export const DioramaGround = memo(function DioramaGround({
-  centerX,
-  centerZ,
-  size,
+  centerX: requestedCenterX,
+  centerZ: requestedCenterZ,
+  size: requestedSize,
   color,
   floor,
 }: {
@@ -44,46 +46,77 @@ export const DioramaGround = memo(function DioramaGround({
   color: string;
   floor: FloorSpec;
 }) {
+  const terrain = useTerrainSurface();
+  const centerX = terrain?.centerX ?? requestedCenterX;
+  const centerZ = terrain?.centerZ ?? requestedCenterZ;
+  const size = terrain?.size ?? requestedSize;
   const apertures = useStairSurfaceApertures("floor");
   const baseShape = useMemo(
     () =>
       cutStairGroundOpenings(
         cutPoolOpenings(roundedDioramaShape(centerX, centerZ, size, 0.42), floor),
         floor.coordinates,
-        apertures,
+        [...apertures, ...(terrain?.cutouts ?? [])],
       ),
-    [centerX, centerZ, size, floor, apertures],
+    [centerX, centerZ, size, floor, apertures, terrain],
   );
   const grassShape = useMemo(
     () =>
       cutStairGroundOpenings(
         cutPoolOpenings(roundedDioramaShape(centerX, centerZ, size - 0.1, 0.36), floor),
         floor.coordinates,
-        apertures,
+        [...apertures, ...(terrain?.cutouts ?? [])],
       ),
-    [centerX, centerZ, size, floor, apertures],
+    [centerX, centerZ, size, floor, apertures, terrain],
   );
   const topY = GROUND_ELEVATION_METERS;
   const grassThickness = 0.1;
-  const baseThickness = floor.pools?.length ? POOL_DEPTH_METERS + 0.06 : 0.28;
+  const baseThickness = Math.max(
+    terrain?.soilDepth ?? 0.28,
+    floor.pools?.length ? POOL_DEPTH_METERS + 0.06 : 0.28,
+  );
+  const baseGeometry = useMemo(
+    () =>
+      conformToTerrain(
+        new ExtrudeGeometry(baseShape, { depth: baseThickness, bevelEnabled: false }),
+        terrain,
+        baseThickness,
+      ),
+    [baseShape, baseThickness, terrain],
+  );
+  const grassGeometry = useMemo(
+    () =>
+      conformToTerrain(
+        new ExtrudeGeometry(grassShape, { depth: grassThickness, bevelEnabled: false }),
+        terrain,
+      ),
+    [grassShape, terrain],
+  );
+  useEffect(
+    () => () => {
+      baseGeometry.dispose();
+      grassGeometry.dispose();
+    },
+    [baseGeometry, grassGeometry],
+  );
   return (
     <group>
       <mesh
         name="diorama-base"
+        geometry={baseGeometry}
         position={[0, topY - grassThickness - baseThickness, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         receiveShadow
       >
-        <extrudeGeometry args={[baseShape, { depth: baseThickness, bevelEnabled: false }]} />
         <ToonMaterial color="#6f7d57" />
       </mesh>
       <mesh
         name="diorama-ground"
+        geometry={grassGeometry}
         position={[0, topY - grassThickness, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         receiveShadow
       >
-        <extrudeGeometry args={[grassShape, { depth: grassThickness, bevelEnabled: false }]} />
         <ToonMaterial color={color} />
       </mesh>
     </group>

@@ -14,7 +14,8 @@ import {
   retainedWalkSupport,
   type WalkSupport,
 } from "./navigation/walk-support";
-import { createTerrainSupportQuery } from "./navigation/terrain-support";
+import { createTerrainHeightQuery, createTerrainSupportQuery } from "./navigation/terrain-support";
+import { hasCustomTerrain } from "./terrain/terrain-settings";
 import {
   moveBuildingWalker,
   prepareBuildingWalk,
@@ -122,6 +123,13 @@ export function WalkCameraController({
   const box = useMemo(() => new Box3(), []);
   const { scene, invalidate } = useThree();
   const supportsTerrain = useMemo(() => createTerrainSupportQuery(scene), [scene]);
+  // Continuous movement already tests the player radius against walls and pool
+  // colliders. Sample the center so terrain cutouts meet indoor door thresholds.
+  const sampleTerrain = useMemo(() => createTerrainHeightQuery(scene, 0), [scene]);
+  const terrainHeight =
+    hasCustomTerrain(building?.home?.terrain) && !building?.home?.apartmentFloor
+      ? sampleTerrain
+      : undefined;
 
   useEffect(() => {
     scene.updateMatrixWorld(true);
@@ -288,6 +296,7 @@ export function WalkCameraController({
           {
             verticalRange,
             allowUnsupported: airborne,
+            ...(terrainHeight ? { terrainHeight } : {}),
           },
         )
       : {
@@ -308,6 +317,7 @@ export function WalkCameraController({
         next,
         start.elevation + jumpHeight.current,
         supportsTerrain,
+        terrainHeight,
       );
       if (fall.kind === "fall") {
         next = fall.point;

@@ -16,6 +16,7 @@ import type {
 import type { StairSpec } from "../stairs/types";
 import type { RoofSettings } from "../roof/roof-settings";
 import type { ActionBarConfiguration } from "../action-bar/action-bar-config";
+import type { TerrainSettings } from "../terrain/terrain-settings";
 import { migrateLegacyProject } from "./migrations";
 
 export type LayoutRoomSpec = Omit<RoomSpec, "furnishings" | "dashboardSlots" | "devices"> & {
@@ -119,6 +120,7 @@ export interface HomeProject {
   schemaVersion: 2;
   seedRevision: string;
   home: {
+    terrain?: TerrainSettings;
     /** Decorative storeys below the modeled home; zero preserves the original appearance. */
     apartmentFloor?: number;
     walkStart?: { floorId: string; at: PlanPoint };
