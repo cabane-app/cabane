@@ -102,6 +102,8 @@
     "spec": "docs/product/workspace.md",
     "owners": [
       "packages/engine/src/measurement-units.ts",
+      "packages/engine/src/measurement-text.ts",
+      "packages/engine/src/MeasurementText.tsx",
       "packages/engine/src/ScenePreferences.tsx",
       "apps/web/src/editor-chrome/LengthInput.tsx",
       "apps/web/src/editor-preview/furnish/NumericField.tsx",
@@ -110,14 +112,21 @@
     "interfaces": [
       {
         "module": "packages/engine/src/index.ts",
-        "symbols": ["useMeasurementUnits", "formatLength", "formatArea", "parseLength"]
+        "symbols": [
+          "useMeasurementUnits",
+          "formatLength",
+          "formatArea",
+          "parseLength",
+          "formatMeasurementText",
+          "MeasurementText"
+        ]
       },
       {
         "module": "packages/engine/src/index.ts",
         "symbols": ["ScenePreferences"]
       }
     ],
-    "invariant": "Convert physical measurements at the UI boundary. Browser-local unit preferences never rescale authored geometry; plan-coordinate inputs account for metersPerPlanUnit. Temperatures, angles and dimensionless values keep their own units. Settings \u2192 Editor owns units; Orbital view owns appearance, overlays, lighting and weather; Explore owns look controls. Stored preference keys remain compatible.",
+    "invariant": "Convert physical measurements at the UI boundary. Browser-local unit preferences never rescale authored geometry; plan-coordinate inputs account for metersPerPlanUnit. Temperatures, angles and dimensionless values keep their own units. Settings \u2192 Editor owns units; Orbital view owns appearance, overlays, lighting and weather; Explore owns look controls. Stored preference keys remain compatible. Format metric diagnostic text only at the display boundary, including accessible labels, ranges and small clearances; quoted identifiers and deterministic validation output remain unchanged. Model-lighting movement labels follow the preference without changing physical steps.",
     "checks": ["verify:construct"]
   },
   {

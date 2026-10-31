@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { LengthInput } from "../editor-chrome/LengthInput";
 import { omitUndefinedProperties } from "@cabane/engine";
 import { StairShapeSelect } from "./StairShapeSelect";
@@ -208,7 +209,7 @@ export function StairDetails({
         .filter((issue) => issue.severity !== "warning")
         .map((issue, index) => (
           <p role="alert" key={`${issue.code}:${index}`}>
-            {issue.message}
+            <MeasurementText>{issue.message}</MeasurementText>
           </p>
         ))}
     </SelectionDetailsPanel>

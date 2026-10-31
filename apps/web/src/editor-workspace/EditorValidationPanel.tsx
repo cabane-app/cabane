@@ -1,3 +1,4 @@
+import { MeasurementText, formatMeasurementText, useMeasurementUnits } from "@cabane/engine";
 import { useId, useState } from "react";
 import type { ConstructValidationDiagnostic } from "../editor-preview/construct/contextual-validation";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
@@ -22,6 +23,7 @@ export function EditorValidationPanel<Issue extends ConstructValidationDiagnosti
   itemLabel?: (issue: Issue) => string | undefined;
 }) {
   const [localExpanded, setLocalExpanded] = useState(false);
+  const units = useMeasurementUnits();
   const expanded = controlledExpanded ?? localExpanded;
   const contentId = useId();
   if (!issues.length) return null;
@@ -76,15 +78,21 @@ export function EditorValidationPanel<Issue extends ConstructValidationDiagnosti
               </span>
               <div>
                 {itemLabel?.(issue) && <strong>{itemLabel(issue)}</strong>}
-                <strong>{issue.message}</strong>
-                {issue.suggestion && <small>{issue.suggestion}</small>}
+                <strong>
+                  <MeasurementText>{issue.message}</MeasurementText>
+                </strong>
+                {issue.suggestion && (
+                  <small>
+                    <MeasurementText>{issue.suggestion}</MeasurementText>
+                  </small>
+                )}
               </div>
             </div>
             {issue.target && (
               <footer className="editor-issues__actions">
                 <EditorButton
                   disabled={disabled}
-                  aria-label={`${issue.target.kind === "scene-item" ? "Select" : "Locate"} ${issue.target.kind} ${issue.target.id}: ${issue.message}`}
+                  aria-label={`${issue.target.kind === "scene-item" ? "Select" : "Locate"} ${issue.target.kind} ${issue.target.id}: ${formatMeasurementText(issue.message, units)}`}
                   onClick={() => onSelect(issue)}
                 >
                   {issue.target.kind === "scene-item" ? "Select" : "Locate"}

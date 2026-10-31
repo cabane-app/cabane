@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { EditorButton } from "../../../editor-chrome/EditorButton";
 import { type DeviceModelRegistry, type FurnishingModelRegistry } from "@cabane/engine";
 import { Fragment, useMemo, useRef, type ReactNode } from "react";
@@ -57,7 +58,7 @@ export function ArrangeCatalog({
     <div className="arrange-catalog" aria-label="Item catalog">
       {error && (
         <p className="catalog-add-error" role="alert">
-          {error}
+          <MeasurementText>{error}</MeasurementText>
         </p>
       )}
       <div className="arrange-catalog__body">

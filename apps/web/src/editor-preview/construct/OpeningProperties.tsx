@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { CommittedTextInput } from "./CommittedTextInput";
 import { LengthInput } from "../../editor-chrome/LengthInput";
 import type { ReactNode } from "react";
@@ -293,7 +294,11 @@ export function OpeningProperties({
         </fieldset>
       )}
 
-      {editor.openingError && <p role="alert">{editor.openingError}</p>}
+      {editor.openingError && (
+        <p role="alert">
+          <MeasurementText>{editor.openingError}</MeasurementText>
+        </p>
+      )}
       {advanced === undefined ? (
         <details className="opening-properties__advanced">
           <summary>Advanced</summary>

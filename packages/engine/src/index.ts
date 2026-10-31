@@ -145,6 +145,8 @@ export {
   formatArea,
   parseLength,
 } from "./measurement-units";
+export { formatMeasurementText } from "./measurement-text";
+export { MeasurementText } from "./MeasurementText";
 
 export { MAX_ORTHOGRAPHIC_ZOOM, MIN_EDITOR_ZOOM } from "./navigation/camera-zoom";
 

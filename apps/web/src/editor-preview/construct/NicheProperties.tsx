@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { displayLength, parseLength, lengthUnit, useMeasurementUnits } from "@cabane/engine";
 import { nicheDepthLimit, type EditorNiche } from "@cabane/engine";
 import { LengthInput } from "../../editor-chrome/LengthInput";
@@ -117,7 +118,11 @@ export function NicheProperties({
           />
         </label>
       </details>
-      {editor.openingError && <p role="alert">{editor.openingError}</p>}
+      {editor.openingError && (
+        <p role="alert">
+          <MeasurementText>{editor.openingError}</MeasurementText>
+        </p>
+      )}
     </>
   );
 }

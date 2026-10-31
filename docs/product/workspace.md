@@ -303,6 +303,10 @@ Settings → Editor → Units selects Metric (m, m²) or Imperial (ft, ft²).
 The browser-local preference applies immediately to editor lengths and areas,
 including construction guides and copied measurements, room/pool/platform areas,
 properties, stairs, object placement, reference calibration and model imports.
+Diagnostic messages, their accessible labels, reference-plan errors and model-lighting
+movement labels also follow this preference immediately. Diagnostics are formatted
+at the display boundary, including ranges and small clearances; validation output,
+quoted object names and technical paths retain their original values.
 Lengths accept decimal commas or points and explicit m, cm, mm, ft, in, or feet
 and inches (for example `5' 6"`). Bare numbers use the selected unit. Imperial
 length adjustments use one inch, with Shift multiplying by ten. Angles, counts,

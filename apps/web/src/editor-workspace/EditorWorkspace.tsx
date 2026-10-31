@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { EditorSettings } from "../editor-settings/EditorSettings";
 import { SettingsNavigation } from "../editor-settings/SettingsNavigation";
 import type { SettingsSection } from "../editor-settings/settings-sections";
@@ -491,12 +492,12 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
         {placementError && (
           <div className="direction-status is-error" role="status">
             <span />
-            {placementError}
+            <MeasurementText>{placementError}</MeasurementText>
           </div>
         )}
         <EditorDraftStatus workspace={workspace} homeAssistantUrl={homeAssistantUrl} />
         <div className="arrange-announcement" role="status">
-          {repairMessage}
+          {repairMessage && <MeasurementText>{repairMessage}</MeasurementText>}
         </div>
 
         <EditorCompletionDialogs {...controller} />

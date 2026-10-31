@@ -1,4 +1,4 @@
-import { WorkspaceConflictError } from "@cabane/engine";
+import { MeasurementText, WorkspaceConflictError } from "@cabane/engine";
 import { useState } from "react";
 import { downloadWorkspaceArchive } from "../workspaces/download-workspace-archive";
 import { exportWorkspaceBackup } from "../workspaces/workspace-transfer";
@@ -68,9 +68,11 @@ export function EditorDraftStatus({
           {conflict ? "This workspace changed in another tab." : "Could not save this draft."}
         </strong>
         <p>
-          {conflict
-            ? "Navigation is paused to keep your current draft. Download a backup before reopening the saved workspace."
-            : `${error.message} Your changes are kept in this tab.`}
+          <MeasurementText>
+            {conflict
+              ? "Navigation is paused to keep your current draft. Download a backup before reopening the saved workspace."
+              : `${error.message} Your changes are kept in this tab.`}
+          </MeasurementText>
         </p>
         <div className="editor-draft-error__actions">
           <EditorButton
