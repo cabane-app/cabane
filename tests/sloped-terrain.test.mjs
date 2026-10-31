@@ -406,6 +406,63 @@ await withModules(async (load) => {
     }
   });
 
+  test("doorway thresholds clear the supporting basement facade on their top and outer face", async () => {
+    const project = exitProject();
+    const floor = project.floors[0];
+    project.floors.unshift(projectWithGarage().floors[0]);
+    for (const level of project.floors) {
+      level.floorToFloorHeightMeters = 2.8;
+      level.defaultWallHeightMeters = 2.4;
+      level.defaultCeilingHeightMeters = 2.4;
+    }
+    const renderer = await create(
+      React.createElement(ArchitectureScene, {
+        manifest: api.composeHomeManifest(project, emptyExtensions),
+        floorView: "whole",
+        activeFloorId: floor.id,
+        selectedRoomId: null,
+        walkMode: false,
+        wallFadeEnabled: false,
+        reducedMotion: true,
+        resolvedBindings: { rooms: {}, openings: {} },
+        architectureModels: stableArchitectureModelRegistry,
+        deviceModels: {},
+        openingPositions: {},
+        onInteract() {},
+      }),
+    );
+    try {
+      const scene = renderer.scene.instance;
+      scene.updateMatrixWorld(true);
+      const threshold = scene.getObjectByName("opening-threshold-outside-exit");
+      const center = threshold.getWorldPosition(new Vector3());
+      const meshes = [];
+      scene.traverse((object) => {
+        if (object.isMesh) meshes.push(object);
+      });
+      for (const [origin, direction] of [
+        [new Vector3(center.x, 0.5, -0.05), new Vector3(0, -1, 0)],
+        [new Vector3(center.x, center.y, -2), new Vector3(0, 0, 1)],
+      ]) {
+        const ray = new Raycaster(origin, direction);
+        const hits = [];
+        // Inspect rendered geometry even when other floors disable interaction picking.
+        for (const mesh of meshes) Mesh.prototype.raycast.call(mesh, ray, hits);
+        const thresholdHit = hits.find((hit) => hit.object === threshold);
+        assert.ok(thresholdHit, "the threshold still covers the doorway");
+        assert.ok(
+          !hits.some(
+            (hit) =>
+              hit.object !== threshold && Math.abs(hit.distance - thresholdHit.distance) < 0.0001,
+          ),
+          "no facade face may share the visible threshold surface and flicker",
+        );
+      }
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("walking follows the grade, crosses the garage threshold and rejects unsupported ground or high steps", () => {
     const building = projectWithGarage();
     const outside = { x: 4, z: -0.1, elevation: -2.6, floorId: "first" };
