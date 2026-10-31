@@ -26,6 +26,8 @@ export interface ConstructMeasurement {
   readonly distanceMeters: number;
   readonly label: string;
   readonly copyText: string;
+  /** "5.00 plan units"; display layers reformat the meters part per unit preference. */
+  readonly planUnitsLabel: string;
   readonly world: {
     readonly from: readonly [x: number, z: number];
     readonly to: readonly [x: number, z: number];
@@ -101,7 +103,10 @@ export const measureConstructPoints = (
   const worldTo = constructPlanToWorld(to, coordinates);
   const formattedPlanUnits = formatConstructDistance(distancePlanUnits);
   const formattedMeters = formatConstructDistance(distanceMeters);
+  // Kept in metric so non-React consumers (and scene userData) stay stable; display
+  // components reformat the distance part for the viewer's unit preference.
   const label = `${formattedPlanUnits} plan units · ${formattedMeters} m`;
+  const planUnitsLabel = `${formattedPlanUnits} plan units`;
 
   return {
     from,
@@ -110,6 +115,7 @@ export const measureConstructPoints = (
     distancePlanUnits,
     distanceMeters,
     label,
+    planUnitsLabel,
     copyText: label,
     world: {
       from: worldFrom,

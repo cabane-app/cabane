@@ -137,12 +137,15 @@ export type { WeatherSource, WeatherPreview } from "./weather";
 export {
   useMeasurementUnits,
   setMeasurementUnits,
+  readMeasurementUnits,
   lengthUnit,
   displayLength,
   storedLength,
   formatLength,
+  formatLengthPlain,
   formatArea,
   parseLength,
+  type MeasurementUnits,
 } from "./measurement-units";
 
 export { MAX_ORTHOGRAPHIC_ZOOM, MIN_EDITOR_ZOOM } from "./navigation/camera-zoom";

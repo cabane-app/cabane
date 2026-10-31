@@ -35,7 +35,9 @@ Start and End positions and a Rotate strip gizmo that preserves their midpoint,
 length and sample count. Place on model enters surface placement explicitly;
 camera drags do not place sources. Pick through glass, enabled initially, skips
 transparent and transmitting materials. Turn it off to select the glass itself.
-Visible X/Y/Z fields and step buttons support 1 mm, 1 cm and 10 cm movements.
+Visible X/Y/Z fields and step buttons support 1 mm, 1 cm and 10 cm movements;
+the step menu labels follow the measurement-unit preference (for example
+0.03 ft, 0.33 ft and 3.28 ft in Imperial) while the stored steps stay metric.
 Focus the preview and use arrow keys for X/Z, Page Up/Down for Y, and Shift for
 ten times the selected step. Length fields use the ordinary measurement inputs.
 

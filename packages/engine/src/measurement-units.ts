@@ -5,12 +5,7 @@ const KEY = "cabane.measurement-units.v1";
 const listeners = new Set<() => void>();
 let session: MeasurementUnits | undefined;
 function snapshot(): MeasurementUnits {
-  if (session) return session;
-  try {
-    return window.localStorage.getItem(KEY) === "imperial" ? "imperial" : "metric";
-  } catch {
-    return "metric";
-  }
+  return readMeasurementUnits();
 }
 function subscribe(listener: () => void) {
   listeners.add(listener);
@@ -51,6 +46,22 @@ export function formatLength(meters: number, units: MeasurementUnits, decimals =
 }
 export function formatArea(squareMeters: number, units: MeasurementUnits) {
   return `${(units === "imperial" ? squareMeters / 0.3048 ** 2 : squareMeters).toFixed(1)} ${units === "imperial" ? "ft²" : "m²"}`;
+}
+/** Plain number plus unit label, for issue messages that show lengths inline. */
+export function formatLengthPlain(meters: number, units: MeasurementUnits, decimals = 2) {
+  return `${displayLength(meters, units).toFixed(decimals)} ${lengthUnit(units)}`;
+}
+/**
+ * Reads the user's display-unit preference without a browser (Node validation, CLI and
+ * test workers default to metric). React components should prefer useMeasurementUnits.
+ */
+export function readMeasurementUnits(): MeasurementUnits {
+  if (session) return session;
+  try {
+    return window.localStorage.getItem(KEY) === "imperial" ? "imperial" : "metric";
+  } catch {
+    return "metric";
+  }
 }
 /** Bare numbers use the selected unit; explicit metric and feet/inches input is also accepted. */
 export function parseLength(text: string, units: MeasurementUnits): number {

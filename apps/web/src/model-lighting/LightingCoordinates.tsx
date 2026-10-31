@@ -1,7 +1,16 @@
 import type { ModelVector } from "@cabane/engine";
+import { displayLength, lengthUnit, useMeasurementUnits } from "@cabane/engine";
 import { EditorButton } from "../editor-chrome/EditorButton";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
 import { LengthInput } from "../editor-chrome/LengthInput";
+
+const STEP_METERS = [0.001, 0.01, 0.1] as const;
+
+const metricStepLabel = (value: number) =>
+  value === 0.001 ? "1 mm" : value === 0.01 ? "1 cm" : "10 cm";
+
+const imperialStepLabel = (meters: number) =>
+  `${Number(displayLength(meters, "imperial").toFixed(2))} ${lengthUnit("imperial")}`;
 
 export function LightingCoordinates({
   position,
@@ -16,6 +25,7 @@ export function LightingCoordinates({
   onStep: (step: number) => void;
   onChange: (position: ModelVector) => void;
 }) {
+  const units = useMeasurementUnits();
   const move = (index: number, value: number) =>
     onChange(
       position.map((n, axis) => (axis === index ? Number(value.toFixed(6)) : n)) as [
@@ -34,9 +44,11 @@ export function LightingCoordinates({
           value={step}
           onChange={(event) => onStep(Number(event.target.value))}
         >
-          <option value={0.001}>1 mm</option>
-          <option value={0.01}>1 cm</option>
-          <option value={0.1}>10 cm</option>
+          {STEP_METERS.map((value) => (
+            <option key={value} value={value}>
+              {units === "imperial" ? imperialStepLabel(value) : metricStepLabel(value)}
+            </option>
+          ))}
         </select>
       </label>
       <div className="lighting-coordinates">

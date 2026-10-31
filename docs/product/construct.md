@@ -82,7 +82,8 @@ its bounds. Fields support the measurement-unit preference, explicit unit suffix
 and local validation. The four controls match the 2D plan in a two-by-two layout,
 with up/down arrows to raise or lower each corner. They step by 0.1 m in metric
 or one inch in imperial, with Shift multiplying the step by ten. Reset to flat
-ground restores zero at every corner.
+ground restores zero at every corner. A Units disclosure offers the same Metric
+or Imperial preference as Explore's Preferences; both views stay in lockstep.
 These home-wide edits use ordinary history, autosave, import/export and Save.
 Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
 to edit terrain. Individual terrain zones and earthwork drawing are not exposed.
@@ -258,7 +259,10 @@ Numeric fields show local correction messages while retaining the last renderabl
 Selected outline handles take pointer priority over overlapping plan objects. Outside
 the handle hit targets, ordinary scene picking keeps its distance order.
 
-The canvas shows measurements, never paragraphs of stair errors. Placement warnings
+Measurement guides and the Measure tool keep the plan-unit portion of their
+labels unit-independent and reformat only the physical-distance portion for the
+selected preference, so copied measurements read in the viewer's units. The
+canvas shows measurements, never paragraphs of stair errors. Placement warnings
 are collapsed behind a count in the placement panel. Selected-stair warnings also
 appear in Properties; the shared Issues tray retains all contextual draft diagnostics. Warning-only stairs
 remain publishable directly through Save. This tool models a home; its

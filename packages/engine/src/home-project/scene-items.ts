@@ -1,3 +1,4 @@
+import { formatLengthPlain, readMeasurementUnits } from "../measurement-units";
 import { roomIdForItem } from "./item-rooms";
 import { roomsForFloor } from "../outdoor-platforms/platform-rooms";
 import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
@@ -100,6 +101,7 @@ const validatePlacementBounds = (
       );
     }
     const wallHeight = wall.heightMeters ?? floor.defaultWallHeightMeters;
+    const units = readMeasurementUnits();
     const bottom = placement.elevationMeters + minimumY;
     const top = placement.elevationMeters + maximumY;
     if (placement.elevationMeters < 0 || bottom < -1e-8 || top > wallHeight + 1e-8) {
@@ -107,7 +109,7 @@ const validatePlacementBounds = (
         issues,
         "project.wall-support-height",
         `${path}.elevationMeters`,
-        `Wall attachment must fit between the floor and ${wallHeight} metres.`,
+        `Wall attachment must fit between the floor and ${formatLengthPlain(wallHeight, units)}.`,
       );
     }
     return;

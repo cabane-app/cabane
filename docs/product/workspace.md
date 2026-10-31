@@ -297,18 +297,23 @@ undo/redo and import/export preserve explicit overrides.
 
 ### Measurement units
 
-Home menu → Preferences → Units selects Metric (m, m²) or Imperial (ft, ft²).
-The browser-local preference applies immediately to editor lengths and areas,
-including construction guides and copied measurements, room/pool/platform areas,
-properties, stairs, object placement, reference calibration and model imports.
+Home menu → Preferences → Units and the Construct inspector's Units disclosure
+both select Metric (m, m²) or Imperial (ft, ft²). The browser-local preference
+applies immediately to editor lengths and areas, including construction guides
+and copied measurements, room/pool/platform areas, properties, stairs, object
+placement, reference calibration and model imports.
 Lengths accept decimal commas or points and explicit m, cm, mm, ft, in, or feet
 and inches (for example `5' 6"`). Bare numbers use the selected unit. Imperial
 length adjustments use one inch, with Shift multiplying by ten. Angles, counts,
 scale multipliers and Home Assistant temperatures retain their existing units.
-Plan-coordinate inputs account for the floor's metres-per-plan-unit scale.
-Changing display units never rescales the project or rewrites its stored geometry;
-portable project formats retain their existing units. Blocked browser storage
-retains the preference for the current session.
+Plan-coordinate inputs account for the floor's metres-per-plan-unit scale, so
+their displayed values and commits follow the selected unit through that scale; a
+field without a floor scale keeps its authored number. Validation warnings that
+quote lengths use the selected units, while stored geometry, machine-readable
+paths and agent/panel channels remain metric. Changing display units never
+rescales the project or rewrites its stored geometry; portable project formats
+retain their existing units. Blocked browser storage retains the preference for
+the current session.
 
 Furniture may declare optional `entitySlots` containing manual, non-required secondary sensor or binary sensor attachments. Devices retain exactly one primary control; optional read-only attachments are validated independently of the model’s control domains. `presentation.showInScene` is opt-in map visibility. Older documents omit both fields and keep their prior behavior. Older panels reject documents containing the new fields; preserve that rejection and update the matching HACS panel before transfer.
 

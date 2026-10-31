@@ -1,4 +1,5 @@
 import { planPointToWorld, pointInsidePolygon, polygonCentroid } from "./geometry";
+import { formatLengthPlain, readMeasurementUnits } from "./measurement-units";
 import type {
   DeviceSlotSpec,
   DeviceModelDefinition,
@@ -147,6 +148,7 @@ export const validateDevicePlacementContact = ({
   room: RoomSpec;
   path: string;
 }): readonly ManifestIssue[] => {
+  const units = readMeasurementUnits();
   const issues: ManifestIssue[] = [];
   const placement = binding.placement;
   const scale = placement.scale ?? 1;
@@ -169,7 +171,7 @@ export const validateDevicePlacementContact = ({
         issue(
           "device.surface-contact",
           `${path}.placement`,
-          `Surface contact gap ${gap.toFixed(4)} m is outside 0–0.002 m.`,
+          `Surface contact gap ${formatLengthPlain(gap, units, 4)} is outside ${formatLengthPlain(0, units, 4)}–${formatLengthPlain(SURFACE_CONTACT_MAX_METERS, units, 4)}.`,
         ),
       );
     }
@@ -242,7 +244,7 @@ export const validateDevicePlacementContact = ({
       issue(
         "device.wall-contact",
         `${path}.placement.at`,
-        `Wall contact gap ${visibleGap.toFixed(4)} m is outside ${minimum.toFixed(3)}–${maximum.toFixed(3)} m.`,
+        `Wall contact gap ${formatLengthPlain(visibleGap, units, 4)} is outside ${formatLengthPlain(minimum, units, 3)}–${formatLengthPlain(maximum, units, 3)}.`,
       ),
     );
   }
@@ -267,7 +269,7 @@ export const validateDevicePlacementContact = ({
       issue(
         "device.wall-height",
         `${path}.placement.elevationMeters`,
-        `Wall-mounted device must fit between the floor and ${wallHeight.toFixed(3)} m.`,
+        `Wall-mounted device must fit between the floor and ${formatLengthPlain(wallHeight, units, 3)}.`,
       ),
     );
   }

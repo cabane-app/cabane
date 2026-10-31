@@ -136,18 +136,31 @@ export function NumericField(
 ) {
   const units = useMeasurementUnits();
   if (props.unit !== "m" && props.unit !== "plan units") return <ScalarNumericField {...props} />;
-  const scale = props.metersPerUnit ?? 1;
+  // Plan-coordinate fields are authored in plan units, whose physical size is the floor's
+  // metres-per-plan-unit scale. They follow the unit preference through that scale; fields
+  // without it (e.g. in dialogs without a floor) keep their authored number.
+  const scale = props.metersPerUnit ?? (props.unit === "plan units" ? undefined : 1);
   return (
     <ScalarNumericField
       {...props}
       key={units}
-      unit={lengthUnit(units)}
-      value={displayLength(props.value * scale, units)}
-      {...(props.min === undefined ? {} : { min: displayLength(props.min * scale, units) })}
-      stepLabel={units === "imperial" ? "1 in" : `${(props.step ?? 0.1) * scale} m`}
-      step={units === "imperial" ? 1 / 12 : (props.step ?? 0.1) * scale}
-      parseValue={(text) => displayLength(parseLength(text, units), units)}
-      onChange={(value) => props.onChange(storedLength(value, units) / scale)}
+      unit={scale === undefined ? (props.unit ?? lengthUnit(units)) : lengthUnit(units)}
+      value={scale === undefined ? props.value : displayLength(props.value * scale, units)}
+      {...(props.min === undefined || scale === undefined
+        ? {}
+        : { min: displayLength(props.min * scale, units) })}
+      stepLabel={units === "imperial" ? "1 in" : `${(props.step ?? 0.1) * (scale ?? 1)} m`}
+      step={units === "imperial" ? 1 / 12 : (props.step ?? 0.1) * (scale ?? 1)}
+      {...(scale === undefined || props.parseValue === undefined
+        ? {}
+        : {
+            parseValue: (text: string) => displayLength(parseLength(text, units), units),
+          })}
+      onChange={(value) =>
+        scale === undefined
+          ? props.onChange(value)
+          : props.onChange(storedLength(value, units) / scale)
+      }
     />
   );
 }

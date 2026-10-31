@@ -9,6 +9,8 @@ await withModules(async (load) => {
   const units = await load("/packages/engine/src/measurement-units.ts");
   const { LengthInput } = await load("/apps/web/src/editor-chrome/LengthInput.tsx");
   const { WalkPreferences } = await load("/packages/engine/src/WalkPreferences.tsx");
+  const { UnitsSettings } = await load("/apps/web/src/editor-chrome/UnitsSettings.tsx");
+  const { NumericField } = await load("/apps/web/src/editor-preview/furnish/NumericField.tsx");
   test("length input parses physical units and area conversion squares the scale", () => {
     for (const [text, system, expected] of [
       ["5' 6\"", "metric", 1.6764],
@@ -105,6 +107,96 @@ await withModules(async (load) => {
         document.querySelector('input[name="measurement-units"][value="metric"]').click(),
       );
       assert.equal(document.querySelector("input").value, "1");
+    } finally {
+      await act(() => root.unmount());
+      names.forEach((name, i) =>
+        old[i] ? Object.defineProperty(globalThis, name, old[i]) : delete globalThis[name],
+      );
+      dom.window.close();
+    }
+  });
+  test("the construct inspector offers the shared unit preference", async () => {
+    const dom = new JSDOM('<div id="root"></div>', { url: "https://cabane.test" });
+    const names = ["window", "document", "HTMLElement", "IS_REACT_ACT_ENVIRONMENT"];
+    const old = names.map((name) => Object.getOwnPropertyDescriptor(globalThis, name));
+    Object.assign(globalThis, {
+      window: dom.window,
+      document: dom.window.document,
+      HTMLElement: dom.window.HTMLElement,
+      IS_REACT_ACT_ENVIRONMENT: true,
+    });
+    const root = createRoot(document.getElementById("root"));
+    try {
+      await act(() => {
+        units.setMeasurementUnits("metric");
+        root.render(createElement(UnitsSettings));
+      });
+      const radios =
+        Array.from(document.querySelectorAll('input[name="editor-measurement-units"]')) ?? [];
+      assert.equal(radios.length, 2);
+      assert.equal(radios[0].value, "metric");
+      assert.equal(radios[0].checked, true);
+      await act(() => {
+        radios[1].click();
+      });
+      assert.equal(dom.window.localStorage.getItem("cabane.measurement-units.v1"), "imperial");
+      // The helper mirrors the session store without a React hook, so non-React validation
+      // code picks up the same preference.
+      assert.equal(units.readMeasurementUnits(), "imperial");
+      assert.equal(units.formatLengthPlain(0.3048, "metric"), "0.30 m");
+      assert.equal(units.formatLengthPlain(0.3048, "imperial", 3), "1.000 ft");
+    } finally {
+      await act(() => root.unmount());
+      names.forEach((name, i) =>
+        old[i] ? Object.defineProperty(globalThis, name, old[i]) : delete globalThis[name],
+      );
+      dom.window.close();
+    }
+  });
+
+  test("plan-unit numeric fields convert through the floor scale in the selected units", async () => {
+    const dom = new JSDOM('<div id="root"></div>', { url: "https://cabane.test" });
+    const names = ["window", "document", "HTMLElement", "IS_REACT_ACT_ENVIRONMENT"];
+    const old = names.map((name) => Object.getOwnPropertyDescriptor(globalThis, name));
+    Object.assign(globalThis, {
+      window: dom.window,
+      document: dom.window.document,
+      HTMLElement: dom.window.HTMLElement,
+      IS_REACT_ACT_ENVIRONMENT: true,
+    });
+    const root = createRoot(document.getElementById("root"));
+    const changes = [];
+    try {
+      await act(() => {
+        units.setMeasurementUnits("imperial");
+        root.render(
+          createElement(NumericField, {
+            label: "X",
+            unit: "plan units",
+            metersPerUnit: 0.5,
+            value: 4,
+            onChange: (value) => changes.push(value),
+          }),
+        );
+      });
+      const input = document.querySelector("input");
+      assert.equal(
+        input.value,
+        "6.5617",
+        "4 plan units at 0.5 m per plan unit display as 6.5617 ft",
+      );
+      await act(() => {
+        input.value = "2";
+        input.dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+      });
+      await act(() =>
+        input.dispatchEvent(new dom.window.FocusEvent("focusout", { bubbles: true })),
+      );
+      assert.deepEqual(
+        changes,
+        [1.2192],
+        "entering 2 ft at 0.5 m per plan unit stores 1.2192 plan units",
+      );
     } finally {
       await act(() => root.unmount());
       names.forEach((name, i) =>

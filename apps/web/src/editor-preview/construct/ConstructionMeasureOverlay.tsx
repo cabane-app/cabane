@@ -63,8 +63,8 @@ export function ConstructionMeasureOverlay({
           pointerEvents={onCopy ? "auto" : "none"}
         >
           <ConstructionDistanceLabel
-            label={formatLength(measurement.distanceMeters, units)}
-            copyText={formatLength(measurement.distanceMeters, units)}
+            label={`${measurement.planUnitsLabel} · ${formatLength(measurement.distanceMeters, units)}`}
+            copyText={`${measurement.planUnitsLabel} · ${formatLength(measurement.distanceMeters, units)}`}
             onCopy={onCopy}
           />
         </Html>

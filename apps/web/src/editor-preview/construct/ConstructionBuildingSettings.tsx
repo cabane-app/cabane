@@ -1,4 +1,5 @@
 import { SidebarSectionSummary } from "../../editor-chrome/SidebarSectionSummary";
+import { UnitsSettings } from "../../editor-chrome/UnitsSettings";
 import { RoofSettingsEditor } from "./RoofSettingsEditor";
 import { FloorSettingsEditor } from "./FloorSettingsEditor";
 import type { ConstructionInspectorProps } from "./ConstructionInspector";
@@ -41,6 +42,7 @@ export function ConstructionBuildingSettings({
       {northControls}
       {terrainControls}
       {walkStartControls}
+      <UnitsSettings />
       <details className="construction-inspector__floor-disclosure">
         <SidebarSectionSummary
           icon="measure"

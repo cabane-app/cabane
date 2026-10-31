@@ -63,9 +63,9 @@ Contract: [Editor coordination](../docs/product/workspace.md).
 
 Contract: [Measurement preferences](../docs/product/workspace.md).
 
-- Owners: [`packages/engine/src/measurement-units.ts`](../packages/engine/src/measurement-units.ts), [`packages/engine/src/WalkPreferences.tsx`](../packages/engine/src/WalkPreferences.tsx), [`apps/web/src/editor-chrome/LengthInput.tsx`](../apps/web/src/editor-chrome/LengthInput.tsx), [`apps/web/src/editor-preview/furnish/NumericField.tsx`](../apps/web/src/editor-preview/furnish/NumericField.tsx).
-- Interface: `useMeasurementUnits`, `formatLength`, `formatArea`, `parseLength` via [`packages/engine/src/index.ts`](../packages/engine/src/index.ts).
-- Review invariant: Convert physical measurements at the UI boundary. Browser-local unit preferences never rescale authored geometry; plan-coordinate inputs account for metersPerPlanUnit. Temperatures, angles and dimensionless values keep their own units.
+- Owners: [`packages/engine/src/measurement-units.ts`](../packages/engine/src/measurement-units.ts), [`packages/engine/src/WalkPreferences.tsx`](../packages/engine/src/WalkPreferences.tsx), [`apps/web/src/editor-chrome/UnitsSettings.tsx`](../apps/web/src/editor-chrome/UnitsSettings.tsx), [`apps/web/src/editor-chrome/LengthInput.tsx`](../apps/web/src/editor-chrome/LengthInput.tsx), [`apps/web/src/editor-preview/furnish/NumericField.tsx`](../apps/web/src/editor-preview/furnish/NumericField.tsx).
+- Interface: `useMeasurementUnits`, `readMeasurementUnits`, `formatLength`, `formatLengthPlain`, `formatArea`, `parseLength` via [`packages/engine/src/index.ts`](../packages/engine/src/index.ts).
+- Review invariant: Convert physical measurements at the UI boundary. The same browser-local preference is offered by Explore's Preferences and the Construct inspector's Units disclosure and never rescales authored geometry; React views subscribe through the hook, non-React validation reads through readMeasurementUnits. Plan-coordinate inputs account for metersPerPlanUnit; validation issue messages format lengths with formatLengthPlain. Temperatures, angles and dimensionless values keep their own units; stored geometry and machine-readable channels remain metric.
 - Checks: `verify:construct`.
 
 ### Home Assistant agent relay
