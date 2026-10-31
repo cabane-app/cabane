@@ -256,6 +256,7 @@
   border: 1px solid #c9cbbd;
   border-radius: 7px;
   background: #fffdf7;
+  color: inherit;
   font: inherit;
 }
 .workspace-dialog p {

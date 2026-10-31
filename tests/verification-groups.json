@@ -260,6 +260,7 @@
       "workspace-initialization.test.mjs",
       "workspace-library.test.mjs",
       "workspace-deletion.test.mjs",
+      "workspace-dialog-browser.test.mjs",
       "workspace-onboarding-state.test.mjs",
       "workspace-open-content.test.mjs",
       "workspace-open-link.test.mjs",
