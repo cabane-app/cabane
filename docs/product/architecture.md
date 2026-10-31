@@ -1,111 +1,92 @@
-# Architecture and ownership
+---
+areas:
+  workspaces:
+    code: [apps/web/src/workspaces/, apps/web/src/panel/, packages/engine/src/home-project/]
+    docs: [docs/product/journey.md, docs/product/workspace.md]
+  editor:
+    code:
+      [apps/web/src/editor-workspace/, apps/web/src/editor-preview/, apps/web/src/editor-connect/]
+    docs: [docs/product/construct.md, docs/product/arrange.md, docs/product/connect.md]
+  home_assistant:
+    code: [packages/engine/src/HomeAssistantRuntime.tsx, packages/engine/src/command-scheduler.ts]
+    docs: [docs/product/runtime-and-privacy.md]
+  dashboard:
+    code:
+      [
+        packages/engine/src/CabaneDashboard.tsx,
+        packages/engine/src/home-assistant-dashboard/,
+        packages/engine/src/navigation/,
+      ]
+    docs: [docs/product/dashboard-and-cameras.md]
+  rendering:
+    code:
+      [
+        packages/engine/src/architecture-scene/,
+        packages/engine/src/rendering.tsx,
+        packages/engine/src/styles.css,
+      ]
+    docs: [docs/product/geometry-and-rendering.md]
+  catalog:
+    code: [packages/catalog/src/]
+    docs: [docs/product/catalog-and-extensions.md, packages/catalog/README.md]
+  personal_models:
+    code: [apps/web/src/custom-models/, packages/engine/src/imported-models/]
+    docs: [docs/product/personal-models.md]
+  model_lighting:
+    code: [apps/web/src/model-lighting/, packages/engine/src/model-lighting/]
+    docs: [docs/product/model-lighting.md]
+  walk_tools:
+    code: [apps/web/src/walk-tools.ts, packages/walk-laser/src/, packages/engine/src/walk-tools/]
+    docs: [docs/product/dashboard-and-cameras.md#walk-tool-extensions]
+  agent_relay:
+    code: [apps/agent-cli/src/, apps/web/src/agent-pilot/]
+    docs: [docs/product/agent-pilot.md]
+  home_generation:
+    code: [home/src/]
+    docs: [home/README.md, docs/agent-home-generation.md, docs/product/generation.md]
+  verification_and_delivery:
+    code: [scripts/, tests/]
+    docs: [docs/product/verification-and-delivery.md, docs/test-guidelines.md]
+---
 
-Cabane is a client-side React/Three.js application in an npm workspace. The web
-application owns routing and browser workspace coordination; the engine owns
-schemas, validation, scene behavior, persistence, and Home Assistant integration.
-The catalog supplies procedural model definitions. The home package supplies the
-bundled owner's project and model extensions.
+# Architecture
 
-| Package               | Implemented responsibility                                                       |
-| --------------------- | -------------------------------------------------------------------------------- |
-| `apps/web`            | Workspace library and host, routes, Construct/Arrange/Connect, editor chrome     |
-| `packages/engine`     | Public contracts, project lifecycle, geometry, rendering, dashboards, HA runtime |
-| `packages/catalog`    | Stable architecture, furnishing, and device registries                           |
-| `packages/walk-laser` | Optional, lazy-loaded first-person laser experiment                              |
-| `home`                | Portable project data and two code-defined kitchen extensions                    |
+The frontmatter links each main area to code entry points and existing documentation.
+All frontmatter paths are relative to the repository root. Follow the relevant
+`docs` entry for behavior and compatibility; [PRODUCT_SPEC.md](../../PRODUCT_SPEC.md)
+indexes the product contracts.
 
-Consumers outside the engine use its public exports. Catalog access uses the
-`architecture`, `furnishing`, and `device` package subpaths. Stable model IDs take
-precedence over owner replacements where registries are composed.
+Cabane is a client-side React/Three.js application in an npm workspace:
 
-The bundled home is already furnished. Its `layout.json`, `items.json`, and
-`project.json` are authoring slices of the same serializable `HomeProject` used by
-portable import/export. `home/src/project.ts` assembles and parses them
-without a home-specific conversion layer. They initialize the demo workspace
-once. New workspaces use an empty project. Browser edits never rewrite the seed;
-the demo remains editable and deletable like any home. Only the fitted kitchen
-and its cabinet lighting require home-local model implementations.
+- `apps/web` owns startup, standalone and Home Assistant panel hosting, the workspace
+  library, routes, and the Construct, Arrange and Connect editors.
+- `packages/engine` owns project schemas, validation, persistence, geometry,
+  rendering, dashboard controls, navigation and Home Assistant runtime integration.
+- `packages/catalog` supplies reusable architecture, furniture and device definitions.
+- `packages/walk-laser` supplies the optional walk tool installed by the web host.
+- `apps/agent-cli` sends guarded editor commands through the Home Assistant agent relay.
+- `home` supplies the bundled demo project and home-specific model extensions.
 
-The workspace host loads one home and keys its runtime/editor subtree by home ID.
-Project composition uses installed registries without injecting demo shortcuts
-into other homes. Browser edits update a browser workspace. They do not rewrite the checked-in
-home package. Generated home changes and product development have different
-ownership boundaries; see [generation](generation.md).
+## Boundaries
 
-Implementation: [web startup](../../apps/web/src/main.tsx),
-[project composition](../../apps/web/src/project-runtime.ts),
-[owner project](../../home/src/project.ts),
-[owner registries](../../home/src/index.ts),
-[public engine API](../../packages/engine/src/index.ts),
-[import boundary check](../../scripts/verify-import-boundaries.mjs).
+The web host mounts a runtime and editor scoped to one workspace. Editor changes
+stay in its draft until Save publishes them. Browser edits persist in the workspace;
+source-authored homes live in `home/`. The bundled home seeds an ordinary demo
+workspace and uses the same portable project schema as other homes.
 
-[Back to product overview](../../PRODUCT_SPEC.md).
+Cross-package consumers use public exports from workspace `package.json` manifests.
+The engine exposes `@cabane/engine` and `@cabane/engine/styles.css`; the catalog
+exposes `@cabane/catalog/architecture`, `@cabane/catalog/furnishing`, and
+`@cabane/catalog/device`. The web host installs optional walk tools, keeping them
+outside the engine, catalog and home dependencies.
 
-For shortcut work, route editor changes through
-`apps/web/src/editor-action-bar/ActionBarEditor.tsx` and the atomic workspace
-callback in `editor-workspace/useEditorProjectHistory.ts`. The engine's
-`action-bar/` directory owns portable targets, HA action resolution and command
-feedback. `runtime-binding-profile.ts` and `home-project/workspace-bindings.ts`
-own the private scene/script mapping contract; the dashboard composes resolved
-labels and availability into the shared `SceneActionBar`.
-Optional walk tools are installed by the web host through `CabaneDashboard.walkTools`.
-The engine exposes `WalkToolDefinition`, `WalkToolProps`, and `raycastWalkScene` at
-its public root. A definition supplies an ID, label, icon, and scene module; its
-injected `activateTarget` accepts a modeled target and returns user-facing success
-or unavailable feedback. Runtime entity resolution and authorization remain in
-the engine. Tools receive no HA client, credentials, or household entity IDs.
+Portable projects use local binding slots. Home Assistant credentials and household
+mappings belong to the authenticated browser runtime and private workspace data.
+See [runtime and privacy](runtime-and-privacy.md) for those boundaries.
 
-`packages/walk-laser` is an optional experiment, installed only in
-`apps/web/src/walk-tools.ts`. Its scene, model, effects, input, and CSS load when
-first equipped. Equipping prepares and retains the weapon and shot-effect shader
-programs, including the host’s offscreen render variant, before trigger input.
-The engine, catalog, and home never import it. Removing that
-registration and dependency removes the feature; stored `walk-tool` shortcuts
-remain readable and render as unavailable. The generic shortcut schema retains
-unknown tool IDs to preserve portable projects between hosts with different tools.
+## Keeping this guide current
 
-Walk tools also receive `WalkToolNavigation`, a generic injected relocation
-interface. `resolveLanding` finds a clear supported floor near a world-space feet
-position; `teleport` revalidates that landing and updates the authoritative walker,
-camera, selected floor and room, resetting velocity and jump state. The controller's
-adapter lives in `walk-tools/useWalkToolNavigation.ts`; support/collision resolution
-lives in `navigation/walk-landing.ts`. Its optional terrain-support query reads the
-existing ground mesh (including pool/stair cutouts) to admit clear outdoor exits
-on the ground storey; ordinary spawn defaults are unchanged. Portal placement, pairing, traversal, input,
-and rendering remain private to `walk-laser/src/portals/`. Live destination views
-use package-private camera transforms, exit clipping, and bounded scene captures
-with the existing renderer and scene supplied by the canvas. No portal rendering
-contract or dependency is added to the engine, catalog, or home.
-
-The first gun equip shows a compact introduction styled like the editor tutorial.
-It explains device toggling and paired portal shortcuts with mouse or touch controls.
-Users dismiss it with Got it (or Enter while the pointer is captured); dismissal
-stays in browser-local storage, with a session fallback if storage is unavailable.
-
-Gun targeting supports lights, fans, AC climate modes, televisions/media players,
-and sprinkler switches or valves. One unambiguous, available binding is required;
-explicit slot targets remain scoped to that slot. Shots switch power on/off or
-open/close valves through the existing guarded runtime commands.
-
-## Engine UI styles
-
-`@cabane/engine/styles.css` is the single public stylesheet used by both the web
-app and the Home Assistant panel. Its ordered imports load global tokens, base
-rules, accessibility and animation defaults from `packages/engine/src/styles/`,
-and feature styles beside their owning React components. Keep the entry point's
-import order explicit: it preserves the existing cascade across component rules
-and layout overrides, independently of React mounting order.
-
-Room controls and device fields own their styles in `home-assistant-dashboard/`;
-status badges and overlays live in `room-status/`, scene actions in `action-bar/`,
-and mapping controls in `home-assistant-mapping/`. Root-level components retain
-adjacent stylesheets, including `camera-viewer.css` and `walk-preferences.css`.
-The `dashboard-*-layout.css` and `dashboard-compact-chrome.css` files beside
-`CabaneDashboard.tsx` coordinate multiple surfaces at existing breakpoints.
-`room-navigation/room-navigation.css` owns the coordinated room-focus frame,
-sheet placement and navigation overrides. Read it alongside the room sheet files
-when changing room-focus layout. Global reduced-motion overrides remain in
-`styles/reduced-motion.css`; feature-specific motion rules stay with their feature.
-
-Stylesheet extraction preserves selectors, declarations, conditions and source
-order. Responsive and reduced-motion behavior changes are separate product work.
+Update the affected entry when a code area moves or its documentation changes.
+Keep detailed behavior in the linked product contract and public exports in package
+manifests. Local check selection follows [AGENTS.md](../../AGENTS.md#workflow);
+commands, CI and release requirements live in [verification and delivery](verification-and-delivery.md).

@@ -1,7 +1,7 @@
 # Home-generation agent workflow
 
 Read before setting up, generating, or equipping an owner home. Product
-development uses the engineering map and product contracts instead.
+development uses the [architecture guide](product/architecture.md) and product contracts instead.
 
 ## Choose the authoring target
 

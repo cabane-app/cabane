@@ -229,7 +229,6 @@
       "editor-chrome.test.mjs",
       "editor-project-sync.test.mjs",
       "editor-workspace-history.test.mjs",
-      "engineering-map.test.mjs",
       "home-editor-history.test.mjs",
       "home-editor-integration.test.mjs",
       "home-editor-project-seed.test.mjs",

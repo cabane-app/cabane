@@ -386,3 +386,44 @@ Item state visibility offers Always, Never, and Only if present. Existing true/f
 Room labels, connection states and attached readings share one screen-space collision check and the existing viewport-dependent overlay limit. Card dimensions include multiple readings and wrapped labels; the layout follows camera movement, floor elevation and viewport resizing.
 
 Opted-in item readings appear above the furniture or device in the 3D map, with the authored label, state and reported unit. Unavailable, stale and unconnected readings show status text instead of a last-known value. These badges are non-interactive and hidden in Walk and editor previews. Auxiliary fridge/freezer telemetry does not become the room’s ambient temperature or presence. Map visibility and dashboard visibility are independent.
+
+## Walk tool extensions
+
+Optional walk tools are installed by the web host through `CabaneDashboard.walkTools`.
+The engine exposes `WalkToolDefinition`, `WalkToolProps`, and `raycastWalkScene` at
+its public root. A definition supplies an ID, label, icon, and scene module; its
+injected `activateTarget` accepts a modeled target and returns user-facing success
+or unavailable feedback. Runtime entity resolution and authorization remain in
+the engine. Tools receive no HA client, credentials, or household entity IDs.
+
+`packages/walk-laser` is an optional experiment, installed only in
+`apps/web/src/walk-tools.ts`. Its scene, model, effects, input, and CSS load when
+first equipped. Equipping prepares and retains the weapon and shot-effect shader
+programs, including the host’s offscreen render variant, before trigger input.
+The engine, catalog, and home never import it. Removing that
+registration and dependency removes the feature; stored `walk-tool` shortcuts
+remain readable and render as unavailable. The generic shortcut schema retains
+unknown tool IDs to preserve portable projects between hosts with different tools.
+
+Walk tools also receive `WalkToolNavigation`, a generic injected relocation
+interface. `resolveLanding` finds a clear supported floor near a world-space feet
+position; `teleport` revalidates that landing and updates the authoritative walker,
+camera, selected floor and room, resetting velocity and jump state. The controller's
+adapter lives in `walk-tools/useWalkToolNavigation.ts`; support/collision resolution
+lives in `navigation/walk-landing.ts`. Its optional terrain-support query reads the
+existing ground mesh (including pool/stair cutouts) to admit clear outdoor exits
+on the ground storey; ordinary spawn defaults are unchanged. Portal placement, pairing, traversal, input,
+and rendering remain private to `walk-laser/src/portals/`. Live destination views
+use package-private camera transforms, exit clipping, and bounded scene captures
+with the existing renderer and scene supplied by the canvas. No portal rendering
+contract or dependency is added to the engine, catalog, or home.
+
+The first gun equip shows a compact introduction styled like the editor tutorial.
+It explains device toggling and paired portal shortcuts with mouse or touch controls.
+Users dismiss it with Got it (or Enter while the pointer is captured); dismissal
+stays in browser-local storage, with a session fallback if storage is unavailable.
+
+Gun targeting supports lights, fans, AC climate modes, televisions/media players,
+and sprinkler switches or valves. One unambiguous, available binding is required;
+explicit slot targets remain scoped to that slot. Shots switch power on/off or
+open/close valves through the existing guarded runtime commands.

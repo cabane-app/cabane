@@ -398,3 +398,26 @@ joins are not conflicts. Detection uses transformed triangle geometry, material
 groups, and draw ranges. It is a model-space diagnostic, not a guarantee against
 all camera precision, transparency-sorting, animated intersections, or shader
 instability; the toon camera-motion regression covers the separate lighting case.
+
+## Engine UI styles
+
+`@cabane/engine/styles.css` is the single public stylesheet used by both the web
+app and the Home Assistant panel. Its ordered imports load global tokens, base
+rules, accessibility and animation defaults from `packages/engine/src/styles/`,
+and feature styles beside their owning React components. Keep the entry point's
+import order explicit: it preserves the existing cascade across component rules
+and layout overrides, independently of React mounting order.
+
+Room controls and device fields own their styles in `home-assistant-dashboard/`;
+status badges and overlays live in `room-status/`, scene actions in `action-bar/`,
+and mapping controls in `home-assistant-mapping/`. Root-level components retain
+adjacent stylesheets, including `camera-viewer.css` and `walk-preferences.css`.
+The `dashboard-*-layout.css` and `dashboard-compact-chrome.css` files beside
+`CabaneDashboard.tsx` coordinate multiple surfaces at existing breakpoints.
+`room-navigation/room-navigation.css` owns the coordinated room-focus frame,
+sheet placement and navigation overrides. Read it alongside the room sheet files
+when changing room-focus layout. Global reduced-motion overrides remain in
+`styles/reduced-motion.css`; feature-specific motion rules stay with their feature.
+
+Stylesheet extraction preserves selectors, declarations, conditions and source
+order. Responsive and reduced-motion behavior changes are separate product work.

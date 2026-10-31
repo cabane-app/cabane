@@ -1,7 +1,7 @@
 # Coding standards
 
 Read during code review, rendering or model authoring, and when designing or splitting model modules. The
-[engineering map](docs/engineering-map.md) routes to authoritative product
+[architecture guide](docs/product/architecture.md) routes to authoritative product
 contracts. Check those contracts for cross-file behavior and compatibility.
 
 ## Model cohesion
@@ -39,9 +39,9 @@ conventions in context rather than enforcing global URL or material-name bans.
 ## Contract review
 
 Check ownership, interfaces, geometry/collision agreement, saved-project
-compatibility, and verification coverage across the diff. The engineering-map
-checker validates paths and exports, not the accuracy of its prose. Update the
-routing and authoritative contract together when their responsibilities change.
+compatibility, and verification coverage across the diff. Confirm the architecture
+guide still points to the relevant code and contracts when responsibilities move.
+Update the authoritative product contract when behavior changes.
 Automated lint, type, boundary, and behavior checks complement this review.
 
 For test changes, apply the [test guidelines](docs/test-guidelines.md), including
