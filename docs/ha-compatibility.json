@@ -1199,6 +1199,12 @@
                                 "const": "passage"
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1319,6 +1325,12 @@
                                     "const": 2
                                   }
                                 ]
+                              }
+                            },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
                               }
                             },
                             "offsetFromWallStartPlanUnits": {
@@ -1477,6 +1489,12 @@
                                 ]
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1633,6 +1651,12 @@
                                 "const": "door"
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1761,6 +1785,12 @@
                                 }
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1866,6 +1896,12 @@
                               "optional": false,
                               "schema": {
                                 "const": "passage"
+                              }
+                            },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
                               }
                             },
                             "offsetFromWallStartPlanUnits": {
@@ -2790,6 +2826,12 @@
                         },
                         "id": {
                           "optional": false,
+                          "schema": {
+                            "type": "string"
+                          }
+                        },
+                        "name": {
+                          "optional": true,
                           "schema": {
                             "type": "string"
                           }
@@ -5535,6 +5577,12 @@
                               "const": "passage"
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -5655,6 +5703,12 @@
                                   "const": 2
                                 }
                               ]
+                            }
+                          },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
                             }
                           },
                           "offsetFromWallStartPlanUnits": {
@@ -5813,6 +5867,12 @@
                               ]
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -5969,6 +6029,12 @@
                               "const": "door"
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -6097,6 +6163,12 @@
                               }
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -6202,6 +6274,12 @@
                             "optional": false,
                             "schema": {
                               "const": "passage"
+                            }
+                          },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
                             }
                           },
                           "offsetFromWallStartPlanUnits": {
@@ -7126,6 +7204,12 @@
                       },
                       "id": {
                         "optional": false,
+                        "schema": {
+                          "type": "string"
+                        }
+                      },
+                      "name": {
+                        "optional": true,
                         "schema": {
                           "type": "string"
                         }

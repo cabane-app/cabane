@@ -24,6 +24,7 @@ export const FLOOR_EDITOR_EPSILON = 1e-7;
 
 export interface EditorWall {
   id: string;
+  name?: string | undefined;
   from: PlanPoint;
   to: PlanPoint;
   thicknessMeters?: number;

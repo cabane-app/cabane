@@ -89,7 +89,7 @@ export const collectBindingSlots = (
             autoMap: opening.coverSlot.autoMap,
             deviceRole: "primary",
             presentation: {
-              label: `Garage door · ${opening.id.replaceAll("-", " ")}`,
+              label: `Garage door · ${opening.name || opening.id.replaceAll("-", " ")}`,
               dashboardRole: "primary",
             },
           },
@@ -108,7 +108,7 @@ export const collectBindingSlots = (
           autoMap: opening.contactSlot.autoMap,
           deviceRole: "primary",
           presentation: {
-            label: `${opening.kind === "door" ? "Door" : "Window"} · ${opening.id.replaceAll("-", " ")}`,
+            label: `${opening.kind === "door" ? "Door" : "Window"} · ${opening.name || opening.id.replaceAll("-", " ")}`,
             dashboardRole: "diagnostic",
           },
         },

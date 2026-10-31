@@ -9,6 +9,7 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
     candidate,
     [
       "id",
+      "name",
       "from",
       "to",
       "classification",
@@ -24,6 +25,7 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
     issues,
   );
   string(candidate.id, `${path}.id`, issues);
+  if (candidate.name !== undefined) string(candidate.name, `${path}.name`, issues);
   point(candidate.from, `${path}.from`, issues);
   point(candidate.to, `${path}.to`, issues);
   if (!["interior", "exterior"].includes(String(candidate.classification))) {

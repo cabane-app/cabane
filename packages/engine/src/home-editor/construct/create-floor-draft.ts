@@ -46,6 +46,7 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
   },
   walls: floor.walls.map((wall) => ({
     id: wall.id,
+    ...(wall.name ? { name: wall.name } : {}),
     from: [...wall.from],
     to: [...wall.to],
     thicknessMeters: wall.thicknessMeters,
@@ -59,6 +60,7 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
   openings: floor.openings.map((opening) => {
     const shared = {
       id: opening.id,
+      ...(opening.name ? { name: opening.name } : {}),
       wallId: opening.wallId,
       offsetPlanUnits: opening.offsetFromWallStartPlanUnits,
       widthPlanUnits: opening.widthPlanUnits,

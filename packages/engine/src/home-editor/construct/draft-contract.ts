@@ -149,6 +149,7 @@ export type FloorEditorAction =
       changes: Partial<
         Pick<
           EditorWall,
+          | "name"
           | "thicknessMeters"
           | "heightMeters"
           | "exteriorColor"

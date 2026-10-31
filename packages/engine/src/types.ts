@@ -1,3 +1,5 @@
+import type { WallSpec, WallJunctionSpec } from "./wall-types";
+export type { WallSpec, WallJunctionSpec, WallNicheSpec } from "./wall-types";
 import type { StableDeviceModelId } from "./stable-device-model-id";
 export type { StableDeviceModelId } from "./stable-device-model-id";
 import type { ComponentType } from "react";
@@ -150,46 +152,6 @@ export interface RoomSpec {
 }
 
 /** A rectangular blind recess owned by one directed wall face. */
-export interface WallNicheSpec {
-  id: string;
-  side: "left" | "right";
-  offsetFromWallStartPlanUnits: number;
-  widthPlanUnits: number;
-  bottomMeters: number;
-  heightMeters: number;
-  depthMeters: number;
-  /** Shelf bottom heights measured upward from the niche bottom. White wall finish. */
-  shelfHeightsMeters?: readonly number[];
-  shelfThicknessMeters?: number;
-}
-
-export interface WallSpec {
-  id: string;
-  from: PlanPoint;
-  to: PlanPoint;
-  classification: "interior" | "exterior";
-  thicknessMeters: number;
-  /**
-   * A virtual wall only divides rooms: it has no geometry, collision, shadow or
-   * openings, and renders and collides as open floor.
-   */
-  virtual?: boolean;
-  niches?: readonly WallNicheSpec[];
-  heightMeters?: number;
-  exteriorColor?: string;
-  edgeColor?: string;
-  faceColors?: {
-    left?: string;
-    right?: string;
-  };
-}
-
-export interface WallJunctionSpec {
-  id: string;
-  at: PlanPoint;
-  wallIds: readonly [string, string, ...string[]];
-}
-
 export interface OpeningContactSlotSpec {
   id: string;
   compatibleDeviceClasses: readonly ("door" | "window" | "opening")[];
@@ -199,6 +161,7 @@ export interface OpeningContactSlotSpec {
 
 export interface OpeningBaseSpec {
   id: string;
+  name?: string;
   wallId: string;
   offsetFromWallStartPlanUnits: number;
   widthPlanUnits: number;

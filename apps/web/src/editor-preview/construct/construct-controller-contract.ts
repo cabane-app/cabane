@@ -114,7 +114,13 @@ export interface ConstructEditorController extends ConstructEditorState {
     changes: Partial<
       Pick<
         EditorWall,
-        "thicknessMeters" | "heightMeters" | "exteriorColor" | "edgeColor" | "faceColors" | "niches"
+        | "name"
+        | "thicknessMeters"
+        | "heightMeters"
+        | "exteriorColor"
+        | "edgeColor"
+        | "faceColors"
+        | "niches"
       >
     >,
   ) => void;

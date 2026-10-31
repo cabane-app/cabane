@@ -16,6 +16,13 @@ the scene immediately. Sizes that do not fit report an error; leaving the field
 restores the accepted value. These edits use the ordinary
 preview, undo/redo, autosave, and Apply flow.
 
+Doors, windows, passages, and walls (including invisible walls) expose a Name field
+above Dimensions in Properties. Unnamed items display their existing identifier.
+Enter or leaving the field commits a trimmed name; Escape cancels the edit.
+Clearing the field restores the identifier fallback. Names persist through history,
+reopening, export/import and Apply. Door/window connection labels use the custom
+name while architectural identifiers, binding slots and existing mappings stay unchanged.
+
 Add floor above/below opens a dialog with an empty-plan default and a
 “Duplicate this floor” option for the selected floor. Copies are appended above
 the top floor or below the lowest basement, and retain the source floor's height,

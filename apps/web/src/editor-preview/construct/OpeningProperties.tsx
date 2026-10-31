@@ -1,3 +1,4 @@
+import { CommittedTextInput } from "./CommittedTextInput";
 import { LengthInput } from "../../editor-chrome/LengthInput";
 import type { ReactNode } from "react";
 import { OpeningColorControls } from "./OpeningColorControls";
@@ -46,6 +47,19 @@ export function OpeningProperties({
   );
   return (
     <>
+      <fieldset>
+        <legend>Name</legend>
+        <CommittedTextInput
+          key={selectedOpening.id}
+          label="Opening name"
+          value={selectedOpening.name ?? ""}
+          placeholder={selectedOpening.id}
+          onCommit={(name) => {
+            const { name: _name, ...opening } = selectedOpening;
+            editor.replaceSelectedOpening({ ...opening, ...(name ? { name } : {}) });
+          }}
+        />
+      </fieldset>
       <fieldset>
         <legend>Dimensions</legend>
         <label>
@@ -109,6 +123,7 @@ export function OpeningProperties({
             );
             editor.replaceSelectedOpening({
               ...door,
+              ...(selectedOpening.name ? { name: selectedOpening.name } : {}),
               offsetPlanUnits: offsetFromWallStartPlanUnits,
             });
           };

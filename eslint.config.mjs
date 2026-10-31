@@ -19,8 +19,8 @@ const existingFileLineLimits = {
   "packages/engine/src/ValidatedDashboardView.tsx": 700,
   "packages/engine/src/home-assistant-mapping/DeviceMappingInspector.tsx": 560,
   "packages/engine/src/home-editor/construct/draft-reducer.ts": 598,
-  "packages/engine/src/home-project/schema.ts": 707,
-  "packages/engine/src/types.ts": 739,
+  "packages/engine/src/home-project/schema.ts": 556,
+  "packages/engine/src/types.ts": 709,
 };
 const fileLineLimit = (max) => ["error", { max, skipBlankLines: true, skipComments: true }];
 
