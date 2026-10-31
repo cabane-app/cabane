@@ -232,8 +232,8 @@ await withModules(async (load) => {
     "clip-reading-lamp",
     "woven-pendant",
     "children-pendant",
-    "guarded-platform-fan",
-    "inline-duct-fan",
+    "computer-fan",
+    "ventilation-fan",
   ];
 
   test("irrigation sprinklers animate only while active and respect reduced motion", async () => {
@@ -460,8 +460,8 @@ await withModules(async (load) => {
       "motorized-blind",
       "integrated-roller-shutter",
       "leak-sensor",
-      "guarded-platform-fan",
-      "inline-duct-fan",
+      "computer-fan",
+      "ventilation-fan",
       "ceiling-fan",
       "table-fan",
       "pedestal-fan",
@@ -520,7 +520,7 @@ await withModules(async (load) => {
               ? 35
               : id === "pergola-string-lights"
                 ? 17
-                : id === "guarded-platform-fan"
+                : id === "computer-fan"
                   ? 20
                   : 16),
       );
@@ -1292,8 +1292,8 @@ await withModules(async (load) => {
   test("compact fan geometry preserves the legacy silhouettes and fan binding", async () => {
     const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
     for (const [id, bladeCount] of [
-      ["guarded-platform-fan", 5],
-      ["inline-duct-fan", 3],
+      ["computer-fan", 5],
+      ["ventilation-fan", 3],
     ]) {
       const definition = catalog.stableDeviceRegistry[id];
       const binding = room.devices.find((device) => device.model === id);
@@ -1390,7 +1390,7 @@ await withModules(async (load) => {
 
   test("compact fan rotors follow HA speed and stop when inactive", async () => {
     const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
-    for (const id of ["guarded-platform-fan", "inline-duct-fan"]) {
+    for (const id of ["computer-fan", "ventilation-fan"]) {
       const definition = catalog.stableDeviceRegistry[id];
       const binding = room.devices.find((device) => device.model === id);
       const baseState =

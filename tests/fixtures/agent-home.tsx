@@ -507,11 +507,9 @@ const studioDevices: HomeManifest["floors"][number]["rooms"][number]["devices"] 
     },
   },
   {
-    id: "fixture-guarded-platform-fan",
-    model: "guarded-platform-fan",
-    entitySlots: [
-      entitySlot("fixture-guarded-platform-fan-entity", ["fan"], "Guarded fan", "secondary"),
-    ],
+    id: "fixture-computer-fan",
+    model: "computer-fan",
+    entitySlots: [entitySlot("fixture-computer-fan-entity", ["fan"], "Computer fan", "secondary")],
     placement: {
       at: [1.1, 3.5],
       elevationMeters: 0,
@@ -519,9 +517,11 @@ const studioDevices: HomeManifest["floors"][number]["rooms"][number]["devices"] 
     },
   },
   {
-    id: "fixture-inline-duct-fan",
-    model: "inline-duct-fan",
-    entitySlots: [entitySlot("fixture-inline-duct-fan-entity", ["fan"], "Inline fan", "secondary")],
+    id: "fixture-ventilation-fan",
+    model: "ventilation-fan",
+    entitySlots: [
+      entitySlot("fixture-ventilation-fan-entity", ["fan"], "Ventilation fan", "secondary"),
+    ],
     placement: {
       at: [1.4, 3.5],
       elevationMeters: 0,
@@ -611,13 +611,13 @@ export const fixtureCatalogStates: Readonly<Record<EntityId, EntityStateSnapshot
     preset_modes: ["normal", "sleep"],
     preset_mode: "normal",
   }),
-  "fan.fixture_guarded_platform_fan": state("fan.fixture_guarded_platform_fan", "on", {
-    friendly_name: "Guarded fan",
+  "fan.fixture_computer_fan": state("fan.fixture_computer_fan", "on", {
+    friendly_name: "Computer fan",
     percentage: 50,
     percentage_step: 10,
   }),
-  "fan.fixture_inline_duct_fan": state("fan.fixture_inline_duct_fan", "on", {
-    friendly_name: "Inline fan",
+  "fan.fixture_ventilation_fan": state("fan.fixture_ventilation_fan", "on", {
+    friendly_name: "Ventilation fan",
     percentage: 50,
     percentage_step: 10,
   }),
@@ -715,8 +715,8 @@ export const equippedFixtureProfile = {
     "fixture-pedestal-fan-entity": "fan.fixture_pedestal_fan",
     "fixture-table-fan-entity": "fan.fixture_table_fan",
     "fixture-ceiling-fan-entity": "fan.fixture_ceiling_fan",
-    "fixture-guarded-platform-fan-entity": "fan.fixture_guarded_platform_fan",
-    "fixture-inline-duct-fan-entity": "fan.fixture_inline_duct_fan",
+    "fixture-computer-fan-entity": "fan.fixture_computer_fan",
+    "fixture-ventilation-fan-entity": "fan.fixture_ventilation_fan",
   },
 };
 

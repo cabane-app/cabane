@@ -356,13 +356,13 @@ according to the bound entity's capabilities.
 Dimensions are **width × depth × height in centimetres**, including the base,
 guard, and motor; animation waves are outside the physical placement envelope.
 
-| Model ID               | Public component          | Default dimensions | Finish and construction                                                        | Arrange room |
-| ---------------------- | ------------------------- | ------------------ | ------------------------------------------------------------------------------ | ------------ |
-| `ceiling-fan`          | `CeilingFanModel`         | 120 × 120 × 40     | Four rounded wood blades, off-white motor/canopy, grey downrod                 | Living room  |
-| `table-fan`            | `TableFanModel`           | 36 × 24 × 48       | Three blades, front/back wire guards, off-white base and short neck            | Office       |
-| `pedestal-fan`         | `PedestalFanModel`        | 45 × 40 × 135      | Three blades, front/back wire guards, off-white round base and telescopic post | Bedroom      |
-| `guarded-platform-fan` | `GuardedPlatformFanModel` | 14 × 14 × 3        | Five-blade upward rotor, square dark mount, raised wire guard                  | Living room  |
-| `inline-duct-fan`      | `InlineDuctFanModel`      | 14 × 14 × 30       | Pale cylindrical duct housing with three-blade internal rotor and collars      | Living room  |
+| Model ID          | Public component      | Default dimensions | Finish and construction                                                        | Arrange room |
+| ----------------- | --------------------- | ------------------ | ------------------------------------------------------------------------------ | ------------ |
+| `ceiling-fan`     | `CeilingFanModel`     | 120 × 120 × 40     | Four rounded wood blades, off-white motor/canopy, grey downrod                 | Living room  |
+| `table-fan`       | `TableFanModel`       | 36 × 24 × 48       | Three blades, front/back wire guards, off-white base and short neck            | Office       |
+| `pedestal-fan`    | `PedestalFanModel`    | 45 × 40 × 135      | Three blades, front/back wire guards, off-white round base and telescopic post | Bedroom      |
+| `computer-fan`    | `ComputerFanModel`    | 14 × 14 × 3        | Five-blade upward rotor, square dark mount, raised wire guard                  | Living room  |
+| `ventilation-fan` | `VentilationFanModel` | 14 × 14 × 30       | Pale cylindrical housing with three-blade internal rotor and collars           | Living room  |
 
 These are generic presets; all dimensions, proportions, and finishes are
 inferred, with no manufacturer reference. The existing generic fans support

@@ -6,7 +6,7 @@ import { palette, StatusBeacon } from "../../visuals/device-visual-state";
 import { fanSpeedFactor } from "./fan-operation";
 import { PlatformFanGuardWire } from "./platform-fan-guard-wire";
 
-export const GUARDED_PLATFORM_FAN_SIZE = [0.14, 0.03, 0.14] as const;
+export const COMPUTER_FAN_SIZE = [0.14, 0.03, 0.14] as const;
 
 const frame = new Shape();
 frame.moveTo(-0.07, -0.07);
@@ -18,12 +18,8 @@ const aperture = new Path();
 aperture.absarc(0, 0, 0.056, 0, Math.PI * 2, true);
 frame.holes.push(aperture);
 
-/** The small upward-facing guarded fan. */
-export function GuardedPlatformFanModel({
-  state,
-  visualState,
-  reducedMotion,
-}: HomeDeviceModelProps) {
+/** A compact computer fan with a protective guard. */
+export function ComputerFanModel({ state, visualState, reducedMotion }: HomeDeviceModelProps) {
   const rotor = useRef<Group>(null);
   const speed = fanSpeedFactor({ ...(state === undefined ? {} : { state }), visualState });
   useFrame(({ invalidate }, delta) => {
@@ -35,12 +31,12 @@ export function GuardedPlatformFanModel({
 
   const corner = 0.057 / Math.sqrt(2);
   return (
-    <group name="catalog-guarded-platform-fan">
-      <mesh name="platform-fan-mount" rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
+    <group name="catalog-computer-fan">
+      <mesh name="computer-fan-mount" rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
         <extrudeGeometry args={[frame, { depth: 0.012, bevelEnabled: false, curveSegments: 24 }]} />
         <ToonMaterial color="#252b29" />
       </mesh>
-      <mesh name="platform-fan-hub" position={[0, 0.016, 0]} castShadow receiveShadow>
+      <mesh name="computer-fan-hub" position={[0, 0.016, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.012, 0.012, 0.016, 12]} />
         <ToonMaterial color="#303733" />
       </mesh>
@@ -48,7 +44,7 @@ export function GuardedPlatformFanModel({
         {Array.from({ length: 5 }, (_, index) => (
           <group key={index} rotation={[0, (index * Math.PI * 2) / 5, 0]}>
             <mesh
-              name={`platform-fan-blade-${index}`}
+              name={`computer-fan-blade-${index}`}
               position={[0.026, 0.013, 0]}
               rotation={[0, 0.35, 0]}
               castShadow
@@ -63,7 +59,7 @@ export function GuardedPlatformFanModel({
       {[0.02, 0.038, 0.057].map((radius) => (
         <mesh
           key={radius}
-          name={`platform-fan-guard-ring-${radius}`}
+          name={`computer-fan-guard-ring-${radius}`}
           position={[0, 0.0285, 0]}
           rotation={[Math.PI / 2, 0, 0]}
           castShadow
@@ -77,12 +73,12 @@ export function GuardedPlatformFanModel({
         [-1, 1].map((z) => (
           <group key={`${x}:${z}`}>
             <PlatformFanGuardWire
-              name={`platform-fan-guard-spoke-${x}:${z}`}
+              name={`computer-fan-guard-spoke-${x}:${z}`}
               from={[0, 0.0285, 0]}
               to={[x * corner, 0.0285, z * corner]}
             />
             <PlatformFanGuardWire
-              name={`platform-fan-guard-leg-${x}:${z}`}
+              name={`computer-fan-guard-leg-${x}:${z}`}
               from={[x * corner, 0.0285, z * corner]}
               to={[x * 0.063, 0.0115, z * 0.063]}
             />

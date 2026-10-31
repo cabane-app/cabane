@@ -5,10 +5,10 @@ import { ToonMaterial, type HomeDeviceModelProps } from "@cabane/engine";
 import { StatusBeacon } from "../../visuals/device-visual-state";
 import { fanSpeedFactor } from "./fan-operation";
 
-export const INLINE_DUCT_FAN_SIZE = [0.14, 0.3, 0.14] as const;
+export const VENTILATION_FAN_SIZE = [0.14, 0.3, 0.14] as const;
 
-/** The cylindrical inline fan. */
-export function InlineDuctFanModel({ state, visualState, reducedMotion }: HomeDeviceModelProps) {
+/** A compact consumer-facing ventilation fan. */
+export function VentilationFanModel({ state, visualState, reducedMotion }: HomeDeviceModelProps) {
   const rotor = useRef<Group>(null);
   const speed = fanSpeedFactor({ ...(state === undefined ? {} : { state }), visualState });
   useFrame(({ invalidate }, delta) => {
@@ -19,15 +19,15 @@ export function InlineDuctFanModel({ state, visualState, reducedMotion }: HomeDe
   });
 
   return (
-    <group name="catalog-inline-duct-fan">
-      <mesh name="duct-fan-housing" position={[0, 0.15, 0]} castShadow receiveShadow>
+    <group name="catalog-ventilation-fan">
+      <mesh name="ventilation-fan-housing" position={[0, 0.15, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.067, 0.067, 0.3, 24, 1, true]} />
         <ToonMaterial color="#e8e6df" />
       </mesh>
       {[0.006, 0.15, 0.294].map((y) => (
         <mesh
           key={y}
-          name={`duct-fan-collar-${y}`}
+          name={`ventilation-fan-collar-${y}`}
           position={[0, y, 0]}
           rotation={[Math.PI / 2, 0, 0]}
           castShadow
@@ -37,11 +37,11 @@ export function InlineDuctFanModel({ state, visualState, reducedMotion }: HomeDe
           <ToonMaterial color="#e8e6df" />
         </mesh>
       ))}
-      <mesh name="duct-fan-inner-sleeve" position={[0, 0.15, 0]}>
+      <mesh name="ventilation-fan-inner-sleeve" position={[0, 0.15, 0]}>
         <cylinderGeometry args={[0.061, 0.061, 0.29, 24, 1, true]} />
         <ToonMaterial color="#9d9c95" />
       </mesh>
-      <mesh name="duct-fan-hub" position={[0, 0.15, 0]}>
+      <mesh name="ventilation-fan-hub" position={[0, 0.15, 0]}>
         <cylinderGeometry args={[0.013, 0.013, 0.02, 12]} />
         <ToonMaterial color="#b9b5aa" />
       </mesh>
@@ -49,7 +49,7 @@ export function InlineDuctFanModel({ state, visualState, reducedMotion }: HomeDe
         {[0, 1, 2].map((index) => (
           <group key={index} rotation={[0, (index * Math.PI * 2) / 3, 0]}>
             <mesh
-              name={`duct-fan-blade-${index}`}
+              name={`ventilation-fan-blade-${index}`}
               position={[0.032, 0.15, 0]}
               rotation={[0.25, 0.35, 0]}
             >

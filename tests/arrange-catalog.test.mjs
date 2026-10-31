@@ -397,8 +397,8 @@ await withModules(async (load) => {
       "ceiling-fan",
       "table-fan",
       "pedestal-fan",
-      "guarded-platform-fan",
-      "inline-duct-fan",
+      "computer-fan",
+      "ventilation-fan",
     ]) {
       const entry = get(modelId);
       const candidate = catalogStartPlacement(entry, floor, [2, 2]);
@@ -725,10 +725,10 @@ await withModules(async (load) => {
       [
         "bathroom-extractor-fan",
         "ceiling-fan",
-        "guarded-platform-fan",
-        "inline-duct-fan",
+        "computer-fan",
         "pedestal-fan",
         "table-fan",
+        "ventilation-fan",
       ],
     );
     assert.deepEqual(
@@ -737,7 +737,7 @@ await withModules(async (load) => {
     );
     assert.deepEqual(
       filterCatalog(entries, "living-room", "fan").map((entry) => entry.modelId),
-      ["ceiling-fan", "guarded-platform-fan", "inline-duct-fan"],
+      ["ceiling-fan", "computer-fan", "ventilation-fan"],
     );
     assert.equal(filterCatalog(entries, "bedroom", "fan")[0].modelId, "pedestal-fan");
     assert.equal(filterCatalog(entries, "living-room", "fan")[0].modelId, "ceiling-fan");
@@ -937,8 +937,8 @@ await withModules(async (load) => {
       "ceiling-fan",
       "table-fan",
       "pedestal-fan",
-      "guarded-platform-fan",
-      "inline-duct-fan",
+      "computer-fan",
+      "ventilation-fan",
     ]) {
       const entry = get(modelId);
       const candidate = placementCandidate(entry, floor, {

@@ -1,18 +1,15 @@
 import { defineDeviceModel } from "@cabane/engine";
-import {
-  GuardedPlatformFanModel,
-  GUARDED_PLATFORM_FAN_SIZE,
-} from "../presets/fans/guarded-platform-fan";
-import { InlineDuctFanModel, INLINE_DUCT_FAN_SIZE } from "../presets/fans/inline-duct-fan";
+import { ComputerFanModel, COMPUTER_FAN_SIZE } from "../presets/fans/computer-fan";
+import { VentilationFanModel, VENTILATION_FAN_SIZE } from "../presets/fans/ventilation-fan";
 
 const interaction = { target: "device-dashboard" as const, tapTolerancePixels: 10 };
 
-export const guardedPlatformFanDefinition = defineDeviceModel({
+export const computerFanDefinition = defineDeviceModel({
   defaultRoomType: "living-room",
-  component: GuardedPlatformFanModel,
-  label: "Guarded fan",
+  component: ComputerFanModel,
+  label: "Computer fan",
   category: "Climate",
-  defaultSize: GUARDED_PLATFORM_FAN_SIZE,
+  defaultSize: COMPUTER_FAN_SIZE,
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   supportedDomains: ["fan"],
@@ -23,12 +20,12 @@ export const guardedPlatformFanDefinition = defineDeviceModel({
   complexity: { visibleMeshes: 20, triangles: 4_500 },
 });
 
-export const inlineDuctFanDefinition = defineDeviceModel({
+export const ventilationFanDefinition = defineDeviceModel({
   defaultRoomType: "living-room",
-  component: InlineDuctFanModel,
-  label: "Inline fan",
+  component: VentilationFanModel,
+  label: "Ventilation fan",
   category: "Climate",
-  defaultSize: INLINE_DUCT_FAN_SIZE,
+  defaultSize: VENTILATION_FAN_SIZE,
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   supportedDomains: ["fan"],
