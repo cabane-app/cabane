@@ -8,6 +8,7 @@ import { astroParallelWallLightDeviceDefinition } from "./definitions/astro-para
 import { clipReadingLampDeviceDefinition } from "./definitions/clip-reading-lamp";
 import { oakWallUplightDeviceDefinition } from "./definitions/oak-wall-uplight";
 import { roundGlobeWallLampDeviceDefinition } from "./definitions/round-globe-wall-lamp";
+import { smokedGlobeWallLightDeviceDefinition } from "./definitions/smoked-globe-wall-light";
 import { sixGlobeCeilingLampDeviceDefinition } from "./definitions/six-globe-ceiling-lamp";
 import { tubularWallLampDeviceDefinition } from "./definitions/tubular-wall-lamp";
 import { wallReadingSpotDeviceDefinition } from "./definitions/wall-reading-spot";
@@ -300,6 +301,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
   }),
   "rattan-bell-pendant": rattanBellPendantDeviceDefinition,
   "round-globe-wall-lamp": roundGlobeWallLampDeviceDefinition,
+  "smoked-globe-wall-light": smokedGlobeWallLightDeviceDefinition,
   "wall-reading-spot": wallReadingSpotDeviceDefinition,
   "oak-wall-uplight": oakWallUplightDeviceDefinition,
   "six-globe-ceiling-lamp": sixGlobeCeilingLampDeviceDefinition,
