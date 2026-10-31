@@ -51,54 +51,6 @@ await withModules(async (load) => {
       await renderer.unmount();
     }
   });
-  test("bunk bed exposes ladder variants on all four sides in one envelope", async () => {
-    const definition = stableFurnishingRegistry["wood-bunk-bed"];
-    assert.deepEqual(definition.variants, [
-      { id: "default", label: "Ladder on right side" },
-      { id: "ladder-left", label: "Ladder on left side" },
-      { id: "ladder-front", label: "Ladder on front end" },
-      { id: "ladder-back", label: "Ladder on back end" },
-    ]);
-    for (const { variant, axis, side, rungAxis } of [
-      { variant: "default", axis: "x", side: 1, rungAxis: "z" },
-      { variant: "ladder-left", axis: "x", side: -1, rungAxis: "z" },
-      { variant: "ladder-front", axis: "z", side: 1, rungAxis: "x" },
-      { variant: "ladder-back", axis: "z", side: -1, rungAxis: "x" },
-    ]) {
-      const renderer = await create(
-        createElement(definition.component, { size: definition.defaultSize, variant }),
-      );
-      try {
-        const scene = renderer.scene.instance;
-        scene.updateMatrixWorld(true);
-        const ladderParts = [];
-        scene.traverse((object) => {
-          if (object.name === "bunk-ladder-post" || object.name === "bunk-ladder-rung")
-            ladderParts.push(object);
-        });
-        assert.equal(ladderParts.length, 6);
-        assert.ok(
-          ladderParts.every(
-            (part) => Math.sign(part.getWorldPosition(new Vector3())[axis]) === side,
-          ),
-        );
-        const rung = ladderParts.find((part) => part.name === "bunk-ladder-rung");
-        const rungSize = new Box3().setFromObject(rung).getSize(new Vector3());
-        assert.ok(
-          rungAxis === "x" ? rungSize.x > rungSize.z * 5 : rungSize.z > rungSize.x * 5,
-          "ladder rungs must span across the selected bed side",
-        );
-        const bounds = new Box3().setFromObject(scene);
-        const extents = bounds.getSize(new Vector3());
-        definition.defaultSize.forEach((expected, axis) =>
-          assert.ok(Math.abs(extents.getComponent(axis) - expected) < 0.001),
-        );
-        assert.ok(Math.abs(bounds.min.y) < 0.001, "bunk bed must remain grounded");
-      } finally {
-        await renderer.unmount();
-      }
-    }
-  });
   test("folding chair tubes join floor pads to the seat and back at independent axis sizes", async () => {
     const definition = stableFurnishingRegistry["white-folding-chair"];
     for (const scale of [

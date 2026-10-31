@@ -11,6 +11,10 @@ commands. Command setup and required delivery gates live in
   with isolated fake IndexedDB when storage behavior matters.
 - Inspect existing coverage first. Do not duplicate a behavior matrix in Chromium
   when Node already verifies it. Minor features generally need no browser test.
+- Catalog presets use the existing shared geometry, registry, resizing, and surface
+  checks. Add a preset-specific test only for a specific new behavior or a concrete
+  behavioral regression. Adding a preset or variant, changing its appearance, or
+  restating its metadata and dimensions does not justify a dedicated test.
 - Reserve Chromium for a concrete browser-only risk, such as file-picker wiring,
   WebGL resource behavior, or native host integration. State that risk in the test.
   Keep one simple smoke per risk; avoid multi-feature journeys, repeated navigation,

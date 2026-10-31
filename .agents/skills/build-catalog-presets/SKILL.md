@@ -123,9 +123,9 @@ npm run build
 
 Confirm those commands still exist. Adjust the test selection for device changes
 or a changed integration surface. Preserve coverage when a formerly empty room
-filter gains entries. The existing furnishing tests exercise actual geometry,
-registry dimensions, and allowed axis resizing; extend them for a new behavior
-rather than creating tests that only repeat the implementation. Use focused
+filter gains entries. Follow the [catalog preset test policy](../../../docs/test-guidelines.md#choose-the-cheapest-meaningful-check)
+when deciding whether a specific new behavior needs coverage; ordinary preset
+and variant additions use the existing shared checks. Use focused
 checks while fixing a failure, then complete the applicable batch checks. Do not
 run room-stage evidence commands or repeatedly rebuild after each item.
 
