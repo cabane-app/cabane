@@ -183,13 +183,13 @@ export function HomeAssistantSceneLighting({
         ...("strip" in source && source.strip
           ? {
               strip: {
+                ...source.strip,
                 end: deviceLightPosition(
                   transform.position,
                   transform.rotationYRadians,
                   scale,
                   source.strip.end,
                 ),
-                samples: source.strip.samples,
               },
             }
           : {}),

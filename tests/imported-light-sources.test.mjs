@@ -43,6 +43,11 @@ await withModules(async (load) => {
           emissiveMaterials: ["Diffuser"],
         },
         { ...light, strip: { end: [2, 0.2, 0], samples: 20 }, emissiveMaterials: ["Diffuser"] },
+        {
+          ...light,
+          strip: { end: [2, 0.2, 0], samples: 2, maxSpacingMeters: 0.6 },
+          emissiveMaterials: ["Diffuser"],
+        },
         { ...light, strip: { end: [2, 0.2, 0], samples: 4294967296 } },
         { ...light, points: Array.from({ length: 20 }, (_, i) => [i / 10, 0.2, 0]) },
         {
@@ -55,6 +60,7 @@ await withModules(async (load) => {
               start: [-1, i / 4, 0],
               end: [1, i / 4, 0],
               samples: 12,
+              maxSpacingMeters: 0.6,
             })),
           ],
         },
@@ -77,6 +83,17 @@ await withModules(async (load) => {
         { strip: { end: [2, 0, 0], samples: 1 } },
         { sources: [{ kind: "strip", start: [0, 0, 0], end: [0, 0, 0], samples: 2 }] },
         { sources: [{ kind: "strip", start: [0, 0, 0], end: [1, 0, 0], samples: 2.5 }] },
+        {
+          sources: [
+            {
+              kind: "strip",
+              start: [0, 0, 0],
+              end: [1, 0, 0],
+              samples: 2,
+              maxSpacingMeters: 0,
+            },
+          ],
+        },
         { sources: [{ kind: "point", position: [0, 0, 0], extra: true }] },
         { sources: [{ kind: "area", position: [0, 0, 0] }] },
         { sources: [], points: [] },
@@ -128,6 +145,34 @@ await withModules(async (load) => {
     assert.ok(Math.abs(mixed.reduce((sum, source) => sum + source.maxIntensity, 0) - 6) < 1e-8);
     assert.deepEqual(api.importedLightSources({ ...light, sources: [] }), []);
     assert.deepEqual(api.importedLightSources(light), [light]);
+  });
+
+  test("adaptive strip samples follow transformed length and preserve the authored minimum", () => {
+    const adaptive = {
+      ...light,
+      position: [0, 0.2, 0],
+      strip: { end: [1, 0.2, 0], samples: 2, maxSpacingMeters: 0.6 },
+    };
+    const short = api.importedLightSources(adaptive);
+    assert.equal(short.length, 3);
+    assert.deepEqual(
+      short.map((source) => source.position[0]),
+      [0, 0.5, 1],
+    );
+    assert.ok(Math.abs(short.reduce((sum, source) => sum + source.maxIntensity, 0) - 6) < 1e-8);
+
+    const long = api.importedLightSources({
+      ...adaptive,
+      strip: { ...adaptive.strip, end: [3.1, 0.2, 0] },
+    });
+    assert.equal(long.length, 7);
+    assert.deepEqual([long[0].position[0], long.at(-1).position[0]], [0, 3.1]);
+
+    const minimum = api.importedLightSources({
+      ...adaptive,
+      strip: { ...adaptive.strip, samples: 9 },
+    });
+    assert.equal(minimum.length, 9);
   });
 
   test("schema-valid excessive sample requests use bounded execution without rewriting intent", () => {
@@ -356,6 +401,77 @@ await withModules(async (load) => {
     }
   });
 
+  test("adaptive strips derive their emitter count from the resized instance", async () => {
+    const fixture = personalScaleFixture();
+    const model = {
+      ...fixture.project.customModels[0],
+      light: {
+        ...light,
+        position: [-0.5, 0.3, 0],
+        strip: { end: [0.5, 0.3, 0], samples: 2, maxSpacingMeters: 0.6 },
+      },
+    };
+    const registries = api.resolveProjectModels(
+      { customModels: [model] },
+      { deviceModels: {}, furnishingModels: {} },
+    );
+    const original = fixture.project.sceneItems[0];
+    const item = {
+      ...original,
+      size: [4, original.size[1], original.size[2]],
+      placement: {
+        kind: "absolute",
+        at: [3, 4],
+        elevationMeters: 0,
+        rotationYRadians: 0,
+      },
+    };
+    const roomId = fixture.manifest.floors[0].rooms[0].id;
+    const renderer = await create(
+      React.createElement(api.HomeAssistantSceneLighting, {
+        floor: fixture.manifest.floors[0],
+        deviceModels: registries.deviceModels,
+        extensionDeviceModels: {},
+        sceneItems: [item],
+        resolvedBindings: {
+          rooms: {
+            [roomId]: {
+              devices: [
+                {
+                  slot: { ...original, model: model.id, entitySlots: item.entitySlots },
+                  entities: [{ domain: "light", slotId: item.entitySlots[0].id, state: state() }],
+                },
+              ],
+              sections: {},
+            },
+          },
+        },
+      }),
+    );
+    try {
+      const lights = renderer.scene
+        .findAll((node) => node.instance.isPointLight)
+        .map((node) => node.instance);
+      assert.equal(lights.length, 8);
+      const transform = api.resolveItemTransform(item.placement, fixture.manifest.floors[0]);
+      assert.ok(
+        Math.abs(lights[0].position.x - (transform.position[0] - 2)) < 1e-8,
+        "adaptive strip must retain its transformed start endpoint",
+      );
+      assert.ok(
+        Math.abs(lights.at(-1).position.x - (transform.position[0] + 2)) < 1e-8,
+        "adaptive strip must retain its transformed end endpoint",
+      );
+      assert.ok(
+        Math.abs(lights.reduce((sum, source) => sum + source.intensity, 0) - (6 * 128) / 255) <
+          1e-8,
+        "adaptive sampling must conserve total brightness",
+      );
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("emissive materials are instance-owned, state-driven and disposed without touching shared maps or geometry", async () => {
     const resource = await api.openGlbPreview(
       testGlb({
@@ -482,6 +598,7 @@ await withModules(async (load) => {
       assert.equal(current.sources.length, 11);
       const strip = current.sources.at(-1);
       assert.equal(strip.samples, 7);
+      assert.equal(strip.maxSpacingMeters, api.DEFAULT_STRIP_MAX_SPACING_METERS);
       await dom.click("End");
       await act(async () => dom.document.querySelector('[aria-label="Increase Y"]').click());
       assert.equal(current.sources.at(-1).end[1], Number((strip.end[1] + 0.01).toFixed(6)));
@@ -513,6 +630,11 @@ await withModules(async (load) => {
         current.sources.at(-1).samples,
         12,
         "fitting does not overwrite the chosen count",
+      );
+      assert.equal(
+        current.sources.at(-1).maxSpacingMeters,
+        api.DEFAULT_STRIP_MAX_SPACING_METERS,
+        "fitting preserves adaptive strip spacing",
       );
       await act(async () => {
         const input = dom.document.querySelector('[aria-label="Strip sample count"]');

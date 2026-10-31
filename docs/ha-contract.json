@@ -1,9 +1,9 @@
 {
-  "revision": 27,
-  "fingerprint": "7438347af96fab36b08a7ee845d25d092860385ff5455b5a713377b3bc5795ce",
-  "summary": "Warn about disconnected terrain exits and stabilize terrace clipping",
+  "revision": 28,
+  "fingerprint": "eecb4508d36c0adf5755ddba0e229eb8b10a4d8fbf24b7c1b6a25a4f071e3407",
+  "summary": "Add adaptive strip lighting density",
   "breakingChanges": [
-    "No saved fields or migrations change. Terrain exit diagnostics are warning-only and do not block Save. Update the frontend and matching Home Assistant panel for these warnings and the terrace/basement clipping fix."
+    "Existing fixed strip lighting remains compatible. Adaptive strip spacing requires the updated frontend and matching Home Assistant panel; older clients retain unsupported-field protection."
   ],
   "history": [
     {
@@ -186,6 +186,13 @@
       "summary": "Add sloped terrain with home-wide corner heights",
       "breakingChanges": [
         "Existing homes retain flat terrain. Homes saved with home.terrain require the updated frontend and matching Home Assistant panel. Older clients retain unsupported-field protection. No floor, asset or binding migration is required."
+      ]
+    },
+    {
+      "revision": 27,
+      "summary": "Warn about disconnected terrain exits and stabilize terrace clipping",
+      "breakingChanges": [
+        "No saved fields or migrations change. Terrain exit diagnostics are warning-only and do not block Save. Update the frontend and matching Home Assistant panel for these warnings and the terrace/basement clipping fix."
       ]
     }
   ],

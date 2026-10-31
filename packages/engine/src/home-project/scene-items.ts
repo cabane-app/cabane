@@ -285,7 +285,10 @@ export const validateSceneItemsAndSupports = (
           lightingWarning.message,
         );
       else if (definition.lighting) {
-        const execution = modelLightingExecution(definition.lighting);
+        const scale = definition.defaultSize.map(
+          (dimension, axis) => item.size[axis] / dimension,
+        ) as [number, number, number];
+        const execution = modelLightingExecution(definition.lighting, scale);
         if (execution.approximated)
           addProjectWarning(
             issues,

@@ -65,7 +65,14 @@ export interface CustomModel {
 
 export type CustomModelLightSource =
   | { kind: "point"; position: ModelVector }
-  | { kind: "strip"; start: ModelVector; end: ModelVector; samples: number };
+  | {
+      kind: "strip";
+      start: ModelVector;
+      end: ModelVector;
+      samples: number;
+      /** Optional world-space spacing target; the runtime derives samples after instance scaling. */
+      maxSpacingMeters?: number;
+    };
 
 export interface CustomModelLight {
   /** False keeps surface glow without illuminating surroundings. */
@@ -78,7 +85,7 @@ export interface CustomModelLight {
   distance: number;
   /** Legacy additional points, excluding position. */
   points?: readonly ModelVector[];
-  strip?: { end: ModelVector; samples: number };
+  strip?: { end: ModelVector; samples: number; maxSpacingMeters?: number };
   /** Explicit sources replace legacy position/points/strip emission. Empty means glow only. */
   sources?: readonly CustomModelLightSource[];
   /** Exact names of Standard/Physical GLB materials to control. */
