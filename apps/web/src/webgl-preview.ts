@@ -5,8 +5,12 @@ export function copyWebGLPreview(source: HTMLCanvasElement, target: HTMLCanvasEl
   const width = gl.drawingBufferWidth;
   const height = gl.drawingBufferHeight;
   const pixels = new Uint8Array(width * height * 4);
-  // Direct drawImage(WebGL canvas) can swap red and blue on Firefox GPU backends.
-  // Explicit RGBA readback avoids that canvas-to-canvas GPU transfer.
+  // https://github.com/cabane-app/cabane/issues/75 reports orange turning blue
+  // in Firefox desktop previews while the live 3D scene keeps its colors. This
+  // is consistent with a red/blue swap during drawImage(WebGL canvas) into 2D.
+  // The affected GPU behavior was not reproduced locally. Explicit RGBA
+  // readback is a workaround that bypasses that transfer for both catalog and
+  // workspace previews, preserving correct colors on unaffected browsers too.
   gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
   const snapshot = document.createElement("canvas");

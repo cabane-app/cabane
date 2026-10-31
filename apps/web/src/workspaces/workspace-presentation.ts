@@ -1,6 +1,7 @@
 import { copyWebGLPreview } from "../webgl-preview";
 
 const LAST_OPENED_KEY = "cabane:last-opened-workspace";
+// Discard snapshots from the old GPU copy path, which may retain blue colors (#75).
 const previewKey = (id: string) => `cabane:workspace-preview:rgba:${id}`;
 const legacyPreviewKey = (id: string) => `cabane:workspace-preview:${id}`;
 
