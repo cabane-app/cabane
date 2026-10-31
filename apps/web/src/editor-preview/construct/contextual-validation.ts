@@ -83,6 +83,8 @@ const collectionTargetKinds = {
 type TargetCollectionName = keyof typeof collectionTargetKinds;
 
 const defaultCorrections: Readonly<Record<string, string>> = {
+  "terrain.exit-height":
+    "Adjust the terrain height or connect this exit with a supported platform or stairs. For a lower-level entrance, add a floor below and place the entrance there. You can save with this warning.",
   "project.model-missing":
     "Update Cabane in HACS, restart Home Assistant, then reload your browser or Companion app. For a custom model, import it again in Arrange → My models.",
   "project.model-lighting-disabled":

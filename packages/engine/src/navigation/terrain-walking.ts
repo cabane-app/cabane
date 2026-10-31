@@ -4,7 +4,7 @@ import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
 import type { BuildingGeometry } from "../stairs/types";
 import type { BuildingWalkPoint } from "../stairs/stair-navigation";
-import type { WalkPoint } from "./walk-navigation-contract";
+import { WALK_MAX_STEP_METERS, type WalkPoint } from "./walk-navigation-contract";
 
 /** Follow the rendered grade, entering a floor only across a near-level threshold. */
 export function resolveTerrainWalking(
@@ -19,13 +19,16 @@ export function resolveTerrainWalking(
   const levels = deriveFloorLevels(building.floors);
   for (const floor of building.floors) {
     const elevation = levels.find((level) => level.floorId === floor.id)!.elevationMeters;
-    if (Math.abs(elevation - previous.elevation) <= 0.3 && pointOnFloorSupport(plan, floor))
+    if (
+      Math.abs(elevation - previous.elevation) <= WALK_MAX_STEP_METERS &&
+      pointOnFloorSupport(plan, floor)
+    )
       return { ...next, floorId: floor.id, elevation };
   }
   const height = heightAt(next);
   if (height === null) return previous;
   const elevation = height - GROUND_ELEVATION_METERS;
-  if (Math.abs(elevation - previous.elevation) > 0.3) return previous;
+  if (Math.abs(elevation - previous.elevation) > WALK_MAX_STEP_METERS) return previous;
   // Door proximity must follow the grade before entering the next footprint.
   const level = levels.reduce(
     (nearest, candidate) =>

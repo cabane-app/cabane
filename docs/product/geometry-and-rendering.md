@@ -77,7 +77,11 @@ exterior material groups. Wall face finishes retain each wall’s boundaries,
 including continuous bands above doors and windows and each side of a corner.
 Polygon clipping and numerical normalization prevent
 near-coincident seams from destabilizing geometry. Opening cuts extend 1 mm
-past both wall faces so diagonal walls cannot leave opaque slivers across the aperture. Wall bases extend to outdoor
+past both wall faces so diagonal walls cannot leave opaque slivers across the aperture.
+Platform slab coverage and floor/ceiling apertures share the world-space clipping
+precision grid, preserving holes and ceiling undersides where nearly coincident
+terrace and lower-floor outlines meet. Numerical normalization affects derived
+geometry without rounding saved outlines. Wall bases extend to outdoor
 terrain, 5 cm below the indoor floor datum, without shifting openings or wall tops. Floor-level exterior doors and passages
 have solid thresholds bridging that terrain-to-floor difference. Ceilings support flat and
 sloped runtime surfaces. Project authoring has the narrower flat-ceiling schema.

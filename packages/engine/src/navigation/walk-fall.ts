@@ -3,7 +3,7 @@ import { worldPointToPlan } from "../geometry";
 import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
 import type { BuildingGeometry } from "../stairs/types";
 import type { BuildingWalkPoint } from "../stairs/stair-navigation";
-import type { WalkPoint } from "./walk-navigation-contract";
+import { WALK_MAX_STEP_METERS, type WalkPoint } from "./walk-navigation-contract";
 import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 
 export interface WalkFall {
@@ -32,7 +32,7 @@ export function resolveWalkFall(
     const height = terrainHeight(candidate);
     if (height === null) return { kind: "blocked" };
     const elevation = height - GROUND_ELEVATION_METERS;
-    if (elevation > feetElevation + 0.3) return { kind: "blocked" };
+    if (elevation > feetElevation + WALK_MAX_STEP_METERS) return { kind: "blocked" };
     return {
       kind: "fall",
       point: { ...candidate, elevation },

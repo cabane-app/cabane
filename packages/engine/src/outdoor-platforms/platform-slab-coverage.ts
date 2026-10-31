@@ -1,5 +1,10 @@
 import { indoorRoomsForFloor } from "./platform-rooms";
-import polygonClipping, { type Polygon as ClipPolygon } from "polygon-clipping";
+import { type Polygon as ClipPolygon } from "polygon-clipping";
+import {
+  differenceClippingGeometry,
+  intersectClippingGeometry,
+  unionClippingPolygons,
+} from "../architecture-geometry/architecture-clipping";
 import { planPointToWorld } from "../geometry";
 import type { FloorSpec, OutdoorPlatformSpec, PlanPoint } from "../types";
 export interface PlatformSlabPiece {
@@ -16,7 +21,7 @@ export function derivePlatformSlabPieces(
   floor: FloorSpec,
   below?: FloorSpec,
 ): PlatformSlabPiece[] {
-  let uncovered = polygonClipping.union(worldPolygon(platform.polygon, floor));
+  let uncovered = unionClippingPolygons([worldPolygon(platform.polygon, floor)]);
   const pieces: PlatformSlabPiece[] = [];
   const rooms = below ? indoorRoomsForFloor(below) : [];
   const ceilings =
@@ -42,16 +47,11 @@ export function derivePlatformSlabPieces(
         : rooms.filter((r) => ceiling.roomIds.includes(r.id)).map((r) => r.polygon);
       const coverage = regions.filter((p) => p.length >= 3).map((p) => worldPolygon(p, below));
       if (!coverage.length || !uncovered.length) continue;
-      const covered = polygonClipping.intersection(
-        uncovered,
-        polygonClipping.union(coverage[0], ...coverage.slice(1)),
-      );
+      const ceilingCoverage = unionClippingPolygons(coverage);
+      const covered = intersectClippingGeometry(uncovered, ceilingCoverage);
       const depth = Math.max(0.004, below.floorToFloorHeightMeters - ceiling.heightMeters);
       covered.forEach((polygon) => pieces.push({ polygon, bottom: -depth, depth }));
-      uncovered = polygonClipping.difference(
-        uncovered,
-        polygonClipping.union(coverage[0], ...coverage.slice(1)),
-      );
+      uncovered = differenceClippingGeometry(uncovered, ceilingCoverage);
     }
   uncovered.forEach((polygon) => pieces.push({ polygon, bottom: -0.16, depth: 0.16 }));
   return pieces;

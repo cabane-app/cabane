@@ -28,6 +28,12 @@ await withModules(async (load) => {
   const { TerrainSettingsEditor } = await load(
     "/apps/web/src/editor-preview/construct/TerrainSettingsEditor.tsx",
   );
+  const { collectConstructContextualIssues } = await load(
+    "/apps/web/src/editor-preview/construct/contextual-validation.ts",
+  );
+  const { constructIssuePlanPoint } = await load(
+    "/apps/web/src/editor-preview/construct/validation-visuals.ts",
+  );
   const terrain = {
     topLeftMeters: -2.6,
     topRightMeters: -2.6,
@@ -51,6 +57,166 @@ await withModules(async (load) => {
     };
   };
   const near = (a, b) => assert.ok(Math.abs(a - b) < 0.025, `${a} ≠ ${b}`);
+
+  const exitProject = (height = -1) => {
+    const project = projectWithGarage();
+    project.floors = [project.floors[1]];
+    project.home.terrain = Object.fromEntries(Object.keys(terrain).map((key) => [key, height]));
+    const floor = project.floors[0];
+    const wall = floor.walls.find((wall) => wall.from[1] === 0 && wall.to[1] === 0);
+    const length = Math.hypot(wall.to[0] - wall.from[0], wall.to[1] - wall.from[1]);
+    floor.openings = [
+      {
+        id: "outside-exit",
+        wallId: wall.id,
+        kind: "passage",
+        variant: "rectangular",
+        offsetFromWallStartPlanUnits: length / 2 - 0.6,
+        widthPlanUnits: 1.2,
+        openingHeightMeters: 2.1,
+        sillHeightMeters: 0,
+      },
+    ];
+    return project;
+  };
+  const exitWarnings = (project) =>
+    api
+      .validateHomeProject(project, emptyExtensions)
+      .issues.filter((issue) => issue.code === "terrain.exit-height");
+  const landingPlatform = (polygon, id = "landing") => ({
+    id,
+    polygon,
+    finish: { kind: "preset", preset: "travertine" },
+    defaultEdge: { kind: "railing", heightMeters: 1 },
+    edges: polygon.map((_, index) => ({ id: `${id}-edge-${index}` })),
+  });
+
+  test("terrain exit warnings share Walk's step limit and do not require a basement", () => {
+    for (const height of [-1, -0.30001, 0.30001, 1]) {
+      const project = exitProject(height);
+      const result = api.validateHomeProject(project, emptyExtensions);
+      assert.equal(result.valid, true, JSON.stringify(result.issues));
+      assert.equal(exitWarnings(project).length, 1);
+      assert.equal(exitWarnings(project)[0].severity, "warning");
+    }
+    for (const height of [-0.3, 0.3, 0]) assert.equal(exitWarnings(exitProject(height)).length, 0);
+    const project = exitProject();
+    const basement = projectWithGarage().floors[0];
+    project.floors.unshift(basement);
+    assert.equal(
+      exitWarnings(project).length,
+      1,
+      "an unconnected basement does not bridge the doorway drop",
+    );
+    project.floors[1].openings = [];
+    basement.openings = [
+      {
+        ...exitProject().floors[0].openings[0],
+        wallId: basement.walls.find((w) => w.from[1] === 0 && w.to[1] === 0).id,
+      },
+    ];
+    project.home.terrain = Object.fromEntries(Object.keys(terrain).map((key) => [key, -2.6]));
+    assert.equal(exitWarnings(project).length, 0, "a near-level basement entrance is usable");
+    project.floors = [exitProject().floors[0]];
+    project.home.apartmentFloor = 2;
+    assert.equal(exitWarnings(project).length, 0);
+    delete project.home.apartmentFloor;
+    project.floors[0].openings = [
+      {
+        ...project.floors[0].openings[0],
+        kind: "window",
+        operation: "fixed",
+        variant: "plain",
+        panelCount: 1,
+        glazing: "clear",
+      },
+    ];
+    assert.equal(exitWarnings(project).length, 0, "windows are not exits");
+    project.floors[0].openings = exitProject().floors[0].openings;
+    project.floors[0].walls = project.floors[0].walls.map((wall) => ({
+      ...wall,
+      classification: "interior",
+    }));
+    assert.equal(exitWarnings(project).length, 0, "interior openings are not terrain exits");
+  });
+
+  test("terrain exits account for platforms, open edges, partial crossings and connected stairs", () => {
+    const project = exitProject();
+    const floor = project.floors[0];
+    floor.outdoorPlatforms = [landingPlatform(rectangle(0, -2, 8, 2))];
+    assert.equal(exitWarnings(project).length, 0, "a railed landing supports the doorway");
+    floor.outdoorPlatforms[0].polygon = rectangle(0, -2.05, 8, 2);
+    assert.equal(exitWarnings(project).length, 1, "a nearby landing must actually reach the exit");
+    floor.outdoorPlatforms[0].polygon = rectangle(0, -2, 8, 2);
+    floor.outdoorPlatforms[0].edges[0].configuration = { kind: "open" };
+    assert.deepEqual(
+      exitWarnings(project).map((issue) => issue.path),
+      ["floors[0].outdoorPlatforms[0].edges[0]"],
+    );
+    project.home.terrain = {
+      topLeftMeters: 0,
+      topRightMeters: -1,
+      bottomLeftMeters: 0,
+      bottomRightMeters: -1,
+    };
+    assert.equal(
+      exitWarnings(project).length,
+      0,
+      "one usable crossing along the open edge is enough",
+    );
+    project.home.terrain = { ...terrain, bottomLeftMeters: -2.6, bottomRightMeters: -2.6 };
+    floor.outdoorPlatforms = [];
+    const basement = projectWithGarage().floors[0];
+    basement.outdoorPlatforms = [landingPlatform(rectangle(3, -4.8, 2, 0.9), "lower-landing")];
+    project.floors.unshift(basement);
+    project.stairs = [
+      {
+        id: "outside-stairs",
+        lowerFloorId: basement.id,
+        upperFloorId: floor.id,
+        at: [4, -4],
+        rotationYRadians: 0,
+        widthMeters: 1.2,
+        runMeters: 4,
+      },
+    ];
+    assert.equal(exitWarnings(project).length, 0, "connected stair landings bridge the drop");
+    project.stairs[0].at = [6, -4];
+    assert.equal(exitWarnings(project).length, 1, "nearby stairs do not connect this doorway");
+  });
+
+  test("terrain warnings locate the affected exit and still allow saving", async () => {
+    const project = exitProject();
+    const floor = project.floors[0];
+    const [issue] = collectConstructContextualIssues({
+      project,
+      floor,
+      projectIssues: exitWarnings(project),
+    });
+    assert.deepEqual(issue.target, { kind: "opening", id: "outside-exit" });
+    assert.equal(issue.floorId, floor.id);
+    assert.match(issue.suggestion, /terrain|platform|stairs/i);
+    assert.match(issue.suggestion, /save with this warning/i);
+    assert.ok(constructIssuePlanPoint(issue, floor, []));
+    const repository = api.createHomeProjectRepository(
+      api.createMemoryProjectRecordStore(),
+      emptyExtensions,
+    );
+    const record = await repository.replace(api.createSeedProjectRecord(project));
+    const result = await api.publishHomeProject(repository, record, { confirmWarnings: true });
+    assert.equal(result.status, "published", JSON.stringify(result));
+    assert.deepEqual((await repository.load(project.home.id)).published, project);
+    floor.outdoorPlatforms = [landingPlatform(rectangle(0, -2, 8, 2))];
+    floor.outdoorPlatforms[0].edges[0].configuration = { kind: "open" };
+    const [platformIssue] = collectConstructContextualIssues({
+      project,
+      floor,
+      projectIssues: exitWarnings(project),
+    });
+    assert.deepEqual(platformIssue.target, { kind: "outdoor-platform", id: "landing" });
+    assert.equal(platformIssue.floorId, floor.id);
+    assert.ok(constructIssuePlanPoint(platformIssue, floor, []));
+  });
 
   test("corner heights survive project edits, import, runtime composition and undo without changing floor levels", () => {
     const project = projectWithGarage();

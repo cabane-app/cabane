@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { DoubleSide, ExtrudeGeometry, Path, Shape, ShapeGeometry } from "three";
 import { ToonMaterial } from "../rendering";
 import { useStairSurfaceApertures } from "../stairs/surface-apertures";
-import polygonClipping from "polygon-clipping";
+import { differenceClippingGeometry } from "../architecture-geometry/architecture-clipping";
 import { planPointToWorld } from "../geometry";
 import type { FloorSpec, OutdoorPlatformSpec } from "../types";
 import { derivePlatformSlabPieces } from "./platform-slab-coverage";
@@ -26,7 +26,7 @@ export function PlatformSlab({
     () =>
       derivePlatformSlabPieces(platform, floor, below).map((piece) => {
         const clipped = apertures.length
-          ? polygonClipping.difference(
+          ? differenceClippingGeometry(
               piece.polygon,
               ...apertures.map((p) => [
                 p.map(

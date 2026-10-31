@@ -1,9 +1,9 @@
 {
-  "revision": 26,
-  "fingerprint": "b806cf8862682b3a1298aeb3e086eb3dacb56e2d2ba033d49e92795d0016757e",
-  "summary": "Add sloped terrain with home-wide corner heights",
+  "revision": 27,
+  "fingerprint": "7438347af96fab36b08a7ee845d25d092860385ff5455b5a713377b3bc5795ce",
+  "summary": "Warn about disconnected terrain exits and stabilize terrace clipping",
   "breakingChanges": [
-    "Existing homes retain flat terrain. Homes saved with home.terrain require the updated frontend and matching Home Assistant panel. Older clients retain unsupported-field protection. No floor, asset or binding migration is required."
+    "No saved fields or migrations change. Terrain exit diagnostics are warning-only and do not block Save. Update the frontend and matching Home Assistant panel for these warnings and the terrace/basement clipping fix."
   ],
   "history": [
     {
@@ -179,6 +179,13 @@
       "summary": "Add optional display names for walls, doors, windows and passages; preserve architectural and binding identities.",
       "breakingChanges": [
         "Older Cabane clients reject projects containing wall or opening name fields. Update the Home Assistant integration and reload all clients before opening a renamed project."
+      ]
+    },
+    {
+      "revision": 26,
+      "summary": "Add sloped terrain with home-wide corner heights",
+      "breakingChanges": [
+        "Existing homes retain flat terrain. Homes saved with home.terrain require the updated frontend and matching Home Assistant panel. Older clients retain unsupported-field protection. No floor, asset or binding migration is required."
       ]
     }
   ],

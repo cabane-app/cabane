@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import polygonClipping from "polygon-clipping";
+import { differenceClippingGeometry } from "../architecture-geometry/architecture-clipping";
 import { Path, Shape } from "three";
 import { planPointToWorld } from "../geometry";
 import type { FloorCoordinates, PlanPoint, Polygon } from "../types";
@@ -16,16 +16,16 @@ export const cutSurfaceShapes = (
   apertures: readonly Polygon[],
 ): Shape[] => {
   const ring = (points: readonly PlanPoint[]): [number, number][] =>
-    [...points, points[0]].map((p) => [p[0], p[1]]);
-  const clipped = apertures.length
-    ? polygonClipping.difference([ring(polygon)], ...apertures.map((hole) => [ring(hole)]))
-    : [[ring(polygon)]];
+    points.map((point) => [...planPointToWorld(point, coordinates)]);
+  const clipped = differenceClippingGeometry(
+    [ring(polygon)],
+    ...apertures.map((hole) => [ring(hole)]),
+  );
   return clipped.map((rings) => {
     const shape = new Shape();
     rings.forEach((points, index) => {
       const path = index === 0 ? shape : new Path();
-      points.forEach((point, i) => {
-        const [x, z] = planPointToWorld(point, coordinates);
+      points.forEach(([x, z], i) => {
         if (i === 0) path.moveTo(x, -z);
         else path.lineTo(x, -z);
       });

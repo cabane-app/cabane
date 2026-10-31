@@ -6,6 +6,8 @@ export const WALK_EYE_HEIGHT = 1.52;
 
 export const WALK_PLAYER_RADIUS = 0.22;
 
+export const WALK_MAX_STEP_METERS = 0.3;
+
 export const WALK_CRUISE_SPEED = 2.3;
 
 export const WALK_MAX_SPEED = 2.8;

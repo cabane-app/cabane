@@ -1,6 +1,10 @@
 import { Box3, Matrix3, Mesh, Raycaster, Vector3, type Intersection, type Object3D } from "three";
 import { GROUND_ELEVATION_METERS } from "../ground-elevation";
-import { WALK_PLAYER_RADIUS, type WalkPoint } from "./walk-navigation-contract";
+import {
+  WALK_MAX_STEP_METERS,
+  WALK_PLAYER_RADIUS,
+  type WalkPoint,
+} from "./walk-navigation-contract";
 
 /** Query existing terrain geometry, retaining its rounded edge and pool/stair cutouts. */
 export function createTerrainHeightQuery(scene: Object3D, radius = WALK_PLAYER_RADIUS) {
@@ -30,7 +34,8 @@ export function createTerrainHeightQuery(scene: Object3D, radius = WALK_PLAYER_R
       const hit = hits.find(
         (hit) => (hit.face?.normal.clone().applyMatrix3(normalMatrix).normalize().y ?? 0) > 0.5,
       );
-      if (!hit || (height !== null && Math.abs(hit.point.y - height) > 0.3)) return null;
+      if (!hit || (height !== null && Math.abs(hit.point.y - height) > WALK_MAX_STEP_METERS))
+        return null;
       height ??= hit.point.y;
     }
     return height;

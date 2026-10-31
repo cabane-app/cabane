@@ -13,8 +13,8 @@ export type MaterialBucket = 0 | 1;
 
 export const EPSILON = 1e-6;
 
-// Edited wall unions feed computed intersections back into later opening and
-// height-band booleans. Snap those intermediate coordinates to a sub-micron
+// Geometry booleans feed intersections back into later wall, slab and aperture
+// cuts. Snap those intermediate coordinates to a sub-micron
 // grid so polygon-clipping sees coincident edges as identical, while remaining
 // far below any visible or authored measurement precision.
 export const CLIPPING_GRID_METERS = 1e-7;

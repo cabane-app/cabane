@@ -83,6 +83,13 @@ and local validation. Reset to flat ground restores zero at every corner.
 These home-wide edits use ordinary history, autosave, import/export and Save.
 Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
 to edit terrain. Individual terrain zones and earthwork drawing are not exposed.
+When custom terrain leaves an exterior doorway, passage or open platform edge
+without a crossing within Walk's 30 cm step limit, Issues shows a non-blocking
+warning and Locate selects the affected opening or platform. Supporting platforms
+and connected stair landings count as access. Railed edges, windows and interior
+openings are excluded. A downward slope does not require a basement; adding a
+lower floor alone does not connect an existing ground-floor entrance. Adjust the
+grade or model the intended access. Save remains available with these warnings.
 
 Wall drawing snaps to the grid, endpoints, wall segments, and angle references;
 Alt bypasses snapping. Alignment guides match unfinished opposite sides, including
