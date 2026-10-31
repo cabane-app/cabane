@@ -8,9 +8,9 @@ import { InlineDuctFanModel, INLINE_DUCT_FAN_SIZE } from "../presets/fans/inline
 const interaction = { target: "device-dashboard" as const, tapTolerancePixels: 10 };
 
 export const guardedPlatformFanDefinition = defineDeviceModel({
-  defaultRoomType: "laundry",
+  defaultRoomType: "living-room",
   component: GuardedPlatformFanModel,
-  label: "Guarded platform fan",
+  label: "Guarded fan",
   category: "Climate",
   defaultSize: GUARDED_PLATFORM_FAN_SIZE,
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
@@ -24,9 +24,9 @@ export const guardedPlatformFanDefinition = defineDeviceModel({
 });
 
 export const inlineDuctFanDefinition = defineDeviceModel({
-  defaultRoomType: "laundry",
+  defaultRoomType: "living-room",
   component: InlineDuctFanModel,
-  label: "Inline duct fan",
+  label: "Inline fan",
   category: "Climate",
   defaultSize: INLINE_DUCT_FAN_SIZE,
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },

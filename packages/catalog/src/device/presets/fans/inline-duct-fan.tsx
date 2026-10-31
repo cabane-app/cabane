@@ -7,7 +7,7 @@ import { fanSpeedFactor } from "./fan-operation";
 
 export const INLINE_DUCT_FAN_SIZE = [0.14, 0.3, 0.14] as const;
 
-/** The cylindrical inline duct fan used in the laundry room. */
+/** The cylindrical inline fan. */
 export function InlineDuctFanModel({ state, visualState, reducedMotion }: HomeDeviceModelProps) {
   const rotor = useRef<Group>(null);
   const speed = fanSpeedFactor({ ...(state === undefined ? {} : { state }), visualState });

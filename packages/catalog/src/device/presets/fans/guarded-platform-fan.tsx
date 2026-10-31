@@ -18,7 +18,7 @@ const aperture = new Path();
 aperture.absarc(0, 0, 0.056, 0, Math.PI * 2, true);
 frame.holes.push(aperture);
 
-/** The small upward-facing guarded platform fan used in the laundry room. */
+/** The small upward-facing guarded fan. */
 export function GuardedPlatformFanModel({
   state,
   visualState,

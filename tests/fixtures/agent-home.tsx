@@ -510,12 +510,7 @@ const studioDevices: HomeManifest["floors"][number]["rooms"][number]["devices"] 
     id: "fixture-guarded-platform-fan",
     model: "guarded-platform-fan",
     entitySlots: [
-      entitySlot(
-        "fixture-guarded-platform-fan-entity",
-        ["fan"],
-        "Guarded platform fan",
-        "secondary",
-      ),
+      entitySlot("fixture-guarded-platform-fan-entity", ["fan"], "Guarded fan", "secondary"),
     ],
     placement: {
       at: [1.1, 3.5],
@@ -526,9 +521,7 @@ const studioDevices: HomeManifest["floors"][number]["rooms"][number]["devices"] 
   {
     id: "fixture-inline-duct-fan",
     model: "inline-duct-fan",
-    entitySlots: [
-      entitySlot("fixture-inline-duct-fan-entity", ["fan"], "Inline duct fan", "secondary"),
-    ],
+    entitySlots: [entitySlot("fixture-inline-duct-fan-entity", ["fan"], "Inline fan", "secondary")],
     placement: {
       at: [1.4, 3.5],
       elevationMeters: 0,
@@ -619,12 +612,12 @@ export const fixtureCatalogStates: Readonly<Record<EntityId, EntityStateSnapshot
     preset_mode: "normal",
   }),
   "fan.fixture_guarded_platform_fan": state("fan.fixture_guarded_platform_fan", "on", {
-    friendly_name: "Guarded platform fan",
+    friendly_name: "Guarded fan",
     percentage: 50,
     percentage_step: 10,
   }),
   "fan.fixture_inline_duct_fan": state("fan.fixture_inline_duct_fan", "on", {
-    friendly_name: "Inline duct fan",
+    friendly_name: "Inline fan",
     percentage: 50,
     percentage_step: 10,
   }),

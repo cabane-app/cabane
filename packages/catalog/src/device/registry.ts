@@ -2,7 +2,7 @@ import { IntegratedRollerShutterModel, INTEGRATED_ROLLER_SHUTTER_SIZE } from "./
 import { heatedTowelRailDefinition } from "./definitions/heated-towel-rail";
 import { underCabinetLedStripDefinition } from "./definitions/under-cabinet-led-strip";
 import { builtInMicrowaveDefinition, microwaveDefinition } from "./definitions/microwaves";
-import { guardedPlatformFanDefinition, inlineDuctFanDefinition } from "./definitions/laundry-fans";
+import { guardedPlatformFanDefinition, inlineDuctFanDefinition } from "./definitions/fan-devices";
 import { terracottaPendantDefinition, whiteDomePendantDefinition } from "./definitions/pendants";
 import { rattanBellPendantDeviceDefinition } from "./definitions/rattan-bell-pendant";
 import { astroParallelWallLightDeviceDefinition } from "./definitions/astro-parallel-wall-light";

@@ -733,7 +733,11 @@ await withModules(async (load) => {
     );
     assert.deepEqual(
       filterCatalog(entries, "laundry", "fan").map((entry) => entry.modelId),
-      ["guarded-platform-fan", "inline-duct-fan"],
+      [],
+    );
+    assert.deepEqual(
+      filterCatalog(entries, "living-room", "fan").map((entry) => entry.modelId),
+      ["ceiling-fan", "guarded-platform-fan", "inline-duct-fan"],
     );
     assert.equal(filterCatalog(entries, "bedroom", "fan")[0].modelId, "pedestal-fan");
     assert.equal(filterCatalog(entries, "living-room", "fan")[0].modelId, "ceiling-fan");

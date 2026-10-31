@@ -361,16 +361,16 @@ guard, and motor; animation waves are outside the physical placement envelope.
 | `ceiling-fan`          | `CeilingFanModel`         | 120 × 120 × 40     | Four rounded wood blades, off-white motor/canopy, grey downrod                 | Living room  |
 | `table-fan`            | `TableFanModel`           | 36 × 24 × 48       | Three blades, front/back wire guards, off-white base and short neck            | Office       |
 | `pedestal-fan`         | `PedestalFanModel`        | 45 × 40 × 135      | Three blades, front/back wire guards, off-white round base and telescopic post | Bedroom      |
-| `guarded-platform-fan` | `GuardedPlatformFanModel` | 14 × 14 × 3        | Five-blade upward rotor, square dark mount, raised wire guard                  | Laundry room |
-| `inline-duct-fan`      | `InlineDuctFanModel`      | 14 × 14 × 30       | Pale cylindrical duct housing with three-blade internal rotor and collars      | Laundry room |
+| `guarded-platform-fan` | `GuardedPlatformFanModel` | 14 × 14 × 3        | Five-blade upward rotor, square dark mount, raised wire guard                  | Living room  |
+| `inline-duct-fan`      | `InlineDuctFanModel`      | 14 × 14 × 30       | Pale cylindrical duct housing with three-blade internal rotor and collars      | Living room  |
 
 These are generic presets; all dimensions, proportions, and finishes are
 inferred, with no manufacturer reference. The existing generic fans support
-uniform resizing; the laundry fans support independent axis resizing.
+uniform resizing; the compact fans support independent axis resizing.
 Table and pedestal fans have their base at Y=0 and face +Z. Set an absolute
-placement's elevation to the tabletop height for the table fan. The laundry
-fans also use absolute placement with their support at Y=0 and preserve the
-legacy laundry-room silhouettes. The ceiling fan uses ceiling placement: its
+placement's elevation to the tabletop height for the table fan. The compact
+fans also use absolute placement with their support at Y=0 and preserve their
+distinctive silhouettes. The ceiling fan uses ceiling placement: its
 canopy top is at local Y=0.40 and the motor bottom at Y=0, following the
 pendant convention. Ceiling placement deducts the model height from the room's
 ceiling height.
@@ -379,7 +379,7 @@ Blades rotate only while the bound fan is on, with rotation speed following HA
 percentage (a moderate default when the entity has no percentage). At zero
 percentage, off, unavailable, or disconnected, both rotation and airflow stop.
 Table and pedestal fans project five blue waves straight ahead, reusing the
-AC's cold palette and animation. The laundry fans and ceiling fan have no
+AC's cold palette and animation. The compact fans and ceiling fan have no
 airflow effect.
 Reduced motion keeps the blades still and uses the AC's static wave treatment.
 Waves do not extend walk collision. These models contain no scene lights,

@@ -1289,7 +1289,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("laundry fan geometry preserves the legacy silhouettes and fan binding", async () => {
+  test("compact fan geometry preserves the legacy silhouettes and fan binding", async () => {
     const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
     for (const [id, bladeCount] of [
       ["guarded-platform-fan", 5],
@@ -1388,7 +1388,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("laundry fan rotors follow HA speed and stop when inactive", async () => {
+  test("compact fan rotors follow HA speed and stop when inactive", async () => {
     const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
     for (const id of ["guarded-platform-fan", "inline-duct-fan"]) {
       const definition = catalog.stableDeviceRegistry[id];
