@@ -165,7 +165,9 @@ await withModules(async (load) => {
       for (const reversed of [false, true]) {
         for (const kind of [
           "clear",
+          "clear-double",
           "privacy",
+          "privacy-double",
           "outward",
           "privacy-outward",
           "arched",
@@ -194,6 +196,7 @@ await withModules(async (load) => {
               }
             : {
                 ...sourceWindow,
+                panelCount: kind.endsWith("-double") ? 2 : sourceWindow.panelCount,
                 glazing: kind.startsWith("privacy") ? "privacy" : "clear",
                 variant: kind === "arched" ? "steel-arched" : "plain",
                 openingSide: kind.includes("outward") ? "left" : "right",
