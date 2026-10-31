@@ -589,6 +589,18 @@ await withModules(async (load) => {
         return { unmount: () => root.unmount() };
       });
       const input = document.querySelector('[aria-label="Terrain top left"]');
+      const increase = document.querySelector('[aria-label="Increase Terrain top left"]');
+      const decrease = document.querySelector('[aria-label="Decrease Terrain top left"]');
+      await act(async () => increase.click());
+      assert.equal(history.present.project.home.terrain.topLeftMeters, 0.1);
+      assert.equal(input.value, "0.1");
+      await act(async () =>
+        decrease.dispatchEvent(new window.MouseEvent("click", { bubbles: true, shiftKey: true })),
+      );
+      assert.equal(history.present.project.home.terrain.topLeftMeters, -0.9);
+      await act(async () => setHistory(api.undoWorkspaceHistory(history)));
+      assert.equal(history.present.project.home.terrain.topLeftMeters, 0.1);
+      await act(async () => setHistory(initial));
       const edit = async (text) =>
         act(async () => {
           input.value = text;
@@ -605,6 +617,12 @@ await withModules(async (load) => {
       await enter();
       assert.equal(input.getAttribute("aria-invalid"), "true");
       assert.equal(history.present.project.home.terrain, undefined);
+      await edit("100");
+      await enter();
+      assert.equal(increase.disabled, true);
+      await edit("-100");
+      await enter();
+      assert.equal(decrease.disabled, true);
       await edit("-2.6");
       await enter();
       await click("Reset to flat ground");

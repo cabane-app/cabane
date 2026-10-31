@@ -1,7 +1,9 @@
 import { FLAT_TERRAIN, type TerrainSettings } from "@cabane/engine";
+import { useId } from "react";
 import { EditorButton } from "../../editor-chrome/EditorButton";
 import { LengthInput } from "../../editor-chrome/LengthInput";
 import { SidebarSectionSummary } from "../../editor-chrome/SidebarSectionSummary";
+import "./terrain-settings.css";
 
 const corners = [
   ["topLeftMeters", "Top left"],
@@ -19,8 +21,9 @@ export function TerrainSettingsEditor({
   disabled?: boolean;
   onChange: (settings: TerrainSettings) => void;
 }) {
+  const id = useId();
   return (
-    <details className="construction-inspector__floor-disclosure">
+    <details className="construction-inspector__floor-disclosure terrain-settings">
       <SidebarSectionSummary
         icon="outdoor-space"
         title="Terrain"
@@ -31,29 +34,32 @@ export function TerrainSettingsEditor({
         aria-label="Terrain settings"
       >
         <p className="sidebar-section-note">
-          Corner heights follow the 2D plan around the home. Zero meets the ground floor. Use
-          negative heights for a lower entrance.
+          Corners match the 2D plan. Set 0 at ground-floor level, a positive height to raise the
+          ground, or a negative height to lower it.
         </p>
         {disabled && (
           <p className="sidebar-section-note">Set apartment floor to 0 to edit terrain.</p>
         )}
-        <fieldset disabled={disabled}>
-          <legend>Corner heights</legend>
+        <fieldset className="terrain-settings__corners" disabled={disabled}>
+          <legend>Ground height</legend>
           {corners.map(([corner, label]) => (
-            <label key={corner}>
-              {label}
+            <div className="terrain-settings__corner" key={corner}>
+              <label htmlFor={`${id}-${corner}`}>{label}</label>
               <LengthInput
+                id={`${id}-${corner}`}
                 label={`Terrain ${label.toLowerCase()}`}
                 value={value[corner]}
                 min={-100}
                 max={100}
+                showSteppers
                 onCommit={(height) => onChange({ ...value, [corner]: height })}
               />
-            </label>
+            </div>
           ))}
           <EditorButton
             type="button"
             variant="text"
+            className="terrain-settings__reset"
             disabled={Object.values(value).every((height) => height === 0)}
             onClick={() => onChange(FLAT_TERRAIN)}
           >

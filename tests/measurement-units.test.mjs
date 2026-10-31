@@ -50,6 +50,7 @@ await withModules(async (load) => {
               metersPerUnit: 0.5,
               min: 0,
               max: 5,
+              showSteppers: true,
               onCommit: (value) => changes.push(value),
             }),
             createElement(WalkPreferences, {
@@ -90,6 +91,15 @@ await withModules(async (load) => {
       await enter("20 ft");
       assert.equal(changes.length, 1);
       assert.equal(input.getAttribute("aria-invalid"), "true");
+      await act(() => {
+        input.value = "1 ft";
+        input.dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+      });
+      await act(() => document.querySelector('[aria-label="Increase Position"]').click());
+      assert.ok(
+        Math.abs(changes.at(-1) - 0.6604) < 1e-10,
+        "imperial arrows step one inch in scaled authored units",
+      );
       assert.equal(window.localStorage.getItem("cabane.measurement-units.v1"), "imperial");
       await act(() =>
         document.querySelector('input[name="measurement-units"][value="metric"]').click(),

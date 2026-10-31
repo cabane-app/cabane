@@ -79,7 +79,10 @@ The Terrain disclosure sets four corner heights around the home's ground and
 basement footprint in the unrotated 2D plan. Negative heights lower a side to a
 garage or basement entrance; heights blend across the home and stay level beyond
 its bounds. Fields support the measurement-unit preference, explicit unit suffixes,
-and local validation. Reset to flat ground restores zero at every corner.
+and local validation. The four controls match the 2D plan in a two-by-two layout,
+with up/down arrows to raise or lower each corner. They step by 0.1 m in metric
+or one inch in imperial, with Shift multiplying the step by ten. Reset to flat
+ground restores zero at every corner.
 These home-wide edits use ordinary history, autosave, import/export and Save.
 Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
 to edit terrain. Individual terrain zones and earthwork drawing are not exposed.
