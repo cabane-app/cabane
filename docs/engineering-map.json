@@ -117,6 +117,11 @@
     "owners": [
       "apps/agent-cli/src/cli.mjs",
       "apps/agent-cli/src/ha-client.mjs",
+      "scripts/dev-agent.mjs",
+      "scripts/dev-agent-server.mjs",
+      "scripts/dev-agent-protocol.mjs",
+      ".agents/skills/build-dev-home/SKILL.md",
+      "apps/web/src/agent-pilot/DevAgentBridge.tsx",
       "apps/web/src/agent-pilot/AgentPilotPanel.tsx",
       "apps/web/src/agent-pilot/agent-command-contract.ts",
       "apps/web/src/agent-pilot/agent-command-executor.ts",
@@ -135,7 +140,7 @@
       "apps/web/src/agent-pilot/useAgentRelay.ts"
     ],
     "interfaces": [],
-    "invariant": "Commands decode inputs and call the same editing owners as the UI. Pairing is HA-panel-only: the native authenticated WebSocket owns the editor subscription, while the CLI uses a short-lived Cabane relay token scoped to that workspace. No browser-to-localhost transport or HA credentials are given to the agent. Sessions and pending requests are ephemeral and invalidated on disconnect; history, validation and autosave remain editor-owned.",
+    "invariant": "Commands decode inputs and call the same editing owners as the UI. Shipped pairing is HA-panel-only: the native authenticated WebSocket owns the editor subscription, while the CLI uses a short-lived Cabane relay token scoped to that workspace. No browser-to-localhost transport or HA credentials are given to the agent. Sessions and pending requests are ephemeral and invalidated on disconnect; history, validation and autosave remain editor-owned. The opt-in development runner uses isolated Chromium and a token-protected loopback endpoint to prepare disposable homes through the same executor; its bridge is omitted from production builds.",
     "checks": ["verify:fast", "build"]
   },
   {

@@ -2,6 +2,7 @@
   "workspace": {
     "description": "Workspace library, persistence, import/export, publication and recovery. Includes runtime and editor integration tests.",
     "tests": [
+      "dev-agent.test.mjs",
       "agent-construct-actions.test.mjs",
       "agent-model-actions.test.mjs",
       "arrange-groups.test.mjs",

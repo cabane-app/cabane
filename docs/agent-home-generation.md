@@ -44,6 +44,10 @@ helping a user set up, build, or equip their home with Cabane. Do not invoke
 these skills when developing, debugging, or improving the Cabane product
 itself, even when the task involves setup, architecture, furniture, or devices.
 
+For disposable homes needed during product development, use
+[`build-dev-home`](../.agents/skills/build-dev-home/SKILL.md). It prepares a local
+editor through agent commands for feature testing or bug reproduction.
+
 For user home-building tasks only:
 
 - For initial setup or starting the app to build a home, use `$bootstrap-cabane`.

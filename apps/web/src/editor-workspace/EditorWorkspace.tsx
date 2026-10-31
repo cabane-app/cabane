@@ -36,6 +36,7 @@ import { HomeEditorHeader } from "./HomeEditorHeader";
 import { HomeEditorScene } from "./HomeEditorScene";
 import { useHomeEditorController } from "./useHomeEditorController";
 import { AgentPilotPanel } from "../agent-pilot/AgentPilotPanel";
+import { DevAgentBridge } from "../agent-pilot/DevAgentBridge";
 
 export function EditorWorkspace(props: Parameters<typeof useHomeEditorController>[0]) {
   const controller = useHomeEditorController(props);
@@ -278,6 +279,9 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
   const removeDisabledReason = floorRemovalDisabledReason(snapshot.project.floors, activeFloorId);
   return (
     <WallFinishPreviewProvider palette={editorProject.home.palette}>
+      {import.meta.env.DEV && import.meta.env.VITE_CABANE_DEV_AGENT === "1" && (
+        <DevAgentBridge controller={controller} />
+      )}
       <main
         className={`direction-preview${northOrientation.active ? " is-orienting-north" : ""}${shortcutsMode ? " is-shortcuts" : mode === "connect" ? " is-connect" : mode === "construct" ? " is-plan" : ""}`}
         data-connect-room={mode === "connect" && Boolean(connect.room)}

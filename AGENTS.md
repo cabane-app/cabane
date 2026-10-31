@@ -27,6 +27,8 @@ no rerun. Report the result, checks, and material uncertainty briefly.
   and the relevant product contract. `PRODUCT_SPEC.md` and `docs/product/` remain
   authoritative; maintain affected map entries when their routing changes.
 - Home generation: [generation workflow](docs/agent-home-generation.md).
+- Editor features, fixes and verification needing a test scene:
+  [build-dev-home](.agents/skills/build-dev-home/SKILL.md).
 - Review or model authoring: [coding standards](CODING_STANDARDS.md).
 - Test changes or flaky tests: [test guidelines](docs/test-guidelines.md).
 - Setup, execution permissions, CI, or release details:
