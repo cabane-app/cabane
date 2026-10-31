@@ -867,6 +867,9 @@ not stored in Git.
 Reusable bedroom, dining, balcony, bathroom and kitchen models extend the shared
 catalog without importing apartment placements or private assets. Square cube
 storage offers two- and four-compartment variants behind one frame and descriptor.
+The wood bunk bed (`wood-bunk-bed`, 101.5 × 160 × 208 cm) offers right-side,
+left-side, front-end and back-end ladder variants. All four share the same
+placement envelope and independent axis resizing.
 The existing potted plant gains a white-pot variant without changing its default.
 
 Bathroom definitions are grouped by fixtures, storage and lighting. They retain
