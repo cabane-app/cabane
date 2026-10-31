@@ -40,7 +40,7 @@ export interface CabaneDashboardProps {
   mappingRequest?: DashboardMappingRequest | null;
   onEditHome?: ((mode?: EditorMode) => void) | undefined;
   onCustomizeActionBar?: (() => void) | undefined;
-  onExportBrowserData?: () => void;
+  onExportBrowserData?: (() => void | Promise<void>) | undefined;
   onHomeAssistantSettings?: (() => void) | undefined;
   onWorkspaces?: (() => void) | undefined;
   onOpenConnect?: ((view: "rooms" | "devices", roomId?: string | null) => void) | undefined;

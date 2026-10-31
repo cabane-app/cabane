@@ -944,7 +944,7 @@ await withModules(async (load) => {
     );
   });
 
-  test("rejects duplicate ids, missing models, and missing supports", () => {
+  test("warns about missing models while rejecting duplicate ids and missing supports", () => {
     const project = structuredClone(fixtureHomeProject());
     project.sceneItems[1].id = project.sceneItems[0].id;
     project.sceneItems[0].modelId = "missing-model";
@@ -956,7 +956,7 @@ await withModules(async (load) => {
         code: "project.model-missing",
         path: "sceneItems[0].modelId",
         message:
-          "Model “missing-model” is not registered; a generic placeholder will be shown until it is imported.",
+          "Model “missing-model” is unavailable. A placeholder is shown. Its placement and connections are kept.",
         severity: "warning",
       },
       {

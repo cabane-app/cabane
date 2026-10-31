@@ -299,8 +299,8 @@ await withModules(async (load) => {
       {
         code: "device.model-registry",
         path: "floors[0].rooms[0].devices[0].model",
-        message: 'Stable device model "wall-switch" is not available in the supplied catalog.',
-        severity: "fatal",
+        message: "Model “wall-switch” is unavailable. A placeholder will be shown.",
+        severity: "warning",
       },
       {
         code: "home.locale",

@@ -233,6 +233,7 @@
       "home-project-repository.test.mjs",
       "home-project.test.mjs",
       "manifest.test.mjs",
+      "missing-model-recovery.test.mjs",
       "multiple-floor-storage.test.mjs",
       "native-first-launch.test.mjs",
       "native-ha-ui.test.mjs",
