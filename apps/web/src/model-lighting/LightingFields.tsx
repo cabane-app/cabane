@@ -105,14 +105,22 @@ export function LightingFields({
                 <EditorButton
                   variant="text"
                   onClick={() =>
-                    updateSource({ ...fittedLightStrip(bounds), samples: source.samples })
+                    updateSource({
+                      ...fittedLightStrip(
+                        bounds,
+                        source.maxSpacingMeters === undefined ? null : source.maxSpacingMeters,
+                      ),
+                      samples: source.samples,
+                    })
                   }
                 >
                   Fit along model
                 </EditorButton>
               </div>
               <label>
-                Samples along strip
+                {source.maxSpacingMeters === undefined
+                  ? "Samples along strip"
+                  : "Minimum samples along strip"}
                 <input
                   aria-label="Strip sample count"
                   type="number"
@@ -125,8 +133,9 @@ export function LightingFields({
                 />
               </label>
               <p className="lighting-note">
-                Requests finer coverage within the scene's shared budget. The strip keeps the same
-                total brightness.
+                {source.maxSpacingMeters === undefined
+                  ? "Requests finer coverage within the scene's shared budget. The strip keeps the same total brightness."
+                  : "Adaptive sampling adds emitters as the strip grows while keeping the saved count as a minimum. The strip keeps the same total brightness."}
               </p>
               <EditorButton
                 variant="text"

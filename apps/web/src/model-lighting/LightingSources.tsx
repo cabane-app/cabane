@@ -59,7 +59,13 @@ export function LightingSources({
             >
               <EditorIcon name={source.kind === "point" ? "lighting" : "minus"} />
               <span>{sourceLabel(sources, index)}</span>
-              <small>{source.kind === "strip" ? source.samples + " samples" : "Point"}</small>
+              <small>
+                {source.kind === "strip"
+                  ? source.maxSpacingMeters === undefined
+                    ? source.samples + " samples"
+                    : "Adaptive samples"
+                  : "Point"}
+              </small>
             </EditorButton>
             <EditorButton
               variant="text"
