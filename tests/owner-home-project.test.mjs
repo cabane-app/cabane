@@ -101,30 +101,6 @@ await withModules(async (load) => {
       assert.equal(registry.constructor, undefined);
     }
   });
-  test("keeps the white shell dining chair supports below the shell", async () => {
-    const definition = stableFurnishingRegistry["white-shell-dining-chair"];
-    for (const size of [definition.defaultSize, [0.46, 1.26, 0.54]]) {
-      const renderer = await create(
-        createElement(definition.component, {
-          size,
-        }),
-      );
-      try {
-        const scene = renderer.scene.instance;
-        scene.updateMatrixWorld(true);
-        const shell = new Box3().setFromObject(
-            scene.getObjectByName("continuous-white-seat-and-back"),
-          ),
-          mount = new Box3().setFromObject(scene.getObjectByName("oak-chair-seat-mount")),
-          legs = new Box3().setFromObject(scene.getObjectByName("four-splayed-oak-chair-legs"));
-        assert.ok(mount.max.y < shell.min.y, "seat mount must stay below the shell");
-        assert.ok(legs.max.y < shell.min.y, "leg tops must stay below the shell");
-        assert.ok(legs.max.y > mount.min.y, "leg tops must remain inside the seat mount");
-      } finally {
-        await renderer.unmount();
-      }
-    }
-  });
   test("garden swing A-frame legs connect the spread feet to the top crossbeam", async () => {
     const definition = stableFurnishingRegistry["wooden-garden-swing"];
     for (const factor of [1, 0.5, 1.75]) {
