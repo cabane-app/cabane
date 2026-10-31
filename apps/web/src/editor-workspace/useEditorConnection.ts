@@ -8,7 +8,7 @@ import {
   validateWorkspaceBindings,
 } from "@cabane/engine";
 
-import { homeManifest as ownerProjectManifest } from "@cabane/home";
+import { ownerProjectExtensions } from "../project-runtime";
 
 import { useMemo } from "react";
 
@@ -67,7 +67,7 @@ export function useEditorConnection({
     adoptRecord: workspaceAdoptRecord,
   } = workspace;
   const connectManifest = useMemo(
-    () => composeHomeBindingManifest(snapshot.project, ownerProjectManifest.extensions),
+    () => composeHomeBindingManifest(snapshot.project, ownerProjectExtensions),
     [snapshot.project],
   );
   const connectFloor =
@@ -152,7 +152,7 @@ export function useEditorConnection({
       ...validateWorkspaceBindings(
         snapshot.bindings,
         connectManifest,
-        composeHomeBindingManifest(workspaceGetRecord().published, ownerProjectManifest.extensions),
+        composeHomeBindingManifest(workspaceGetRecord().published, ownerProjectExtensions),
       ),
       ...connectIssues,
     ],

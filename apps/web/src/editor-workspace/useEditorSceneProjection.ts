@@ -2,8 +2,6 @@ import { composeHomeProjectPreview, deriveFloorLevels } from "@cabane/engine";
 
 import { evaluateDerivedWalkNavigation } from "@cabane/engine";
 
-import { homeManifest as ownerProjectManifest } from "@cabane/home";
-
 import { useMemo } from "react";
 
 import { useConstructEditor } from "../editor-preview/construct";
@@ -14,7 +12,7 @@ import { useFurnishingEditor } from "../editor-preview/furnish";
 
 import { projectFromEditorState } from "../editor-preview/project-sync";
 
-import { editorBindingsForManifest } from "../project-runtime";
+import { editorBindingsForManifest, ownerProjectExtensions } from "../project-runtime";
 
 import type { HomeProject, ProjectModelRegistries } from "@cabane/engine";
 import { missingModelEditorDescriptor } from "../editor-preview/furnish/missing-model";
@@ -65,7 +63,7 @@ export function useEditorSceneProjection({
   );
   const editorProjectJson = useMemo(() => JSON.stringify(editorProject), [editorProject]);
   const editedManifest = useMemo(
-    () => composeHomeProjectPreview(editorProject, ownerProjectManifest.extensions).manifest,
+    () => composeHomeProjectPreview(editorProject, ownerProjectExtensions).manifest,
     [editorProject],
   );
   const placementFloor = useMemo(
