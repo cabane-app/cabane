@@ -1,9 +1,9 @@
 ---
-name: build-dev-home
+name: home-building-harness
 description: Build and modify local test homes for Cabane editor coding sessions. Use proactively for editor feature development, bug reproduction and verification whenever a scene helps. Prefer this to workspace imports or UI-driven fixture setup. Owner-home authoring uses build-floor-layout or equip-room.
 ---
 
-# Build a development home
+# Home-building harness
 
 Prepare the smallest scene needed through the shared editor agent. The real app
 owns validation, placement, undo and IndexedDB autosave. Commands need no extra

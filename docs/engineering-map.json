@@ -120,7 +120,7 @@
       "scripts/dev-agent.mjs",
       "scripts/dev-agent-server.mjs",
       "scripts/dev-agent-protocol.mjs",
-      ".agents/skills/build-dev-home/SKILL.md",
+      ".agents/skills/home-building-harness/SKILL.md",
       "apps/web/src/agent-pilot/DevAgentBridge.tsx",
       "apps/web/src/agent-pilot/AgentPilotPanel.tsx",
       "apps/web/src/agent-pilot/agent-command-contract.ts",

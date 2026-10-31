@@ -108,7 +108,7 @@ Product development can use `npm run agent:dev -- start` to create a disposable
 home without pairing, importing a workspace or driving editor controls. Add
 `--room 6x4` to build and validate a starter room through four ordinary wall
 commands. The
-[`build-dev-home` skill](../../.agents/skills/build-dev-home/SKILL.md) describes
+[`home-building-harness` skill](../../.agents/skills/home-building-harness/SKILL.md) describes
 commands and fixture preparation. This is opt-in development tooling, separate
 from the shipped HA relay. It requires the installed pinned Chromium.
 
