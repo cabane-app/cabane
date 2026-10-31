@@ -27,7 +27,7 @@ import { EditorValidationPanel } from "./EditorValidationPanel";
 import { EditorPanels } from "./EditorPanels";
 import { useMobileEditorViewport } from "./useMobileEditorViewport";
 import { EditorPanelControls } from "./EditorPanelControls";
-import { editorPanelSelection, useEditorPanels } from "./useEditorPanels";
+import { editorPanelSelection, editorPanelsBusy, useEditorPanels } from "./useEditorPanels";
 
 import { ownerProjectRegistries } from "../project-runtime";
 
@@ -134,7 +134,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
       selectMode(next);
     }
   };
-  const panelBusy = unsettled || controller.marqueeSelecting || Boolean(constructEditor.drawStart);
+  const panelBusy = editorPanelsBusy(controller);
   const panels = useEditorPanels(
     editorPanelSelection(controller, settingsMode),
     panelBusy,

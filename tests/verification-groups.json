@@ -75,6 +75,7 @@
       "architecture-geometry-resilience.test.mjs",
       "floor-menu-browser.test.mjs",
       "basement-floors.test.mjs",
+      "terrain-stairs.test.mjs",
       "ceiling-surfaces.test.mjs",
       "construct-alignment-deletion.test.mjs",
       "construct-editor.test.mjs",

@@ -1,9 +1,9 @@
 {
-  "revision": 28,
-  "fingerprint": "73c03268ab271325cea37e7d4d366680586cce8c6c55a85a4f1bbae13aa2be6d",
-  "summary": "Allow shortcuts to devices outside rooms",
+  "revision": 30,
+  "fingerprint": "c7078f0c13601dc5bd0a6c682c56be1368a2931e97e00b8eab2f0b8acbb132e8",
+  "summary": "Connect stairs to terrain and add masonry stair styles",
   "breakingChanges": [
-    "No saved fields change. Outside-room device shortcuts now validate and open device controls directly. Older panels reject these targets as lacking a room sheet and require the matching update before using them."
+    "Existing floor-to-floor stairs and omitted styles remain compatible. Terrain connections and Concrete or Stone styles require the matching frontend and Home Assistant panel. Terrain rise, landing validation and Walk follow the current grade without adding a storey. No migration is required."
   ],
   "history": [
     {
@@ -193,6 +193,20 @@
       "summary": "Warn about disconnected terrain exits and stabilize terrace clipping",
       "breakingChanges": [
         "No saved fields or migrations change. Terrain exit diagnostics are warning-only and do not block Save. Update the frontend and matching Home Assistant panel for these warnings and the terrace/basement clipping fix."
+      ]
+    },
+    {
+      "revision": 28,
+      "summary": "Allow shortcuts to devices outside rooms",
+      "breakingChanges": [
+        "No saved fields change. Outside-room device shortcuts now validate and open device controls directly. Older panels reject these targets as lacking a room sheet and require the matching update before using them."
+      ]
+    },
+    {
+      "revision": 29,
+      "summary": "Connect stairs directly to terrain",
+      "breakingChanges": [
+        "Existing floor-to-floor stairs remain compatible. Terrain stairs store one floor and a terrain endpoint and require the matching panel update. Their rise, landing validation and Walk route follow the current terrain without adding a storey."
       ]
     }
   ],

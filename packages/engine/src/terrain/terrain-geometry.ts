@@ -7,6 +7,12 @@ interface Vertex {
   z: number;
   u: number;
   v: number;
+  nx: number;
+  ny: number;
+  nz: number;
+  r: number;
+  g: number;
+  b: number;
 }
 type Axis = "x" | "y";
 
@@ -26,6 +32,12 @@ function clip(vertices: Vertex[], axis: Axis, boundary: number, lower: boolean):
         z: a.z + (b.z - a.z) * t,
         u: a.u + (b.u - a.u) * t,
         v: a.v + (b.v - a.v) * t,
+        nx: a.nx + (b.nx - a.nx) * t,
+        ny: a.ny + (b.ny - a.ny) * t,
+        nz: a.nz + (b.nz - a.nz) * t,
+        r: a.r + (b.r - a.r) * t,
+        g: a.g + (b.g - a.g) * t,
+        b: a.b + (b.b - a.b) * t,
       });
     }
   }
@@ -51,11 +63,13 @@ export function conformToTerrain(
   if (!surface) return geometry;
   const position = geometry.getAttribute("position"),
     normal = geometry.getAttribute("normal"),
-    uv = geometry.getAttribute("uv");
+    uv = geometry.getAttribute("uv"),
+    color = geometry.getAttribute("color");
   const index = geometry.index;
   const positions: number[] = [],
     normals: number[] = [],
-    uvs: number[] = [];
+    uvs: number[] = [],
+    colors: number[] = [];
   const transformedNormal = new Vector3();
   const a = new Vector3(),
     b = new Vector3();
@@ -68,6 +82,12 @@ export function conformToTerrain(
       z: position.getZ(id),
       u: uv?.getX(id) ?? 0,
       v: uv?.getY(id) ?? 0,
+      nx: normal.getX(id),
+      ny: normal.getY(id),
+      nz: normal.getZ(id),
+      r: color?.getX(id) ?? 0,
+      g: color?.getY(id) ?? 0,
+      b: color?.getZ(id) ?? 0,
     }));
     let polygons = [triangle];
     for (const boundary of surface.gridX) polygons = splitAt(polygons, "x", boundary);
@@ -96,15 +116,12 @@ export function conformToTerrain(
           const dz =
             (surface.offsetAt(x, -y + delta) - surface.offsetAt(x, -y - delta)) / (2 * delta);
           transformedNormal
-            .set(
-              normal.getX(ids[0]) - dx * weight * normal.getZ(ids[0]),
-              normal.getY(ids[0]) + dz * weight * normal.getZ(ids[0]),
-              normal.getZ(ids[0]),
-            )
+            .set(point.nx - dx * weight * point.nz, point.ny + dz * weight * point.nz, point.nz)
             .normalize();
           positions.push(x, y, z + surface.offsetAt(x, -y) * weight);
           normals.push(...transformedNormal.toArray());
           uvs.push(u, v);
+          if (color) colors.push(point.r, point.g, point.b);
         }
       }
   }
@@ -112,6 +129,7 @@ export function conformToTerrain(
   conformed.setAttribute("position", new Float32BufferAttribute(positions, 3));
   conformed.setAttribute("normal", new Float32BufferAttribute(normals, 3));
   conformed.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+  if (color) conformed.setAttribute("color", new Float32BufferAttribute(colors, 3));
   conformed.computeBoundingBox();
   conformed.computeBoundingSphere();
   geometry.dispose();

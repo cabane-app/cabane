@@ -7,9 +7,11 @@ import type { FloorCoordinates, PlanPoint, Polygon } from "../types";
 export const StairSurfaceApertures = createContext<{
   floor: readonly Polygon[];
   ceiling: readonly Polygon[];
-}>({ floor: [], ceiling: [] });
-export const useStairSurfaceApertures = (surface: "floor" | "ceiling") =>
-  useContext(StairSurfaceApertures)[surface];
+  terrain?: readonly Polygon[];
+}>({ floor: [], ceiling: [], terrain: [] });
+const EMPTY_APERTURES: readonly Polygon[] = [];
+export const useStairSurfaceApertures = (surface: "floor" | "ceiling" | "terrain") =>
+  useContext(StairSurfaceApertures)[surface] ?? EMPTY_APERTURES;
 export const cutSurfaceShapes = (
   polygon: Polygon,
   coordinates: FloorCoordinates,

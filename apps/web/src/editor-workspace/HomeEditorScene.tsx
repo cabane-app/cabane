@@ -20,6 +20,7 @@ import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
 import {
   type ManifestIssue,
   deriveFloorLevels,
+  stairFloorIds,
   StylizedScene,
   ArchitectureScene,
 } from "@cabane/engine";
@@ -318,14 +319,16 @@ export function HomeEditorScene({
                 )}
               {mode === "construct" &&
                 snapshot.project.stairs.map((stair) => {
-                  if (stair.lowerFloorId !== activeFloorId && stair.upperFloorId !== activeFloorId)
-                    return null;
+                  if (!stairFloorIds(stair).includes(activeFloorId)) return null;
                   const selected =
                     stairDialog?.id === stair.id &&
                     constructEditor.tool === "select" &&
                     !stairPlacement;
-                  const destination =
-                    stair.lowerFloorId === activeFloorId ? stair.upperFloorId : stair.lowerFloorId;
+                  const destination = stair.terrain
+                    ? stair.terrain.floorId
+                    : stair.lowerFloorId === activeFloorId
+                      ? stair.upperFloorId
+                      : stair.lowerFloorId;
                   return (
                     <EditableStair
                       key={`${activeFloorId}:${stair.id}`}
@@ -641,7 +644,7 @@ export function HomeEditorScene({
             </StylizedScene>
             {mode === "construct" && stairPlacement && (
               <StairPlacement
-                key={`${activeFloorId}:${stairPlacement.shape ?? "straight"}`}
+                key={`${activeFloorId}:${stairPlacement.id}:${stairPlacement.shape ?? "straight"}`}
                 registries={stairRegistries}
                 onIssuesChange={onStairIssuesChange}
                 building={snapshot.project}

@@ -19,7 +19,7 @@
     }
   },
   "semantics": {
-    "validationRevision": 10,
+    "validationRevision": 11,
     "migrationRevision": 1,
     "archiveRevision": 1
   },
@@ -4760,6 +4760,22 @@
                         "const": "spiral"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "totalTurnDegrees": {
                       "optional": false,
                       "schema": {
@@ -4770,6 +4786,128 @@
                       "optional": false,
                       "schema": {
                         "type": "string"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "diameterMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "direction": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "clockwise"
+                          },
+                          {
+                            "const": "counterclockwise"
+                          }
+                        ]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "spiral"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalTurnDegrees": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
                       }
                     }
                   }
@@ -4837,6 +4975,22 @@
                       "optional": false,
                       "schema": {
                         "const": "l-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
                       }
                     },
                     "turn": {
@@ -4937,6 +5091,22 @@
                         "const": "u-shaped"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "turn": {
                       "optional": false,
                       "schema": {
@@ -5035,10 +5205,391 @@
                         "const": "straight"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "upperFloorId": {
                       "optional": false,
                       "schema": {
                         "type": "string"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "lowerRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "l-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "turn": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "upperRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "lowerRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "u-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "turn": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "upperRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "runMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": true,
+                      "schema": {
+                        "const": "straight"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
                       }
                     },
                     "widthMeters": {

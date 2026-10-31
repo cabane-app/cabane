@@ -1,4 +1,5 @@
 import { roomsForFloor } from "../outdoor-platforms/platform-rooms";
+import { stairFloorIds } from "../stairs/stair-connection";
 import type { EditorWorkspaceSnapshot } from "../home-editor/workspace-history";
 import { copyFloorContents, type FloorCopyOptions } from "./floor-duplication";
 import type { DraftLayoutFloorSpec } from "./types";
@@ -149,9 +150,7 @@ export const removeFloor = (
           ? (({ walkStart, ...home }) => home)(project.home)
           : project.home,
       sceneItems: project.sceneItems.filter((item) => item.floorId !== removedFloor.id),
-      stairs: project.stairs.filter(
-        (stair) => stair.lowerFloorId !== removedFloor.id && stair.upperFloorId !== removedFloor.id,
-      ),
+      stairs: project.stairs.filter((stair) => !stairFloorIds(stair).includes(removedFloor.id)),
       roomProfiles: Object.fromEntries(
         Object.entries(project.roomProfiles).filter(([id]) => !roomIds.has(id)),
       ),

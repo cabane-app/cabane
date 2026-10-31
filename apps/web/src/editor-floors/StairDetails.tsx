@@ -2,6 +2,7 @@ import { MeasurementText } from "@cabane/engine";
 import { LengthInput } from "../editor-chrome/LengthInput";
 import { omitUndefinedProperties } from "@cabane/engine";
 import { StairShapeSelect } from "./StairShapeSelect";
+import { StairStyleSelect } from "./StairStyleSelect";
 import { convertStairShape } from "./stair-placement-geometry";
 import {
   canDraftStair,
@@ -9,7 +10,13 @@ import {
   type StairValidationRegistries,
 } from "./stair-candidate-validation";
 import { useEffect, useMemo, useState } from "react";
-import { type HomeProject, type ManifestIssue, type StairSpec } from "@cabane/engine";
+import {
+  stairFloorIds,
+  deriveStairFlight,
+  type HomeProject,
+  type ManifestIssue,
+  type StairSpec,
+} from "@cabane/engine";
 import { SelectionDetailsPanel } from "../editor-chrome/SelectionDetailsPanel";
 import { StairNumberField } from "./StairNumberField";
 import { StairWarnings } from "./StairWarnings";
@@ -36,6 +43,7 @@ export function StairDetails({
     [project, draft, registries],
   );
   const issues = liveIssues ?? draftIssues;
+  const flight = deriveStairFlight(project, draft);
   const update = (next: StairSpec) => {
     setDraft(next);
     if (canDraftStair(project, next)) onSave(next);
@@ -58,8 +66,8 @@ export function StairDetails({
       />
     </label>
   );
-  const planScale = project.floors.find((floor) => floor.id === draft.lowerFloorId)!.coordinates
-    .metersPerPlanUnit;
+  const planScale = project.floors.find((floor) => stairFloorIds(draft).includes(floor.id))!
+    .coordinates.metersPerPlanUnit;
   const number = (
     label: string,
     value: number,
@@ -80,7 +88,11 @@ export function StairDetails({
     <SelectionDetailsPanel
       mode="construct"
       title="Stairs"
-      subtitle={`To ${project.floors.find((f) => f.id === draft.upperFloorId)?.name}`}
+      subtitle={
+        draft.terrain
+          ? "To ground"
+          : `To ${project.floors.find((f) => f.id === draft.upperFloorId)?.name}`
+      }
       label="Stair properties"
       onClose={onCancel}
     >
@@ -88,6 +100,19 @@ export function StairDetails({
         value={draft.shape ?? "straight"}
         onChange={(shape) => update(convertStairShape(project, draft, shape))}
       />
+      <StairStyleSelect
+        value={draft.style ?? "open"}
+        onChange={(style) => update({ ...draft, style })}
+      />
+      {draft.terrain && (
+        <p className="sidebar-section-note">
+          <MeasurementText>
+            {flight
+              ? `Height: ${flight.riseMeters.toFixed(2)} m. Follows the terrain landing.`
+              : "Height follows the terrain landing."}
+          </MeasurementText>
+        </p>
+      )}
       {draft.shape === "spiral" ? (
         <>
           {length(

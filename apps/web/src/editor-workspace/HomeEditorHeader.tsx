@@ -252,14 +252,10 @@ export function HomeEditorHeader({
             setStairPlacement(null);
             constructEditor.setTool(tool);
           }}
-          onStairs={startStairs}
+          onStairs={() => startStairs()}
           stairsActive={Boolean(stairPlacement)}
           stairsDisabledReason={
-            snapshot.project.floors.at(-1)?.id === activeFloorId
-              ? "Add a floor above first, then place stairs from this floor."
-              : editingLocked || unsettled
-                ? "Finish the current edit first."
-                : undefined
+            editingLocked || unsettled ? "Finish the current edit first." : undefined
           }
         />
       ) : null}

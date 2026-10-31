@@ -1,9 +1,14 @@
+import type { TerrainSurface } from "../terrain/terrain-surface";
 import type { FloorSpec } from "../types";
 import { deriveWalkColliders } from "./walk-colliders";
 import type { BoxWalkCollider, WalkCollider } from "./walk-navigation-contract";
 
 /** Own the architecture snapshot; door sets and furniture may change in place. */
-export function prepareWalkColliders(floor: FloorSpec, elevation = 0) {
+export function prepareWalkColliders(
+  floor: FloorSpec,
+  elevation = 0,
+  terrain: TerrainSurface = null,
+) {
   const architecture = structuredClone(floor);
   let previousOpen: Set<string> | undefined;
   let previousFurniture: BoxWalkCollider[] = [];
@@ -32,7 +37,7 @@ export function prepareWalkColliders(floor: FloorSpec, elevation = 0) {
         );
       });
     if (!sameDoors || !sameFurniture) {
-      colliders = deriveWalkColliders(architecture, openIds, furniture, elevation);
+      colliders = deriveWalkColliders(architecture, openIds, furniture, elevation, terrain);
       previousOpen = new Set(openIds);
       previousFurniture = furniture.map((box) => ({ ...box }));
     }

@@ -91,7 +91,12 @@ export function WalkCameraController({
   // This also catches edits that reuse a FloorSpec object instead of its identity.
   const navigationKey = JSON.stringify(
     building
-      ? { floors: building.floors, stairs: building.stairs, coordinates: building.coordinates }
+      ? {
+          floors: building.floors,
+          stairs: building.stairs,
+          coordinates: building.coordinates,
+          home: building.home,
+        }
       : floor,
   );
   const buildingMode = Boolean(building);

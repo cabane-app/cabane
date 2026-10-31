@@ -8,6 +8,7 @@ import { sceneItem } from "./schema-scene-item";
 import { validateProjectModelCatalogs } from "../imported-models/model-schema";
 import { keys, record, array, string, finite, point, polygon } from "./schema-json-values";
 import { openingSchema } from "./schema-opening";
+import { stairSchema } from "./schema-stairs";
 import { validHedge } from "../hedges/hedge-validity";
 import type { HedgeSpec } from "../types";
 import { room } from "./schema-room";
@@ -383,76 +384,9 @@ export const validateHomeProjectSchemaShape = (
         "floors",
         "A building requires a ground floor.",
       );
-    array(project.stairs, "stairs", issues)?.forEach((entry, index) => {
-      const path = `stairs[${index}]`;
-      const stair = record(entry, path, issues);
-      if (!stair) return;
-      const shape = stair.shape ?? "straight";
-      if (
-        stair.railings !== undefined &&
-        !["both", "left", "right", "none"].includes(
-          typeof stair.railings === "string" ? stair.railings : "",
-        )
-      )
-        addProjectIssue(
-          issues,
-          "stair.railings",
-          `${path}.railings`,
-          "Choose Both, Left, Right, or None.",
-        );
-      const dimensions =
-        shape === "spiral"
-          ? ["diameterMeters", "totalTurnDegrees"]
-          : shape === "l-shaped" || shape === "u-shaped"
-            ? ["widthMeters", "lowerRunMeters", "upperRunMeters"]
-            : ["widthMeters", "runMeters"];
-      keys(
-        stair,
-        [
-          "id",
-          "lowerFloorId",
-          "upperFloorId",
-          "at",
-          "rotationYRadians",
-          "shape",
-          "railings",
-          ...dimensions,
-          ...(shape === "spiral"
-            ? ["direction"]
-            : shape === "l-shaped" || shape === "u-shaped"
-              ? ["turn"]
-              : []),
-        ],
-        path,
-        issues,
-      );
-      if (
-        !["straight", "l-shaped", "u-shaped", "spiral"].includes(
-          typeof shape === "string" ? shape : "",
-        )
-      )
-        addProjectIssue(issues, "stair.shape", `${path}.shape`, "Unknown stair shape.");
-      if (
-        shape === "spiral" &&
-        !["clockwise", "counterclockwise"].includes(String(stair.direction))
-      )
-        addProjectIssue(
-          issues,
-          "stair.direction",
-          `${path}.direction`,
-          "Choose clockwise or counterclockwise.",
-        );
-      if (
-        (shape === "l-shaped" || shape === "u-shaped") &&
-        !["left", "right"].includes(String(stair.turn))
-      )
-        addProjectIssue(issues, "stair.turn", `${path}.turn`, "Choose left or right.");
-      for (const key of ["id", "lowerFloorId", "upperFloorId"])
-        string(stair[key], `${path}.${key}`, issues);
-      point(stair.at, `${path}.at`, issues);
-      for (const key of ["rotationYRadians", ...dimensions])
-        finite(stair[key], `${path}.${key}`, issues);
-    });
+    array(project.stairs, "stairs", issues)?.forEach((entry, index) =>
+      stairSchema(entry, `stairs[${index}]`, issues),
+    );
   }
   array(project.sceneItems, "sceneItems", issues)?.forEach((entry, index) =>
     sceneItem(entry, `sceneItems[${index}]`, issues, legacy),

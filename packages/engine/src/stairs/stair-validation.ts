@@ -1,10 +1,10 @@
-import { floorSupportPolygons } from "../outdoor-platforms/platform-geometry";
 import { deriveFloorLevels } from "../building/floor-levels";
+import { stairFloorIds } from "./stair-connection";
+import { stairEndSupported } from "./stair-landing-support";
 import type { ManifestIssue, FloorSpec } from "../types";
 import { deriveStairFlight } from "./flight-geometry";
 import {
   stairClearanceVolumes,
-  stairLandingSupported,
   stairStructureVolumes,
   stairVolumesIntersect,
 } from "./stair-clearance";
@@ -51,19 +51,20 @@ export const validateStairs = (
     }
     const flight = flights[index];
     if (!flight) {
-      add("stair.geometry", "Stairs require positive dimensions and adjacent floors.", "fatal");
+      add(
+        "stair.geometry",
+        stair.terrain
+          ? "Connect the floor landing to a different ground height with positive stair dimensions."
+          : "Stairs require positive dimensions and adjacent floors.",
+        "fatal",
+      );
       return;
     }
     const clearance = stairClearanceVolumes(flight, building.coordinates);
     for (let otherIndex = 0; otherIndex < index; otherIndex++) {
       const other = building.stairs[otherIndex],
         previous = flights[otherIndex];
-      if (
-        !previous ||
-        ![other.lowerFloorId, other.upperFloorId].some(
-          (id) => id === stair.lowerFloorId || id === stair.upperFloorId,
-        )
-      )
+      if (!previous || !stairFloorIds(other).some((id) => stairFloorIds(stair).includes(id)))
         continue;
       const structure = stairStructureVolumes(flight),
         previousStructure = stairStructureVolumes(previous);
@@ -78,7 +79,7 @@ export const validateStairs = (
         );
       }
     }
-    for (const floorId of [stair.lowerFloorId, stair.upperFloorId]) {
+    for (const floorId of stairFloorIds(stair)) {
       const floor = building.floors.find((f) => f.id === floorId)! as FloorSpec;
       const elevation = levels.find((level) => level.floorId === floorId)!.elevationMeters;
       let obstacles = architecture.get(floorId);
@@ -110,11 +111,16 @@ export const validateStairs = (
           /* Scene-item validation reports unresolved supports. */
         }
       }
-      const landing = floorId === stair.lowerFloorId ? flight.lowerLanding : flight.upperLanding;
-      if (!stairLandingSupported(landing, floorSupportPolygons(floor), building.coordinates)) {
+    }
+    for (const upper of [false, true]) {
+      const floorId = upper ? flight.upperFloorId : flight.lowerFloorId;
+      const floor = building.floors.find((floor) => floor.id === floorId);
+      if (!stairEndSupported(building, flight, upper)) {
         add(
           "stair.landing",
-          `The stair landing extends beyond “${floor.name}”. Move the stairs or extend the floor to support the exit.`,
+          floor
+            ? `The stair landing extends beyond “${floor.name}”. Move the stairs or extend the floor to support the exit.`
+            : "The ground landing needs clear terrain within 30 cm of the last step. Move the endpoint or adjust the terrain.",
         );
       }
     }

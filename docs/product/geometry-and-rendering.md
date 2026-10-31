@@ -50,7 +50,10 @@ building bounds, continuing level beyond each edge. Exterior views then include
 basement facades. Grass, soil and outdoor finish zones follow the grade while
 excavating indoor rooms and retaining pool/stair apertures through every layer.
 Courtyards and outdoor platforms do not excavate indoor volumes. Floors,
-platforms, pools and boundaries retain their authored levels. Walk follows
+platforms and pools retain their authored levels. Ground-floor boundaries outside
+indoor or platform support follow the terrain along their solids and individual
+plant roots. Boundaries on authored floor/platform support and upper floors retain
+their levels. Plan overlays remain flat. Walk follows
 rendered terrain and crosses near-level basement entrances with ordinary wall
 and pool collision. Tool relocation retains conservative ground-level support.
 All-zero or omitted heights preserve existing rendering. Apartment shells keep
@@ -195,7 +198,7 @@ and without HA bindings; other unbound devices show their disconnected state.
 Garden lanterns use a short, warm inverse-square falloff to softly illuminate
 nearby ground in night mode.
 
-Walk collision derives from walls, openings, junctions, pools, and boundaries. Boundary styles (including open fences) use the existing continuous hedge segment collider at their authored width; visible rail gaps do not create walk apertures. Furniture, hedge, and outdoor-platform barrier colliders retain their world vertical extent so a sufficiently high jump can clear them. Walls and pool edges remain full-height blockers. Explicitly marked furniture collider tops act as landing surfaces without turning other collider bounds into walkable platforms. Navigation derives optional clear spawn points and checks room connectivity; rooms without
+Walk collision derives from walls, openings, junctions, pools, and boundaries. Boundary styles (including open fences) use a continuous hedge segment collider at their authored width; visible rail gaps do not create walk apertures. Terrain-following boundaries use short connected collider runs with vertical ranges matching the local grade and boundary height, including the grass datum. Furniture, hedge, and outdoor-platform barrier colliders retain their world vertical extent so a sufficiently high jump can clear them. Walls and pool edges remain full-height blockers. Explicitly marked furniture collider tops act as landing surfaces without turning other collider bounds into walkable platforms. Navigation derives optional clear spawn points and checks room connectivity; rooms without
 a safe spawn (such as small cupboards) do not produce a validation diagnostic.
 Walk entry still requires a safe spawn and skips rooms without one. Navigation
 does not maintain a second hand-authored collision plan. Walk controls support keyboard/mouse and touch
@@ -225,7 +228,15 @@ Implementation: [contracts](../../packages/engine/src/types.ts),
 [Back to product overview](../../PRODUCT_SPEC.md).
 
 Straight, L-shaped, and spiral stairs derive treads, landings, guards, floor/ceiling apertures, and walk
-ramps from adjacent levels. Walking updates the selected floor at landings.
+ramps from adjacent levels. A terrain connection instead stores one floor and which
+route end meets the ground; its elevation and rise derive from the current grade.
+It retains the same shape geometry, guards and continuous Walk route. Terrain
+connections cut grass, soil and outdoor finish zones without making indoor slab or
+ceiling apertures. Floor and terrain landings must both be supported for exit advice
+to treat the connection as usable. Walking updates the selected floor at landings.
+Concrete and Stone stairs use solid tread bodies down to their base elevation;
+Stone adds separate tread caps. Their structural clearance uses the full solid
+body, while their walking route and apertures match the open-tread versions.
 
 Only ground-floor walls extend to the terrain datum. Shared-level wall caps are
 clipped where the neighboring wall continues, preserving exposed terrace caps.

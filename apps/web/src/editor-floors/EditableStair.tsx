@@ -4,6 +4,7 @@ import { useThree, type ThreeEvent } from "@react-three/fiber";
 import { Plane, Vector3 } from "three";
 import {
   deriveStairFlight,
+  stairFloorIds,
   planPointToWorld,
   worldPointToPlan,
   StairPlan,
@@ -152,7 +153,7 @@ export function EditableStair({
           point: hit,
           coordinates,
           walls: building.floors
-            .filter((f) => f.id === stair.lowerFloorId || f.id === stair.upperFloorId)
+            .filter((f) => stairFloorIds(stair).includes(f.id))
             .flatMap((f) => f.walls),
           onSnap: setSnap,
           pixelsPerMeter: constructPixelsPerMeter(camera, size.height),
@@ -253,13 +254,13 @@ export function EditableStair({
   const other = building.floors.find(
     (f) =>
       f.id === (activeFloorId === stair.lowerFloorId ? stair.upperFloorId : stair.lowerFloorId),
-  )!;
+  );
   return (
     <group name={`editable-stair-${stair.id}`}>
-      {draft && <ConnectedFloorGuide floor={other} />}
+      {draft && other && <ConnectedFloorGuide floor={other} />}
       <StairPlan
         flight={flight}
-        upper={activeFloorId === stair.upperFloorId}
+        upper={activeFloorId === flight.upperFloorId}
         selected={selected}
         invalid={validation.issues.some((issue) => issue.severity !== "warning")}
         handlers={enabled ? handlers("body") : undefined}
@@ -279,8 +280,8 @@ export function EditableStair({
           {!draft && (
             <SelectedStairControls
               flight={flight}
-              destinationName={other.name}
-              onGoToFloor={onGoToFloor}
+              destinationName={other?.name ?? "Ground"}
+              onGoToFloor={other ? onGoToFloor : undefined}
               onDelete={onDelete}
             />
           )}

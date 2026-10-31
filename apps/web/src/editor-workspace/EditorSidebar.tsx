@@ -191,11 +191,6 @@ export function EditorSidebar({
               inert={editingLocked || unsettled || reference.adjusting}
               tool={constructEditor.tool}
               stairsActive={Boolean(stairPlacement)}
-              stairsDisabledReason={
-                snapshot.project.floors.at(-1)?.id === activeFloorId
-                  ? "Add a floor above first."
-                  : undefined
-              }
               onToolChange={(tool) => {
                 setStairPlacement(null);
                 constructEditor.setTool(tool);
@@ -203,7 +198,6 @@ export function EditorSidebar({
               }}
               onStairs={() => {
                 startStairs();
-                onMobileToolChoose();
               }}
             />
           )}
@@ -230,6 +224,12 @@ export function EditorSidebar({
           {!settingsMode && mode === "construct" && stairPlacement && (
             <StairPlacementPanel
               shape={stairPlacement.shape ?? "straight"}
+              style={stairPlacement.style ?? "open"}
+              onStyleChange={(style) => setStairPlacement({ ...stairPlacement, style })}
+              terrain={Boolean(stairPlacement.terrain)}
+              canConnectFloors={snapshot.project.floors.at(-1)?.id !== activeFloorId}
+              canConnectTerrain={!snapshot.project.home.apartmentFloor}
+              onConnectionChange={startStairs}
               issues={stairLiveIssues ?? []}
               onChange={(shape) =>
                 setStairPlacement(convertStairShape(snapshot.project, stairPlacement, shape))

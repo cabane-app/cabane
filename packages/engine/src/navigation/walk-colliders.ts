@@ -1,5 +1,7 @@
 import { deriveOutdoorPlatformBarriers } from "../outdoor-platforms/platform-barriers";
 import { rollUpDoorGeometry } from "../roll-up-door-geometry";
+import { terrainForHedge, terrainHedgeRuns } from "../hedges/hedge-terrain";
+import type { TerrainSurface } from "../terrain/terrain-surface";
 import { validHedge } from "../hedges/hedge-validity";
 import { planPointToWorld } from "../geometry";
 
@@ -92,14 +94,16 @@ export const deriveWalkColliders = (
   openOpeningIds: ReadonlySet<string> = new Set(),
   furniture: readonly BoxWalkCollider[] = [],
   elevation = 0,
+  terrain: TerrainSurface = null,
 ): WalkCollider[] =>
-  deriveBuiltWalkColliders(physicalFloor(floor), openOpeningIds, furniture, elevation);
+  deriveBuiltWalkColliders(physicalFloor(floor), openOpeningIds, furniture, elevation, terrain);
 
 const deriveBuiltWalkColliders = (
   floor: FloorSpec,
   openOpeningIds: ReadonlySet<string>,
   furniture: readonly BoxWalkCollider[],
   elevation: number,
+  terrain: TerrainSurface,
 ): WalkCollider[] => [
   ...[...(floor.solidRooms ?? []), ...floor.rooms.filter((room) => room.isSolid)].flatMap(
     (room): SegmentWalkCollider[] =>
@@ -131,18 +135,28 @@ const deriveBuiltWalkColliders = (
   })),
   ...(floor.hedges ?? [])
     .filter((hedge) => validHedge(hedge, floor.coordinates.metersPerPlanUnit))
-    .map((hedge): SegmentWalkCollider => {
+    .flatMap((hedge): SegmentWalkCollider[] => {
+      const surface = terrainForHedge(floor, hedge, terrain);
+      if (surface)
+        return terrainHedgeRuns(floor, hedge, surface).map((run, index) => ({
+          kind: "segment",
+          id: `${hedge.id}-walk-${index}`,
+          halfThickness: hedge.widthMeters / 2,
+          ...run,
+        }));
       const [x, z] = planPointToWorld(hedge.from, floor.coordinates);
       const [tx, tz] = planPointToWorld(hedge.to, floor.coordinates);
-      return {
-        kind: "segment",
-        id: `${hedge.id}-walk`,
-        from: { x, z },
-        to: { x: tx, z: tz },
-        halfThickness: hedge.widthMeters / 2,
-        minY: elevation,
-        maxY: elevation + hedge.heightMeters,
-      };
+      return [
+        {
+          kind: "segment",
+          id: `${hedge.id}-walk`,
+          from: { x, z },
+          to: { x: tx, z: tz },
+          halfThickness: hedge.widthMeters / 2,
+          minY: elevation,
+          maxY: elevation + hedge.heightMeters,
+        },
+      ];
     }),
   ...(floor.pools ?? []).flatMap((pool): SegmentWalkCollider[] => {
     if (!isPoolOutline(pool.polygon)) return [];
