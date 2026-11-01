@@ -1032,6 +1032,7 @@ await withModules(async (load) => {
       "light",
       "switch",
       "input_boolean",
+      "event",
     ]);
     const towelRail = createCatalogItem(get("heated-towel-rail"), placement, []);
     assert.deepEqual(towelRail.entitySlots[0].compatibleDomains, ["climate", "switch"]);

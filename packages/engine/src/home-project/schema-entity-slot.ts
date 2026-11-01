@@ -22,6 +22,7 @@ const DEVICE_DOMAINS = new Set<DeviceDomain>([
   "camera",
   "sensor",
   "binary_sensor",
+  "event",
 ]);
 const stringArray = (value: unknown, path: string, issues: HomeProjectIssue[]) => {
   array(value, path, issues)?.forEach((entry, index) => string(entry, `${path}[${index}]`, issues));

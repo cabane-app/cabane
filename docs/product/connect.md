@@ -67,7 +67,7 @@ room-area associations can influence suggestions but do not limit explicit compa
 The floor picker is hidden while a room is open and remains available on House plan.
 
 Each declared function has its own connection row and Connect or Change action.
-Optional sensor readings are separate from device functions. Connection, source
+Optional sensor and event readings are separate from device functions. Connection, source
 availability and display on the model are independent states; an unavailable source
 remains connected. A connected reading does not hide an unconfigured primary control or count that device
 as complete. The plan and sidebar share the same connected/total counts.
@@ -126,10 +126,10 @@ binary fallback when cover position is unknown. Unmapped opening slots do not
 make a room look unfinished. Changing to a conventional door removes its cover
 profile and browser mapping through ordinary draft reconciliation and history.
 
-Auxiliary readings declared in Arrange Properties are optional, manual secondary sensor slots. They can map to separate HA devices or entities in any area, including entities without a device. Existing shared-entity mappings and usage indications remain. Furniture readings appear separately by their reading names in the room’s Devices list, or under Outside rooms when placed outside room polygons. Devices retain one primary control and list attached readings under Readings. Changing the primary HA device preserves its independently mapped readings.
+Auxiliary readings declared in Arrange Properties are optional, manual secondary sensor or event slots. They can map to separate HA devices or entities in any area, including entities without a device. Existing shared-entity mappings and usage indications remain. Furniture readings appear separately by their reading names in the room’s Devices list, or under Outside rooms when placed outside room polygons. Devices retain one primary control and list attached readings under Readings. Changing the primary HA device preserves its independently mapped readings.
 
 Connect and Arrange Properties share a sensor-first **Add reading** flow. The user
-chooses a sensor/binary sensor, then confirms a prefilled reading name and **Show
+chooses a sensor, binary sensor or event, then confirms a prefilled reading name and **Show
 on model**. Creation adds the local slot and private draft mapping in one history
 step, including furniture with no existing slots. Existing attachments are marked
 Added. Cancel makes no changes; disconnected sessions cannot add a source. Undo
@@ -146,3 +146,8 @@ Room-device, device-connection and source headings share the same type, line hei
 and top alignment. The sidebar inherits standard editor typography. Intermediate
 widths retain the room sidebar and device list while showing connections or sources
 in succession. Mobile keeps the standard Tools panel for rooms below the work area.
+
+Event entities (`event.*`), including Hue remote buttons, can be mapped to newly
+placed Wall switches or personal models with the Event profile. Existing slots
+retain their saved compatible domains; place a new Wall switch when an older
+slot does not offer events. Event bindings are read-only.

@@ -11,5 +11,5 @@ export const isAuxiliaryEntitySlot = (slot: {
   Array.isArray(slot.compatibleDomains) &&
   slot.compatibleDomains.length > 0 &&
   slot.compatibleDomains.every(
-    (domain: unknown) => domain === "sensor" || domain === "binary_sensor",
+    (domain: unknown) => domain === "sensor" || domain === "binary_sensor" || domain === "event",
   );

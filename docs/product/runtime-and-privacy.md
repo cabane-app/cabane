@@ -212,3 +212,13 @@ Its revision-checked write changes only that field in draft and published profil
 not other unpublished work. Public projects omit the entity identifier. Save failures
 retain the previous committed source. Action-bar weather previews are local React
 state and never saved to HA or the binding profile.
+
+Event sources are read-only. Their initial `unknown` state means **No event received**;
+actual unavailability and stale connections remain separate. The last event type
+and time use the same formatter in room controls, connected readings and scene labels.
+New real light/switch on/off transitions and button/event timestamps briefly show
+the shared zap impact on the mapped device. Activity is transient and derives from
+the existing state subscription, with no extra subscriptions or timers. Initial
+snapshots, restored history, duplicate updates, remapping and reconnect replay do
+not pulse. Demo state does not create real activity markers. Reduced motion uses
+a stationary fading acknowledgment, without expansion or rays.

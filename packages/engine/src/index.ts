@@ -1,3 +1,4 @@
+export { SceneActivityPulse } from "./SceneActivityPulse";
 export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";
 export * from "./types";

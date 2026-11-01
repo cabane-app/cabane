@@ -8,6 +8,9 @@ import { withStorageDom } from "./dom-test-environment.mjs";
 import { connectedRuntimeFixture, rawEntity, toSnapshots } from "./fixtures/home-assistant.mjs";
 
 await withModules(async (load) => {
+  const { ReadingConnectionForm } = await load(
+    "/packages/engine/src/home-assistant-mapping/ReadingConnectionForm.tsx",
+  );
   const engine = await load("/packages/engine/src/index.ts");
   const { stableDeviceRegistry: devices } = await load("/packages/catalog/src/device/index.ts");
   const { stableFurnishingRegistry: furnishings } = await load(
@@ -180,6 +183,153 @@ await withModules(async (load) => {
     invalid.sceneItems[0].entitySlots[0].compatibleDomains = ["sensor"];
     invalid.sceneItems[1].entitySlots[0].presentation.showInScene = "yes";
     assert.equal(engine.parseHomeProject(engine.serializeHomeProject(invalid)).valid, false);
+  });
+  test("event readings use the existing picker, optional slots, private history and scene formatter", async () => {
+    const { project, runtime, profile } = connectionFixture();
+    const entityId = "event.synthetic_remote";
+    runtime.entityRegistry.push({
+      entity_id: entityId,
+      area_id: null,
+      device_id: null,
+      platform: "synthetic",
+      name: "Remote press",
+      original_name: null,
+      disabled_by: null,
+    });
+    runtime.entityStates[entityId] = {
+      entityId,
+      state: "2026-11-01T12:00:00Z",
+      attributes: { event_type: "short_release" },
+      available: true,
+      stale: false,
+    };
+    let chosen;
+    await withDom(async ({ root, document, dom }) => {
+      await act(async () =>
+        root.render(
+          React.createElement(ReadingConnectionForm, {
+            profile,
+            runtime,
+            attached: [],
+            disabled: false,
+            onAdd: (id, presentation) => {
+              chosen = { id, presentation };
+            },
+            onCancel() {},
+          }),
+        ),
+      );
+      const filter = [...document.querySelectorAll("button")].find(
+        (button) => button.textContent === "Events",
+      );
+      assert.ok(filter, "events are an eligible reading type");
+      await act(async () => filter.click());
+      assert.equal(document.querySelectorAll(".connection-source").length, 1);
+      assert.match(document.querySelector(".connection-source").textContent, /short_release/);
+      await act(async () => document.querySelector(".connection-source").click());
+      assert.equal(document.querySelector('input[type="text"]').value, "Remote press");
+      await act(async () =>
+        document
+          .querySelector("form")
+          .dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true })),
+      );
+    });
+    assert.equal(chosen.id, entityId);
+    const before = {
+      project,
+      bindings: {
+        [runtime.origin]: {
+          draft: profile,
+          published: structuredClone(profile),
+          manualRoomIds: [],
+          manualSlotIds: [],
+        },
+      },
+    };
+    const next = addReadingToSnapshot(before, "fridge", chosen.id, runtime, chosen.presentation);
+    const reading = next.project.sceneItems[0].entitySlots.at(-1);
+    assert.equal(engine.isAuxiliaryEntitySlot(reading), true);
+    assert.equal(engine.validateHomeProject(next.project, registries).valid, true);
+    const history = engine.commitWorkspaceSnapshot(engine.createWorkspaceHistory(before), next);
+    assert.deepEqual(engine.undoWorkspaceHistory(history).present, before);
+    assert.deepEqual(
+      engine.redoWorkspaceHistory(engine.undoWorkspaceHistory(history)).present,
+      next,
+    );
+    assert.equal(next.bindings[runtime.origin].published.entityIdsBySlotId[reading.id], undefined);
+    assert.equal(next.bindings[runtime.origin].draft.entityIdsBySlotId[reading.id], entityId);
+    assert.equal(
+      next.bindings[runtime.origin].draft.entityIdsBySlotId["fridge-control"],
+      "sensor.fridge",
+    );
+    assert.equal(addReadingToSnapshot(next, "fridge", entityId, runtime), null);
+    const furniture = addReadingToSnapshot(
+      next,
+      "furniture",
+      entityId,
+      runtime,
+      chosen.presentation,
+    );
+    assert.equal(engine.validateHomeProject(furniture.project, registries).valid, true);
+    const parsed = engine.parseHomeProject(engine.serializeHomeProject(furniture.project));
+    assert.equal(parsed.valid, true, JSON.stringify(parsed.issues));
+    const saved = engine.createSeedProjectRecord(furniture.project);
+    saved.bindings = furniture.bindings;
+    const roundtrip = engine.parseHomeProjectRecord(
+      engine.serializeHomeProjectRecord(saved),
+      registries,
+    );
+    assert.equal(roundtrip.valid, true, JSON.stringify(roundtrip.issues));
+    assert.deepEqual(roundtrip.record.bindings, furniture.bindings);
+    assert.doesNotMatch(engine.serializeHomeProject(furniture.project), /event\.synthetic_remote/);
+    const manifest = engine.composeHomeManifest(furniture.project, registries);
+    const resolved = engine.resolveHomeAssistantBindings(
+      manifest,
+      furniture.bindings[runtime.origin].draft,
+      runtime,
+      devices,
+    );
+    assert.deepEqual(resolved.issues, []);
+    const room = Object.values(resolved.rooms).find((room) =>
+      room.devices.some((device) => device.slot.id === "fridge"),
+    );
+    const states = statesBySlotIdForRoom(room.room.id, resolved);
+    assert.equal(
+      itemEntityReadings([reading], states)[0].value,
+      engine.entityDisplayValue(runtime.entityStates[entityId]),
+    );
+    assert.equal(
+      engine.bindingCanMutate(
+        room.devices[0].entities.find((entry) => entry.slotId === reading.id),
+      ),
+      false,
+    );
+    const pending = { ...runtime.entityStates[entityId], state: "unknown" };
+    assert.equal(
+      itemEntityReadings([reading], { [reading.id]: pending })[0].value,
+      "No event received",
+    );
+    assert.equal(
+      itemEntityReadings(
+        [{ ...reading, presentation: { ...reading.presentation, showInScene: "if-present" } }],
+        { [reading.id]: pending },
+      ).length,
+      0,
+    );
+    const controlDescriptor = engine
+      .collectBindingSlots(manifest)
+      .find((entry) => entry.slotId === "fridge-control");
+    assert.ok(
+      !engine
+        .bindingEntityCandidates({
+          descriptor: controlDescriptor,
+          roomId: room.room.id,
+          profile,
+          runtime,
+          scope: "all-areas",
+        })
+        .some((entry) => entry.entityId === entityId),
+    );
   });
   test("independent cross-device readings resolve without becoming ambient room temperature or primary state", () => {
     const { manifest, profile, runtime } = connectionFixture();

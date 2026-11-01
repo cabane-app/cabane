@@ -1,3 +1,4 @@
+import { entityDisplayValue } from "./home-assistant-controls";
 import { showEntityStateInScene } from "./entity-slot-visibility";
 import { useSceneOverlay } from "./room-status/SceneOverlayLayout";
 import { Html } from "@react-three/drei";
@@ -15,11 +16,13 @@ export const itemEntityReadings = (
       const unit = state?.attributes.unit_of_measurement;
       const value = !state
         ? "Not connected"
-        : !state.available
-          ? "Unavailable"
-          : state.stale
-            ? "Stale"
-            : `${state.state}${typeof unit === "string" && unit ? ` ${unit}` : ""}`;
+        : state.entityId.startsWith("event.")
+          ? entityDisplayValue(state)
+          : !state.available
+            ? "Unavailable"
+            : state.stale
+              ? "Stale"
+              : `${state.state}${typeof unit === "string" && unit ? ` ${unit}` : ""}`;
       return { id: slot.id, label: slot.presentation.label, value };
     });
 
@@ -36,7 +39,12 @@ export function ItemEntityReadings({
   const { anchorRef, labelRef, visible } = useSceneOverlay({
     id: `item:${item.id}`,
     labelWidth: 220,
-    labelHeight: 16 + readings.length * 21,
+    labelHeight:
+      16 +
+      readings.reduce(
+        (height, reading) => height + (states[reading.id]?.entityId.startsWith("event.") ? 53 : 21),
+        0,
+      ),
     priority: 1,
     enabled: readings.length > 0,
   });
@@ -48,7 +56,10 @@ export function ItemEntityReadings({
       <Html center zIndexRange={[7, 0]} pointerEvents="none">
         <div ref={labelRef} className="item-entity-readings" hidden={!visible}>
           {readings.map((reading) => (
-            <div key={reading.id}>
+            <div
+              key={reading.id}
+              className={states[reading.id]?.entityId.startsWith("event.") ? "is-event" : undefined}
+            >
               <span>{reading.label}</span>
               <strong>{reading.value}</strong>
             </div>

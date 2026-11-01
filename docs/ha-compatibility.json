@@ -19,7 +19,7 @@
     }
   },
   "semantics": {
-    "validationRevision": 11,
+    "validationRevision": 12,
     "migrationRevision": 1,
     "archiveRevision": 1
   },
@@ -657,6 +657,9 @@
                       },
                       {
                         "const": "cover"
+                      },
+                      {
+                        "const": "event"
                       },
                       {
                         "const": "fan"
@@ -3481,6 +3484,9 @@
                                   "const": "cover"
                                 },
                                 {
+                                  "const": "event"
+                                },
+                                {
                                   "const": "fan"
                                 },
                                 {
@@ -3720,6 +3726,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"
@@ -4183,6 +4192,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"
@@ -7995,6 +8007,9 @@
                                       "const": "cover"
                                     },
                                     {
+                                      "const": "event"
+                                    },
+                                    {
                                       "const": "fan"
                                     },
                                     {
@@ -8456,6 +8471,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"

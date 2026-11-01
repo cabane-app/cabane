@@ -31,3 +31,13 @@
 .item-entity-readings[hidden] {
   display: none;
 }
+
+.item-entity-readings > .is-event {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+}
+.item-entity-readings .is-event strong {
+  margin-left: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

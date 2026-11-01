@@ -41,7 +41,7 @@ export function ReadingConnectionForm({
           profile={profile}
           runtime={runtime}
           title="Add reading"
-          description="Choose a sensor first. Name and display come next."
+          description="Choose a sensor or event. Name and display come next."
           preferredDeviceId={preferredDeviceId}
           attached={attached}
           disabled={disabled}
@@ -63,7 +63,7 @@ export function ReadingConnectionForm({
     >
       <button type="button" className="connection-back" onClick={() => setEntityId(null)}>
         <ConnectionIcon name="back" />
-        Sensors
+        Sources
       </button>
       <h2>Add reading</h2>
       <p className="reading-connection-confirm__source">

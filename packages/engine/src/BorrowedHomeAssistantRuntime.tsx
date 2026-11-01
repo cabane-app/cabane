@@ -1,3 +1,4 @@
+import { HomeAssistantActivityTracker } from "./home-assistant-activity";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { HomeAssistantCameraMessage } from "./camera-runtime";
 import { DeviceCommandScheduler } from "./command-scheduler";
@@ -101,6 +102,7 @@ export function BorrowedHomeAssistantRuntime({
     let registryDeviceIds = new Map<string, string | null>();
     let request = 0;
     let transportReady = connection.connected !== false;
+    const activity = new HomeAssistantActivityTracker();
     const subscriptions = new Set<() => void>();
     const attachment: Attachment = {
       active: true,
@@ -178,6 +180,7 @@ export function BorrowedHomeAssistantRuntime({
     attachmentRef.current = attachment;
     const ready = () => {
       if (!attachment.active) return;
+      if (!transportReady) activity.reset();
       transportReady = true;
       void attachment.refresh().catch(() => undefined);
     };
@@ -185,6 +188,7 @@ export function BorrowedHomeAssistantRuntime({
       if (!attachment.active) return;
       attachment.epoch++;
       transportReady = false;
+      activity.reset();
       attachment.connected = false;
       attachment.scheduler.cancelPendingValues();
       setRefreshing(false);
@@ -214,13 +218,10 @@ export function BorrowedHomeAssistantRuntime({
     });
     subscriptions.add(
       client.subscribeEntities(connection, (states) => {
-        if (attachment.active)
-          setState((previous) => ({
-            ...previous,
-            entityStates: !transportReady
-              ? markEntityStatesStale(normalizeEntityStates(states))
-              : normalizeEntityStates(states),
-          }));
+        if (!attachment.active) return;
+        const snapshot = normalizeEntityStates(states, !transportReady);
+        const entityStates = transportReady ? activity.update(snapshot) : snapshot;
+        setState((previous) => ({ ...previous, entityStates }));
       }),
     );
     const registrySubscriptions = Promise.all(
