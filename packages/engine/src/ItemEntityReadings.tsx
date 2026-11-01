@@ -19,10 +19,10 @@ export const itemEntityReadings = (
         : state.entityId.startsWith("event.")
           ? entityDisplayValue(state)
           : !state.available
-          ? "Unavailable"
-          : state.stale
-            ? "Stale"
-            : `${state.state}${typeof unit === "string" && unit ? ` ${unit}` : ""}`;
+            ? "Unavailable"
+            : state.stale
+              ? "Stale"
+              : `${state.state}${typeof unit === "string" && unit ? ` ${unit}` : ""}`;
       return { id: slot.id, label: slot.presentation.label, value };
     });
 

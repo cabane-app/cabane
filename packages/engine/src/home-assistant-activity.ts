@@ -53,7 +53,8 @@ export class HomeAssistantActivityTracker {
         this.latest.set(state.entityId, timestamp);
       const activitySequence = this.signals.get(state.entityId);
       const { activitySequence: _previousSignal, ...snapshot } = state;
-      next[state.entityId] = activitySequence === undefined ? snapshot : { ...snapshot, activitySequence };
+      next[state.entityId] =
+        activitySequence === undefined ? snapshot : { ...snapshot, activitySequence };
     }
     for (const entityId of this.latest.keys()) {
       if (!states[entityId]) {

@@ -11,6 +11,7 @@ areas:
     code:
       [
         packages/engine/src/HomeAssistantRuntime.tsx,
+        packages/engine/src/StandaloneHomeAssistantRuntime.tsx,
         packages/engine/src/home-assistant-activity.ts,
         packages/engine/src/command-scheduler.ts,
       ]

@@ -10,7 +10,9 @@ await withModules(async (load) => {
   const { HomeAssistantActivityTracker } = await load(
     "/packages/engine/src/home-assistant-activity.ts",
   );
-  const { SceneItemActivityFeedback } = await load("/packages/engine/src/SceneItemActivityFeedback.tsx");
+  const { SceneItemActivityFeedback } = await load(
+    "/packages/engine/src/SceneItemActivityFeedback.tsx",
+  );
   const { normalizeEntityStates } = await load(
     "/packages/engine/src/home-assistant-entity-snapshots.ts",
   );
@@ -34,7 +36,9 @@ await withModules(async (load) => {
       raw("switch.power", "off", 0),
       raw("sensor.power", "0", 0),
     );
-    assert.ok(Object.values(tracker.update(initial, start)).every((state) => !state.activitySequence));
+    assert.ok(
+      Object.values(tracker.update(initial, start)).every((state) => !state.activitySequence),
+    );
     let current = tracker.update(
       snapshots(
         raw("event.remote", timestamp(100), 100, { event_type: "press" }),
@@ -49,12 +53,19 @@ await withModules(async (load) => {
     assert.equal(current["sensor.power"].activitySequence, undefined);
     const first = current["event.remote"].activitySequence;
     current = tracker.update(structuredClone(current), start + 200);
-    assert.equal(current["event.remote"].activitySequence, first, "duplicate snapshots do not pulse");
+    assert.equal(
+      current["event.remote"].activitySequence,
+      first,
+      "duplicate snapshots do not pulse",
+    );
     current = tracker.update(
       { ...current, "event.remote": { ...current["event.remote"], state: timestamp(300) } },
       start + 300,
     );
-    assert.ok(current["event.remote"].activitySequence > first, "same type, newer timestamp pulses");
+    assert.ok(
+      current["event.remote"].activitySequence > first,
+      "same type, newer timestamp pulses",
+    );
     const repeated = current["event.remote"].activitySequence;
     current = tracker.update(
       { ...current, "event.remote": { ...current["event.remote"], state: timestamp(100) } },
@@ -64,10 +75,17 @@ await withModules(async (load) => {
       { ...current, "event.remote": { ...current["event.remote"], state: timestamp(300) } },
       start + 500,
     );
-    assert.equal(current["event.remote"].activitySequence, repeated, "out-of-order replay is deduplicated");
+    assert.equal(
+      current["event.remote"].activitySequence,
+      repeated,
+      "out-of-order replay is deduplicated",
+    );
     const power = current["switch.power"].activitySequence;
     current = tracker.update(
-      { ...current, "switch.power": { ...current["switch.power"], attributes: { friendly_name: "Power" } } },
+      {
+        ...current,
+        "switch.power": { ...current["switch.power"], attributes: { friendly_name: "Power" } },
+      },
       start + 600,
     );
     assert.equal(current["switch.power"].activitySequence, power);
@@ -83,13 +101,20 @@ await withModules(async (load) => {
     tracker.reset();
     assert.equal(tracker.update(current, start + 1000)["event.remote"].activitySequence, undefined);
     current = tracker.update(snapshots(raw("event.remote", timestamp(800), 1100)), start + 1100);
-    assert.equal(current["event.remote"].activitySequence, undefined, "reconnect replay stays quiet");
+    assert.equal(
+      current["event.remote"].activitySequence,
+      undefined,
+      "reconnect replay stays quiet",
+    );
     current = tracker.update(snapshots(raw("event.remote", timestamp(1200), 1200)), start + 1200);
     assert.ok(current["event.remote"].activitySequence);
     const restored = new HomeAssistantActivityTracker();
     restored.update(snapshots(raw("event.remote", "unknown", 0)), start);
     assert.equal(
-      restored.update(snapshots(raw("event.remote", timestamp(100), 100, { restored: true })), start + 100)["event.remote"].activitySequence,
+      restored.update(
+        snapshots(raw("event.remote", timestamp(100), 100, { restored: true })),
+        start + 100,
+      )["event.remote"].activitySequence,
       undefined,
     );
   });
@@ -100,16 +125,45 @@ await withModules(async (load) => {
       React.createElement(SceneItemActivityFeedback, {
         bounds,
         reducedMotion,
-        entities: [{ slotId: "remote", entityId, issues: [], state: { entityId, state: timestamp(100), available: true, stale: false, activitySequence: sequence } }],
+        entities: [
+          {
+            slotId: "remote",
+            entityId,
+            issues: [],
+            state: {
+              entityId,
+              state: timestamp(100),
+              available: true,
+              stale: false,
+              activitySequence: sequence,
+            },
+          },
+        ],
       });
     const renderer = await create(render(10));
-    const count = () => renderer.scene.findAllByProps({ name: "scene-item-activity-feedback" }).length;
+    const count = () =>
+      renderer.scene.findAllByProps({ name: "scene-item-activity-feedback" }).length;
     try {
       assert.equal(count(), 0, "mounting history is silent");
       await renderer.update(render(11));
       assert.equal(count(), 1);
-      await renderer.advanceFrames(1, 0.1);
-      assert.equal(renderer.scene.findByProps({ name: "laser-impact" }).instance.visible, true);
+      const store = renderer.scene.instance.__r3f.root;
+      let invalidations = 0;
+      const invalidate = store.getState().invalidate;
+      store.setState({
+        invalidate: () => {
+          invalidations++;
+          invalidate();
+        },
+      });
+      await renderer.advanceFrames(1, 10);
+      assert.equal(
+        renderer.scene.findByProps({ name: "laser-impact" }).instance.visible,
+        true,
+        "first idle delta cannot consume the pulse",
+      );
+      await renderer.advanceFrames(2, 0.1);
+      assert.ok(invalidations >= 3, "the pulse requests its own demand frames");
       await act(async () => renderer.advanceFrames(1, 0.6));
       assert.equal(count(), 0);
       await renderer.update(render(11));
@@ -119,7 +173,11 @@ await withModules(async (load) => {
       await renderer.update(render(21, "event.replacement", true));
       await renderer.advanceFrames(1, 0.1);
       const pulse = renderer.scene.findByProps({ name: "laser-impact" }).instance;
-      assert.deepEqual(pulse.scale.toArray(), [1, 1, 1], "reduced motion keeps feedback stationary");
+      assert.deepEqual(
+        pulse.scale.toArray(),
+        [1, 1, 1],
+        "reduced motion keeps feedback stationary",
+      );
       assert.equal(pulse.children.length, 3, "reduced motion omits the expanding rays");
       await act(async () => renderer.advanceFrames(1, 0.6));
       assert.equal(count(), 0);
@@ -127,7 +185,10 @@ await withModules(async (load) => {
       await renderer.unmount();
     }
     const remounted = await create(render(21, "event.replacement"));
-    assert.equal(remounted.scene.findAllByProps({ name: "scene-item-activity-feedback" }).length, 0);
+    assert.equal(
+      remounted.scene.findAllByProps({ name: "scene-item-activity-feedback" }).length,
+      0,
+    );
     await remounted.unmount();
   });
 });

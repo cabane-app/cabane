@@ -346,7 +346,9 @@ export const SceneItemRenderer = memo(function SceneItemRenderer({
           <SceneItemActivityFeedback
             entities={(item.entitySlots ?? []).flatMap((slot) => {
               const state = entityStatesBySlotId[slot.id];
-              return state ? [{ slotId: slot.id, entityId: state.entityId, state, issues: [] }] : [];
+              return state
+                ? [{ slotId: slot.id, entityId: state.entityId, state, issues: [] }]
+                : [];
             })}
             bounds={{
               min: definition.bounds.min.map(

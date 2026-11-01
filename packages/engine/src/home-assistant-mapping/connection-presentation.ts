@@ -59,12 +59,11 @@ export function entityConnectionSummary(
     deviceName,
     status,
     available: Boolean(state?.available && !state.stale),
-    value:
-      state?.entityId.startsWith("event.")
-        ? entityDisplayValue(state)
-        : state?.available && !state.stale
-          ? `${state.state}${typeof unit === "string" ? ` ${unit}` : ""}`
-          : null,
+    value: state?.entityId.startsWith("event.")
+      ? entityDisplayValue(state)
+      : state?.available && !state.stale
+        ? `${state.state}${typeof unit === "string" ? ` ${unit}` : ""}`
+        : null,
   };
 }
 

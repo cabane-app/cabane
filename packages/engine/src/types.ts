@@ -1,3 +1,5 @@
+import type { EntityStateSnapshot } from "./entity-state";
+export type { EntityStateSnapshot } from "./entity-state";
 import type { WallSpec, WallJunctionSpec } from "./wall-types";
 export type { WallSpec, WallJunctionSpec, WallNicheSpec } from "./wall-types";
 import type { StableDeviceModelId } from "./stable-device-model-id";
@@ -403,19 +405,6 @@ export interface ShortcutSpec {
   action: BuiltInShortcutId;
   context: "overview" | "room" | "both";
   order: number;
-}
-
-export interface EntityStateSnapshot {
-  entityId: EntityId;
-  state: string;
-  attributes: Readonly<Record<string, unknown>>;
-  available: boolean;
-  stale: boolean;
-  /** Transient live feedback from the current HA subscription; never saved. */
-  activitySequence?: number;
-  lastConfirmedAt?: string;
-  lastChanged?: string;
-  lastUpdated?: string;
 }
 
 export type HomeAssistantConnectionStatus =

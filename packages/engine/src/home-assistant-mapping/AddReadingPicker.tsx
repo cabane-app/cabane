@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { newReadingDescriptor } from "./connection-candidates";
 import { bindingEntityCandidates } from "../binding-entity-candidates";
-import type {
-  EntityId,
-  HomeAssistantRuntimeSnapshot,
-  RuntimeBindingProfile,
-} from "../types";
+import type { EntityId, HomeAssistantRuntimeSnapshot, RuntimeBindingProfile } from "../types";
 import { entityDeviceNames, type MappingOption } from "./auxiliary-mapping-choices";
 import { mappingOptionMatches } from "./MappingChoicePicker";
 

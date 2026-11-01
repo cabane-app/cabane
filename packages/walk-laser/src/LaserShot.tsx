@@ -41,7 +41,6 @@ export function LaserShot({ shot }: { shot: ShotVisual }) {
         .addScaledVector(path.direction, (sample.head + sample.tail) / 2);
       pulse.current.scale.set(1, 1, Math.max(0.001, sample.head - sample.tail));
     }
-
   });
   const surfaceRotation = new Quaternion().setFromUnitVectors(
     new Vector3(0, 0, 1),
