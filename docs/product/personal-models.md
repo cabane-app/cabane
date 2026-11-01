@@ -17,7 +17,21 @@ orientation corrections and uniform resizing in metres. Floor models contact
 the ground at their bottom, wall models contact the wall at their back, and
 ceiling models contact their support at their top. Placement, selection,
 rotation, uniform resizing, duplication, history, Reset, and Save use the normal
-editor paths. Floor instances have a simple bounding-envelope walk collider.
+editor paths. Floor instances derive Walk collision from the loaded GLB geometry
+on an 8 cm floor grid, made coarser for models exceeding 64 cells on either axis.
+Open areas inside a model's bounds remain accessible, and parts no more than 5 cm
+above the floor, such as flat rugs, do not block walking. Cells retain the height
+range of each component connected by shared geometric edges, including across
+GLB material primitives, so a closed cabinet remains solid regardless of its
+mesh split. Disconnected parts such as a high shelf and a rug retain independent
+vertical ranges. The approximation is conservative within each cell and merges
+nearby height ranges; surfaces in one connected component and cell can still
+enclose the gap between them.
+Work is bounded to the import's triangle/mesh limits, 250,000 triangle-cell tests,
+600,000 shared-edge comparisons and 256 boxes per instance. Loading placeholders and models exceeding these
+budgets retain a conservative bounding-envelope collider. Movement and Walk tool
+arrivals share the same footprint, refreshed after asynchronous asset loading or
+model edits. Wall and ceiling instances retain their existing collision behavior.
 Free placement uses the imported model's scaled lower bounds, including the
 centered origin of wall models. Invalid moves and resizes are refused. Existing
 geometric placement problems remain editable warnings with Select,
