@@ -1,8 +1,8 @@
 # Device activity inventory
 
 Every stable device preset has one visual strategy. This inventory describes physical
-activity, not merely connectivity. The existing resolved visual state remains the
-source of primary state. Models may also interpret their existing attached readings.
+activity, not merely connectivity. The resolved primary visual state remains
+authoritative. Models may also interpret their existing attached readings.
 
 | Strategy                                               | Preset IDs                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
