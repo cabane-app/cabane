@@ -11,7 +11,7 @@ import type {
   SceneItemSize,
   SceneModelEditorDescriptor,
 } from "@cabane/engine";
-import { pointInsidePolygon, resolveItemTransform } from "@cabane/engine";
+import { pointInsidePolygon, resolveItemTransform, withItemEntitySlots } from "@cabane/engine";
 import { windowPlacements } from "./placement/window-placement";
 import { placementNearWallsForWorldDrag } from "./placement/wall-drag-placement";
 
@@ -315,7 +315,7 @@ export const furnishingEditorReducer = (
         definition: action.definition,
       });
     case "update-entity-slots":
-      return updateItem(state, action.id, (item) => ({ ...item, entitySlots: action.entitySlots }));
+      return updateItem(state, action.id, (item) => withItemEntitySlots(item, action.entitySlots));
     case "update-light-state":
       return updateItem(state, action.id, (item) =>
         item.kind === "device" || item.lightSlotId

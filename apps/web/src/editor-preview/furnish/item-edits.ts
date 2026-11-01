@@ -1,11 +1,14 @@
 import {
   modelVariants,
+  validPowerActivitySettings,
+  withItemEntitySlots,
   type SceneItemSpec,
   type SceneItemSize,
   type SceneModelEditorDescriptor,
   type ResizePolicy,
   type ItemPlacement,
   type EntityBindingSlotSpec,
+  type PowerActivitySettings,
 } from "@cabane/engine";
 
 const MINIMUM_SIZE_METERS = 0.01;
@@ -46,6 +49,7 @@ export type SceneItemPatch = {
   color?: string | null;
   lightState?: "always-off" | "always-on" | "night-only" | "connected";
   entitySlots?: readonly EntityBindingSlotSpec[];
+  powerActivity?: PowerActivitySettings | null;
 };
 
 /** Validate the complete edit before applying any field or adding an undo step. */
@@ -66,7 +70,7 @@ export function editSceneItem(
     return item;
   if (patch.lightState !== undefined && item.kind !== "device" && !item.lightSlotId) return item;
   const next = {
-    ...item,
+    ...(patch.entitySlots ? withItemEntitySlots(item, patch.entitySlots) : item),
     ...(patch.placement ? { placement: patch.placement } : {}),
     ...(patch.size
       ? {
@@ -75,9 +79,21 @@ export function editSceneItem(
       : {}),
     ...(patch.variant !== undefined ? { variant: patch.variant } : {}),
     ...(patch.color ? { color: patch.color } : {}),
-    ...(patch.entitySlots ? { entitySlots: patch.entitySlots } : {}),
     ...(patch.lightState !== undefined ? { lightState: patch.lightState } : {}),
   };
   if (patch.color === null) delete next.color;
+  if (patch.powerActivity !== undefined) {
+    if (next.kind !== "device") return item;
+    if (patch.powerActivity === null) delete next.powerActivity;
+    else {
+      if (
+        !("supportsPowerActivity" in definition) ||
+        definition.supportsPowerActivity !== true ||
+        !validPowerActivitySettings(next, patch.powerActivity)
+      )
+        return item;
+      next.powerActivity = { ...patch.powerActivity };
+    }
+  }
   return next;
 }

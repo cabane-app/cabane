@@ -78,6 +78,7 @@ export const sceneItem = (
           "placement",
           "size",
           "entitySlots",
+          "powerActivity",
           "lightState",
           "color",
           "lightSlotId",
@@ -118,6 +119,21 @@ export const sceneItem = (
   }
   if (candidate.lightSlotId !== undefined)
     string(candidate.lightSlotId, `${path}.lightSlotId`, issues);
+  if (candidate.powerActivity !== undefined) {
+    const activity = record(candidate.powerActivity, `${path}.powerActivity`, issues);
+    if (activity) {
+      keys(activity, ["slotId", "thresholdWatts"], `${path}.powerActivity`, issues);
+      string(activity.slotId, `${path}.powerActivity.slotId`, issues);
+      finite(activity.thresholdWatts, `${path}.powerActivity.thresholdWatts`, issues);
+      if (typeof activity.thresholdWatts === "number" && activity.thresholdWatts < 0)
+        addProjectIssue(
+          issues,
+          "project.power-activity-threshold",
+          `${path}.powerActivity.thresholdWatts`,
+          "Power threshold must be at least 0 W.",
+        );
+    }
+  }
   string(candidate.id, `${path}.id`, issues);
   string(candidate.modelId, `${path}.modelId`, issues);
   if (candidate.variant !== undefined) string(candidate.variant, `${path}.variant`, issues);

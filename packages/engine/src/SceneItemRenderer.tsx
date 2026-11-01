@@ -11,6 +11,7 @@ import { orbitLightEntity } from "./orbit-light-control";
 import { useOrbitDevicePress } from "./useOrbitDevicePress";
 import { SceneNightContext, sceneLightState } from "./scene-light-state";
 import { deviceVisualStateForSnapshot } from "./devices";
+import { powerActivityForDevice } from "./power-activity";
 import {
   deviceSlotForItem,
   resolveItemTransform,
@@ -139,6 +140,9 @@ function DeviceSceneItem({
     nightLighting,
   );
   const visualState = deviceVisualStateForSnapshot(state);
+  const operating = definition.supportsPowerActivity
+    ? powerActivityForDevice(item, resolvedDevice)
+    : undefined;
   const runtime = useHomeAssistantRuntime();
   const cleaningRoom = useVacuumRoom(
     runtime.callService,
@@ -192,6 +196,7 @@ function DeviceSceneItem({
         deviceBindingId: item.id,
         deviceModel: item.modelId,
         visualState,
+        ...omitUndefinedProperties({ operating }),
         walkDeviceInteraction: walkInteractionTarget,
       }}
       {...omitUndefinedProperties({
@@ -228,6 +233,7 @@ function DeviceSceneItem({
               liveMedia: primary ? liveMediaByEntityId[primary.entityId] : undefined,
             })}
             visualState={visualState}
+            {...omitUndefinedProperties({ operating })}
             reducedMotion={reducedMotion}
             walkMode={walkMode}
             onInteract={onInteract}

@@ -164,6 +164,45 @@ await withModules(async (load) => {
     });
   });
 
+  test("power activity uses shared item edits, autosave and history, including explicit removal", async () => {
+    await withEditor(makeThreeFloorProject(), async (h) => {
+      await h.command({ type: "add-item", modelId: "coffee-maker", at: [2, 2] });
+      const item = h.controller.editorProject.sceneItems[0];
+      const reading = {
+        id: "synthetic-power-reading",
+        compatibleDomains: ["sensor"],
+        required: false,
+        autoMap: "manual",
+        deviceRole: "secondary",
+        presentation: { label: "Power", dashboardRole: "secondary" },
+      };
+      const settings = { slotId: reading.id, thresholdWatts: 5 };
+      await h.command({
+        type: "update-item",
+        itemId: item.id,
+        patch: { entitySlots: [...item.entitySlots, reading], powerActivity: settings },
+      });
+      assert.deepEqual((await h.read()).draft.sceneItems[0].powerActivity, settings);
+      await h.command({ type: "undo" });
+      assert.equal(h.controller.editorProject.sceneItems[0].powerActivity, undefined);
+      await h.command({ type: "redo" });
+      assert.deepEqual(h.controller.editorProject.sceneItems[0].powerActivity, settings);
+      await h.command({ type: "update-item", itemId: item.id, patch: { powerActivity: null } });
+      assert.equal((await h.read()).draft.sceneItems[0].powerActivity, undefined);
+      await h.command({ type: "undo" });
+      await h.command({
+        type: "update-item",
+        itemId: item.id,
+        patch: { entitySlots: item.entitySlots },
+      });
+      assert.equal((await h.read()).draft.sceneItems[0].powerActivity, undefined);
+      assert.equal(
+        h.controller.editorProject.sceneItems[0].entitySlots.length,
+        item.entitySlots.length,
+      );
+    });
+  });
+
   test("group commands use explicit item IDs and preserve one-step group deletion history", async () => {
     await withEditor(makeThreeFloorProject(), async (h) => {
       for (const at of [

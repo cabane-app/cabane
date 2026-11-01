@@ -193,6 +193,26 @@ Numeric object attributes accept decimal commas and points, preserving incomplet
 
 Properties separates **Connections** from optional **Readings**. Each row shows its source and connected/unavailable status with a direct Connect or Change action. These open the corresponding connection in Connect. **Show state on model** and **Show on model** explicitly toggle only the badge above the object, independently of mapping and dashboard visibility. Reading menus contain Rename, Disconnect and Remove. **Add reading** opens a separate sensor picker and asks for its name and display setting only after source selection; no add form remains in Properties. Reading edits use ordinary undo/redo, duplication and Save; duplicates get fresh slot identities and no household mappings.
 
+Coffee makers and electric kettles also offer **Activity**. **Connected state**
+preserves the original animation behavior. To represent an appliance on an
+always-on smart plug, first use **Add reading** to attach its HA power sensor,
+then choose that reading as the animation source and set **Power threshold** in
+watts. This reuses the existing reading and its live value; it creates no extra
+connection. The threshold is finite and nonnegative, defaults to 5 W when a
+reading is chosen, and runs the steam only when power is strictly above it.
+Only instantaneous power sensors reporting W or kW qualify; energy readings do not.
+
+Power activity applies only to a primary switch connection. Native appliance
+states continue to drive their normal visuals. An off, unavailable or disconnected
+primary connection prevents operating animation. Missing, unknown, stale,
+nonfinite, negative or incompatible power keeps a configured appliance idle;
+its primary connection status and controls remain unchanged. Changing a reading's
+source to an incompatible sensor keeps that setting idle until a valid power
+source returns. Choosing Connected state removes the setting. Removing its
+reading explicitly resets Activity in the same undo step. Duplication remaps the
+local reference to the copied reading; Undo/Redo, Save and project import/export
+preserve the configuration without copying household mappings.
+
 Properties exposes **Lighting** for personal and built-in models. Shared settings
 apply to every copy in this home while each copy retains its own connection.
 The visual editor and persistence rules are defined by [model lighting](model-lighting.md).

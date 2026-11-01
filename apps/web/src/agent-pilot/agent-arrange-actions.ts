@@ -103,7 +103,15 @@ export async function executeArrangeAction(
   if (type !== "update-item") throw new Error(`Unsupported Arrange action: ${type}.`);
   const patch = objectParams(action.patch);
   const keys = Object.keys(patch);
-  const allowed = ["placement", "variant", "color", "size", "lightState", "entitySlots"];
+  const allowed = [
+    "placement",
+    "variant",
+    "color",
+    "size",
+    "lightState",
+    "entitySlots",
+    "powerActivity",
+  ];
   if (!keys.length || keys.some((key) => !allowed.includes(key)))
     throw new Error(`patch must contain editable fields: ${allowed.join(", ")}.`);
   if (
@@ -125,6 +133,8 @@ export async function executeArrangeAction(
   if (patch.variant !== undefined) optionalString(patch, "variant");
   const candidate = { ...item, ...patch };
   if (candidate.color === null) delete candidate.color;
+  if ("powerActivity" in candidate && candidate.powerActivity === null)
+    delete candidate.powerActivity;
   const schema = parseHomeProjectSchema({
     ...controller.editorProject,
     sceneItems: controller.editorProject.sceneItems.map((other) =>

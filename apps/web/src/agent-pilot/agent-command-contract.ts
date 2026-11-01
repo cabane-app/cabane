@@ -221,7 +221,7 @@ export const AGENT_ACTIONS = [
   arrangeAction(
     "update-item",
     "Update a placed furnishing or device.",
-    'itemId: string; patch: {placement?: ItemPlacement; size?: [number, number, number]; variant?: string; color?: string | null; lightState?: "always-off" | "always-on" | "night-only" | "connected"; entitySlots?: EntityBindingSlotSpec[]}',
+    'itemId: string; patch: {placement?: ItemPlacement; size?: [number, number, number]; variant?: string; color?: string | null; lightState?: "always-off" | "always-on" | "night-only" | "connected"; entitySlots?: EntityBindingSlotSpec[]; powerActivity?: {slotId: string; thresholdWatts: number} | null}',
   ),
   arrangeAction("duplicate-item", "Duplicate a placed furnishing or device.", "itemId: string"),
   arrangeAction("delete-item", "Delete a placed furnishing or device.", "itemId: string"),

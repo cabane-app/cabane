@@ -5,8 +5,8 @@ import { ApplianceSteam } from "./appliance-steam";
 import { StatusBeacon } from "../../visuals/device-visual-state";
 
 /** Generic filter coffee maker with a glass carafe; front faces +Z. */
-export function CoffeeMakerModel({ visualState, reducedMotion }: HomeDeviceModelProps) {
-  const active = visualState === "connected-active";
+export function CoffeeMakerModel({ visualState, operating, reducedMotion }: HomeDeviceModelProps) {
+  const active = operating ?? visualState === "connected-active";
   return (
     <group name="catalog-coffee-maker" userData={{ walkCollider: true }}>
       <RoundedFurniturePanel
@@ -63,9 +63,7 @@ export function CoffeeMakerModel({ visualState, reducedMotion }: HomeDeviceModel
           emissiveIntensity={active ? 0.3 : 0}
         />
       </mesh>
-      {visualState === "connected-active" && (
-        <ApplianceSteam position={[0, 0.3, 0.08]} reducedMotion={reducedMotion} />
-      )}
+      {active && <ApplianceSteam position={[0, 0.3, 0.08]} reducedMotion={reducedMotion} />}
       <StatusBeacon visualState={visualState} position={[0.07, 0.218, 0.01]} scale={0.2} />
     </group>
   );

@@ -2,7 +2,10 @@
 
 Every stable device preset has one visual strategy. This inventory describes physical
 activity, not merely connectivity. The existing resolved visual state remains the
-source of truth; these effects do not infer cycles from numeric sensor values.
+source of truth. Coffee makers and kettles may optionally use an attached power
+reading and explicit watts threshold for steam, as described in
+[Arrange](product/arrange.md). This affects operating animation only; the primary
+connection remains the source of status and commands.
 
 | Strategy                                               | Preset IDs                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

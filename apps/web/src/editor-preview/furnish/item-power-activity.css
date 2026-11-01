@@ -1,0 +1,3 @@
+.furnishing-editor-inspector fieldset .item-power-activity-source {
+  grid-template-columns: minmax(0, 1fr);
+}

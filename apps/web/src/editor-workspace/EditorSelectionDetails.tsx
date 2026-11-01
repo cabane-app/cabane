@@ -161,6 +161,9 @@ export function EditorSelectionDetails({
                 onSizeChange={furnishingEditor.updateSize}
                 onLightStateChange={furnishingEditor.updateLightState}
                 onEntitySlotsChange={furnishingEditor.updateEntitySlots}
+                onPowerActivityChange={(id, powerActivity, definition) =>
+                  furnishingEditor.updateItem(id, { powerActivity }, definition)
+                }
                 connections={itemConnections}
                 onVariantChange={furnishingEditor.updateVariant}
                 onColorChange={furnishingEditor.updateColor}
