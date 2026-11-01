@@ -294,6 +294,7 @@
       "laser-device-performance.test.mjs",
       "laser-visuals.test.mjs",
       "integrated-roller-shutter.test.mjs",
+      "imported-walk-footprint.test.mjs",
       "layered-surfaces.test.mjs",
       "package-lock.test.mjs",
       "portal-transition.test.mjs",

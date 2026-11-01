@@ -201,7 +201,10 @@ nearby ground in night mode.
 Walk collision derives from walls, openings, junctions, pools, and boundaries. Boundary styles (including open fences) use a continuous hedge segment collider at their authored width; visible rail gaps do not create walk apertures. Terrain-following boundaries use short connected collider runs with vertical ranges matching the local grade and boundary height, including the grass datum. Furniture, hedge, and outdoor-platform barrier colliders retain their world vertical extent so a sufficiently high jump can clear them. Walls and pool edges remain full-height blockers. Explicitly marked furniture collider tops act as landing surfaces without turning other collider bounds into walkable platforms. Navigation derives optional clear spawn points and checks room connectivity; rooms without
 a safe spawn (such as small cupboards) do not produce a validation diagnostic.
 Walk entry still requires a safe spawn and skips rooms without one. Navigation
-does not maintain a second hand-authored collision plan. Walk controls support keyboard/mouse and touch
+does not maintain a second hand-authored collision plan. Personal floor models
+use the bounded geometry-derived footprint described in [personal models](personal-models.md),
+including their per-cell vertical ranges and conservative envelope fallback.
+Walk controls support keyboard/mouse and touch
 input, pitch limits, collision resolution, and automatic unbound door opening.
 Mobile fullscreen/orientation requests are capability-dependent. Reduced-motion
 and document-visibility state affect behavior.
