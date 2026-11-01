@@ -1,5 +1,4 @@
 import { isAuxiliaryEntitySlot } from "../entity-slot-roles";
-import { validPowerActivitySettings } from "../power-activity";
 import { roomsForFloor } from "../outdoor-platforms/platform-rooms";
 import type { DeviceModelDefinition, EntityBindingSlotSpec } from "../types";
 import type { DeviceItemSpec, HomeProject } from "./types";
@@ -108,13 +107,6 @@ export const validateProfileReferencesAndSlots = (
         "A device scene item requires at least one typed entity slot.",
       );
     }
-    if (item.powerActivity && !validPowerActivitySettings(item, item.powerActivity))
-      addProjectIssue(
-        issues,
-        "project.power-activity-reading",
-        `sceneItems[${itemIndex}].powerActivity`,
-        "Activity requires an attached sensor reading and a finite threshold of at least 0 W.",
-      );
     // Device composition and binding resolution both select the primary state;
     // exactly one primary slot keeps that selection deterministic.
     const primaryCount = item.entitySlots.filter((slot) => slot.deviceRole === "primary").length;
@@ -142,13 +134,6 @@ export const validateDeviceSlotsAgainstModel = (
   index: number,
   issues: HomeProjectIssue[],
 ) => {
-  if (item.powerActivity && !definition.supportsPowerActivity)
-    addProjectIssue(
-      issues,
-      "project.power-activity-model",
-      `sceneItems[${index}].powerActivity`,
-      "This model does not support power-driven activity.",
-    );
   item.entitySlots.forEach((slot, slotIndex) => {
     if (isAuxiliaryEntitySlot(slot)) return;
     slot.compatibleDomains.forEach((domain) => {

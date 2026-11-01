@@ -1,6 +1,4 @@
 import type { WallSpec, WallJunctionSpec } from "./wall-types";
-import type { HomeDeviceModelComponent } from "./device-model-props";
-export type { HomeDeviceModelComponent, HomeDeviceModelProps } from "./device-model-props";
 export type { WallSpec, WallJunctionSpec, WallNicheSpec } from "./wall-types";
 import type { StableDeviceModelId } from "./stable-device-model-id";
 export type { StableDeviceModelId } from "./stable-device-model-id";
@@ -8,6 +6,8 @@ import type { ComponentType } from "react";
 import type { RoomType } from "./room-types";
 import type { HomeProject, SceneItemSpec } from "./home-project/types";
 import type { ActionBarConfiguration } from "./action-bar/action-bar-config";
+import type { HomeDeviceModelProps } from "./device-model-props";
+export type { DeviceModelReading, HomeDeviceModelProps } from "./device-model-props";
 
 export type PlanPoint = readonly [x: number, y: number];
 export type Polygon = readonly [PlanPoint, PlanPoint, PlanPoint, ...PlanPoint[]];
@@ -604,6 +604,7 @@ export interface ArchitectureModelRegistry {
 
 export type HomeOpeningModelProps = ArchitectureModelProps;
 export type RoomFurnishingsComponent = ComponentType<RoomFurnishingsProps>;
+export type HomeDeviceModelComponent = ComponentType<HomeDeviceModelProps>;
 export type HomeOpeningModelComponent = ArchitectureModelComponent;
 
 export interface SceneModelProps {
@@ -693,8 +694,6 @@ export interface FurnishingModelDefinition extends SceneModelEditorDescriptor {
 export type FurnishingModelRegistry = Readonly<Record<string, FurnishingModelDefinition>>;
 
 export interface DeviceModelDefinition extends SceneModelEditorDescriptor {
-  /** Allows an attached power reading to drive activity when the primary is a switch. */
-  supportsPowerActivity?: true;
   /** Binding-only adapter for an item’s independent lighting relationship. */
   lightingOnly?: boolean;
   component: HomeDeviceModelComponent;

@@ -2,10 +2,7 @@
 
 Every stable device preset has one visual strategy. This inventory describes physical
 activity, not merely connectivity. The existing resolved visual state remains the
-source of truth. Coffee makers and kettles may optionally use an attached power
-reading and explicit watts threshold for steam, as described in
-[Arrange](product/arrange.md). This affects operating animation only; the primary
-connection remains the source of status and commands.
+source of primary state. Models may also interpret their existing attached readings.
 
 | Strategy                                               | Preset IDs                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -31,6 +28,12 @@ steam. Oven and microwave windows turn warm while active; their interior lamps
 stay steady rather than flickering. Existing lighting, covers, fans, sprinklers
 and speaker feedback are preserved. Sensors, cameras, cold storage and parked
 vehicles do not acquire a misleading “running” loop.
+
+Coffee maker and kettle steam also checks attached power readings: every supplied
+power reading must be fresh, available and finite with a value greater than zero
+in `W` or `kW`. Missing or invalid state in a power slot suppresses steam. Without
+a power reading, primary-state activity is preserved. This model-owned behavior
+adds no settings and does not change connection indicators or commands.
 
 Reduced motion preserves a static active illustration or hologram. Off,
 unavailable and disconnected devices omit activity effects. No additional lights,

@@ -19,7 +19,7 @@
     }
   },
   "semantics": {
-    "validationRevision": 12,
+    "validationRevision": 11,
     "migrationRevision": 1,
     "archiveRevision": 1
   },
@@ -4100,25 +4100,6 @@
                             }
                           }
                         ]
-                      }
-                    },
-                    "powerActivity": {
-                      "optional": true,
-                      "schema": {
-                        "properties": {
-                          "slotId": {
-                            "optional": false,
-                            "schema": {
-                              "type": "string"
-                            }
-                          },
-                          "thresholdWatts": {
-                            "optional": false,
-                            "schema": {
-                              "type": "number"
-                            }
-                          }
-                        }
                       }
                     },
                     "size": {
@@ -8392,25 +8373,6 @@
                             }
                           }
                         ]
-                      }
-                    },
-                    "powerActivity": {
-                      "optional": true,
-                      "schema": {
-                        "properties": {
-                          "slotId": {
-                            "optional": false,
-                            "schema": {
-                              "type": "string"
-                            }
-                          },
-                          "thresholdWatts": {
-                            "optional": false,
-                            "schema": {
-                              "type": "number"
-                            }
-                          }
-                        }
                       }
                     },
                     "size": {

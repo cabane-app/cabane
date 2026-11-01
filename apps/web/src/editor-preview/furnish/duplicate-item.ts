@@ -72,13 +72,6 @@ export const duplicateSceneItem = (
     occupied.add(`${lightSlotId}-entity`);
   }
   const { group: _group, ...ungrouped } = source;
-  const slotIds = new Map<string, string>();
-  const entitySlots = source.entitySlots?.map((slot) => {
-    const slotId = createSceneItemId(occupied);
-    occupied.add(slotId);
-    slotIds.set(slot.id, slotId);
-    return { ...structuredClone(slot), id: slotId };
-  });
   const common = {
     ...ungrouped,
     ...(lightSlotId ? { lightSlotId } : {}),
@@ -86,22 +79,27 @@ export const duplicateSceneItem = (
     size: [...source.size] as [number, number, number],
     placement,
   };
-  const copy: SceneItemSpec =
-    source.kind === "device"
-      ? {
-          ...common,
-          kind: "device",
-          entitySlots: entitySlots ?? [],
-        }
-      : {
-          ...common,
-          kind: "furnishing",
-          ...(entitySlots ? { entitySlots } : {}),
-        };
-  if (copy.kind === "device" && copy.powerActivity) {
-    const slotId = slotIds.get(copy.powerActivity.slotId);
-    if (slotId) copy.powerActivity = { ...copy.powerActivity, slotId };
-    else delete copy.powerActivity;
-  }
-  return copy;
+  return source.kind === "device"
+    ? {
+        ...common,
+        kind: "device",
+        entitySlots: source.entitySlots.map((slot) => {
+          const slotId = createSceneItemId(occupied);
+          occupied.add(slotId);
+          return { ...structuredClone(slot), id: slotId };
+        }),
+      }
+    : {
+        ...common,
+        kind: "furnishing",
+        ...(source.entitySlots
+          ? {
+              entitySlots: source.entitySlots.map((slot) => {
+                const slotId = createSceneItemId(occupied);
+                occupied.add(slotId);
+                return { ...structuredClone(slot), id: slotId };
+              }),
+            }
+          : {}),
+      };
 };

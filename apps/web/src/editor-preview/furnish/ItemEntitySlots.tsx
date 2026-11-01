@@ -120,9 +120,7 @@ function ItemConnectionRow({
               </button>
             )}
             <button type="button" className="item-connection-remove" onClick={onRemove}>
-              {item.kind === "device" && item.powerActivity?.slotId === slot.id
-                ? "Remove reading and reset Activity"
-                : "Remove reading"}
+              Remove reading
             </button>
           </div>
         )}

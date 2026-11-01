@@ -7,7 +7,6 @@ import type {
   SceneItemSpec,
   SceneItemSize,
   SceneModelEditorDescriptor,
-  PowerActivitySettings,
 } from "@cabane/engine";
 import { FurnishingProperties } from "./FurnishingProperties";
 import type { ItemConnectionContext } from "./ItemEntitySlots";
@@ -37,13 +36,6 @@ export interface FurnishingInspectorProps {
   ) => void;
   onVariantChange?: (id: string, variant: string, definition: SceneModelEditorDescriptor) => void;
   onEntitySlotsChange?: ((id: string, slots: readonly EntityBindingSlotSpec[]) => void) | undefined;
-  onPowerActivityChange?:
-    | ((
-        id: string,
-        settings: PowerActivitySettings | null,
-        definition: SceneModelEditorDescriptor,
-      ) => void)
-    | undefined;
   onLightStateChange?: (
     id: string,
     lightState: "always-off" | "always-on" | "night-only" | "connected",
@@ -64,7 +56,6 @@ export function FurnishingInspector({
   onSizeChange,
   onLightStateChange,
   onEntitySlotsChange,
-  onPowerActivityChange,
   connections,
   onVariantChange,
   onColorChange,
@@ -96,7 +87,6 @@ export function FurnishingInspector({
       onWindowFit={onWindowFit}
       onLightStateChange={onLightStateChange}
       onEntitySlotsChange={onEntitySlotsChange}
-      onPowerActivityChange={onPowerActivityChange}
       connections={connections}
       onVariantChange={onVariantChange}
       onColorChange={onColorChange}

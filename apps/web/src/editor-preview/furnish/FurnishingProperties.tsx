@@ -1,5 +1,4 @@
 import { ItemEntitySlots } from "./ItemEntitySlots";
-import { ItemPowerActivity } from "./ItemPowerActivity";
 import type { ItemConnectionContext } from "./ItemEntitySlots";
 import { EditorButton } from "../../editor-chrome/EditorButton";
 import { EditorIcon } from "../../editor-chrome/EditorIcon";
@@ -15,7 +14,6 @@ import type {
   SceneItemSpec,
   SceneItemSize,
   SceneModelEditorDescriptor,
-  PowerActivitySettings,
 } from "@cabane/engine";
 import { windowPlacements } from "./placement/window-placement";
 const AXES = ["width", "height", "depth"] as const;
@@ -30,7 +28,6 @@ export function FurnishingProperties({
   onSizeChange,
   onLightStateChange,
   onEntitySlotsChange,
-  onPowerActivityChange,
   connections,
   onVariantChange,
   onColorChange,
@@ -61,13 +58,6 @@ export function FurnishingProperties({
   onVariantChange?:
     ((id: string, variant: string, definition: SceneModelEditorDescriptor) => void) | undefined;
   onEntitySlotsChange?: ((id: string, slots: readonly EntityBindingSlotSpec[]) => void) | undefined;
-  onPowerActivityChange?:
-    | ((
-        id: string,
-        settings: PowerActivitySettings | null,
-        definition: SceneModelEditorDescriptor,
-      ) => void)
-    | undefined;
   onLightStateChange?:
     | ((id: string, lightState: "always-off" | "always-on" | "night-only" | "connected") => void)
     | undefined;
@@ -151,16 +141,6 @@ export function FurnishingProperties({
           onChange={(slots) => onEntitySlotsChange(selected.id, slots)}
         />
       )}
-      {selected.kind === "device" &&
-        previewEntry?.kind === "device" &&
-        previewEntry.definition.supportsPowerActivity &&
-        onPowerActivityChange && (
-          <ItemPowerActivity
-            item={selected}
-            connections={connections}
-            onChange={(settings) => onPowerActivityChange(selected.id, settings, definition)}
-          />
-        )}
       {onEditLighting && (
         <fieldset>
           <legend>Lighting</legend>

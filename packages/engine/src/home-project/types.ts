@@ -96,17 +96,10 @@ export interface FurnishingItemSpec extends SceneItemBase {
 
 export interface DeviceItemSpec extends SceneItemBase {
   kind: "device";
-  /** Optional animation source. Household entity IDs remain in private bindings. */
-  powerActivity?: PowerActivitySettings;
   /** Scene appearance override; omitted means connected. */
   lightState?: "always-off" | "always-on" | "night-only" | "connected";
   /** Exactly one slot must declare deviceRole "primary". */
   entitySlots: readonly EntityBindingSlotSpec[];
-}
-
-export interface PowerActivitySettings {
-  slotId: string;
-  thresholdWatts: number;
 }
 
 export type SceneItemSpec = FurnishingItemSpec | DeviceItemSpec;

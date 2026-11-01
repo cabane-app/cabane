@@ -2,15 +2,11 @@ import { Outlines, ToonMaterial } from "@cabane/engine";
 import type { HomeDeviceModelProps } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../../../furnishing/presets/construction/rounded-furniture-panel";
 import { ApplianceSteam } from "./appliance-steam";
+import { hasOperatingPower } from "./appliance-power";
 import { StatusBeacon } from "../../visuals/device-visual-state";
 
 /** Generic cordless electric kettle on its charging base; front faces +Z. */
-export function ElectricKettleModel({
-  visualState,
-  operating,
-  reducedMotion,
-}: HomeDeviceModelProps) {
-  const active = operating ?? visualState === "connected-active";
+export function ElectricKettleModel({ visualState, reducedMotion, readings }: HomeDeviceModelProps) {
   return (
     <group name="catalog-electric-kettle" userData={{ walkCollider: true }}>
       <RoundedFurniturePanel
@@ -41,7 +37,9 @@ export function ElectricKettleModel({
         <torusGeometry args={[0.04, 0.009, 6, 16, Math.PI * 1.55]} />
         <ToonMaterial color="#46514e" />
       </mesh>
-      {active && <ApplianceSteam position={[-0.09, 0.23, 0]} reducedMotion={reducedMotion} />}
+      {visualState === "connected-active" && hasOperatingPower(readings) && (
+        <ApplianceSteam position={[-0.09, 0.23, 0]} reducedMotion={reducedMotion} />
+      )}
       <StatusBeacon visualState={visualState} position={[0.073, 0.045, 0.087]} scale={0.22} />
     </group>
   );

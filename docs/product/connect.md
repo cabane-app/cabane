@@ -137,12 +137,6 @@ removes both the slot and mapping together, and redo restores both. Replacing th
 editor's item state before committing keeps new readings present across mode changes.
 Save publishes them through the normal workspace flow.
 
-Live power telemetry already uses this flow: add the appliance's power sensor to
-display its reported value and unit in the device popover, with an optional badge
-on the model. For switch-connected coffee makers and kettles, Arrange Properties
-can also use that same reading and a watts threshold for **Activity**; see
-[Arrange](arrange.md). No second telemetry connection is needed.
-
 On mobile, device selection, connection selection and source search use successive
 views with explicit returns. The House plan action remains available from the room.
 

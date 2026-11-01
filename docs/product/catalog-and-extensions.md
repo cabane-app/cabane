@@ -124,12 +124,26 @@ Only descriptors declaring `defaultColor` offer this control.
 
 ## Device activity
 
+Device model props include every attached reading as `{ slot, state? }` in slot
+order, including unmapped readings and readings hidden from the dashboard or map.
+The declaration retains the expected type when state is missing. The existing
+snapshot provides the value, device class, unit, availability and staleness without
+another subscription or binding. The primary `state` and `visualState` keep their
+existing meaning; each model chooses how its readings affect its visuals.
+
 Preset activity is catalog-owned and follows resolved `visualState`; unavailable,
 disconnected and inactive devices never display an active effect. TV artwork yields
 to live camera media. Motion uses the existing scene frames, respects reduced motion,
 and does not allocate lights, textures or external assets. Holograms face the camera
 in Orbit and Walk, retain depth occlusion, and do not intercept pointer interaction.
 Their decorative extent does not change physical placement or collision bounds.
+
+Coffee maker and electric kettle steam additionally requires every attached power
+reading to be available, fresh, finite and strictly positive, with device class
+`power` and unit `W` or `kW`. A slot declared for power still counts when its live
+state is missing or incompatible, keeping steam off. Multiple power readings are
+not summed. Without a power reading, the existing primary-state behavior applies.
+Their connection beacons and controls continue to follow the primary entity.
 
 The complete preset categorization is maintained in [device activity](../device-activity.md).
 

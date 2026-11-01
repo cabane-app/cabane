@@ -109,13 +109,6 @@ local slots. Backup/export formats deliberately omit OAuth credentials and
 callback data; they are not a general browser-storage dump. Private mapping
 exports remain private household data even without credentials.
 
-Coffee maker and kettle power activity stores only an optional local reading-slot
-reference and a watts threshold on the placed object. It resolves the reading
-through the existing private slot mapping. It derives operating animation from
-fresh, available instantaneous power without changing the primary switch's
-snapshot, connection indicator or service targets. No entity discovery, extra
-subscription, device command or household identifier is added to portable data.
-
 No hosted account backend or cloud workspace synchronization is implemented.
 An optional owner-installed HA custom integration provides instance-local
 workspace and personal GLB asset storage. Any authenticated user of that HA instance can read or

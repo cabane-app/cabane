@@ -1070,7 +1070,6 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
   "built-in-microwave": builtInMicrowaveDefinition,
   microwave: microwaveDefinition,
   "coffee-maker": defineDeviceModel({
-    supportsPowerActivity: true,
     defaultRoomType: "kitchen",
     component: CoffeeMakerModel,
     label: "Coffee maker",
@@ -1086,7 +1085,6 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     complexity: { visibleMeshes: 14, triangles: 2840 },
   }),
   "electric-kettle": defineDeviceModel({
-    supportsPowerActivity: true,
     defaultRoomType: "kitchen",
     component: ElectricKettleModel,
     label: "Electric kettle",
