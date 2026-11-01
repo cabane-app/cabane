@@ -11,6 +11,7 @@ import { orbitLightEntity } from "./orbit-light-control";
 import { useOrbitDevicePress } from "./useOrbitDevicePress";
 import { SceneNightContext, sceneLightState } from "./scene-light-state";
 import { deviceVisualStateForSnapshot } from "./devices";
+import { isAuxiliaryEntitySlot } from "./entity-slot-roles";
 import {
   deviceSlotForItem,
   resolveItemTransform,
@@ -224,6 +225,12 @@ function DeviceSceneItem({
             {...omitUndefinedProperties({ color: item.color })}
             slot={binding}
             {...omitUndefinedProperties({ state: state })}
+            readings={binding.entitySlots.filter(isAuxiliaryEntitySlot).map((slot) => ({
+              slot,
+              ...omitUndefinedProperties({
+                state: resolvedDevice.entities.find((entity) => entity.slotId === slot.id)?.state,
+              }),
+            }))}
             {...omitUndefinedProperties({
               liveMedia: primary ? liveMediaByEntityId[primary.entityId] : undefined,
             })}

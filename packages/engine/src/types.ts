@@ -6,6 +6,8 @@ import type { ComponentType } from "react";
 import type { RoomType } from "./room-types";
 import type { HomeProject, SceneItemSpec } from "./home-project/types";
 import type { ActionBarConfiguration } from "./action-bar/action-bar-config";
+import type { HomeDeviceModelProps } from "./device-model-props";
+export type { DeviceModelReading, HomeDeviceModelProps } from "./device-model-props";
 
 export type PlanPoint = readonly [x: number, y: number];
 export type Polygon = readonly [PlanPoint, PlanPoint, PlanPoint, ...PlanPoint[]];
@@ -577,18 +579,6 @@ export interface RoomFurnishingsProps {
   room: RoomSpec;
   entityStates: Readonly<Record<EntityId, EntityStateSnapshot>>;
   entityStatesBySlotId: Readonly<Record<string, EntityStateSnapshot>>;
-  reducedMotion: boolean;
-  walkMode: boolean;
-  onInteract: (target: ExtensionInteractionTarget) => void;
-}
-
-export interface HomeDeviceModelProps {
-  color?: string;
-  variant?: string;
-  slot: DeviceSlotSpec;
-  state?: EntityStateSnapshot;
-  liveMedia?: DeviceLiveMedia;
-  visualState: DeviceVisualState;
   reducedMotion: boolean;
   walkMode: boolean;
   onInteract: (target: ExtensionInteractionTarget) => void;
