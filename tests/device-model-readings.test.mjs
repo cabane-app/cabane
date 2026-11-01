@@ -97,8 +97,15 @@ await withModules(async (load) => {
     try {
       assert.equal(received.state, primary);
       assert.equal(received.visualState, "connected-active");
-      assert.deepEqual(received.readings.map((reading) => reading.slot), slots);
-      assert.equal(received.readings[0].state, states.power, "a hidden zero reading still reaches the model");
+      assert.deepEqual(
+        received.readings.map((reading) => reading.slot),
+        slots,
+      );
+      assert.equal(
+        received.readings[0].state,
+        states.power,
+        "a hidden zero reading still reaches the model",
+      );
       assert.equal(received.readings[1].state, states.temperature);
       assert.equal(received.readings[2].state, states["water-low"]);
       assert.equal(received.readings[3].state, undefined);
@@ -128,19 +135,57 @@ await withModules(async (load) => {
       ["unavailable", [powerSlot], { power: power("1200", "W", { available: false }) }, false],
       ["missing state or mapping", [powerSlot], {}, false],
       ["invalid unit", [powerSlot], { power: power("1200", "kWh") }, false],
-      ["incompatible class", [powerSlot], { power: snapshot("sensor.power", "1200", { device_class: "energy", unit_of_measurement: "W" }) }, false],
-      ["power discovered from live type", [readingSlot("other", "")], { other: power("1200") }, true],
-      ["all supplied powers positive", [powerSlot, readingSlot("other", "power")], { power: power("1200"), other: power("20") }, true],
-      ["one supplied power idle", [powerSlot, readingSlot("other", "power")], { power: power("1200"), other: power("0") }, false],
-      ["one supplied power missing", [powerSlot, readingSlot("other", "power")], { power: power("1200") }, false],
+      [
+        "incompatible class",
+        [powerSlot],
+        {
+          power: snapshot("sensor.power", "1200", {
+            device_class: "energy",
+            unit_of_measurement: "W",
+          }),
+        },
+        false,
+      ],
+      [
+        "power discovered from live type",
+        [readingSlot("other", "")],
+        { other: power("1200") },
+        true,
+      ],
+      [
+        "all supplied powers positive",
+        [powerSlot, readingSlot("other", "power")],
+        { power: power("1200"), other: power("20") },
+        true,
+      ],
+      [
+        "one supplied power idle",
+        [powerSlot, readingSlot("other", "power")],
+        { power: power("1200"), other: power("0") },
+        false,
+      ],
+      [
+        "one supplied power missing",
+        [powerSlot, readingSlot("other", "power")],
+        { power: power("1200") },
+        false,
+      ],
     ];
     for (const modelId of ["coffee-maker", "electric-kettle"]) {
       const renderer = await create(element(modelId, [], { control: primary }));
       try {
         for (const [name, slots, states, active] of cases) {
           await renderer.update(element(modelId, slots, { control: primary, ...states }));
-          assert.equal(renderer.scene.findAllByProps({ name: "appliance-steam" }).length, active ? 1 : 0, `${modelId}: ${name}`);
-          assert.equal(renderer.scene.findByProps({ name: "scene-item-appliance" }).props.userData.visualState, "connected-active", "readings do not change the connection beacon state");
+          assert.equal(
+            renderer.scene.findAllByProps({ name: "appliance-steam" }).length,
+            active ? 1 : 0,
+            `${modelId}: ${name}`,
+          );
+          assert.equal(
+            renderer.scene.findByProps({ name: "scene-item-appliance" }).props.userData.visualState,
+            "connected-active",
+            "readings do not change the connection beacon state",
+          );
         }
         for (const state of [
           snapshot("switch.appliance", "off"),
@@ -148,11 +193,29 @@ await withModules(async (load) => {
           snapshot("switch.appliance", "on", {}, { available: false }),
           undefined,
         ]) {
-          await renderer.update(element(modelId, [powerSlot], { ...(state ? { control: state } : {}), power: power("1200") }));
-          assert.equal(renderer.scene.findAllByProps({ name: "appliance-steam" }).length, 0, `${modelId}: primary state is still required`);
+          await renderer.update(
+            element(modelId, [powerSlot], {
+              ...(state ? { control: state } : {}),
+              power: power("1200"),
+            }),
+          );
+          assert.equal(
+            renderer.scene.findAllByProps({ name: "appliance-steam" }).length,
+            0,
+            `${modelId}: primary state is still required`,
+          );
         }
-        await renderer.update(element(modelId, [powerSlot], { control: snapshot("sensor.appliance", "heating"), power: power("1200") }));
-        assert.equal(renderer.scene.findAllByProps({ name: "appliance-steam" }).length, 1, "native active sensor state is preserved");
+        await renderer.update(
+          element(modelId, [powerSlot], {
+            control: snapshot("sensor.appliance", "heating"),
+            power: power("1200"),
+          }),
+        );
+        assert.equal(
+          renderer.scene.findAllByProps({ name: "appliance-steam" }).length,
+          1,
+          "native active sensor state is preserved",
+        );
       } finally {
         await renderer.unmount();
       }

@@ -6,7 +6,11 @@ import { hasOperatingPower } from "./appliance-power";
 import { StatusBeacon } from "../../visuals/device-visual-state";
 
 /** Generic cordless electric kettle on its charging base; front faces +Z. */
-export function ElectricKettleModel({ visualState, reducedMotion, readings }: HomeDeviceModelProps) {
+export function ElectricKettleModel({
+  visualState,
+  reducedMotion,
+  readings,
+}: HomeDeviceModelProps) {
   return (
     <group name="catalog-electric-kettle" userData={{ walkCollider: true }}>
       <RoundedFurniturePanel
