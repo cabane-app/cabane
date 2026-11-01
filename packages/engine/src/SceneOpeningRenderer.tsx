@@ -23,7 +23,7 @@ function SceneOpening<Opening extends OpeningSpec>({
   const slot = props.opening.coverSlot;
   const target =
     slot && onInteract
-      ? { id: props.opening.id, slotId: slot.id, label: "Garage door" }
+      ? { id: props.opening.id, slotId: slot.id, label: props.opening.name || "Garage door" }
       : undefined;
   return (
     <group

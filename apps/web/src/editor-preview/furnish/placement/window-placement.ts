@@ -26,6 +26,7 @@ const isWindowFitOpening = (
 
 export interface WindowPlacement {
   openingId: string;
+  openingLabel: string;
   roomName: string;
   placement: Extract<ItemPlacement, { kind: "wall" }>;
   size: SceneItemSize;
@@ -100,6 +101,7 @@ export function windowPlacements(
         "Window";
       candidates.push({
         openingId: opening.id,
+        openingLabel: opening.name || opening.id,
         roomName,
         placement,
         size,

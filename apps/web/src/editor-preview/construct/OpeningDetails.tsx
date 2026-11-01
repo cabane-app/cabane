@@ -40,6 +40,7 @@ export function OpeningDetails({
         : opening.kind === "niche"
           ? "Niche"
           : "Passage";
+  const customName = opening.kind === "niche" ? undefined : opening.name;
   const orientationControls = orientable ? (
     <fieldset className="opening-direction">
       <legend>Opening direction</legend>
@@ -73,8 +74,8 @@ export function OpeningDetails({
   return (
     <SelectionDetailsPanel
       mode="construct"
-      title={name}
-      subtitle={editor.previewFloor.name}
+      title={customName || name}
+      subtitle={customName ? `${name} · ${editor.previewFloor.name}` : editor.previewFloor.name}
       label={`${name} properties`}
       onClose={onClose}
     >

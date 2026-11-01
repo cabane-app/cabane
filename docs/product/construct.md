@@ -20,8 +20,13 @@ Doors, windows, passages, and walls (including invisible walls) expose a Name fi
 above Dimensions in Properties. Unnamed items display their existing identifier.
 Enter or leaving the field commits a trimmed name; Escape cancels the edit.
 Clearing the field restores the identifier fallback. Names persist through history,
-reopening, export/import and Apply. Door/window connection labels use the custom
-name while architectural identifiers, binding slots and existing mappings stay unchanged.
+reopening, export/import and Apply. Custom names identify walls and openings in
+Properties headings, an opening's supporting-wall field, Arrange's Fit to window
+choices (including sliding glass doors), Issues rows and their Locate actions,
+door/window connection labels and garage interaction prompts. Unnamed fields and choices retain their identifier fallback;
+Properties headings and interaction prompts retain their type fallback. Renaming
+or clearing a name refreshes these labels without changing architectural identifiers,
+binding slots or existing mappings.
 
 Add floor above/below opens a dialog with an empty-plan default and a
 “Duplicate this floor” option for the selected floor. Copies are appended above

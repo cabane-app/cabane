@@ -22,6 +22,7 @@ export function OpeningProperties({
   advanced?: boolean;
   orientationControls?: ReactNode;
 }) {
+  const wall = editor.draft.walls.find((wall) => wall.id === selectedOpening.wallId);
   const wallPosition = (
     <fieldset>
       <legend>Wall position</legend>
@@ -38,9 +39,9 @@ export function OpeningProperties({
       <label>
         Wall
         <input
-          aria-label="Opening wall identifier"
+          aria-label="Opening wall"
           type="text"
-          value={selectedOpening.wallId}
+          value={wall?.name || selectedOpening.wallId}
           readOnly
         />
       </label>

@@ -110,11 +110,14 @@ export function ConstructionSelectionProperties({
     multiple: `${deletionCount} elements selected`,
     opening: "Opening",
   };
-  const title = kind ? names[kind] : "Properties";
+  const typeLabel = kind ? names[kind] : "Properties";
+  const title = selectedWall?.name || typeLabel;
   return (
     <SelectionDetailsPanel
       title={title}
-      subtitle={editor.previewFloor.name}
+      subtitle={
+        selectedWall?.name ? `${typeLabel} · ${editor.previewFloor.name}` : editor.previewFloor.name
+      }
       label="Construction properties"
       mode="construct"
       onClose={onClose}
