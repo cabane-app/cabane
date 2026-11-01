@@ -232,6 +232,8 @@ await withModules(async (load) => {
     "clip-reading-lamp",
     "woven-pendant",
     "children-pendant",
+    "computer-fan",
+    "ventilation-fan",
   ];
 
   test("irrigation sprinklers animate only while active and respect reduced motion", async () => {
@@ -458,6 +460,8 @@ await withModules(async (load) => {
       "motorized-blind",
       "integrated-roller-shutter",
       "leak-sensor",
+      "computer-fan",
+      "ventilation-fan",
       "ceiling-fan",
       "table-fan",
       "pedestal-fan",
@@ -516,7 +520,9 @@ await withModules(async (load) => {
               ? 35
               : id === "pergola-string-lights"
                 ? 17
-                : 16),
+                : id === "computer-fan"
+                  ? 20
+                  : 16),
       );
       assert.ok(
         definition.complexity.triangles <=
@@ -1283,6 +1289,55 @@ await withModules(async (load) => {
     }
   });
 
+  test("compact fan geometry preserves the legacy silhouettes and fan binding", async () => {
+    const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
+    for (const [id, bladeCount] of [
+      ["computer-fan", 5],
+      ["ventilation-fan", 3],
+    ]) {
+      const definition = catalog.stableDeviceRegistry[id];
+      const binding = room.devices.find((device) => device.model === id);
+      assert.deepEqual(definition.supportedDomains, ["fan"]);
+      for (const visualState of [
+        "disconnected",
+        "unavailable",
+        "connected-inactive",
+        "connected-active",
+      ]) {
+        const renderer = await create(
+          createElement(definition.component, {
+            slot: binding,
+            visualState,
+            reducedMotion: true,
+            walkMode: false,
+            onInteract() {},
+            state:
+              fixtures.fixtureCatalogStates[
+                fixtures.equippedFixtureProfile.entityIdsBySlotId[binding.entitySlots[0].id]
+              ],
+          }),
+        );
+        const bounds = new Box3().setFromObject(renderer.scene.instance, true);
+        for (const edge of ["min", "max"])
+          bounds[edge].toArray().forEach((value, axis) => {
+            assert.ok(
+              Math.abs(value - definition.bounds[edge][axis]) < 0.001,
+              `${id}/${visualState} ${edge}[${axis}]: ${value}`,
+            );
+          });
+        const meshes = renderer.scene.findAll((node) => node.type === "Mesh");
+        assert.ok(meshes.length <= definition.complexity.visibleMeshes);
+        for (const mesh of meshes) assert.equal(mesh.instance.material.type, "MeshToonMaterial");
+        assert.equal(
+          renderer.scene.findAll((node) => node.props.name?.includes("fan-blade-")).length,
+          bladeCount,
+        );
+        assert.equal(renderer.scene.findAll((node) => node.instance.isLight).length, 0);
+        await renderer.unmount();
+      }
+    }
+  });
+
   test("fan rotors follow HA speed and stop when off, disconnected, unavailable or motion is reduced", async () => {
     const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
     for (const id of ["ceiling-fan", "table-fan", "pedestal-fan"]) {
@@ -1328,6 +1383,56 @@ await withModules(async (load) => {
         const stoppedAt = rotor.rotation.z;
         await renderer.advanceFrames(2, 0.02);
         assert.equal(rotor.rotation.z, stoppedAt, `${id}: ${JSON.stringify(scenario)}`);
+      }
+      await renderer.unmount();
+    }
+  });
+
+  test("compact fan rotors follow HA speed and stop when inactive", async () => {
+    const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
+    for (const id of ["computer-fan", "ventilation-fan"]) {
+      const definition = catalog.stableDeviceRegistry[id];
+      const binding = room.devices.find((device) => device.model === id);
+      const baseState =
+        fixtures.fixtureCatalogStates[
+          fixtures.equippedFixtureProfile.entityIdsBySlotId[binding.entitySlots[0].id]
+        ];
+      const props = {
+        slot: binding,
+        visualState: "connected-active",
+        reducedMotion: false,
+        walkMode: false,
+        onInteract() {},
+      };
+      const snapshot = (percentage, state = "on") => ({
+        ...baseState,
+        state,
+        attributes: { ...baseState.attributes, percentage },
+      });
+      const renderer = await create(
+        createElement(definition.component, { ...props, state: snapshot(25) }),
+      );
+      const rotor = renderer.scene.findByProps({ name: "fan-rotor" }).instance;
+      await renderer.advanceFrames(1, 0.02);
+      const slow = Math.abs(rotor.rotation.y);
+      assert.ok(slow > 0);
+      await renderer.update(
+        createElement(definition.component, { ...props, state: snapshot(100) }),
+      );
+      const beforeFast = rotor.rotation.y;
+      await renderer.advanceFrames(1, 0.02);
+      assert.ok(Math.abs(Math.abs(rotor.rotation.y - beforeFast) - slow * 4) < 1e-6);
+      for (const scenario of [
+        { state: snapshot(0) },
+        { state: snapshot(50, "off"), visualState: "connected-inactive" },
+        { state: snapshot(50), visualState: "unavailable" },
+        { state: undefined, visualState: "disconnected" },
+        { state: snapshot(50), reducedMotion: true },
+      ]) {
+        await renderer.update(createElement(definition.component, { ...props, ...scenario }));
+        const stoppedAt = rotor.rotation.y;
+        await renderer.advanceFrames(2, 0.02);
+        assert.equal(rotor.rotation.y, stoppedAt, `${id}: ${JSON.stringify(scenario)}`);
       }
       await renderer.unmount();
     }
