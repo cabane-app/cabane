@@ -10,7 +10,7 @@ await withModules(async (load) => {
   const { HomeAssistantActivityTracker } = await load(
     "/packages/engine/src/home-assistant-activity.ts",
   );
-  const { DeviceActivityFeedback } = await load("/packages/engine/src/DeviceActivityFeedback.tsx");
+  const { SceneItemActivityFeedback } = await load("/packages/engine/src/SceneItemActivityFeedback.tsx");
   const { normalizeEntityStates } = await load(
     "/packages/engine/src/home-assistant-entity-snapshots.ts",
   );
@@ -97,16 +97,13 @@ await withModules(async (load) => {
   test("device feedback baselines mappings/remounts and cleans up its shared zap effect without timers", async () => {
     const bounds = { min: [-0.04, 0, 0], max: [0.04, 0.08, 0.015] };
     const render = (sequence, entityId = "event.remote", reducedMotion = false) =>
-      React.createElement(DeviceActivityFeedback, {
+      React.createElement(SceneItemActivityFeedback, {
         bounds,
         reducedMotion,
-        device: {
-          slot: { id: "remote" },
-          entities: [{ slotId: "remote", entityId, issues: [], state: { entityId, state: timestamp(100), available: true, stale: false, activitySequence: sequence } }],
-        },
+        entities: [{ slotId: "remote", entityId, issues: [], state: { entityId, state: timestamp(100), available: true, stale: false, activitySequence: sequence } }],
       });
     const renderer = await create(render(10));
-    const count = () => renderer.scene.findAllByProps({ name: "device-activity-feedback" }).length;
+    const count = () => renderer.scene.findAllByProps({ name: "scene-item-activity-feedback" }).length;
     try {
       assert.equal(count(), 0, "mounting history is silent");
       await renderer.update(render(11));
@@ -130,7 +127,7 @@ await withModules(async (load) => {
       await renderer.unmount();
     }
     const remounted = await create(render(21, "event.replacement"));
-    assert.equal(remounted.scene.findAllByProps({ name: "device-activity-feedback" }).length, 0);
+    assert.equal(remounted.scene.findAllByProps({ name: "scene-item-activity-feedback" }).length, 0);
     await remounted.unmount();
   });
 });

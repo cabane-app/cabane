@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SceneActivityPulse } from "./SceneActivityPulse";
-import type { DeviceModelDefinition, ResolvedDeviceBinding } from "./types";
+import type { DeviceModelDefinition, ResolvedEntityBinding } from "./types";
 
 /** Binding-local feedback: mounting, remapping or copying a device establishes a baseline. */
-export function DeviceActivityFeedback({
-  device,
+export function SceneItemActivityFeedback({
+  entities,
   bounds,
   reducedMotion,
 }: {
-  device: ResolvedDeviceBinding;
+  entities: readonly Pick<ResolvedEntityBinding, "slotId" | "entityId" | "state" | "issues">[];
   bounds: DeviceModelDefinition["bounds"];
   reducedMotion: boolean;
 }) {
@@ -18,7 +18,7 @@ export function DeviceActivityFeedback({
   useEffect(() => {
     const next = new Map<string, { entityId: string; sequence?: number }>();
     let activity = 0;
-    for (const binding of device.entities) {
+    for (const binding of entities) {
       const sequence = binding.state?.activitySequence;
       const before = previous.current.get(binding.slotId);
       if (
@@ -37,11 +37,11 @@ export function DeviceActivityFeedback({
     }
     previous.current = next;
     if (activity) setPulse(activity);
-  }, [device]);
+  }, [entities]);
   if (!pulse) return null;
   return (
     <group
-      name="device-activity-feedback"
+      name="scene-item-activity-feedback"
       position={[
         (bounds.min[0] + bounds.max[0]) / 2,
         (bounds.min[1] + bounds.max[1]) / 2,

@@ -19,10 +19,11 @@ export function SceneActivityPulse({
 }) {
   const root = useRef<Group>(null);
   const ring = useRef<Mesh>(null);
-  const age = useRef(0);
+  const age = useRef<number | null>(null);
   const completed = useRef(false);
-  useFrame((_, delta) => {
-    age.current += delta;
+  useFrame(({ invalidate }, delta) => {
+    // A demand canvas can have been idle for minutes before this effect mounts.
+    age.current = age.current === null ? 0 : age.current + delta;
     if (!root.current) return;
     const elapsed = age.current - delay;
     const progress = Math.max(0, Math.min(1, elapsed / 0.55));
@@ -32,6 +33,7 @@ export function SceneActivityPulse({
       completed.current = true;
       return;
     }
+    invalidate();
     root.current.scale.setScalar(reducedMotion ? 1 : 0.5 + progress * 2);
     ring.current?.scale.setScalar(reducedMotion ? 1 : 1 + progress);
     for (const child of root.current.children) {
