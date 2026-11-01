@@ -200,7 +200,7 @@ export function FurnishingProperties({
               <option value="">{windows.length ? "Choose a window…" : "No suitable window"}</option>
               {windows.map((candidate, index) => (
                 <option key={`${candidate.openingId}-${index}`} value={index}>
-                  {candidate.roomName} · {candidate.openingId}
+                  {candidate.roomName} · {candidate.openingLabel}
                 </option>
               ))}
             </select>

@@ -198,7 +198,7 @@ await withModules(async (load) => {
     const movementInputRef = { current: { x: 0, y: -1 } };
     let floorId = ground.id;
     let automatic = new Set();
-    let reopenedFromBasement = false;
+    let reopenedFromBasement;
     const manifest = api.composeHomeManifest(project, emptyExtensions);
     const render = () => {
       const openingPositions = Object.fromEntries([...automatic].map((id) => [id, 1]));

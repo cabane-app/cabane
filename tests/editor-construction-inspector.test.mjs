@@ -125,15 +125,40 @@ await withModules(async (load) => {
       observe() {}
       disconnect() {}
     };
-    for (const kind of ["wall", "door", "window"]) {
+    for (const kind of ["wall", "invisible-wall", "door", "window", "passage"]) {
+      const isWall = kind === "wall" || kind === "invisible-wall";
       await withDom(async ({ dom, root }) => {
-        const floor = ownerHomeProject.floors[0];
-        const item =
-          kind === "wall" ? floor.walls[0] : floor.openings.find((entry) => entry.kind === kind);
+        const floor = {
+          ...ownerHomeProject.floors[0],
+          walls: ownerHomeProject.floors[0].walls.map((wall) =>
+            isWall
+              ? { ...wall, ...(kind === "invisible-wall" ? { virtual: true } : {}) }
+              : { ...wall, name: "Kitchen wall" },
+          ),
+        };
+        if (kind === "invisible-wall") floor.openings = [];
+        if (kind === "passage") {
+          const source = floor.openings.find((opening) => opening.kind === "window");
+          floor.openings = floor.openings.map((opening) =>
+            opening.id === source.id
+              ? {
+                  id: source.id,
+                  kind: "passage",
+                  shape: "rectangular",
+                  wallId: source.wallId,
+                  offsetFromWallStartPlanUnits: source.offsetFromWallStartPlanUnits,
+                  widthPlanUnits: source.widthPlanUnits,
+                  openingHeightMeters: source.openingHeightMeters,
+                  sillHeightMeters: 0,
+                }
+              : opening,
+          );
+        }
+        const item = isWall ? floor.walls[0] : floor.openings.find((entry) => entry.kind === kind);
         let controller;
         function Harness() {
           controller = useConstructEditor(floor);
-          return kind === "wall"
+          return isWall
             ? React.createElement(ConstructionSelectionProperties, {
                 editor: controller,
                 onClose() {},
@@ -147,16 +172,19 @@ await withModules(async (load) => {
         }
         await act(async () => root.render(React.createElement(Harness)));
         await act(async () =>
-          kind === "wall" ? controller.selectWall(item.id) : controller.selectOpening(item.id),
+          isWall ? controller.selectWall(item.id) : controller.selectOpening(item.id),
         );
         const input = () =>
-          dom.window.document.querySelector(
-            `[aria-label="${kind === "wall" ? "Wall" : "Opening"} name"]`,
-          );
+          dom.window.document.querySelector(`[aria-label="${isWall ? "Wall" : "Opening"} name"]`);
         const current = () =>
-          (kind === "wall" ? controller.previewFloor.walls : controller.previewFloor.openings).find(
+          (isWall ? controller.previewFloor.walls : controller.previewFloor.openings).find(
             (entry) => entry.id === item.id,
           );
+        const heading = () =>
+          dom.window.document.querySelector(".selection-details h2").textContent;
+        const typeLabel =
+          kind === "invisible-wall" ? "Invisible wall" : kind[0].toUpperCase() + kind.slice(1);
+        assert.equal(heading(), typeLabel);
         assert.equal(input().placeholder, item.id);
         dom.window.HTMLElement.prototype.attachEvent = () => {};
         dom.window.HTMLElement.prototype.detachEvent = () => {};
@@ -182,14 +210,39 @@ await withModules(async (load) => {
         await key("Enter");
         assert.equal(current().name, name);
         assert.equal(current().id, item.id);
+        assert.equal(heading(), name);
+        assert.equal(
+          dom.window.document.querySelector(".selection-details__header p").textContent,
+          `${typeLabel} · ${floor.name}`,
+        );
+        if (!isWall) {
+          assert.equal(
+            dom.window.document.querySelector('[aria-label="Opening wall"]').value,
+            "Kitchen wall",
+          );
+          await act(async () => controller.updateWallMetadata(item.wallId, { name: "Patio wall" }));
+          assert.equal(
+            dom.window.document.querySelector('[aria-label="Opening wall"]').value,
+            "Patio wall",
+          );
+          await act(async () => controller.updateWallMetadata(item.wallId, { name: undefined }));
+          assert.equal(
+            dom.window.document.querySelector('[aria-label="Opening wall"]').value,
+            item.wallId,
+          );
+          await act(async () => controller.undo());
+          await act(async () => controller.undo());
+        }
         await type("Cancelled");
         await key("Escape");
         assert.equal(input().value, name);
         assert.equal(current().name, name);
         await act(async () => controller.undo());
         assert.equal(current().name, undefined);
+        assert.equal(heading(), typeLabel);
         await act(async () => controller.redo());
         assert.equal(current().name, name);
+        assert.equal(heading(), name);
         if (kind === "door") {
           await act(async () =>
             dom.window.document.querySelector('[aria-label="Door presets"] button').click(),
@@ -199,9 +252,7 @@ await withModules(async (load) => {
         const saved = JSON.parse(JSON.stringify(controller.previewFloor));
         const reopened = deriveFloorTopology(createFloorEditorDraft(saved)).floor;
         assert.equal(
-          (kind === "wall" ? reopened.walls : reopened.openings).find(
-            (entry) => entry.id === item.id,
-          ).name,
+          (isWall ? reopened.walls : reopened.openings).find((entry) => entry.id === item.id).name,
           name,
         );
         const project = {
@@ -209,7 +260,7 @@ await withModules(async (load) => {
           floors: ownerHomeProject.floors.map((entry) => (entry.id === floor.id ? saved : entry)),
         };
         assert.equal(parseHomeProjectSchema(project).valid, true);
-        if (kind !== "wall") {
+        if (kind === "door" || kind === "window") {
           const slots = collectBindingSlots(
             composeHomeBindingManifest(project, neutralDemoManifest.extensions),
           );
@@ -227,6 +278,7 @@ await withModules(async (load) => {
         await act(async () => input().blur());
         assert.equal(current().name, undefined);
         assert.equal(input().placeholder, item.id);
+        assert.equal(heading(), typeLabel);
       });
     }
   });
