@@ -24,6 +24,20 @@ export const ConstructionPlanWalls = memo(function ConstructionPlanWalls({
       const to = planPointToWorld(wall.to, draft.coordinates);
       const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
       if (length < 0.0001) continue;
+      const at = (distance: number): readonly [number, number] => [
+        from[0] + ((to[0] - from[0]) * distance) / length,
+        from[1] + ((to[1] - from[1]) * distance) / length,
+      ];
+      if (wall.virtual) {
+        for (let start = 0; start < length; start += 0.3) {
+          result.push({
+            from: at(start),
+            to: at(Math.min(length, start + 0.18)),
+            color: "#596057",
+          });
+        }
+        continue;
+      }
       const openings = attachments
         .filter((opening) => opening.wallId === wall.id)
         .sort((a, b) => a.offsetPlanUnits - b.offsetPlanUnits);
@@ -39,10 +53,6 @@ export const ConstructionPlanWalls = memo(function ConstructionPlanWalls({
         );
       }
       if (cursor < length) spans.push([cursor, length]);
-      const at = (distance: number): readonly [number, number] => [
-        from[0] + ((to[0] - from[0]) * distance) / length,
-        from[1] + ((to[1] - from[1]) * distance) / length,
-      ];
       const thickness = wall.thicknessMeters ?? draft.interiorWallThicknessMeters;
       for (const [start, end] of spans)
         result.push({

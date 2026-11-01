@@ -1,3 +1,4 @@
+import { indoorRoomsForFloor } from "./platform-rooms";
 import polygonClipping from "polygon-clipping";
 import { pointInsidePolygon, polygonSignedArea } from "../geometry";
 import { pointOnPolygonBoundary } from "../validation/geometry";
@@ -11,7 +12,7 @@ type SupportFloor = Pick<
 >;
 /** The footprint is only an envelope on a floor made entirely of platforms. */
 export const floorSlabPolygons = (floor: SupportFloor) =>
-  (floor.rooms.length || !floor.outdoorPlatforms?.length
+  (indoorRoomsForFloor(floor).length || !floor.outdoorPlatforms?.length
     ? (floor.footprintRegions ?? [floor.footprint])
     : []
   ).filter((p): p is Polygon => p.length >= 3);

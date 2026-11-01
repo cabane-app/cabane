@@ -4,6 +4,9 @@ on:
     branches: [main]
   push:
     branches: [main]
+  schedule:
+    - cron: "0 23 * * *"
+      timezone: Europe/Paris
   workflow_dispatch:
 permissions:
   contents: read
@@ -45,7 +48,9 @@ jobs:
           JS
   release:
     needs: contract
-    if: github.event_name != 'pull_request' && needs.contract.outputs.changed == 'true'
+    if: >-
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+      github.ref == 'refs/heads/main' && needs.contract.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

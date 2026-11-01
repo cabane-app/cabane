@@ -1,11 +1,19 @@
 import { deriveOutdoorPlatformBarriers } from "../outdoor-platforms/platform-barriers";
 import { rollUpDoorGeometry } from "../roll-up-door-geometry";
+import { terrainForHedge, terrainHedgeRuns } from "../hedges/hedge-terrain";
+import type { TerrainSurface } from "../terrain/terrain-surface";
 import { validHedge } from "../hedges/hedge-validity";
 import { planPointToWorld } from "../geometry";
 
 import { junctionConnectorInterval } from "../architecture-geometry";
+import { physicalFloor } from "../architecture-geometry/physical-floor";
 
-import { isPoolOutline, POOL_RIM_WIDTH_METERS, poolWorldRing } from "../pools/pool-footprint";
+import {
+  isPoolOutline,
+  POOL_DEPTH_METERS,
+  POOL_RIM_WIDTH_METERS,
+  poolWorldRing,
+} from "../pools/pool-footprint";
 
 import type { FloorSpec, WallSpec } from "../types";
 import { closestPointOnSegment } from "./walk-motion";
@@ -36,6 +44,7 @@ const wallColliderRuns = (
   wall: WallSpec,
   floor: FloorSpec,
   openOpeningIds: ReadonlySet<string>,
+  elevation: number,
 ): SegmentWalkCollider[] => {
   const relevant = floor.openings
     .filter((opening) => opening.wallId === wall.id)
@@ -74,14 +83,27 @@ const wallColliderRuns = (
     from: wallPointAtDistance(wall, start, floor),
     to: wallPointAtDistance(wall, end, floor),
     halfThickness: wall.thicknessMeters / 2,
+    minY: elevation,
+    maxY: elevation + (wall.heightMeters ?? floor.defaultWallHeightMeters),
   }));
 };
 
+/** Virtual room dividers never block walking. */
 export const deriveWalkColliders = (
   floor: FloorSpec,
   openOpeningIds: ReadonlySet<string> = new Set(),
   furniture: readonly BoxWalkCollider[] = [],
   elevation = 0,
+  terrain: TerrainSurface = null,
+): WalkCollider[] =>
+  deriveBuiltWalkColliders(physicalFloor(floor), openOpeningIds, furniture, elevation, terrain);
+
+const deriveBuiltWalkColliders = (
+  floor: FloorSpec,
+  openOpeningIds: ReadonlySet<string>,
+  furniture: readonly BoxWalkCollider[],
+  elevation: number,
+  terrain: TerrainSurface,
 ): WalkCollider[] => [
   ...[...(floor.solidRooms ?? []), ...floor.rooms.filter((room) => room.isSolid)].flatMap(
     (room): SegmentWalkCollider[] =>
@@ -113,18 +135,28 @@ export const deriveWalkColliders = (
   })),
   ...(floor.hedges ?? [])
     .filter((hedge) => validHedge(hedge, floor.coordinates.metersPerPlanUnit))
-    .map((hedge): SegmentWalkCollider => {
+    .flatMap((hedge): SegmentWalkCollider[] => {
+      const surface = terrainForHedge(floor, hedge, terrain);
+      if (surface)
+        return terrainHedgeRuns(floor, hedge, surface).map((run, index) => ({
+          kind: "segment",
+          id: `${hedge.id}-walk-${index}`,
+          halfThickness: hedge.widthMeters / 2,
+          ...run,
+        }));
       const [x, z] = planPointToWorld(hedge.from, floor.coordinates);
       const [tx, tz] = planPointToWorld(hedge.to, floor.coordinates);
-      return {
-        kind: "segment",
-        id: `${hedge.id}-walk`,
-        from: { x, z },
-        to: { x: tx, z: tz },
-        halfThickness: hedge.widthMeters / 2,
-        minY: elevation,
-        maxY: elevation + hedge.heightMeters,
-      };
+      return [
+        {
+          kind: "segment",
+          id: `${hedge.id}-walk`,
+          from: { x, z },
+          to: { x: tx, z: tz },
+          halfThickness: hedge.widthMeters / 2,
+          minY: elevation,
+          maxY: elevation + hedge.heightMeters,
+        },
+      ];
     }),
   ...(floor.pools ?? []).flatMap((pool): SegmentWalkCollider[] => {
     if (!isPoolOutline(pool.polygon)) return [];
@@ -135,9 +167,11 @@ export const deriveWalkColliders = (
       from: { x, z },
       to: { x: ring[(index + 1) % ring.length][0], z: ring[(index + 1) % ring.length][1] },
       halfThickness: POOL_RIM_WIDTH_METERS,
+      minY: elevation - POOL_DEPTH_METERS,
+      maxY: elevation + floor.defaultWallHeightMeters,
     }));
   }),
-  ...floor.walls.flatMap((wall) => wallColliderRuns(wall, floor, openOpeningIds)),
+  ...floor.walls.flatMap((wall) => wallColliderRuns(wall, floor, openOpeningIds, elevation)),
   ...floor.wallJunctions.flatMap((junction) => {
     return junction.wallIds.flatMap((wallId) => {
       const wall = floor.walls.find((candidate) => candidate.id === wallId);
@@ -158,6 +192,8 @@ export const deriveWalkColliders = (
           },
           to: { x: from[0] + direction[0] * interval[1], z: from[1] + direction[1] * interval[1] },
           halfThickness: wall.thicknessMeters / 2,
+          minY: elevation,
+          maxY: elevation + (wall.heightMeters ?? floor.defaultWallHeightMeters),
         },
       ];
     });

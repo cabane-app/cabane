@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { displayLength, lengthUnit, parseLength, useMeasurementUnits } from "@cabane/engine";
+import { EditorIcon } from "./EditorIcon";
+import "./length-input.css";
 
 type Props = {
   label: string;
@@ -10,6 +12,8 @@ type Props = {
   step?: number | undefined;
   commitOnChange?: boolean;
   metersPerUnit?: number;
+  id?: string;
+  showSteppers?: boolean;
 };
 
 /** Values and limits remain in authored units. Only the edit buffer uses display units. */
@@ -26,6 +30,8 @@ function LengthDraft({
   step = 0.1,
   commitOnChange = false,
   metersPerUnit = 1,
+  id: inputId,
+  showSteppers = false,
   units,
 }: Props & { units: "metric" | "imperial" }) {
   const format = (value: number) =>
@@ -62,9 +68,27 @@ function LengthDraft({
       onCommit(next);
     }
   };
+  const parsedDraft = parseLength(draft, units) / metersPerUnit;
+  const stepBase = Number.isFinite(parsedDraft) ? parsedDraft : value;
+  const increment = (direction: number, large = false) => {
+    const increment = units === "imperial" ? 0.0254 / metersPerUnit : step;
+    const next = Number(
+      Math.min(
+        max ?? Infinity,
+        Math.max(min ?? -Infinity, stepBase + direction * increment * (large ? 10 : 1)),
+      ).toFixed(10),
+    );
+    setDraft(format(next));
+    setError(false);
+    if (next !== value) {
+      ownCommit.current = next;
+      onCommit(next);
+    }
+  };
   return (
-    <>
+    <span className="editor-length-input" data-steppers={showSteppers || undefined}>
       <input
+        id={inputId}
         ref={input}
         aria-label={label}
         aria-invalid={error || undefined}
@@ -90,30 +114,40 @@ function LengthDraft({
             setDraft(format(value));
             setError(false);
           } else if (event.key === "Enter") commit(draft);
-          else {
-            const parsed = parseLength(draft, units) / metersPerUnit;
-            const increment = units === "imperial" ? 0.0254 / metersPerUnit : step;
-            const next = Math.min(
-              max ?? Infinity,
-              Math.max(
-                min ?? -Infinity,
-                (Number.isFinite(parsed) ? parsed : value) +
-                  (event.key === "ArrowUp" ? 1 : -1) * increment * (event.shiftKey ? 10 : 1),
-              ),
-            );
-            setError(false);
-            onCommit(next);
-          }
+          else increment(event.key === "ArrowUp" ? 1 : -1, event.shiftKey);
         }}
       />
-      <small id={`${id}-unit`}>{lengthUnit(units)}</small>
+      <small className="editor-length-input__unit" id={`${id}-unit`}>
+        {lengthUnit(units)}
+      </small>
+      {showSteppers && (
+        <span className="editor-length-input__steppers" role="group" aria-label={`Adjust ${label}`}>
+          {([1, -1] as const).map((direction) => (
+            <button
+              key={direction}
+              type="button"
+              aria-label={`${direction === 1 ? "Increase" : "Decrease"} ${label}`}
+              title={`Step ${units === "imperial" ? "1 in" : `${step * metersPerUnit} m`}; hold Shift for ×10`}
+              disabled={
+                direction === 1
+                  ? max !== undefined && stepBase >= max
+                  : min !== undefined && stepBase <= min
+              }
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={(event) => increment(direction, event.shiftKey)}
+            >
+              <EditorIcon name={direction === 1 ? "arrowUp" : "arrowDown"} />
+            </button>
+          ))}
+        </span>
+      )}
       {error && (
-        <small id={`${id}-error`} role="alert">
+        <small className="editor-length-input__error" id={`${id}-error`} role="alert">
           Enter a valid length
           {min !== undefined ? ` of at least ${format(min)} ${lengthUnit(units)}` : ""}
           {max !== undefined ? ` and at most ${format(max)} ${lengthUnit(units)}` : ""}.
         </small>
       )}
-    </>
+    </span>
   );
 }

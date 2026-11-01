@@ -10,6 +10,7 @@ await withModules(async (load) => {
   const engine = await load("/packages/engine/src/index.ts");
   const { useConnectEditor } = await load("/apps/web/src/editor-connect/useConnectEditor.ts");
   const { ConnectInspector } = await load("/apps/web/src/editor-connect/ConnectInspector.tsx");
+  const { ConnectSidebar } = await load("/apps/web/src/editor-connect/ConnectSidebar.tsx");
   const {
     equippedFixtureManifest: manifest,
     connectedCatalogRuntime: snapshot,
@@ -74,6 +75,7 @@ await withModules(async (load) => {
       actualRuntime = runtime,
       actualOrigin = origin,
       active = true,
+      onAddReading,
     }) {
       [bindings, setBindings] = useState(initialBindings);
       current = useConnectEditor({
@@ -82,22 +84,21 @@ await withModules(async (load) => {
         origin: actualOrigin,
         bindings,
         onChange: setBindings,
+        onAddReading,
         active,
         initialRequest,
       });
       return showInspector
-        ? createElement(ConnectInspector, {
-            editor: current,
-            manifest: actualManifest,
-            runtime: actualRuntime,
-            homeAssistantUrl: actualOrigin,
-            onSignIn: async () => {},
-            onExportProfile: () => "{}",
-            onBackup: async () => "{}",
-            onDiscard: async () => {},
-            onImportWorkspace() {},
-            onExportProject: () => "{}",
-          })
+        ? createElement(
+            "div",
+            null,
+            createElement(ConnectSidebar, {
+              editor: current,
+              runtime: actualRuntime,
+              homeAssistantUrl: actualOrigin,
+            }),
+            createElement(ConnectInspector, { editor: current, manifest: actualManifest }),
+          )
         : null;
     }
     const render = async (props = {}) =>
@@ -146,14 +147,29 @@ await withModules(async (load) => {
       ],
     };
     const harness = await mount(protectedBindings(), true);
+    const added = [];
+    const onAddReading = (itemId, entityId) => added.push({ itemId, entityId });
     try {
-      await harness.render({ actualManifest });
+      await harness.render({ actualManifest, onAddReading });
       await act(async () => harness.editor.setView("devices"));
       assert.match(harness.dom.window.document.body.textContent, /Outside rooms/);
       await act(async () => assert.equal(harness.editor.selectDevice("garden-device"), true));
       assert.equal(harness.editor.relationship.id, "garden-device");
       assert.equal(harness.editor.room.name, "Outside rooms");
       assert.equal(harness.editor.rooms.length, manifest.floors[0].rooms.length);
+      assert.ok(harness.dom.window.document.querySelector(".connection-add"));
+      const entityId = runtime.entityRegistry.find((entry) =>
+        entry.entity_id.startsWith("sensor."),
+      ).entity_id;
+      await act(async () => harness.editor.addReading(entityId));
+      assert.deepEqual(added, [{ itemId: "garden-device", entityId }]);
+      await harness.render({
+        actualManifest,
+        onAddReading,
+        actualRuntime: { ...runtime, status: "disconnected" },
+      });
+      await act(async () => harness.editor.addReading(entityId));
+      assert.equal(added.length, 1, "disconnected sessions cannot add readings");
       await act(async () => harness.editor.setView("rooms"));
       assert.equal(harness.editor.room, null);
     } finally {
@@ -247,6 +263,127 @@ await withModules(async (load) => {
     }
   });
 
+  test("shared room assignment requires explicit dependent-slot confirmation without selecting a room", async () => {
+    const harness = await mount();
+    try {
+      const roomId = Object.keys(initialProfile.roomAreaIds).find((id) =>
+        engine
+          .collectBindingSlots(manifest)
+          .some(
+            (slot) => slot.roomIds.includes(id) && initialProfile.entityIdsBySlotId[slot.slotId],
+          ),
+      );
+      const before = structuredClone(harness.bindings);
+      let result;
+      await act(async () => {
+        result = harness.editor.assignRoomArea(roomId, null);
+      });
+      assert.equal(result.status, "confirmation-required");
+      assert.ok(result.clearedSlotIds.length);
+      const clearedSlotIds = result.clearedSlotIds;
+      assert.deepEqual(harness.bindings, before);
+      await act(async () => {
+        result = harness.editor.assignRoomArea(roomId, null, true);
+      });
+      assert.equal(result.status, "applied");
+      assert.equal(harness.editor.profile.roomAreaIds[roomId], undefined);
+      for (const slotId of clearedSlotIds)
+        assert.equal(harness.editor.profile.entityIdsBySlotId[slotId], undefined);
+      assert.equal(harness.editor.pendingAreaChange, null);
+      assert.deepEqual(harness.bindings[origin].published, before[origin].published);
+    } finally {
+      await harness.close();
+    }
+  });
+
+  test("shared entity assignment clears only its slot and rejects incompatible maps atomically", async () => {
+    const harness = await mount();
+    try {
+      const [slotId, entityId] = Object.entries(initialProfile.entityIdsBySlotId)[0];
+      const before = structuredClone(harness.bindings);
+      let result;
+      await act(async () => {
+        result = harness.editor.assignEntity(slotId, null);
+      });
+      assert.equal(result.status, "applied");
+      assert.equal(harness.editor.profile.entityIdsBySlotId[slotId], undefined);
+      const retained = { ...before[origin].draft.entityIdsBySlotId };
+      delete retained[slotId];
+      assert.deepEqual(harness.editor.profile.entityIdsBySlotId, retained);
+      assert.ok(harness.bindings[origin].manualSlotIds.includes(slotId));
+      assert.deepEqual(harness.bindings[origin].published, before[origin].published);
+      const cleared = structuredClone(harness.bindings);
+      await act(async () => {
+        result = harness.editor.assignEntities({
+          ...retained,
+          [slotId]: entityId,
+          "unknown-slot": entityId,
+        });
+      });
+      assert.equal(result.status, "rejected");
+      assert.deepEqual(harness.bindings, cleared);
+      const descriptor = engine
+        .collectBindingSlots(manifest)
+        .find((slot) => slot.slotId === slotId);
+      const incompatible = runtime.entityRegistry.find(
+        (entry) => !engine.entityMatchesBindingSlot(descriptor, entry.entity_id, runtime),
+      );
+      assert.ok(incompatible);
+      await act(async () => {
+        result = harness.editor.assignEntity(slotId, incompatible.entity_id);
+      });
+      assert.equal(result.status, "rejected");
+      assert.deepEqual(harness.bindings, cleared);
+    } finally {
+      await harness.close();
+    }
+  });
+
+  test("shared entity assignment permits offline clearing and blocks offline additions", async () => {
+    const harness = await mount();
+    try {
+      const [slotId, entityId] = Object.entries(initialProfile.entityIdsBySlotId)[0];
+      await harness.render({
+        actualRuntime: { ...runtime, status: "disconnected", entityRegistry: [] },
+      });
+      let result;
+      await act(async () => {
+        result = harness.editor.assignEntity(slotId, null);
+      });
+      assert.equal(result.status, "applied");
+      assert.equal(harness.editor.profile.entityIdsBySlotId[slotId], undefined);
+      const cleared = structuredClone(harness.bindings);
+      await act(async () => {
+        result = harness.editor.assignEntity(slotId, entityId);
+      });
+      assert.equal(result.status, "rejected");
+      assert.deepEqual(harness.bindings, cleared);
+    } finally {
+      await harness.close();
+    }
+  });
+
+  test("pending room clearing cannot overwrite a changed draft or another connection origin", async () => {
+    const harness = await mount();
+    try {
+      const roomId = Object.keys(initialProfile.roomAreaIds)[0];
+      await act(async () => harness.editor.assignRoomArea(roomId, null));
+      assert.ok(harness.editor.pendingAreaChange);
+      const changed = structuredClone(harness.bindings);
+      changed[origin].draft = { ...changed[origin].draft, weatherSource: "off" };
+      await harness.setBindings(changed);
+      await act(async () => harness.editor.confirmAreaChange());
+      assert.deepEqual(harness.bindings, changed);
+      await act(async () => harness.editor.assignRoomArea(roomId, null));
+      await harness.render({ actualOrigin: "https://other.invalid" });
+      await act(async () => harness.editor.confirmAreaChange());
+      assert.deepEqual(harness.bindings, changed);
+      assert.equal(harness.bindings["https://other.invalid"], undefined);
+    } finally {
+      await harness.close();
+    }
+  });
+
   test("exact-device entry resolves its current room and retains selection through connection loss", async () => {
     const room = manifest.floors[0].rooms.find((room) => room.devices.length);
     const device = room.devices[0];
@@ -264,23 +401,16 @@ await withModules(async (load) => {
         actualRuntime: { ...runtime, status: "disconnected", areas: [], entityRegistry: [] },
       });
       assert.equal(harness.editor.relationshipId, device.id);
-      const choices = [...harness.dom.window.document.querySelectorAll('input[type="radio"]')];
-      assert.ok(choices.find((input) => input.value === "" && !input.disabled));
-      assert.ok(choices.filter((input) => input.value).every((input) => input.disabled));
-      await act(async () =>
-        harness.dom.window.document.querySelector('[aria-label^="Back to devices"]').click(),
+      const sources = [...harness.dom.window.document.querySelectorAll(".connection-source")];
+      assert.ok(sources.every((button) => button.disabled));
+      const disconnect = [...harness.dom.window.document.querySelectorAll("button")].find(
+        (button) => button.textContent === "Disconnect",
       );
-      await act(async () =>
-        harness.dom.window.document
-          .querySelector(`[data-relationship-id="${device.id}"] button`)
-          .click(),
-      );
-      await act(async () => new Promise((resolve) => requestAnimationFrame(resolve)));
-      assert.match(
-        harness.dom.window.document.activeElement.getAttribute("aria-label"),
-        /^Back to devices/,
-      );
-      assert.equal(harness.dom.window.document.activeElement.disabled, false);
+      if (disconnect) assert.equal(disconnect.disabled, false);
+      await act(async () => harness.editor.showPlan());
+      assert.equal(harness.editor.room, null);
+      await act(async () => harness.editor.selectDevice(device.id));
+      assert.equal(harness.editor.relationshipId, device.id);
       const deleted = {
         ...manifest,
         floors: [
@@ -305,34 +435,72 @@ await withModules(async (load) => {
     }
   });
 
-  test("grid cards cover every relationship, expose search and clearing, and return focus", async () => {
+  test("the room workbench keeps every device visible and returns to the house plan", async () => {
     const harness = await mount(protectedBindings(), true);
     try {
       const room = manifest.floors[0].rooms.find((room) => room.devices.length);
-      await act(async () => {
-        harness.editor.selectRoom(room.id);
-        harness.editor.setView("devices");
-      });
-      const rows = [
-        ...harness.dom.window.document.querySelectorAll(".connect-device-grid .device-mapping-row"),
-      ];
+      await act(async () => harness.editor.selectRoom(room.id));
+      const document = harness.dom.window.document;
       assert.equal(
-        rows.length,
+        document.querySelectorAll(".connect-device-nav").length,
         harness.editor.groups.flatMap((group) => group.relationships).length,
       );
-      const row = rows.find((row) => row.dataset.relationshipId === room.devices[0].id);
-      await act(async () => row.querySelector("button").click());
-      const search = harness.dom.window.document.querySelector('input[type="search"]');
-      assert.ok(search);
-      assert.ok(harness.dom.window.document.querySelector('input[type="radio"][value=""]'));
-      await act(async () =>
-        harness.dom.window.document.querySelector('[aria-label^="Back to devices"]').click(),
-      );
-      await act(async () => new Promise((resolve) => requestAnimationFrame(resolve)));
+      assert.equal(document.querySelector(".connection-workbench"), null);
+      assert.equal(document.querySelector('[aria-label="Search all compatible sources"]'), null);
+      assert.equal(document.querySelector('select[aria-label="Show devices in"]'), null);
+      assert.doesNotMatch(document.body.textContent, /Home Assistant area:/);
       assert.equal(
-        harness.dom.window.document.activeElement.closest("[data-relationship-id]").dataset
-          .relationshipId,
-        room.devices[0].id,
+        document.querySelectorAll(".connect-room-nav__room").length,
+        harness.editor.deviceRooms.length,
+      );
+      const roomButton = [...document.querySelectorAll(".connect-room-nav__room")].find(
+        (button) => button.querySelector("strong").textContent === room.name,
+      );
+      assert.equal(roomButton.getAttribute("aria-pressed"), "true");
+      const summary = harness.editor.roomDeviceSummaries[room.id];
+      assert.equal(
+        roomButton.querySelector("small").textContent,
+        `${summary.mapped}/${summary.total} connected`,
+      );
+      assert.equal(document.querySelector(".connect-plan-back"), null);
+      const otherRoomButton = [...document.querySelectorAll(".connect-room-nav__room")].find(
+        (button) => button !== roomButton,
+      );
+      assert.ok(otherRoomButton);
+      await act(async () => otherRoomButton.click());
+      assert.equal(otherRoomButton.getAttribute("aria-pressed"), "true");
+      await act(async () => roomButton.click());
+      const row = [...document.querySelectorAll(".connect-device-nav")][1];
+      await act(async () => row.click());
+      assert.equal(row.getAttribute("aria-pressed"), "true");
+      assert.ok(document.querySelector(".connection-workbench"));
+      assert.equal(document.querySelector('[aria-label="Search all compatible sources"]'), null);
+      const inspector = document.querySelector(".connect-room-view");
+      assert.equal(inspector.dataset.deviceOpen, "true");
+      await act(async () => document.querySelector(".connection-slot").click());
+      assert.ok(harness.editor.slotId);
+      assert.ok(document.querySelector('[aria-label="Search all compatible sources"]'));
+      const backToDevices = [...document.querySelectorAll("button")].find(
+        (button) => button.textContent.trim() === "Devices",
+      );
+      await act(async () => backToDevices.click());
+      assert.equal(inspector.dataset.deviceOpen, "false");
+      const otherRow = [...document.querySelectorAll(".connect-device-nav")][0];
+      await act(async () => otherRow.click());
+      assert.equal(otherRow.getAttribute("aria-pressed"), "true");
+      assert.equal(harness.editor.slotId, null);
+      assert.equal(inspector.dataset.deviceOpen, "true");
+      assert.equal(document.querySelector('[aria-label="Search all compatible sources"]'), null);
+      await act(async () => document.querySelector(".connect-show-plan").click());
+      assert.equal(harness.editor.room, null);
+      assert.equal(document.querySelector(".connection-workbench"), null);
+      assert.equal(
+        document.querySelector(".connect-show-plan").getAttribute("aria-pressed"),
+        "true",
+      );
+      assert.equal(
+        document.querySelectorAll(".connect-room-nav__room").length,
+        harness.editor.deviceRooms.length,
       );
     } finally {
       await harness.close();
@@ -408,7 +576,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("current draft target additions appear immediately and inspector reuses inline chooser with neutral clearing and focus return", async () => {
+  test("current draft targets appear immediately in the room workbench without a dialog", async () => {
     const harness = await mount(protectedBindings(), true);
     try {
       const room = manifest.floors[0].rooms[0];
@@ -448,15 +616,21 @@ await withModules(async (load) => {
       );
       assert.ok(row);
       await act(async () => row.click());
-      await act(async () => new Promise((resolve) => requestAnimationFrame(resolve)));
-      assert.ok(harness.dom.window.document.querySelector(".device-mapping-inspector.is-inline"));
+      assert.ok(harness.dom.window.document.querySelector(".connection-workbench"));
       assert.equal(harness.dom.window.document.querySelector('[role="dialog"]'), null);
-      assert.equal(harness.dom.window.document.querySelector('input[value=""]').disabled, false);
+      assert.equal(
+        harness.dom.window.document.querySelector('[aria-label="Search all compatible sources"]'),
+        null,
+      );
+      await act(async () => harness.dom.window.document.querySelector(".connection-slot").click());
+      assert.ok(
+        harness.dom.window.document.querySelector('[aria-label="Search all compatible sources"]'),
+      );
       assert.doesNotMatch(harness.dom.window.document.body.textContent, /Save rooms|Save devices/);
-      const back = harness.dom.window.document.querySelector('[aria-label^="Back to devices"]');
-      await act(async () => back.click());
-      await act(async () => new Promise((resolve) => requestAnimationFrame(resolve)));
-      assert.ok(harness.dom.window.document.activeElement.textContent.includes("New draft target"));
+      await act(async () =>
+        harness.dom.window.document.querySelector(".connect-show-plan").click(),
+      );
+      assert.equal(harness.editor.room, null);
     } finally {
       await harness.close();
     }

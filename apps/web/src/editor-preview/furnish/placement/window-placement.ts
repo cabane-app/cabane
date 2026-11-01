@@ -1,3 +1,5 @@
+import { closedOpeningCoverClearance } from "@cabane/catalog/architecture";
+import { exteriorWindowPlacement } from "./exterior-window-placement";
 import {
   pointInsidePolygon,
   resolveItemTransform,
@@ -24,6 +26,7 @@ const isWindowFitOpening = (
 
 export interface WindowPlacement {
   openingId: string;
+  openingLabel: string;
   roomName: string;
   placement: Extract<ItemPlacement, { kind: "wall" }>;
   size: SceneItemSize;
@@ -44,9 +47,13 @@ export function windowPlacements(
   const candidates: WindowPlacement[] = [];
   for (const opening of floor.openings) {
     if (!isWindowFitOpening(opening, openingTypes)) continue;
+    const exterior = fit.mounting === "exterior-recessed";
+    const sillInset = exterior
+      ? (closedOpeningCoverClearance(opening, "left")?.sillInsetMeters ?? 0)
+      : 0;
     const size: SceneItemSize = requestedSize ?? [
       (opening.widthPlanUnits * scale) / fit.openingWidthRatio,
-      opening.openingHeightMeters / fit.openingHeightRatio,
+      (opening.openingHeightMeters - sillInset) / fit.openingHeightRatio,
       definition.defaultSize[2],
     ];
     const ratios = size.map((value, axis) => value / definition.defaultSize[axis]);
@@ -75,7 +82,11 @@ export function windowPlacements(
         elevation: Math.abs(elevation) < 1e-10 ? 0 : elevation,
       });
       if (candidate.placement?.kind !== "wall") continue;
-      const placement = {
+      const exteriorCandidate = exterior
+        ? exteriorWindowPlacement(candidate.placement, opening, floor, fit.depthOffsetMeters)
+        : null;
+      if (exterior && !exteriorCandidate) continue;
+      const placement = exteriorCandidate?.placement ?? {
         ...candidate.placement,
         depthOffsetMeters: Math.max(candidate.placement.depthOffsetMeters, fit.depthOffsetMeters),
       };
@@ -84,11 +95,13 @@ export function windowPlacements(
         transform.position[0] / scale + floor.coordinates.origin[0],
         transform.position[2] / scale + floor.coordinates.origin[1],
       ];
-      // placementCandidate already requires a single containing room.
       const roomName =
-        floor.rooms.find((room) => pointInsidePolygon(resolvedAt, room.polygon))?.name ?? "Window";
+        exteriorCandidate?.roomName ??
+        floor.rooms.find((room) => pointInsidePolygon(resolvedAt, room.polygon))?.name ??
+        "Window";
       candidates.push({
         openingId: opening.id,
+        openingLabel: opening.name || opening.id,
         roomName,
         placement,
         size,

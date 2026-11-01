@@ -1,3 +1,4 @@
+import { MAX_ORTHOGRAPHIC_ZOOM } from "./navigation/camera-zoom";
 import {
   readOrbitView,
   writeOrbitView,
@@ -32,8 +33,6 @@ const ORBIT_DOUBLE_TAP_DISTANCE_PX = 24;
 const ORBIT_TAP_MOVEMENT_PX = 12;
 
 const ORBIT_DOUBLE_TAP_ZOOM_FACTOR = 1.5;
-
-const ORBIT_MAX_ZOOM = 190;
 
 function OrbitDoubleTapZoom({ controls }: { controls: React.RefObject<OrbitControlsImpl | null> }) {
   const { camera, gl, invalidate } = useThree();
@@ -92,7 +91,10 @@ function OrbitDoubleTapZoom({ controls }: { controls: React.RefObject<OrbitContr
       const orbitCamera = camera as ThreeOrthographicCamera;
       if (!orbitCamera.isOrthographicCamera) return;
       controls.current?.dispatchEvent({ type: "start", target: controls.current });
-      orbitCamera.zoom = Math.min(ORBIT_MAX_ZOOM, orbitCamera.zoom * ORBIT_DOUBLE_TAP_ZOOM_FACTOR);
+      orbitCamera.zoom = Math.min(
+        MAX_ORTHOGRAPHIC_ZOOM,
+        orbitCamera.zoom * ORBIT_DOUBLE_TAP_ZOOM_FACTOR,
+      );
       orbitCamera.updateProjectionMatrix();
       controls.current?.dispatchEvent({ type: "change", target: controls.current });
       controls.current?.dispatchEvent({ type: "end", target: controls.current });
@@ -228,6 +230,13 @@ function OrbitCameraRig({
       zoom,
     };
   }, [buildingFloors, elevation, floor, height, showRoof, width]);
+  // Orthographic magnification comes from zoom, not the orbit radius. Keep the
+  // camera behind the scene so the near plane cannot slice foreground geometry.
+  const minDistance = Math.hypot(
+    ...defaultFraming.position.map((value, index) => value - defaultFraming.target[index]),
+  );
+  // Keep the home legible: manual zoom-out stops just beyond its fitted overview.
+  const minZoom = defaultFraming.zoom * 0.7;
   // Read once per home/floor mount. Metadata updates never reset a user view.
   const [framing] = useState<SavedOrbitView & { restored?: boolean }>(() => {
     const fallback: SavedOrbitView = {
@@ -237,6 +246,7 @@ function OrbitCameraRig({
     const saved = viewKey ? readOrbitView(viewKey).pose : null;
     if (!saved) return fallback;
     const adapted = fitSavedOrbitView(saved, width, height);
+    if (adapted.zoom < minZoom) return fallback;
     // A removed/moved floor should not leave the home outside the camera.
     const span = new Vector3(...defaultFraming.position).distanceTo(
       new Vector3(...defaultFraming.target),
@@ -282,7 +292,7 @@ function OrbitCameraRig({
     return {
       target,
       offset: new Spherical().setFromVector3(new Vector3(...pose.position).sub(target)),
-      zoom: pose.zoom,
+      zoom: Math.max(minZoom, pose.zoom),
     };
   };
   useEffect(() => {
@@ -339,13 +349,13 @@ function OrbitCameraRig({
     const scale =
       fitSavedOrbitView(source, width, height).zoom /
       fitSavedOrbitView(source, previous.width, previous.height).zoom;
-    camera.zoom = Math.max(1, Math.min(ORBIT_MAX_ZOOM, camera.zoom * scale));
+    camera.zoom = Math.max(minZoom, Math.min(MAX_ORTHOGRAPHIC_ZOOM, camera.zoom * scale));
     camera.updateProjectionMatrix();
     const wasManual = manual.current;
     manual.current = false;
     controls.update();
     manual.current = wasManual;
-  }, [width, height, framing]);
+  }, [width, height, framing, minZoom]);
   const defaultPose = useMemo(() => {
     const target = new Vector3(...defaultFraming.target);
     return {
@@ -368,7 +378,7 @@ function OrbitCameraRig({
         position={framing.position}
         zoom={framing.zoom}
         near={0.1}
-        far={150}
+        far={Math.max(150, minDistance * 5)}
       />
       <OrbitDoubleTapZoom controls={orbitRef} />
       <MapControls
@@ -388,8 +398,9 @@ function OrbitCameraRig({
         zoomSpeed={1.1}
         minPolarAngle={0}
         maxPolarAngle={1.28}
-        minZoom={1}
-        maxZoom={ORBIT_MAX_ZOOM}
+        minDistance={minDistance}
+        minZoom={minZoom}
+        maxZoom={MAX_ORTHOGRAPHIC_ZOOM}
         zoomToCursor
       />
       <RoomCameraTransition

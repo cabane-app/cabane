@@ -13,8 +13,8 @@ await withModules(async (load) => {
     "/apps/web/src/editor-preview/construct/FloorToolProperties.tsx",
   );
   const floor = e.neutralDemoManifest.floors[0];
-  test("Floor choices retain their order and heading hierarchy across every target", () => {
-    const labels = ["Whole room", "Custom area", "Outdoor platform"];
+  test("Floor painting and outdoor space retain their controls in separate tools", () => {
+    const labels = ["Whole room", "Custom area"];
     for (const target of ["room", "custom-area", "outdoor-platform"]) {
       const editor = {
         tool: target === "outdoor-platform" ? "platform" : "floor",
@@ -30,21 +30,26 @@ await withModules(async (load) => {
       });
       const [header, choices, hint, finish, edges] = panel.props.children;
       assert.equal(header.type, "header");
-      assert.equal(choices.props["aria-label"], "Paint target");
-      assert.deepEqual(
-        choices.props.children.map((button) => button.props["aria-label"]),
-        labels,
-      );
-      assert.equal(
-        choices.props.children.filter((button) => button.props["aria-pressed"]).length,
-        1,
-      );
+      if (target === "outdoor-platform") {
+        assert.equal(header.props.children.props.children, "Outdoor space");
+        assert.equal(choices, false);
+      } else {
+        assert.equal(choices.props["aria-label"], "Paint target");
+        assert.deepEqual(
+          choices.props.children.map((button) => button.props["aria-label"]),
+          labels,
+        );
+        assert.equal(
+          choices.props.children.filter((button) => button.props["aria-pressed"]).length,
+          1,
+        );
+      }
       assert.equal(hint.type, "p");
       assert.equal(finish.props.children[0].props.children, "Floor finish");
       assert.equal(Boolean(edges), target === "outdoor-platform");
     }
   });
-  test("Floor platform drawing commits the creation style, selects the platform and retains it through wall edits", async () => {
+  test("Outdoor space drawing commits the creation style, selects the platform and retains it through wall edits", async () => {
     let editor;
     const renderer = await create(
       createElement(() => {
@@ -88,7 +93,7 @@ await withModules(async (load) => {
       await renderer.unmount();
     }
   });
-  test("cancel ends the platform gesture and Floor restores the remembered target", async () => {
+  test("cancel ends the outdoor gesture and Floor returns to room painting", async () => {
     let editor;
     const renderer = await create(
       createElement(() => {
@@ -104,22 +109,23 @@ await withModules(async (load) => {
         painting: { target: "outdoor-platform", finish: editor.platformSettings.finish },
       });
       const cancel = panel.props.children.find(
-        (child) => child?.props?.children === "Cancel platform",
+        (child) => child?.props?.children === "Cancel outdoor space",
       );
       act(() => cancel.props.onClick());
       assert.equal(editor.tool, "select");
       assert.equal(editor.poolDrawing.active, false);
       assert.equal(editor.draft.outdoorPlatforms?.length ?? 0, 0);
       act(() => editor.setTool("floor"));
-      assert.equal(editor.tool, "platform");
-      assert.equal(editor.floorPaintTarget, "outdoor-platform");
+      assert.equal(editor.tool, "floor");
+      assert.equal(editor.floorPaintTarget, "room");
+      act(() => editor.setTool("platform"));
       act(() => editor.poolDrawing.place([10, 0]));
       assert.equal(editor.poolDrawing.active, true);
     } finally {
       await renderer.unmount();
     }
   });
-  test("completed platform then Floor shortcut restores drawing and target changes cancel the prior gesture", async () => {
+  test("Floor shortcut stays separate from outdoor space and target changes cancel the prior gesture", async () => {
     let editor;
     const renderer = await create(
       createElement(() => {
@@ -139,7 +145,9 @@ await withModules(async (load) => {
         act(() => editor.poolDrawing.place(point));
       assert.equal(editor.tool, "select");
       act(() => editor.setTool("floor")); // The F shortcut and toolbar share this entry point.
-      assert.equal(editor.tool, "platform");
+      assert.equal(editor.tool, "floor");
+      assert.equal(editor.floorPaintTarget, "room");
+      act(() => editor.setTool("platform"));
       act(() => editor.poolDrawing.place([15, 0]));
       act(() => editor.setFloorPaintTarget("custom-area"));
       assert.equal(editor.tool, "floor");

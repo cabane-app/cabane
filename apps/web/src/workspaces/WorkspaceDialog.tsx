@@ -1,5 +1,5 @@
 import { useCabaneDom } from "@cabane/engine";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 export function WorkspaceDialog({
   title,
   titleIcon,
@@ -17,6 +17,7 @@ export function WorkspaceDialog({
 }) {
   const dom = useCabaneDom();
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
     const previous = dom.root.activeElement as HTMLElement | null;
     ref.current?.showModal?.();
@@ -26,13 +27,13 @@ export function WorkspaceDialog({
     <dialog
       ref={ref}
       className="workspace-dialog"
-      aria-labelledby="workspace-dialog-title"
+      aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault();
         if (!busy) onCancel();
       }}
     >
-      <h2 id="workspace-dialog-title">
+      <h2 id={titleId}>
         {titleIcon}
         {title}
       </h2>

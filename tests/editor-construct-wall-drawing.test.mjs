@@ -583,95 +583,108 @@ await withModules(async (load) => {
     }
   });
 
-  test("successive wall previews stay transient, turn 90 degrees, and commit one undo step each", async () => {
-    let editor;
-    function Harness() {
-      editor = useConstructEditor(floor);
-      return createElement(ConstructionEditLayer, {
-        ...layerProps(),
-        draft: editor.draft,
-        coordinates: editor.draft.coordinates,
-        tool: editor.tool,
-        selection: editor.selection,
-        drawStart: editor.drawStart,
-        drawPreview: editor.drawPreview,
-        drawAngleReferenceRadians: editor.drawAngleReferenceRadians,
-        onBeginWall: editor.beginWall,
-        onPreviewWall: editor.previewWall,
-        onAddWall: editor.addWall,
-        onCancelWall: editor.cancelWall,
+  for (const tool of ["wall", "virtual-wall"]) {
+    test(`${tool} previews stay transient, turn 90 degrees, and commit one undo step each`, async () => {
+      let editor;
+      function Harness() {
+        editor = useConstructEditor(floor);
+        return createElement(ConstructionEditLayer, {
+          ...layerProps(),
+          draft: editor.draft,
+          coordinates: editor.draft.coordinates,
+          tool: editor.tool,
+          selection: editor.selection,
+          drawStart: editor.drawStart,
+          drawPreview: editor.drawPreview,
+          drawAngleReferenceRadians: editor.drawAngleReferenceRadians,
+          onBeginWall: editor.beginWall,
+          onPreviewWall: editor.previewWall,
+          onAddWall: editor.addWall,
+          onCancelWall: editor.cancelWall,
+        });
+      }
+      const renderer = await create(createElement(Harness), {
+        camera: cameraAt(100),
+        width: 1000,
+        height: 800,
       });
-    }
-    const renderer = await create(createElement(Harness), {
-      camera: cameraAt(100),
-      width: 1000,
-      height: 800,
+      const surface = () => renderer.scene.findByProps({ name: "construction-placement-surface" });
+      const guide = () =>
+        renderer.scene.findByProps({ name: "construction-wall-guide" }).props.userData;
+      try {
+        await act(async () => editor.setTool(tool));
+        const initialWalls = editor.draft.walls.length;
+        await renderer.fireEvent(surface(), "pointerDown", pointer(20, 0));
+        await renderer.fireEvent(surface(), "pointerMove", pointer(21, 0.2));
+        assert.equal(guide().label, "1.02 m");
+        assert.equal(editor.draft.walls.length, initialWalls);
+        assert.equal(editor.history.past.length, 0);
+        await renderer.fireEvent(surface(), "pointerUp", pointer(21, 0.2));
+        assert.equal(editor.history.past.length, 1);
+        assert.equal(guide().labelVisible, false);
+        await renderer.fireEvent(surface(), "pointerMove", pointer(20.85, 1.21));
+        assert.deepEqual(guide().to, [20.8, 1.2]);
+        assert.equal(
+          renderer.scene.findByProps({ name: "construction-angle-guide" }).props.userData.label,
+          "90°",
+        );
+        const previousWallId = editor.draft.walls.at(-1).id;
+        assert.equal(
+          renderer.scene.findByProps({ name: `construction-wall-guide-${previousWallId}` }).props
+            .userData.label,
+          "1.02 m",
+        );
+        await renderer.fireEvent(surface(), "pointerUp", pointer(20.85, 1.21));
+        assert.equal(editor.history.past.length, 2);
+        await renderer.fireEvent(surface(), "pointerMove", pointer(19.79, 1.05));
+        assert.deepEqual(guide().to, [19.8, 1]);
+        assert.equal(
+          renderer.scene.findByProps({ name: "construction-angle-guide" }).props.userData.label,
+          "90°",
+        );
+        await renderer.fireEvent(surface(), "pointerUp", pointer(19.79, 1.05));
+        assert.equal(editor.history.past.length, 3);
+        assert.deepEqual(
+          editor.draft.walls.slice(-3).map(({ from, to }) => [from, to]),
+          [
+            [
+              [20, 0],
+              [21, 0.2],
+            ],
+            [
+              [21, 0.2],
+              [20.8, 1.2],
+            ],
+            [
+              [20.8, 1.2],
+              [19.8, 1],
+            ],
+          ],
+        );
+        await renderer.fireEvent(surface(), "pointerMove", pointer(19, 2));
+        await renderer.fireEvent(surface(), "pointerCancel", pointer(19, 2));
+        assert.equal(editor.history.past.length, 3);
+        assert.equal(renderer.scene.findAllByProps({ name: "construction-wall-guide" }).length, 0);
+        assert.equal(
+          renderer.scene.findAllByProps({ name: "construction-wall-measurements" }).length,
+          0,
+        );
+        assert.equal(
+          editor.draft.walls
+            .slice(-3)
+            .every((wall) => Boolean(wall.virtual) === (tool === "virtual-wall")),
+          true,
+        );
+        await act(async () => editor.undo());
+        assert.equal(editor.draft.walls.length, initialWalls + 2);
+        await act(async () => editor.redo());
+        assert.equal(editor.draft.walls.length, initialWalls + 3);
+        assert.equal(Boolean(editor.draft.walls.at(-1).virtual), tool === "virtual-wall");
+      } finally {
+        await renderer.unmount();
+      }
     });
-    const surface = () => renderer.scene.findByProps({ name: "construction-placement-surface" });
-    const guide = () =>
-      renderer.scene.findByProps({ name: "construction-wall-guide" }).props.userData;
-    try {
-      await act(async () => editor.setTool("wall"));
-      const initialWalls = editor.draft.walls.length;
-      await renderer.fireEvent(surface(), "pointerDown", pointer(20, 0));
-      await renderer.fireEvent(surface(), "pointerMove", pointer(21, 0.2));
-      assert.equal(guide().label, "1.02 m");
-      assert.equal(editor.draft.walls.length, initialWalls);
-      assert.equal(editor.history.past.length, 0);
-      await renderer.fireEvent(surface(), "pointerUp", pointer(21, 0.2));
-      assert.equal(editor.history.past.length, 1);
-      assert.equal(guide().labelVisible, false);
-      await renderer.fireEvent(surface(), "pointerMove", pointer(20.85, 1.21));
-      assert.deepEqual(guide().to, [20.8, 1.2]);
-      assert.equal(
-        renderer.scene.findByProps({ name: "construction-angle-guide" }).props.userData.label,
-        "90°",
-      );
-      const previousWallId = editor.draft.walls.at(-1).id;
-      assert.equal(
-        renderer.scene.findByProps({ name: `construction-wall-guide-${previousWallId}` }).props
-          .userData.label,
-        "1.02 m",
-      );
-      await renderer.fireEvent(surface(), "pointerUp", pointer(20.85, 1.21));
-      assert.equal(editor.history.past.length, 2);
-      await renderer.fireEvent(surface(), "pointerMove", pointer(19.79, 1.05));
-      assert.deepEqual(guide().to, [19.8, 1]);
-      assert.equal(
-        renderer.scene.findByProps({ name: "construction-angle-guide" }).props.userData.label,
-        "90°",
-      );
-      await renderer.fireEvent(surface(), "pointerUp", pointer(19.79, 1.05));
-      assert.equal(editor.history.past.length, 3);
-      assert.deepEqual(
-        editor.draft.walls.slice(-3).map(({ from, to }) => [from, to]),
-        [
-          [
-            [20, 0],
-            [21, 0.2],
-          ],
-          [
-            [21, 0.2],
-            [20.8, 1.2],
-          ],
-          [
-            [20.8, 1.2],
-            [19.8, 1],
-          ],
-        ],
-      );
-      await renderer.fireEvent(surface(), "pointerMove", pointer(19, 2));
-      await renderer.fireEvent(surface(), "pointerCancel", pointer(19, 2));
-      assert.equal(editor.history.past.length, 3);
-      assert.equal(renderer.scene.findAllByProps({ name: "construction-wall-guide" }).length, 0);
-      assert.equal(
-        renderer.scene.findAllByProps({ name: "construction-wall-measurements" }).length,
-        0,
-      );
-    } finally {
-      await renderer.unmount();
-    }
-  });
+  }
 
   test("new wall segments retain the last chosen exterior color", async () => {
     let editor;

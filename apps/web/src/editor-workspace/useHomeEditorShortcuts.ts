@@ -97,7 +97,7 @@ export function useHomeEditorShortcuts({
           mode === "connect" ||
           unsettled ||
           dom.root.querySelector(
-            '.shortcuts-workspace, dialog[open], [aria-modal="true"]:not(.direction-preview-dialog)',
+            '.editor-settings, .shortcuts-workspace, dialog[open], [aria-modal="true"]:not(.direction-preview-dialog)',
           )
         )
           return;
@@ -126,7 +126,7 @@ export function useHomeEditorShortcuts({
         redoProject();
         return;
       }
-      if (dom.root.querySelector(".shortcuts-workspace")) return;
+      if (dom.root.querySelector(".editor-settings, .shortcuts-workspace")) return;
       if (mode === "connect") return;
       if (historyModifier && !event.shiftKey && (key === "c" || key === "v")) {
         if (dragging) return;
@@ -134,8 +134,14 @@ export function useHomeEditorShortcuts({
           if (mode === "construct" && selectedOpening) {
             copiedEditorElement.current = { mode, id: selectedOpening.id };
             event.preventDefault();
-          } else if (mode === "furnish" && furnishingEditor.selectedItem) {
-            copiedEditorElement.current = { mode, id: furnishingEditor.selectedItem.id };
+          } else if (
+            mode === "furnish" &&
+            (furnishingEditor.selectedItem || furnishingEditor.selectedGroup)
+          ) {
+            copiedEditorElement.current = {
+              mode,
+              id: furnishingEditor.selectedItem?.id ?? furnishingEditor.selectedIds[0],
+            };
             event.preventDefault();
           }
           return;

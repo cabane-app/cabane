@@ -6,6 +6,8 @@
   --editor-text-subheading: 1.25rem;
   --editor-text-heading: 1.5rem;
   --editor-rail-width: 300px;
+  --editor-settings-ink: #67517c;
+  --editor-settings-selected: #e9e1ef;
   --preview-ink: #2e3835;
   --preview-muted: #6f7771;
   --preview-paper: #f5f0e7;
@@ -71,6 +73,219 @@
   flex: none;
 }
 
+.agent-pilot-dialog-backdrop {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+    max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  background: rgba(31, 38, 35, 0.5);
+  backdrop-filter: blur(5px);
+}
+.agent-pilot-dialog {
+  display: grid;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - 40px));
+  gap: 16px;
+  overflow: auto;
+  padding: 26px;
+  border: 1px solid rgba(70, 70, 58, 0.16);
+  border-radius: 18px;
+  color: var(--preview-ink);
+  background: #f6f0e7;
+  box-shadow: 0 24px 80px rgba(28, 34, 31, 0.28);
+}
+.agent-pilot-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.agent-pilot-dialog__eyebrow {
+  margin: 0 0 5px;
+  color: var(--preview-accent);
+  font-size: var(--editor-text-caption);
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.agent-pilot-dialog h2 {
+  margin: 0;
+  font:
+    500 var(--editor-text-heading, 1.5rem)/1.1 Georgia,
+    serif;
+  letter-spacing: -0.03em;
+}
+.agent-pilot-dialog__close {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  min-height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--preview-ink);
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.agent-pilot-dialog__close:hover {
+  background: rgba(70, 70, 58, 0.08);
+}
+.agent-pilot-dialog__description,
+.agent-pilot-dialog__scope,
+.agent-pilot-dialog__message,
+.agent-pilot-dialog__notice,
+.agent-pilot-dialog small {
+  margin: 0;
+  color: var(--preview-muted);
+}
+.agent-pilot-dialog__description {
+  line-height: 1.55;
+}
+.agent-pilot-dialog__scope {
+  margin-top: -6px;
+  font-size: var(--editor-text-control);
+  line-height: 1.45;
+}
+.agent-pilot-dialog__steps {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: agent-pilot-step;
+}
+.agent-pilot-dialog__steps li {
+  position: relative;
+  padding-left: 38px;
+  counter-increment: agent-pilot-step;
+}
+.agent-pilot-dialog__steps li::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #fff8f1;
+  background: var(--preview-accent);
+  content: counter(agent-pilot-step);
+  font-size: var(--editor-text-caption);
+  font-weight: 850;
+}
+.agent-pilot-dialog__steps li > span,
+.agent-pilot-dialog__steps li > strong {
+  display: block;
+}
+.agent-pilot-dialog__steps li > strong {
+  margin: 2px 0 3px;
+  color: var(--preview-ink);
+  font-size: var(--editor-text-control);
+}
+.agent-pilot-dialog__steps li > span {
+  color: var(--preview-muted);
+  font-size: var(--editor-text-control);
+  line-height: 1.45;
+}
+.agent-pilot-dialog__steps code {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 7px;
+  padding: 7px 9px;
+  overflow-x: auto;
+  border: 1px solid var(--editor-line);
+  border-radius: 6px;
+  background: #fffdf8;
+  color: var(--preview-ink);
+  font:
+    0.92em/1.35 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.agent-pilot-dialog__notice {
+  padding: 10px 12px;
+  border: 1px solid rgba(104, 82, 61, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.62);
+  font-size: var(--editor-text-control);
+  line-height: 1.45;
+}
+.agent-pilot-dialog__status {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--editor-line);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.62);
+  color: var(--preview-muted);
+  font-size: var(--editor-text-control);
+}
+.agent-pilot-dialog__status strong {
+  color: var(--preview-muted);
+  font-size: var(--editor-text-caption);
+  text-transform: uppercase;
+}
+.agent-pilot-dialog__status strong.is-connected {
+  color: #426d4b;
+}
+.agent-pilot-dialog__status strong.is-error {
+  color: #9a3d35;
+}
+.agent-pilot-dialog form {
+  display: grid;
+  gap: 8px;
+}
+.agent-pilot-dialog label {
+  color: var(--preview-muted);
+  font-size: var(--editor-text-control);
+}
+.agent-pilot-dialog__form-row {
+  display: flex;
+  gap: 8px;
+}
+.agent-pilot-dialog input {
+  min-width: 0;
+  min-height: 42px;
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid var(--editor-line);
+  border-radius: 8px;
+  background: #fffdf8;
+  color: inherit;
+  font: inherit;
+}
+.agent-pilot-dialog button:not(.agent-pilot-dialog__close) {
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid rgba(104, 82, 61, 0.22);
+  border-radius: 8px;
+  background: #fffdf8;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.agent-pilot-dialog button:not(.agent-pilot-dialog__close):hover:not(:disabled) {
+  background: #eee8db;
+}
+.agent-pilot-dialog .agent-pilot-dialog__primary {
+  color: #fff8f1;
+  background: var(--preview-accent);
+  border-color: var(--preview-accent);
+}
+.agent-pilot-dialog .agent-pilot-dialog__primary:hover:not(:disabled) {
+  background: #a75f40;
+}
+
 /* One grid keeps the mode switcher and action bar on the same viewport axis. */
 .editor-header {
   position: absolute;
@@ -79,7 +294,7 @@
   left: calc(var(--editor-rail-width) + 16px);
   right: max(16px, env(safe-area-inset-right));
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: start;
   gap: 16px 8px;
   pointer-events: none;
@@ -143,9 +358,9 @@
   color: #3e6144;
   background: #e0e6d8;
 }
-.direction-modes [data-mode="shortcuts"][aria-pressed="true"] {
-  color: #354d41;
-  background: #e0e6d8;
+.direction-modes button[data-mode="settings"][aria-pressed="true"] {
+  color: var(--editor-settings-ink);
+  background: var(--editor-settings-selected);
 }
 .direction-modes [data-mode="connect"] {
   color: #647b83;
@@ -511,18 +726,20 @@
   gap: 8px;
 }
 .construction-inspector__room-toggle {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
   align-items: center;
-  justify-content: space-between;
   min-height: 44px;
-  gap: 12px;
+  gap: 8px 12px;
 }
 .construction-inspector__room-toggle label {
+  display: block;
+  color: var(--preview-ink);
+  font-weight: 500;
   cursor: pointer;
 }
-.construction-inspector__room-toggle-copy {
-  display: grid;
-  gap: 4px;
+.construction-inspector__room-toggle .construction-inspector__room-action-note {
+  grid-column: 1 / -1;
 }
 .direction-preview .construction-inspector__room-actions > button.editor-button {
   justify-self: start;
@@ -1378,6 +1595,15 @@
 .selected-item-actions .editor-action-button[aria-label="Delete"] {
   color: #9f6659;
 }
+.selected-item-actions .editor-action-button[data-show-label="true"] {
+  width: auto;
+  gap: 8px;
+  padding-inline: 12px;
+  white-space: nowrap;
+}
+.selected-item-controls[data-actions-only="true"] > :not(.selected-item-actions) {
+  display: none;
+}
 .selected-item-actions__separator {
   height: 24px;
   margin-inline: 3px;
@@ -1764,7 +1990,7 @@
   .editor-navigation {
     grid-row: 3;
   }
-  .direction-preview.is-shortcuts .editor-navigation {
+  .direction-preview.is-settings .editor-navigation {
     grid-row: 2;
   }
 }
@@ -1784,7 +2010,7 @@
   .direction-preview__model {
     top: 245px;
   }
-  .direction-preview.is-shortcuts .editor-close {
+  .direction-preview.is-settings .editor-close {
     grid-row: 2;
   }
 }
@@ -1803,4 +2029,14 @@
 .selected-item-elevation-button .editor-action-button {
   touch-action: none;
   cursor: ns-resize;
+}
+
+.agent-pilot-command {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  border-radius: 8px;
+  background: #35433a0a;
+  font-size: 12px;
+  user-select: all;
 }

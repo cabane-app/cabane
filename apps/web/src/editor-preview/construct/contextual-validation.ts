@@ -83,6 +83,14 @@ const collectionTargetKinds = {
 type TargetCollectionName = keyof typeof collectionTargetKinds;
 
 const defaultCorrections: Readonly<Record<string, string>> = {
+  "terrain.exit-height":
+    "Adjust the terrain height or connect this exit with a supported platform or stairs. For a lower-level entrance, add a floor below and place the entrance there. You can save with this warning.",
+  "project.model-missing":
+    "Update Cabane in HACS, restart Home Assistant, then reload your browser or Companion app. For a custom model, import it again in Arrange → My models.",
+  "project.model-lighting-disabled":
+    "You can save with this warning. Select the item in Arrange and open Lighting to repair its settings.",
+  "project.model-lighting-approximation":
+    "You can save with this warning. Select the item in Arrange and open Lighting to adjust its sources or sample counts.",
   "floor-zone.polygon": "Move a corner until the floor area is simple and has visible area.",
   "floor-zone.outside-room": "Move or delete the floor area so it stays inside its room.",
   "ground-zone.inside-footprint": "Move the outdoor area so it stays outside the building.",
@@ -252,10 +260,13 @@ const contextualize = (
     target,
     suggestion:
       issue.suggestion ??
+      defaultCorrections[issue.code] ??
+      (target?.kind === "scene-item"
+        ? "Select the item in Arrange to adjust it, reset its placement to the floor, or remove it. You can undo repairs."
+        : undefined) ??
       (issue.code.startsWith("stair.") && issue.severity === "warning"
         ? "You can keep this layout and save with warnings."
         : undefined) ??
-      defaultCorrections[issue.code] ??
       "Review the highlighted context and correct this issue before publishing.",
   });
 };
@@ -301,7 +312,9 @@ export const visibleConstructIssues = (
       )
         return false;
     }
-    return tool !== "wall" || !wallCompletionIssueCodes.has(issue.code);
+    return (
+      (tool !== "wall" && tool !== "virtual-wall") || !wallCompletionIssueCodes.has(issue.code)
+    );
   });
   return visible.length === issues.length ? issues : visible;
 };

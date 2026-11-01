@@ -27,7 +27,7 @@ export const availableOpeningOffsetRanges = ({
 }) => {
   const resolvedGapPlanUnits = gapPlanUnits ?? 0.08 / draft.coordinates.metersPerPlanUnit;
   const wall = draft.walls.find((candidate) => candidate.id === wallId);
-  if (!wall) return [];
+  if (!wall || wall.virtual === true) return [];
   const wallLength = Math.hypot(wall.to[0] - wall.from[0], wall.to[1] - wall.from[1]);
   const attachments = editorWallAttachments(draft);
   const occupied = attachments

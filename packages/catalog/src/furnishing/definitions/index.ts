@@ -23,6 +23,7 @@ import { entrywayFurnishingDefinitions } from "./entryway";
 import { wallArtFurnishingDefinitions } from "./wall-art";
 
 import { countertopApplianceDefinitions } from "./countertop-appliances";
+import { countertopDefinitions } from "./countertops";
 import { pottedPlantDefinition } from "./potted-plant";
 import { inductionCooktopDefinition } from "./induction-cooktop";
 import { whiteShellDiningChairDefinition } from "./white-shell-dining-chair";
@@ -102,6 +103,7 @@ export const furnishingPresetDefinitions = {
   ...wallArtFurnishingDefinitions,
 
   ...countertopApplianceDefinitions,
+  ...countertopDefinitions,
   "potted-plant": pottedPlantDefinition,
   "induction-cooktop": inductionCooktopDefinition,
   "white-shell-dining-chair": whiteShellDiningChairDefinition,

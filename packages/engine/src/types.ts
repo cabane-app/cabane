@@ -1,3 +1,5 @@
+import type { WallSpec, WallJunctionSpec } from "./wall-types";
+export type { WallSpec, WallJunctionSpec, WallNicheSpec } from "./wall-types";
 import type { StableDeviceModelId } from "./stable-device-model-id";
 export type { StableDeviceModelId } from "./stable-device-model-id";
 import type { ComponentType } from "react";
@@ -82,6 +84,8 @@ export interface EntityBindingSlotSpec {
   deviceRole?: "primary" | "secondary";
   presentation: {
     label: string;
+    /** Opt-in reading badge above the item; does not change dashboard visibility. */
+    showInScene?: boolean | "if-present";
     dashboardRole: "primary" | "secondary" | "diagnostic" | "hidden";
   };
   sceneLight?: {
@@ -152,41 +156,6 @@ export interface RoomSpec {
 }
 
 /** A rectangular blind recess owned by one directed wall face. */
-export interface WallNicheSpec {
-  id: string;
-  side: "left" | "right";
-  offsetFromWallStartPlanUnits: number;
-  widthPlanUnits: number;
-  bottomMeters: number;
-  heightMeters: number;
-  depthMeters: number;
-  /** Shelf bottom heights measured upward from the niche bottom. White wall finish. */
-  shelfHeightsMeters?: readonly number[];
-  shelfThicknessMeters?: number;
-}
-
-export interface WallSpec {
-  id: string;
-  from: PlanPoint;
-  to: PlanPoint;
-  classification: "interior" | "exterior";
-  thicknessMeters: number;
-  niches?: readonly WallNicheSpec[];
-  heightMeters?: number;
-  exteriorColor?: string;
-  edgeColor?: string;
-  faceColors?: {
-    left?: string;
-    right?: string;
-  };
-}
-
-export interface WallJunctionSpec {
-  id: string;
-  at: PlanPoint;
-  wallIds: readonly [string, string, ...string[]];
-}
-
 export interface OpeningContactSlotSpec {
   id: string;
   compatibleDeviceClasses: readonly ("door" | "window" | "opening")[];
@@ -196,6 +165,7 @@ export interface OpeningContactSlotSpec {
 
 export interface OpeningBaseSpec {
   id: string;
+  name?: string;
   wallId: string;
   offsetFromWallStartPlanUnits: number;
   widthPlanUnits: number;
@@ -375,6 +345,9 @@ export interface OutdoorPlatformEdgeSpec {
 }
 export interface OutdoorPlatformSpec {
   id: string;
+  /** Opt-in room identity for Connect and dashboard use; never adds indoor geometry. */
+  useAsRoom?: boolean;
+  roomName?: string;
   polygon: Polygon;
   finish: FloorFinishSpec;
   defaultEdge: OutdoorPlatformEdgeConfiguration;
@@ -438,6 +411,8 @@ export interface EntityStateSnapshot {
   attributes: Readonly<Record<string, unknown>>;
   available: boolean;
   stale: boolean;
+  /** Transient live feedback from the current HA subscription; never saved. */
+  activitySequence?: number;
   lastConfirmedAt?: string;
   lastChanged?: string;
   lastUpdated?: string;
@@ -541,6 +516,8 @@ export interface ResolvedDeviceBinding {
 }
 
 export interface ResolvedRoomBindings {
+  /** Resolved opted-in map readings, including slots hidden from the dashboard. */
+  sceneEntities?: readonly ResolvedEntityBinding[];
   room: RoomSpec;
   displayName: string;
   pictureUrl: string | null;
@@ -692,6 +669,10 @@ export interface SceneModelVariant {
 }
 
 export interface SceneModelEditorDescriptor {
+  /** Effective model-local lighting, shared by every copy in this home. */
+  lighting?: import("./imported-models/contracts").CustomModelLight;
+  lightingCustomized?: boolean;
+  lightingDisabled?: boolean;
   /** Enables the fabric color picker; omission keeps a model's original palette. */
   defaultColor?: string;
   /** Ordered choices sharing size, placement, and bindings. First is the default. */
@@ -708,6 +689,8 @@ export interface SceneModelEditorDescriptor {
   placementEnvironment?: "outdoor" | "indoor-outdoor";
   /** Window/opening alignment uses the closed covering's width/height within the full envelope. */
   windowFit?: {
+    /** Exterior geometry keeps controls in the indoor room across its supporting wall. */
+    mounting?: "exterior-recessed";
     openingWidthRatio: number;
     openingHeightRatio: number;
     depthOffsetMeters: number;
@@ -727,6 +710,8 @@ export interface FurnishingModelDefinition extends SceneModelEditorDescriptor {
 export type FurnishingModelRegistry = Readonly<Record<string, FurnishingModelDefinition>>;
 
 export interface DeviceModelDefinition extends SceneModelEditorDescriptor {
+  /** Binding-only adapter for an item’s independent lighting relationship. */
+  lightingOnly?: boolean;
   component: HomeDeviceModelComponent;
   supportedDomains: readonly DeviceDomain[];
   supportedDeviceClasses?: Readonly<Partial<Record<DeviceDomain, readonly string[]>>>;
@@ -742,6 +727,12 @@ export interface DeviceModelDefinition extends SceneModelEditorDescriptor {
     maxIntensity: number;
     distance: number;
   };
+  sceneLights?: readonly {
+    position: readonly [x: number, y: number, z: number];
+    color: string;
+    maxIntensity: number;
+    distance: number;
+  }[];
   interaction: {
     target?: DeviceInteractionIntent;
     tapTolerancePixels: number;

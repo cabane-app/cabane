@@ -28,10 +28,11 @@ export const deviceVisualStateForSnapshot = (
   snapshot: EntityStateSnapshot | undefined,
 ): DeviceVisualState => {
   if (!snapshot || snapshot.stale) return "disconnected";
-  if (!snapshot.available || ["unknown", "unavailable"].includes(snapshot.state)) {
+  if (!snapshot.available || snapshot.state === "unavailable") {
     return "unavailable";
   }
   if (snapshot.entityId.startsWith("event.")) return "connected-inactive";
+  if (snapshot.state === "unknown") return "unavailable";
   return inactiveStates.has(snapshot.state) ? "connected-inactive" : "connected-active";
 };
 
@@ -46,12 +47,21 @@ export const resolveDeviceModelDefinition = (
   modelId: string,
   stableModels: DeviceModelRegistry,
   extensionModels: DeviceModelRegistry,
-): DeviceModelDefinition | undefined =>
-  Object.hasOwn(stableModels, modelId)
-    ? stableModels[modelId]
-    : Object.hasOwn(extensionModels, modelId)
-      ? extensionModels[modelId]
-      : undefined;
+): DeviceModelDefinition | undefined => {
+  const stable = Object.hasOwn(stableModels, modelId) ? stableModels[modelId] : undefined;
+  const extension = Object.hasOwn(extensionModels, modelId) ? extensionModels[modelId] : undefined;
+  if (!stable) return extension;
+  if (!extension?.lightingCustomized) return stable;
+  const { sceneLight: _single, sceneLights: _multiple, lighting: _lighting, ...base } = stable;
+  return {
+    ...base,
+    lightingCustomized: true,
+    ...(extension.lightingDisabled ? { lightingDisabled: true } : {}),
+    ...(extension.lighting ? { lighting: extension.lighting } : {}),
+    ...(extension.sceneLight ? { sceneLight: extension.sceneLight } : {}),
+    ...(extension.sceneLights ? { sceneLights: extension.sceneLights } : {}),
+  };
+};
 
 export const mergeDeviceModelRegistriesStableFirst = (
   stableModels: DeviceModelRegistry,
@@ -102,7 +112,7 @@ export const deviceWorldTransform = (
 
 const issue = (code: string, path: string, message: string): ManifestIssue => ({
   code,
-  severity: "fatal",
+  severity: "warning",
   path,
   message,
 });

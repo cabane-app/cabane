@@ -12,7 +12,7 @@ import {
   type SceneModelEditorDescriptor,
 } from "@cabane/engine";
 import { EditorActionButton } from "../../editor-chrome/EditorActionButton";
-import { placementForWorldDrag, selectionBoxGeometry } from "./editor-state";
+import { placementForWorldDrag, planPointForWorldDrag, selectionBoxGeometry } from "./editor-state";
 import {
   itemRotation,
   normalizeRotation,
@@ -63,6 +63,8 @@ export function SelectedItemControls({
   onBegin,
   onCommit,
   onCancel,
+  actionsOnly = false,
+  freePlacement = false,
 }: {
   item: SceneItemSpec;
   definition: SceneModelEditorDescriptor;
@@ -76,6 +78,8 @@ export function SelectedItemControls({
   onBegin: () => void;
   onCommit: () => void;
   onCancel: () => void;
+  actionsOnly?: boolean;
+  freePlacement?: boolean;
 }) {
   const { camera, gl, size, invalidate } = useThree();
   const overlay = useRef<HTMLDivElement>(null);
@@ -274,6 +278,7 @@ export function SelectedItemControls({
         data-item-id={item.id}
         data-rotating={rotating}
         data-moving={moving}
+        data-actions-only={actionsOnly}
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => event.stopPropagation()}
       >
@@ -357,13 +362,22 @@ export function SelectedItemControls({
             if (!point) return;
             onMovePlacement(
               item.id,
-              placementForWorldDrag({
-                world: { x: point.x + active.offsetX, z: point.z + active.offsetZ },
-                item,
-                definition,
-                floor,
-                raw: event.altKey,
-              }),
+              freePlacement && item.placement.kind === "absolute"
+                ? {
+                    ...item.placement,
+                    at: planPointForWorldDrag(
+                      { x: point.x + active.offsetX, z: point.z + active.offsetZ },
+                      floor.coordinates,
+                      event.altKey,
+                    ),
+                  }
+                : placementForWorldDrag({
+                    world: { x: point.x + active.offsetX, z: point.z + active.offsetZ },
+                    item,
+                    definition,
+                    floor,
+                    raw: event.altKey,
+                  }),
             );
           }}
           onPointerUp={(event) => {
@@ -460,7 +474,7 @@ export function SelectedItemControls({
         <SelectedItemActionBar
           ref={toolbar}
           {...actions}
-          isDevice={item.kind === "device"}
+          isDevice={item.kind === "device" || !!item.lightSlotId}
           disabled={busy}
         />
       </div>

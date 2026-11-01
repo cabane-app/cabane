@@ -15,6 +15,7 @@ import {
 import { withModules } from "./test-server.mjs";
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
+  const { ClippedHedge } = await load("/packages/engine/src/hedges/ClippedHedge.tsx");
   const { BushyHedge } = await load("/packages/engine/src/hedges/BushyHedge.tsx");
   const { RoundedHedge } = await load("/packages/engine/src/hedges/RoundedHedge.tsx");
   const compare = (mesh, index, geometry, transform) => {
@@ -41,6 +42,45 @@ await withModules(async (load) => {
       "batch bounds cover every instance",
     );
   };
+  test("clipped hedge cap owns the visible top and upper sides without coplanar body faces", async () => {
+    const renderer = await create(
+      createElement(ClippedHedge, { length: 6, height: 1.4, width: 0.65 }),
+    );
+    try {
+      for (const [length, height, width] of [
+        [6, 1.4, 0.65],
+        [0.1, 0.2, 0.2],
+        [12, 5, 3],
+      ]) {
+        await renderer.update(createElement(ClippedHedge, { length, height, width }));
+        const solids = renderer.scene
+          .findAll((node) => node.instance.geometry?.type === "BoxGeometry")
+          .map((node) => node.instance);
+        solids.forEach((mesh) => mesh.updateMatrixWorld(true));
+        const topHits = new Raycaster(
+          new Vector3(length * 0.2, height + 1, 0),
+          new Vector3(0, -1, 0),
+        ).intersectObjects(solids);
+        assert.equal(topHits[0].object.material.color.getHexString(), "668847");
+        assert.ok(Math.abs(topHits[0].point.y - height) < 1e-6, "height stays unchanged");
+        assert.ok(
+          topHits[1].distance - topHits[0].distance > 0.049,
+          "body top stays below the cap instead of fighting for the same depth",
+        );
+        const sideHits = new Raycaster(
+          new Vector3(length * 0.2, height - 0.025, width / 2 + 1),
+          new Vector3(0, 0, -1),
+        ).intersectObjects(solids);
+        assert.equal(sideHits.length, 1, "only the cap covers the upper side band");
+        assert.equal(sideHits[0].object.material.color.getHexString(), "668847");
+        const bounds = new Box3();
+        solids.forEach((mesh) => bounds.expandByObject(mesh));
+        assert.ok(Math.abs(bounds.min.y) < 1e-6, "body still reaches the ground");
+      }
+    } finally {
+      await renderer.unmount();
+    }
+  });
   test("bushy hedges preserve all original solids, colors, transforms and shadows, including resizing", async () => {
     const renderer = await create(
       createElement(BushyHedge, { length: 3, height: 1.4, width: 0.6 }),

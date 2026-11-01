@@ -39,7 +39,7 @@ export function DevicesMappingView({
   );
   const [announcement, setAnnouncement] = useState("");
   const relationshipElements = useRef<Record<string, HTMLButtonElement | null>>({});
-  const choiceElement = useRef<HTMLInputElement | null>(null);
+  const choiceElement = useRef<HTMLElement | null>(null);
   const focusChoiceOnOpen = useRef(false);
 
   useEffect(() => {

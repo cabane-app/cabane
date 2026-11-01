@@ -1,3 +1,6 @@
+import { DeviceActivityFeedback } from "./DeviceActivityFeedback";
+import { ModelLightingSurface } from "./model-lighting/ModelLightingSurface";
+import { lightingSlotForItem } from "./model-lighting/settings";
 import { useVacuumRoom } from "./vacuum-cleaning-location";
 import { useHomeAssistantRuntime } from "./HomeAssistantRuntimeContext";
 import { planPointToWorld } from "./geometry";
@@ -82,6 +85,7 @@ function DeviceSceneItem({
   liveMediaByEntityId,
   groupName,
   floor,
+  lightingStates,
 }: {
   item: Extract<SceneItemSpec, { kind: "device" }>;
   transform: ResolvedItemTransform;
@@ -93,6 +97,7 @@ function DeviceSceneItem({
   liveMediaByEntityId: Readonly<Partial<Record<EntityId, DeviceLiveMedia>>>;
   groupName: string;
   floor: FloorSpec;
+  lightingStates: Readonly<Record<string, EntityStateSnapshot>>;
 }) {
   const dom = useCabaneDom();
   const scale = deviceSceneItemScaleForSize(item.size, definition);
@@ -118,7 +123,22 @@ function DeviceSceneItem({
   const binding = resolvedDevice.slot;
   const primarySlot = binding.entitySlots.find((slot) => slot.deviceRole === "primary");
   const primary = resolvedDevice.entities.find((entity) => entity.slotId === primarySlot?.id);
-  const state = sceneLightState(item.lightState, primary?.state, nightLighting);
+  const state = sceneLightState(
+    definition.lightingDisabled && primarySlot?.compatibleDomains.includes("light")
+      ? "always-off"
+      : item.lightState,
+    primary?.state,
+    nightLighting,
+  );
+  const lightingSlot = lightingSlotForItem(item);
+  const lightingState = sceneLightState(
+    item.lightState,
+    lightingSlot
+      ? (lightingStates[lightingSlot.id] ??
+          (lightingSlot.id === primarySlot?.id ? primary?.state : undefined))
+      : undefined,
+    nightLighting,
+  );
   const visualState = deviceVisualStateForSnapshot(state);
   const runtime = useHomeAssistantRuntime();
   const cleaningRoom = useVacuumRoom(
@@ -193,21 +213,35 @@ function DeviceSceneItem({
       })}
       {...(!walkMode ? pressHandlers : {})}
     >
-      <DeviceHoverContext.Provider value={hovered}>
-        <Component
-          variant={resolveModelVariant(definition, item.variant).id}
-          {...omitUndefinedProperties({ color: item.color })}
-          slot={binding}
-          {...omitUndefinedProperties({ state: state })}
-          {...omitUndefinedProperties({
-            liveMedia: primary ? liveMediaByEntityId[primary.entityId] : undefined,
-          })}
-          visualState={visualState}
+      <ModelLightingSurface
+        revision={`${item.variant ?? ""}|${item.color ?? ""}|${item.size.join(",")}`}
+        light={definition.lighting}
+        state={lightingState}
+        imported={item.modelId.startsWith("custom:")}
+      >
+        <DeviceHoverContext.Provider value={hovered}>
+          <Component
+            variant={resolveModelVariant(definition, item.variant).id}
+            {...omitUndefinedProperties({ color: item.color })}
+            slot={binding}
+            {...omitUndefinedProperties({ state: state })}
+            {...omitUndefinedProperties({
+              liveMedia: primary ? liveMediaByEntityId[primary.entityId] : undefined,
+            })}
+            visualState={visualState}
+            reducedMotion={reducedMotion}
+            walkMode={walkMode}
+            onInteract={onInteract}
+          />
+        </DeviceHoverContext.Provider>
+      </ModelLightingSurface>
+      {runtime.status === "connected" && (
+        <DeviceActivityFeedback
+          device={resolvedDevice}
+          bounds={definition.bounds}
           reducedMotion={reducedMotion}
-          walkMode={walkMode}
-          onInteract={onInteract}
         />
-      </DeviceHoverContext.Provider>
+      )}
     </group>
   );
 }
@@ -265,6 +299,13 @@ export const SceneItemRenderer = memo(function SceneItemRenderer({
   liveMediaByEntityId: Readonly<Partial<Record<EntityId, DeviceLiveMedia>>>;
   outlineColor?: string;
 }) {
+  const nightLighting = useContext(SceneNightContext);
+  const lightSlot = lightingSlotForItem(item);
+  const lightState = sceneLightState(
+    item.lightState,
+    lightSlot ? entityStatesBySlotId[lightSlot.id] : undefined,
+    nightLighting,
+  );
   const transform = resolveItemTransform(item.placement, floor);
   if (item.kind === "furnishing") {
     const definition = Object.hasOwn(furnishingModels, item.modelId)
@@ -280,16 +321,23 @@ export const SceneItemRenderer = memo(function SceneItemRenderer({
         rotation={[0, transform.rotationYRadians, 0]}
       >
         {definition ? (
-          <FurnishingContent
-            component={definition.component}
-            variant={resolveModelVariant(definition, item.variant).id}
-            {...omitUndefinedProperties({ color: item.color })}
-            size={item.size}
-            entityStatesBySlotId={entityStatesBySlotId}
-            reducedMotion={reducedMotion}
-            walkMode={walkMode}
-            onInteract={onInteract}
-          />
+          <ModelLightingSurface
+            revision={`${item.variant ?? ""}|${item.color ?? ""}|${item.size.join(",")}`}
+            light={definition.lighting}
+            state={lightState}
+            imported={item.modelId.startsWith("custom:")}
+          >
+            <FurnishingContent
+              component={definition.component}
+              variant={resolveModelVariant(definition, item.variant).id}
+              {...omitUndefinedProperties({ color: item.color })}
+              size={item.size}
+              entityStatesBySlotId={entityStatesBySlotId}
+              reducedMotion={reducedMotion}
+              walkMode={walkMode}
+              onInteract={onInteract}
+            />
+          </ModelLightingSurface>
         ) : (
           <MissingSceneItemFallback item={item} />
         )}
@@ -332,6 +380,7 @@ export const SceneItemRenderer = memo(function SceneItemRenderer({
       onInteract={onInteract}
       liveMediaByEntityId={liveMediaByEntityId}
       floor={floor}
+      lightingStates={entityStatesBySlotId}
       groupName={`scene-item-${item.id}`}
     />
   );
@@ -349,7 +398,7 @@ export function LegacyDeviceItemRenderer({
 }: {
   resolvedDevice: ResolvedDeviceBinding;
   floor: FloorSpec;
-  definition: DeviceModelDefinition;
+  definition: DeviceModelDefinition | undefined;
   reducedMotion: boolean;
   walkMode: boolean;
   onInteract: (target: ExtensionInteractionTarget) => void;
@@ -368,9 +417,25 @@ export function LegacyDeviceItemRenderer({
       elevationMeters: resolvedDevice.slot.placement.elevationMeters,
       rotationYRadians: resolvedDevice.slot.placement.rotationYRadians ?? 0,
     },
-    size: definition.defaultSize.map((dimension) => dimension * scale) as [number, number, number],
+    size: (definition?.defaultSize ?? [0.25, 0.25, 0.25]).map((dimension) => dimension * scale) as [
+      number,
+      number,
+      number,
+    ],
     entitySlots: resolvedDevice.slot.entitySlots,
   };
+  if (!definition) {
+    const transform = resolveItemTransform(item.placement, floor);
+    return (
+      <group
+        name={`device-${item.id}`}
+        position={transform.position}
+        rotation={[0, transform.rotationYRadians, 0]}
+      >
+        <MissingSceneItemFallback item={item} />
+      </group>
+    );
+  }
   return (
     <DeviceSceneItem
       item={item}
@@ -382,6 +447,11 @@ export function LegacyDeviceItemRenderer({
       onInteract={onInteract}
       liveMediaByEntityId={liveMediaByEntityId}
       floor={floor}
+      lightingStates={Object.fromEntries(
+        resolvedDevice.entities
+          .filter((entity) => entity.state)
+          .map((entity) => [entity.slotId, entity.state!]),
+      )}
       groupName={`device-${item.id}`}
     />
   );

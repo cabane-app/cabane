@@ -9,10 +9,12 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
     candidate,
     [
       "id",
+      "name",
       "from",
       "to",
       "classification",
       "thicknessMeters",
+      "virtual",
       "heightMeters",
       "exteriorColor",
       "edgeColor",
@@ -23,6 +25,7 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
     issues,
   );
   string(candidate.id, `${path}.id`, issues);
+  if (candidate.name !== undefined) string(candidate.name, `${path}.name`, issues);
   point(candidate.from, `${path}.from`, issues);
   point(candidate.to, `${path}.to`, issues);
   if (!["interior", "exterior"].includes(String(candidate.classification))) {
@@ -34,6 +37,14 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
     );
   }
   finite(candidate.thicknessMeters, `${path}.thicknessMeters`, issues);
+  if (candidate.virtual !== undefined && typeof candidate.virtual !== "boolean") {
+    addProjectIssue(
+      issues,
+      "project.wall-virtual",
+      `${path}.virtual`,
+      "Wall virtual flag must be a boolean.",
+    );
+  }
   wallNichesSchema(candidate.niches, `${path}.niches`, issues);
   if (candidate.heightMeters !== undefined)
     finite(candidate.heightMeters, `${path}.heightMeters`, issues);

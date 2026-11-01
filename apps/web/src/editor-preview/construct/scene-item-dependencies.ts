@@ -160,7 +160,7 @@ export const reconcileSceneItemCeilingDependencies = (
     if (containingRooms.length === 0) {
       issues.push({
         code: "editor.ceiling-support-missing",
-        severity: "error",
+        severity: "warning",
         path: `sceneItems[${index}].placement`,
         message: `Ceiling item “${item.id}” is not inside a room after the floor-plan change. Move it into a room or restore its ceiling support.`,
       });
@@ -169,7 +169,7 @@ export const reconcileSceneItemCeilingDependencies = (
     if (containingRooms.length > 1) {
       issues.push({
         code: "editor.ceiling-support-ambiguous",
-        severity: "error",
+        severity: "warning",
         path: `sceneItems[${index}].placement`,
         message: `Ceiling item “${item.id}” belongs to more than one room after the floor-plan change. Move it away from the shared boundary.`,
       });

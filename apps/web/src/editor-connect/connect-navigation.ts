@@ -1,4 +1,6 @@
 import {
+  MAX_ORTHOGRAPHIC_ZOOM,
+  MIN_EDITOR_ZOOM,
   deviceMappingRooms,
   groupRoomMappingRelationships,
   type HomeBindingManifest,
@@ -14,7 +16,8 @@ export interface EditorCameraState {
 export interface EditorOpenRequest {
   floorId?: string;
   mode: "construct" | "furnish" | "connect";
-  panel?: "action-bar" | "home-assistant";
+  panel?: "action-bar" | "home-assistant" | "settings";
+  settingsSection?: import("../editor-settings/settings-sections").SettingsSection;
   destination?: "sync" | "dashboard" | "device";
   view?: "rooms" | "devices";
   roomId?: string | null;
@@ -83,8 +86,8 @@ export function parseEditorReturn(
         point(camera.target) &&
         typeof camera.zoom === "number" &&
         Number.isFinite(camera.zoom) &&
-        camera.zoom >= 8 &&
-        camera.zoom <= 180
+        camera.zoom >= MIN_EDITOR_ZOOM &&
+        camera.zoom <= MAX_ORTHOGRAPHIC_ZOOM
       ) {
         request.arrange.camera = {
           view: camera.view,

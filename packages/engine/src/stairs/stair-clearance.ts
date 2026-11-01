@@ -46,6 +46,31 @@ export function stairVolumesIntersect(a: StairVolume, b: StairVolume) {
   );
 }
 
+/** Rendered tread slabs or masonry bodies, plus spiral bridges. */
+export function stairStructureVolumes(flight: StairFlight) {
+  const base = flight.baseElevationMeters;
+  const volumes = flight.treads.map((tread) =>
+    stairVolume(
+      stairPolygon(tread.polygon),
+      base + (flight.style && flight.style !== "open" ? -0.06 : tread.elevation - 0.12),
+      base + tread.elevation,
+    ),
+  );
+  if (flight.shape === "spiral") {
+    const top = base + flight.riseMeters;
+    volumes.push(
+      stairVolume(
+        stairPolygon(
+          flight.upperLanding.map((point) => planPointToWorld(point, flight.coordinates)),
+        ),
+        top - 0.12,
+        top,
+      ),
+    );
+  }
+  return volumes;
+}
+
 /** Actual tread footprints, including turning treads, with the existing 1.8 m walking clearance. */
 export function stairClearanceVolumes(flight: StairFlight, coordinates: FloorCoordinates) {
   const base = flight.baseElevationMeters;

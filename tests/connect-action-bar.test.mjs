@@ -7,7 +7,7 @@ import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
   const { ConnectActionBar } = await load("/apps/web/src/editor-connect/ConnectActionBar.tsx");
-  test("Connect actions select a view and refresh without separate Save or camera controls", async () => {
+  test("Connect refresh remains available without duplicating the sidebar plan action", async () => {
     const dom = new JSDOM("<div id='root'></div>", { url: "http://localhost" });
     const previous = Object.fromEntries(
       ["window", "document", "HTMLElement", "IS_REACT_ACT_ENVIRONMENT"].map((key) => [
@@ -22,73 +22,38 @@ await withModules(async (load) => {
       IS_REACT_ACT_ENVIRONMENT: true,
     });
     const root = createRoot(document.getElementById("root"));
-    let selected = null;
     let refreshes = 0;
     const props = {
-      view: "rooms",
-      onViewChange: (view) => {
-        selected = view;
-      },
       refreshing: false,
       disconnected: false,
-      hasUnmappedRooms: false,
       onRefresh: () => {
-        refreshes += 1;
+        refreshes++;
       },
     };
     try {
       await act(async () => root.render(React.createElement(ConnectActionBar, props)));
       const buttons = [...document.querySelectorAll("button")];
       assert.deepEqual(
-        buttons.map((button) => button.getAttribute("aria-label")),
-        ["Rooms", "Devices", "Refresh from Home Assistant"],
+        buttons.map((button) => button.textContent.trim()),
+        ["Refresh from Home Assistant"],
       );
-      assert.equal(buttons[0].getAttribute("aria-pressed"), "true");
-      assert.equal(buttons[1].getAttribute("aria-pressed"), "false");
-      assert.equal(document.querySelectorAll("svg[aria-hidden='true']").length, 3);
-      assert.doesNotMatch(document.body.textContent, /Save|Fit|3D|2D/);
       await act(async () => {
-        buttons[1].click();
-        buttons[2].click();
+        buttons[0].click();
       });
-      assert.equal(selected, "devices");
       assert.equal(refreshes, 1);
       await act(async () =>
         root.render(
           React.createElement(ConnectActionBar, {
             ...props,
-            view: "devices",
-            hasUnmappedRooms: true,
+            disconnected: true,
           }),
         ),
       );
-      assert.ok(buttons[0].querySelector(".editor-action-button__warning svg"));
-      assert.equal(
-        buttons[0].getAttribute("aria-description"),
-        "Some rooms are not mapped to Home Assistant areas.",
-      );
-      assert.equal(buttons[1].querySelector(".editor-action-button__warning"), null);
-      await act(async () => buttons[0].focus());
-      assert.equal(
-        document.querySelector("[role='tooltip']").textContent,
-        "Some rooms are not mapped to Home Assistant areas.",
-      );
-      await act(async () =>
-        root.render(
-          React.createElement(ConnectActionBar, { ...props, view: "devices", disconnected: true }),
-        ),
-      );
-      assert.equal(buttons[0].querySelector(".editor-action-button__warning"), null);
-      assert.equal(buttons[0].hasAttribute("aria-description"), false);
-      assert.equal(buttons[1].getAttribute("aria-pressed"), "true");
-      assert.equal(buttons[2].disabled, true);
-      assert.equal(buttons[0].disabled, false);
+      assert.equal(buttons[0].disabled, true);
       await act(async () =>
         root.render(React.createElement(ConnectActionBar, { ...props, refreshing: true })),
       );
-      assert.equal(buttons[2].disabled, true);
-      await act(async () => buttons[2].click());
-      assert.equal(refreshes, 1);
+      assert.equal(buttons[0].disabled, true);
     } finally {
       await act(async () => root.unmount());
       Object.assign(globalThis, previous);

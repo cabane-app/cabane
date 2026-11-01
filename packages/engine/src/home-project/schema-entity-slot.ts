@@ -83,7 +83,19 @@ export const entitySlot = (value: unknown, path: string, issues: HomeProjectIssu
   }
   const presentation = record(slot.presentation, `${path}.presentation`, issues);
   if (presentation) {
-    keys(presentation, ["label", "dashboardRole"], `${path}.presentation`, issues);
+    keys(presentation, ["label", "dashboardRole", "showInScene"], `${path}.presentation`, issues);
+    if (
+      presentation.showInScene !== undefined &&
+      typeof presentation.showInScene !== "boolean" &&
+      presentation.showInScene !== "if-present"
+    ) {
+      addProjectIssue(
+        issues,
+        "project.boolean",
+        `${path}.presentation.showInScene`,
+        "Map visibility must be boolean or if-present.",
+      );
+    }
     string(presentation.label, `${path}.presentation.label`, issues);
     if (
       !["primary", "secondary", "diagnostic", "hidden"].includes(String(presentation.dashboardRole))

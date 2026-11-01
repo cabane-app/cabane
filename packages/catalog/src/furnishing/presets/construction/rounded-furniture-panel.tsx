@@ -12,6 +12,7 @@ export function RoundedFurniturePanel({
   outline = true,
   outlineColor = "#716657",
   name,
+  glowKey,
   creaseAngle = 0.4,
 }: {
   size: [number, number, number];
@@ -22,11 +23,14 @@ export function RoundedFurniturePanel({
   outline?: boolean;
   outlineColor?: string;
   name?: string;
+  /** Stable model-local identity, independent of the display name and wrapper hierarchy. */
+  glowKey?: string;
   creaseAngle?: number;
 }) {
   return (
     <RoundedBox
       {...omitUndefinedProperties({ name: name })}
+      {...(glowKey ? { userData: { modelGlowKey: glowKey } } : {})}
       args={size}
       position={position}
       rotation={rotation}

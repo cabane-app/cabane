@@ -251,7 +251,10 @@ export function useEditorWorkspace({
   );
 
   const publish = useCallback(
-    async (options: PublishOptions = {}): Promise<PublishResult> => {
+    async (
+      options: PublishOptions = {},
+      isActive: () => boolean = () => true,
+    ): Promise<PublishResult> => {
       if (locked.current) return { status: "blocked", errors: [], warnings: [] };
       locked.current = true;
       setBusy(true);
@@ -272,6 +275,7 @@ export function useEditorWorkspace({
                   ? saved.error
                   : new Error("The draft could not be saved."),
             };
+          if (!isActive()) return { status: "blocked" as const, errors: [], warnings: [] };
           const result = await lifecycle.publish(recordRef.current, options);
           if (result.status === "published") acceptRecord(result.record);
           else if (result.status === "storage-error")
@@ -389,6 +393,7 @@ export function useEditorWorkspace({
     resetDraftToPublished,
     resetToSeed,
     getRecord,
+    getEditRevision: () => initialRecord.revision + revision.current,
     adoptRecord,
   };
 }

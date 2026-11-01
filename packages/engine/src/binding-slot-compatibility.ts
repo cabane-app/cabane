@@ -28,8 +28,21 @@ const MANUAL_DOMAIN_ALTERNATIVES: Readonly<Record<string, readonly string[]>> = 
   light: ["switch"],
 };
 
-export const bindingDomainMatchRank = (spec: EntityBindingSlotSpec, domain: string): number => {
+const SWITCH_CONTROL_MODELS = new Set(["television", "wall-television", "compact-wall-television"]);
+export const bindingDomainMatchRank = (
+  spec: EntityBindingSlotSpec,
+  domain: string,
+  modelId?: string,
+): number => {
   if (spec.compatibleDomains.includes(domain as never)) return 0;
+  if (
+    domain === "switch" &&
+    modelId &&
+    SWITCH_CONTROL_MODELS.has(modelId) &&
+    spec.deviceRole === "primary" &&
+    spec.compatibleDomains.some((value) => value === "camera" || value === "media_player")
+  )
+    return 1;
   return spec.compatibleDomains.some((expected) =>
     MANUAL_DOMAIN_ALTERNATIVES[expected]?.includes(domain),
   )
@@ -42,7 +55,7 @@ export const entityMatchesBindingSlot = (
   entityId: EntityId,
   runtime: HomeAssistantRuntimeSnapshot,
 ) =>
-  bindingDomainMatchRank(descriptor.spec, entityDomain(entityId)) >= 0 &&
+  bindingDomainMatchRank(descriptor.spec, entityDomain(entityId), descriptor.deviceModel) >= 0 &&
   (descriptor.kind === "opening-contact"
     ? isOpeningContactEntity(entityId, runtime)
     : compatibleDeviceClass(descriptor.spec, entityId, runtime));
@@ -72,20 +85,8 @@ export const isShareableCameraDescriptor = (descriptor: BindingSlotDescriptor | 
     isShareableCameraSlot(descriptor.deviceModel, descriptor.spec),
   );
 
+/** Explicit compatible choices may cross areas; automatic candidates remain area-scoped. */
 export const allowsCrossAreaEntityBinding = (
-  manifest: HomeBindingManifest,
+  _manifest: HomeBindingManifest,
   descriptor: BindingSlotDescriptor | undefined,
-) => {
-  if (descriptor?.kind === "opening-contact" || descriptor?.kind === "opening-cover") return true;
-  if (!descriptor || descriptor.kind !== "device") return false;
-  if (isShareableCameraDescriptor(descriptor)) return true;
-  return (
-    manifest.floors
-      .flatMap((floor) => floor.rooms)
-      .some((room) =>
-        room.devices.some(
-          (device) => device.id === descriptor.deviceSlotId && device.entitySlots.length === 1,
-        ),
-      ) ?? false
-  );
-};
+) => Boolean(descriptor);

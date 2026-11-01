@@ -1,3 +1,4 @@
+import { selectConstructionTool } from "../tests/editor-browser-tools.mjs";
 import assert from "node:assert/strict";
 import { chromium } from "playwright-core";
 
@@ -55,7 +56,7 @@ try {
     { width: 960, height: 720 },
   ]) {
     await page.setViewportSize(viewport);
-    await page.getByRole("button", { name: "Wall", exact: true }).click();
+    await selectConstructionTool(page, "Wall");
     const canvas = page.locator(".direction-preview__model canvas");
     const bounds = await canvas.boundingBox();
     const x = Math.round(bounds.x + bounds.width * 0.42);

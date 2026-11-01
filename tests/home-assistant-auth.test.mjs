@@ -12,6 +12,17 @@ await withModules(async (load) => {
     "/packages/engine/src/home-assistant-popup-auth.ts",
   );
 
+  test("borrowed sessions reject invalid, credentialed and non-web origins", () => {
+    for (const url of [
+      "not a URL",
+      "file:///cabane",
+      "ftp://ha.lan",
+      "http://user:secret@ha.lan",
+    ]) {
+      assert.ok(auth.borrowedHomeAssistantTransportError(url, url));
+    }
+  });
+
   const popupFixture = () => {
     let receive;
     let tick;

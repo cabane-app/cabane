@@ -135,6 +135,7 @@ export const STABLE_MODELS = new Set([
   "thermometer",
   "motion-sensor",
   "motorized-blind",
+  "integrated-roller-shutter",
   "leak-sensor",
   "ceiling-fan",
   "table-fan",
@@ -241,7 +242,8 @@ const isSceneModelDefinition = (value: unknown): value is RawObject => {
         (ratio) => isFiniteNumber(ratio) && ratio > 0 && ratio <= 1,
       ) ||
       !isFiniteNumber(fit.depthOffsetMeters) ||
-      fit.depthOffsetMeters < 0
+      fit.depthOffsetMeters < 0 ||
+      (fit.mounting !== undefined && fit.mounting !== "exterior-recessed")
     )
       return false;
   }
@@ -290,10 +292,27 @@ export const isDeviceModelDefinition = (value: unknown): value is DeviceModelDef
         value.sceneLight.position.every(isFiniteNumber) &&
         isNonEmptyString(value.sceneLight.color) &&
         isFiniteNumber(value.sceneLight.maxIntensity) &&
-        value.sceneLight.maxIntensity > 0 &&
+        value.sceneLight.maxIntensity >= 0 &&
         isFiniteNumber(value.sceneLight.distance) &&
-        value.sceneLight.distance > 0 &&
+        value.sceneLight.distance >= 0 &&
         (value.supportedDomains as unknown[]).includes("light"))) &&
+    (value.sceneLights === undefined ||
+      (Array.isArray(value.sceneLights) &&
+        // Physical capacity belongs to the shared light planner. Glow-only and
+        // zero-brightness settings legitimately produce no physical emitters.
+        (value.supportedDomains as unknown[]).includes("light") &&
+        value.sceneLights.every(
+          (source) =>
+            isObject(source) &&
+            Array.isArray(source.position) &&
+            source.position.length === 3 &&
+            source.position.every(isFiniteNumber) &&
+            isNonEmptyString(source.color) &&
+            isFiniteNumber(source.maxIntensity) &&
+            source.maxIntensity >= 0 &&
+            isFiniteNumber(source.distance) &&
+            source.distance >= 0,
+        ))) &&
     isFiniteNumber(value.interaction.tapTolerancePixels) &&
     value.interaction.tapTolerancePixels > 0
   );

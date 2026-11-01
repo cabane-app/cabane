@@ -1,9 +1,6 @@
-import { resolveProjectModels } from "@cabane/engine";
 import { composeHomeProjectPreview, deriveFloorLevels } from "@cabane/engine";
 
 import { evaluateDerivedWalkNavigation } from "@cabane/engine";
-
-import { homeManifest as ownerProjectManifest } from "@cabane/home";
 
 import { useMemo } from "react";
 
@@ -15,21 +12,23 @@ import { useFurnishingEditor } from "../editor-preview/furnish";
 
 import { projectFromEditorState } from "../editor-preview/project-sync";
 
-import { editorBindingsForManifest, ownerProjectRegistries } from "../project-runtime";
+import { editorBindingsForManifest, ownerProjectExtensions } from "../project-runtime";
 
-import type { HomeProject } from "@cabane/engine";
+import type { HomeProject, ProjectModelRegistries } from "@cabane/engine";
 import { missingModelEditorDescriptor } from "../editor-preview/furnish/missing-model";
 type Options = {
   project: HomeProject;
   constructEditor: ReturnType<typeof useConstructEditor>;
   furnishingEditor: ReturnType<typeof useFurnishingEditor>;
   activeFloorId: string;
+  registries: ProjectModelRegistries;
 };
 export function useEditorSceneProjection({
   project,
   constructEditor,
   furnishingEditor,
   activeFloorId,
+  registries,
 }: Options) {
   const { previewFloor: constructEditorPreviewFloor, wallRuns: constructEditorWallRuns } =
     constructEditor;
@@ -38,10 +37,7 @@ export function useEditorSceneProjection({
     items: furnishingEditorItems,
     selectedId: furnishingEditorSelectedId,
   } = furnishingEditor;
-  const { furnishingModels, deviceModels } = useMemo(
-    () => resolveProjectModels(project, ownerProjectRegistries),
-    [project],
-  );
+  const { furnishingModels, deviceModels } = registries;
   const ceilingDependencies = useSceneItemDependencies(
     furnishingEditor,
     constructEditorPreviewFloor,
@@ -49,7 +45,10 @@ export function useEditorSceneProjection({
   );
   const previewSceneItems = ceilingDependencies.items;
   const visualSceneItems = furnishingEditorTransaction ? furnishingEditorItems : previewSceneItems;
-  const selectedItem = visualSceneItems.find((item) => item.id === furnishingEditorSelectedId);
+  const selectedItem =
+    !furnishingEditor.selectedGroup && furnishingEditor.selectedIds.length <= 1
+      ? visualSceneItems.find((item) => item.id === furnishingEditorSelectedId)
+      : undefined;
   const selectedDefinition =
     selectedItem &&
     ((selectedItem.kind === "device" ? deviceModels : furnishingModels)[selectedItem.modelId] ??
@@ -64,7 +63,7 @@ export function useEditorSceneProjection({
   );
   const editorProjectJson = useMemo(() => JSON.stringify(editorProject), [editorProject]);
   const editedManifest = useMemo(
-    () => composeHomeProjectPreview(editorProject, ownerProjectManifest.extensions).manifest,
+    () => composeHomeProjectPreview(editorProject, ownerProjectExtensions).manifest,
     [editorProject],
   );
   const placementFloor = useMemo(

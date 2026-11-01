@@ -1,3 +1,4 @@
+import { selectConstructionTool } from "../tests/editor-browser-tools.mjs";
 import assert from "node:assert/strict";
 import { chromium } from "playwright-core";
 import { mkdir } from "node:fs/promises";
@@ -108,7 +109,7 @@ try {
 
   // Three consecutive releases must be individually undoable, without waiting
   // for autosave or a deferred topology timer between the gestures.
-  await page.getByRole("button", { name: "Wall", exact: true }).click();
+  await selectConstructionTool(page, "Wall");
   for (let index = 0; index < 3; index += 1) {
     await page.mouse.move(700 + index * 40, 750);
     await page.mouse.down();
@@ -124,7 +125,7 @@ try {
   await page.keyboard.press("ControlOrMeta+z");
   await page.keyboard.press("ControlOrMeta+Shift+z");
   await page.keyboard.press("ControlOrMeta+z");
-  await page.getByRole("button", { name: "Wall", exact: true }).click();
+  await selectConstructionTool(page, "Wall");
   await page.mouse.move(860, 750);
   await page.mouse.down();
   await page.mouse.move(900, 750, { steps: 2 });

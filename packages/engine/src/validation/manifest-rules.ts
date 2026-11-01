@@ -13,6 +13,7 @@ import {
   type ValidationRule,
 } from "./core";
 import { validateFloors } from "./floor-rules";
+import { isTerrainSettings } from "../terrain/terrain-settings";
 
 const SHORTCUTS = new Set<BuiltInShortcutId>([
   "home-view",
@@ -36,6 +37,14 @@ const validateHeader: ValidationRule<RawObject> = (input) => {
   if (!isObject(input.home)) {
     issues.push(issue("home.type", "home", "Home metadata must be an object."));
   } else {
+    if (input.home.terrain !== undefined && !isTerrainSettings(input.home.terrain))
+      issues.push(
+        issue(
+          "home.terrain",
+          "home.terrain",
+          "Terrain requires four finite corner heights between −100 and 100 metres.",
+        ),
+      );
     for (const key of ["id", "name"] as const) {
       if (!isNonEmptyString(input.home[key])) {
         issues.push(issue(`home.${key}`, `home.${key}`, `Home ${key} must be a non-empty string.`));

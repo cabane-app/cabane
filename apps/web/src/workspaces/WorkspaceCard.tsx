@@ -1,3 +1,4 @@
+import { useHomeAssistantHostSession } from "@cabane/engine";
 import { HomeAssistantIcon } from "./HomeAssistantIcon";
 import { workspaceStorageStatus } from "./workspace-availability";
 import { useEffect, useState } from "react";
@@ -7,7 +8,15 @@ import { readWorkspacePreview } from "./workspace-presentation";
 import type { WorkspaceEntry } from "@cabane/engine";
 export type WorkspaceLibraryEntry = WorkspaceEntry;
 export type WorkspaceCardAction =
-  "settings" | "sync" | "dashboard" | "device" | "rename" | "duplicate" | "export" | "delete";
+  | "settings"
+  | "sync"
+  | "dashboard"
+  | "device"
+  | "agent-pilot"
+  | "rename"
+  | "duplicate"
+  | "export"
+  | "delete";
 export function WorkspaceCard({
   entry,
   busy,
@@ -24,6 +33,7 @@ export function WorkspaceCard({
   onExportRaw: () => void;
 }) {
   const { metadata, record, error } = entry;
+  const hostSession = useHomeAssistantHostSession();
   const [sync, setSync] = useState<SyncCursor | null>(null);
   const [changed, setChanged] = useState(false);
   const [storageError, setStorageError] = useState(false);
@@ -69,6 +79,7 @@ export function WorkspaceCard({
     sync: "Sync with Home Assistant",
     dashboard: "Add to Home Assistant",
     device: "Open on another device",
+    "agent-pilot": "Connect LLM agent",
     rename: "Rename",
     duplicate: "Duplicate",
     export: "Export",
@@ -95,13 +106,18 @@ export function WorkspaceCard({
               "sync",
               "dashboard",
               "device",
+              "agent-pilot",
               "rename",
               "duplicate",
               "export",
               "delete",
             ] as const
           )
-            .filter((action) => action !== "sync" || !sync?.enabled)
+            .filter(
+              (action) =>
+                (action !== "sync" || !sync?.enabled) &&
+                (action !== "agent-pilot" || Boolean(hostSession)),
+            )
             .map((action) => (
               <button
                 key={action}

@@ -1,3 +1,4 @@
+import { addEditorWall } from "./wall-editor-actions";
 import { unusedElementId, unusedElementSerial } from "./editor-element-identity";
 import { constrainWallNiches, reduceNicheOpeningAction } from "./niche-editor-actions";
 import {
@@ -322,25 +323,8 @@ const reduceDraftAction = (
         ),
       };
     }
-    case "add-wall": {
-      if (samePoint(action.from, action.to)) return draft;
-      const serial = unusedElementSerial(draft, "wall");
-      const id = `${draft.floorId}:wall-${serial}`;
-      return {
-        ...draft,
-        walls: [
-          ...draft.walls,
-          {
-            id,
-            from: action.from,
-            to: action.to,
-            ...(action.exteriorColor ? { exteriorColor: action.exteriorColor } : {}),
-          },
-        ],
-        selection: { kind: "wall", id },
-        nextSerial: serial + 1,
-      };
-    }
+    case "add-wall":
+      return addEditorWall(draft, action);
     case "move-endpoint":
       return samePoint(action.from, action.to)
         ? draft

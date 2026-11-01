@@ -8,6 +8,7 @@ import { withModules } from "./test-server.mjs";
 await withModules(async (load) => {
   const { EditorModeNav } = await load("/apps/web/src/editor-chrome/EditorModeNav.tsx");
   const { EditorActionBar } = await load("/apps/web/src/editor-chrome/EditorActionBar.tsx");
+  const { HomeEditorHeader } = await load("/apps/web/src/editor-workspace/HomeEditorHeader.tsx");
   const { SelectedItemActionBar } = await load(
     "/apps/web/src/editor-preview/furnish/SelectedItemActionBar.tsx",
   );
@@ -44,15 +45,35 @@ await withModules(async (load) => {
   }
 
   const props = (overrides = {}) => ({
-    mode: "construct",
     tool: "wall",
-    canUndo: true,
-    canRedo: false,
     onToolChange() {},
-    onUndo() {},
-    onRedo() {},
     ...overrides,
   });
+  const headerProps = (overrides = {}) => {
+    const project = {
+      home: { name: "Test home" },
+      floors: [{ id: "floor", name: "Ground floor" }],
+    };
+    return {
+      mode: "furnish",
+      activeFloorId: "floor",
+      snapshot: { project, bindings: {} },
+      workspace: {
+        record: { publishedAt: 1, published: project },
+        canUndo: false,
+        canRedo: true,
+      },
+      constructEditor: { tool: "wall", setTool() {} },
+      floorZoneDrawing: { active: false },
+      poolDrawing: { active: false },
+      connect: { view: "rooms", disconnected: false },
+      runtime: { refreshing: false },
+      onModeTabChange() {},
+      undoProject() {},
+      redoProject() {},
+      ...overrides,
+    };
+  };
 
   test("mode navigation uses Arrange and enabled Connect with outline icons", async () => {
     await withDom(async ({ root, document }) => {
@@ -70,7 +91,7 @@ await withModules(async (load) => {
       const buttons = [...document.querySelectorAll("button")];
       assert.deepEqual(
         buttons.map((button) => button.textContent),
-        ["Construct", "Arrange", "Connect", "Shortcuts"],
+        ["Construct", "Arrange", "Connect", "Settings"],
       );
       assert.equal(buttons[0].getAttribute("aria-pressed"), "true");
       assert.equal(buttons[2].disabled, false);
@@ -87,14 +108,12 @@ await withModules(async (load) => {
   test("construction actions retain labels, ordering, pressed state, and callbacks", async () => {
     await withDom(async ({ root, document, window }) => {
       const selected = [];
-      let undo = 0;
       await act(async () =>
         root.render(
           React.createElement(
             EditorActionBar,
             props({
               onToolChange: (tool) => selected.push(tool),
-              onUndo: () => undo++,
             }),
           ),
         ),
@@ -102,34 +121,38 @@ await withModules(async (load) => {
       const buttons = [...document.querySelectorAll("button")];
       assert.deepEqual(
         buttons.map((button) => button.getAttribute("aria-label")),
-        [
-          "Select",
-          "Wall",
-          "Door",
-          "Window",
-          "Passage",
-          "Floor",
-          "Measure",
-          "Decorations",
-          "Undo",
-          "Redo",
-        ],
+        ["Select", "Wall", "Openings", "Floor", "Measure", "Decorations"],
       );
-      assert.equal(
-        document.querySelector('[aria-label="Wall"]').getAttribute("aria-pressed"),
-        "true",
+      const wallGroup = document.querySelector('[aria-label="Wall"]');
+      assert.equal(wallGroup.getAttribute("aria-pressed"), "true");
+      await act(async () => wallGroup.click());
+      const walls = document.querySelector('[aria-label="Wall tools"]');
+      assert.equal(walls.parentElement, document.body);
+      assert.deepEqual(
+        [...walls.querySelectorAll("button")].map((b) => b.textContent),
+        ["Wall", "Invisible wall", "Outdoor space"],
       );
-      assert.equal(document.querySelector('[aria-label="Redo"]').disabled, true);
-      await act(async () => buttons.slice(0, 7).forEach((button) => button.click()));
-      assert.deepEqual(selected, [
-        "select",
-        "wall",
-        "door",
-        "window",
-        "passage",
-        "floor",
-        "measure",
-      ]);
+      await act(async () => walls.querySelector('[aria-label="Invisible wall"]').click());
+      assert.equal(selected.at(-1), "virtual-wall");
+      assert.equal(document.querySelector('[aria-label="Wall tools"]'), null);
+      await act(async () => wallGroup.click());
+      await act(async () => document.querySelector('[aria-label="Outdoor space"]').click());
+      assert.equal(selected.at(-1), "platform");
+      const openings = document.querySelector('[aria-label="Openings"]');
+      for (const [label, tool] of [
+        ["Door", "door"],
+        ["Passage", "passage"],
+        ["Window", "window"],
+      ]) {
+        await act(async () => openings.click());
+        const panel = document.querySelector('[aria-label="Opening tools"]');
+        assert.deepEqual(
+          [...panel.querySelectorAll("button")].map((b) => b.textContent),
+          ["Door", "Passage", "Window"],
+        );
+        await act(async () => panel.querySelector(`[aria-label="${label}"]`).click());
+        assert.equal(selected.at(-1), tool);
+      }
       const decorations = document.querySelector('[aria-label="Decorations"]');
       await act(async () => decorations.click());
       assert.equal(decorations.getAttribute("aria-expanded"), "true");
@@ -161,43 +184,109 @@ await withModules(async (load) => {
       });
       assert.equal(decorations.getAttribute("aria-expanded"), "false");
       assert.equal(document.activeElement, decorations);
-      await act(async () => document.querySelector('[aria-label="Undo"]').click());
-      assert.equal(undo, 1);
-      assert.equal(buttons[5].getAttribute("aria-keyshortcuts"), "F");
-      assert.equal(buttons[8].getAttribute("aria-keyshortcuts"), "Control+Z Meta+Z");
+      assert.equal(
+        document.querySelector('[aria-label="Floor"]').getAttribute("aria-keyshortcuts"),
+        "F",
+      );
     });
   });
 
-  test("Arrange shows shared history alone with supported shortcuts", async () => {
-    await withDom(async ({ root, document }) => {
-      let redone = 0;
+  test("grouped tools reflect tutorial selections and keep Stairs after Floor", async () => {
+    await withDom(async ({ root, document, window }) => {
+      for (const tool of ["wall", "virtual-wall", "platform", "door", "window"]) {
+        await act(async () =>
+          root.render(React.createElement(EditorActionBar, props({ tool, onStairs() {} }))),
+        );
+        const buttons = [
+          ...document
+            .querySelector('[aria-label="Construction actions"]')
+            .querySelectorAll("button"),
+        ];
+        assert.deepEqual(
+          buttons.map((b) => b.getAttribute("aria-label")),
+          ["Select", "Wall", "Openings", "Floor", "Stairs", "Measure", "Decorations"],
+        );
+        const group = ["door", "window"].includes(tool) ? "Openings" : "Wall";
+        assert.equal(
+          document.querySelector(`[aria-label="${group}"]`).getAttribute("aria-pressed"),
+          "true",
+        );
+        assert.equal(
+          document.querySelector('[aria-label="Floor"]').getAttribute("aria-pressed"),
+          "false",
+        );
+      }
+      const wall = document.querySelector('[aria-label="Wall"]');
       await act(async () =>
-        root.render(
-          React.createElement(
-            EditorActionBar,
-            props({
-              mode: "furnish",
-              canUndo: false,
-              canRedo: true,
-              onRedo: () => redone++,
-            }),
-          ),
+        wall.dispatchEvent(
+          Object.assign(new window.Event("pointerover", { bubbles: true }), {
+            pointerType: "mouse",
+          }),
         ),
       );
-      const buttons = [...document.querySelectorAll("button")];
-      assert.deepEqual(
-        buttons.map((button) => button.getAttribute("aria-label")),
-        ["Undo", "Redo"],
+      assert.ok(document.querySelector('[aria-label="Wall tools"]'), "hover reveals tools");
+      await act(async () =>
+        root.render(React.createElement(EditorActionBar, props({ inert: true, onStairs() {} }))),
       );
-      assert.equal(buttons[0].disabled, true);
-      assert.equal(buttons[1].disabled, false);
-      assert.equal(buttons[0].getAttribute("aria-keyshortcuts"), "Control+Z Meta+Z");
       assert.equal(
-        buttons[1].getAttribute("aria-keyshortcuts"),
-        "Control+Shift+Z Meta+Shift+Z Control+Y",
+        document.querySelector('[aria-label="Wall tools"]'),
+        null,
+        "locked editor dismisses the portal",
       );
-      await act(async () => buttons[1].click());
-      assert.equal(redone, 1);
+    });
+  });
+
+  test("project actions group shared history beside Reset and Save with supported shortcuts", async () => {
+    await withDom(async ({ root, document }) => {
+      let redone = 0;
+      for (const mode of ["construct", "furnish", "connect"]) {
+        await act(async () =>
+          root.render(
+            React.createElement(
+              HomeEditorHeader,
+              headerProps({ mode, redoProject: () => redone++ }),
+            ),
+          ),
+        );
+        const buttons = [
+          ...document.querySelector('[aria-label="Project actions"]').querySelectorAll("button"),
+        ];
+        assert.deepEqual(
+          buttons.map((button) => button.getAttribute("aria-label") ?? button.textContent.trim()),
+          ["Undo", "Redo", "Reset changes", "Save"],
+        );
+        assert.equal(document.querySelectorAll('[aria-label="Undo"]').length, 1);
+        assert.equal(document.querySelectorAll('[aria-label="Redo"]').length, 1);
+        assert.equal(document.querySelector('[aria-label="Edit history"]'), null);
+        if (mode === "furnish") assert.equal(document.querySelector(".editor-action-bar"), null);
+        assert.equal(buttons[0].disabled, true);
+        assert.equal(buttons[1].disabled, false);
+        assert.equal(buttons[0].getAttribute("aria-keyshortcuts"), "Control+Z Meta+Z");
+        assert.equal(
+          buttons[1].getAttribute("aria-keyshortcuts"),
+          "Control+Shift+Z Meta+Shift+Z Control+Y",
+        );
+        await act(async () => buttons[1].click());
+      }
+      assert.equal(redone, 3);
+      let undone = 0;
+      const drawingProps = headerProps({
+        mode: "construct",
+        unsettled: true,
+        floorZoneDrawing: { active: true, points: [[0, 0]], future: [] },
+        undoProject: () => undone++,
+      });
+      await act(async () => root.render(React.createElement(HomeEditorHeader, drawingProps)));
+      const undo = document.querySelector('[aria-label="Undo"]');
+      assert.equal(undo.disabled, false, "unfinished floor drawing retains its local undo");
+      await act(async () => undo.click());
+      assert.equal(undone, 1);
+      await act(async () =>
+        root.render(
+          React.createElement(HomeEditorHeader, { ...drawingProps, referenceAdjusting: true }),
+        ),
+      );
+      assert.equal(undo.disabled, true, "reference-plan adjustment disables history controls");
     });
   });
 

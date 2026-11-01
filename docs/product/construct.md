@@ -2,8 +2,11 @@
 
 Construct is an implemented 2D plan editor. Two-finger trackpad scrolling pans
 the plan without clicking or changing tools, including during construction.
-Pinch (or Ctrl/Command-scroll) zooms around the cursor. Its tool set is Select, Wall, Door,
-Window, Passage, Floor, Measure, Pan, and Decorations (Niche, Boundary, Pool). Users can edit wall endpoints and
+Pinch (or Ctrl/Command-scroll) zooms around the cursor. After Select, the toolbar orders
+Wall, Openings, Floor and Stairs, followed by Measure and Decorations. Wall groups
+Wall, Invisible wall and Outdoor space; Openings groups Door, Passage and Window.
+Hover, click/tap or keyboard activation reveals each group in a floating disclosure.
+Existing tool shortcuts and tutorial actions still select the individual tools directly. Users can edit wall endpoints and
 positions, choose wall finishes and thicknesses, identify rooms, place and resize
 openings, and change supported opening models/orientations. The floor inspector
 also controls default wall/ceiling settings. Select a door, window, or passage and
@@ -12,6 +15,27 @@ controls rectangular/arched shape and arch rise. Valid width and height edits up
 the scene immediately. Sizes that do not fit report an error; leaving the field
 restores the accepted value. These edits use the ordinary
 preview, undo/redo, autosave, and Apply flow.
+
+Doors, windows, passages, and walls (including invisible walls) expose a Name field
+above Dimensions in Properties. Unnamed items display their existing identifier.
+Enter or leaving the field commits a trimmed name; Escape cancels the edit.
+Clearing the field restores the identifier fallback. Names persist through history,
+reopening, export/import and Apply. Custom names identify walls and openings in
+Properties headings, an opening's supporting-wall field, Arrange's Fit to window
+choices (including sliding glass doors), Issues rows and their Locate actions,
+door/window connection labels and garage interaction prompts. Unnamed fields and choices retain their identifier fallback;
+Properties headings and interaction prompts retain their type fallback. Renaming
+or clearing a name refreshes these labels without changing architectural identifiers,
+binding slots or existing mappings.
+
+Add floor above/below opens a dialog with an empty-plan default and a
+“Duplicate this floor” option for the selected floor. Copies are appended above
+the top floor or below the lowest basement, and retain the source floor's height,
+architecture and finishes. Every copied identity and internal architectural
+reference is remapped. Furniture, devices, Connect profiles and private Home
+Assistant mappings are never copied. Connecting stairs and building-wide settings
+remain unchanged. Cancel leaves the workspace untouched;
+adding a floor is one undoable workspace edit using existing persistence formats.
 
 Niche uses the same wall placement preview, single-shot selection, dragging,
 width handles, marquee, duplication and deletion system as doors/windows.
@@ -56,6 +80,25 @@ history, autosave, export/import, and Apply flow. After Apply, Home's Show roof
 action displays the result. Pitch, thickness, and flush overhang are automatic;
 per-section controls and roof drawing are not exposed.
 
+The Terrain disclosure sets four corner heights around the home's ground and
+basement footprint in the unrotated 2D plan. Negative heights lower a side to a
+garage or basement entrance; heights blend across the home and stay level beyond
+its bounds. Fields support the measurement-unit preference, explicit unit suffixes,
+and local validation. The four controls match the 2D plan in a two-by-two layout,
+with up/down arrows to raise or lower each corner. They step by 0.1 m in metric
+or one inch in imperial, with Shift multiplying the step by ten. Reset to flat
+ground restores zero at every corner.
+These home-wide edits use ordinary history, autosave, import/export and Save.
+Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
+to edit terrain. Individual terrain zones and earthwork drawing are not exposed.
+When custom terrain leaves an exterior doorway, passage or open platform edge
+without a crossing within Walk's 30 cm step limit, Issues shows a non-blocking
+warning and Locate selects the affected opening or platform. Supporting platforms
+and connected stair landings count as access. Railed edges, windows and interior
+openings are excluded. A downward slope does not require a basement; adding a
+lower floor alone does not connect an existing ground-floor entrance. Adjust the
+grade or model the intended access. Save remains available with these warnings.
+
 Wall drawing snaps to the grid, endpoints, wall segments, and angle references;
 Alt bypasses snapping. Alignment guides match unfinished opposite sides, including
 rotated rectangles. Editing a corner uses fixed neighboring edges for the same
@@ -71,6 +114,14 @@ loop ends the drawing chain. Topology derives
 rooms, interior/exterior wall runs, junctions, footprint regions, and ceilings
 from the editable wall graph while retaining room identities where possible.
 Incomplete shells and ambiguous room merges produce actionable diagnostics.
+Rooms exist only inside wall-enclosed areas, so an open plan with several named
+areas separates them with `virtual` walls. Topology treats a virtual wall like any
+other boundary and preserves the flag through draft creation and re-derivation.
+Choose Wall → Invisible wall to use the same endpoint, click/drag, snapping, measurement,
+loop-closing and history flow as physical walls. Invisible boundaries appear as dashed
+lines in Construct and remain selectable and editable, but have no physical finish,
+opening or item support. Arrange ignores them when snapping items; project validation
+rejects attachments to them. Physical opening clearance ignores their junction arms.
 
 Selection includes individual targets and Shift-drag marquee selection. Drag
 activation distinguishes a click from an actual move. Opening placement avoids
@@ -83,10 +134,11 @@ removes exclusive boundary spans and their openings, preserves walls shared with
 unselected rooms, and splits source walls where only part is removable. Shared
 boundaries incidentally touched by a room marquee remain; wall-only deletion
 still removes a directly selected wall. A room enclosed entirely by shared walls
-explains that its walls must be edited. In Properties, the separate Room actions
-section groups Delete room with a reversible Solid structure toggle. This marks an
-enclosed space as a solid structural block for chimneys, shafts or pillars,
-keeping its walls and saved room identity. Solid spaces have a neutral plan fill
+explains that its walls must be edited. In Properties, the separate Actions
+section provides deletion. The Room section starts with **Use as room**, enabled
+by default for enclosed spaces. Turning it off fills the space as a structural
+block for cupboards, shafts or pillars, keeping its walls and saved room identity. Name, accent, floor finish and ceiling
+controls are hidden until room use is restored. Solid spaces have a neutral plan fill
 without a room label, remain selectable in Construct, and render at the floor's
 default wall height. They are excluded from Home room navigation, room status,
 Connect area mapping and walk connectivity diagnostics. Connect keeps them visible
@@ -122,7 +174,7 @@ laurel), or Ivy-covered wall from a thumbnail grid using Arrange’s shared prev
 renderer and cache. New styles use suitable default dimensions; restyling an
 existing hedge retains its height and width. Both dimensions remain editable. Select a
 hedge to move it or drag either endpoint; deletion, undo/redo, project export,
-and Apply preserve boundaries. The picker retains all five hedge styles and adds Picket fence, Privacy fence, Post and rail, Metal fence, and Low masonry wall. Existing `hedges` records, IDs, style IDs and dimensions remain unchanged; new styles use the same record and lifecycle. Restyling retains dimensions. All styles are procedural toon geometry and block walking across their continuous segment envelope, including gaps between rails or bars. Leave explicit segment gaps for entrances; garden and driveway gates are deferred.
+and Apply preserve boundaries. The picker retains all five hedge styles and adds Picket fence, Privacy fence, Post and rail, Metal fence, and Low masonry wall. Existing `hedges` records, IDs, style IDs and dimensions remain unchanged; new styles use the same record and lifecycle. Restyling retains dimensions. All styles are procedural toon geometry and block walking across their continuous segment envelope, including gaps between rails or bars. Ground-floor boundaries outside indoor or platform support follow custom terrain along their full length, including posts and plant roots. Upper-floor boundaries and boundaries on authored indoor/platform support retain that level. The plan view stays flat. Leave explicit segment gaps for entrances; garden and driveway gates are deferred.
 
 Wall, hedge, pool, and custom floor outlines share segment drawing gestures, snapping,
 angle references, and edge measurements. Pool and floor outline editing shares
@@ -174,7 +226,25 @@ either endpoint to change length/direction, or either side handle to resize widt
 symmetrically. Measurements update throughout the gesture. Escape and interrupted
 gestures cancel; each completed gesture is one undoable edit.
 
-Stairs also support L-shaped and spiral connections between adjacent floors. Choose
+Stairs offers **Between floors** and **To ground** connections. Between floors
+links adjacent storeys. To ground links the selected floor or its outdoor platform
+to terrain without requiring another floor. It remains available on the top floor;
+apartment shells must be set to zero first. For a straight flight, draw from the
+floor landing to the ground endpoint. For a turning flight, click the floor landing,
+the turn, then the ground endpoint. Height and step count follow the terrain at
+that endpoint, including after later terrain edits. Landing warnings identify
+unsupported floor connections, pools and terrain that cannot meet the final step.
+Connected terrain stairs resolve the corresponding terrain exit warning and are
+walkable in both directions. They use ordinary undo, autosave, Save and export.
+
+Both connections offer **Open treads**, **Concrete**, and **Stone** styles,
+independent of the four stair shapes. Concrete uses a solid base and closed risers;
+Stone adds contrasting stone tread caps. To ground starts with Concrete, while
+Between floors and existing stairs retain Open treads. Railings remain optional.
+The placement thumbnails show the selected style; selected stair properties can
+change it without altering the route or landings.
+
+Stairs also support L-shaped and spiral connections. Choose
 Straight, L-shaped, or Spiral before drawing from the left sidebar's procedural 3D
 preview palette, styled like the door picker, or in the selected stair's properties.
 During placement, the sidebar groups the previews, shape-specific instructions, and
@@ -290,7 +360,8 @@ the L-shaped stair controls: lower/upper flight lengths, width, and left/right t
 Place the bottom, lower-flight landing center, then the returning upper endpoint.
 The landing depth equals the flight width; curved half-turn stairs remain unsupported.
 
-Floor also offers Outdoor platform for same-level terraces and balconies. Close an
+Wall → Outdoor space draws the existing outdoor platforms for same-level terraces and
+balconies. The Floor tool keeps whole-room and custom-area finish painting. Close an
 independent polygon using the ordinary snapping, measurements, local drawing
 undo/redo and cancel gestures. Choose Railing (1 m), Low wall (0.3 m), or Open
 from procedural thumbnail cards before drawing; exposed edges inherit that
@@ -301,7 +372,15 @@ Corner movement preserves edge IDs and overrides. Inserting a corner retains
 the leading edge and downstream identities; the new edge inherits the platform
 default. House-facade runs suppress platform barriers, including doorway spans.
 
-Platforms do not create rooms, ceilings, roof sections, or house walls. A top
+Platforms do not create enclosed rooms, ceilings, roof sections, or house walls.
+Select a platform and enable **Use as room** in Properties to name an outdoor room.
+It shares the switch, help-text layout and committed name input with enclosed
+spaces. Both keep the saved identity when room use is turned off; platforms
+keep their outdoor geometry rather than becoming structural blocks.
+It can map to an HA area in Connect, match its devices automatically, and take part
+in room navigation, focus, status and shortcuts. The option is off for existing
+and new platforms. Disabling it keeps the platform and name, removes its room
+from Connect and navigation, and returns its devices to Outside rooms. A top
 floor can consist of platforms without enclosed rooms. Same-level room/platform
 and platform/platform interior overlaps are errors; shared boundaries are valid.
 These edits use ordinary workspace history, autosave, export/import and Save.
@@ -353,3 +432,12 @@ use the existing faceColors metadata, undo/redo, autosave and Save/import/export
 The two-sided disclosure is editor state; differing stored face colors reopen it.
 Interior walls with differing faces use the general interior finish for Auto edges,
 even if an old exteriorColor value remains from their drawing history.
+
+The Construct floor menu places **Setup apartment floor** directly below **Add floor below**.
+Its dialog sets the storey where the lowest modeled floor starts (0–100, with 0
+preserving the original appearance). The setting follows normal draft, undo and
+publication behavior. Positive values repeat a muted shell of the lowest floor's
+footprint underneath the home, using its floor-to-floor height and simple facade
+windows. These instanced shells have no rooms, devices, selection or Walk surfaces
+and never appear in floor navigation. Plan views omit them; ordinary camera framing
+continues to use only the real floors. The decorative ground sits below the stack.

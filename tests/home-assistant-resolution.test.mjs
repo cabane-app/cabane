@@ -143,7 +143,7 @@ await withModules(async (load) => {
     assert.equal(missing.path, "runtimeProfile.entityIdsBySlotId.demo-temperature-slot");
   });
 
-  test("reports area, domain, hidden, disabled, and unavailable profile issues", () => {
+  test("reports domain, hidden, disabled, and unavailable issues while allowing explicit cross-area mappings", () => {
     const manifest = connectedManifestFixture(neutralDemoManifest);
     const secondRoom = structuredClone(manifest.floors[0].rooms[0]);
     secondRoom.id = "fixture-second-room";
@@ -182,16 +182,16 @@ await withModules(async (load) => {
         .issues.map((entry) => entry.code),
     );
     for (const code of [
-      "binding.area-mismatch",
       "binding.disabled",
       "binding.domain-incompatible",
       "binding.hidden",
       "binding.unavailable",
     ])
       assert.equal(codes.has(code), true, `expected ${code}`);
+    assert.equal(codes.has("binding.area-mismatch"), false);
   });
 
-  test("keeps an explicit cross-area binding valid only for a single-slot modeled device", () => {
+  test("keeps explicit cross-area bindings valid for single- and multi-slot modeled devices", () => {
     const manifest = connectedManifestFixture(neutralDemoManifest);
     const profile = connectedProfileFixture();
     const runtime = connectedRuntimeFixture();
@@ -221,7 +221,7 @@ await withModules(async (load) => {
       multiSlot.rooms["demo-room"].devices
         .find((device) => device.slot.id === "fixture-light-device")
         .issues.some((issue) => issue.code === "binding.area-mismatch"),
-      true,
+      false,
     );
   });
 

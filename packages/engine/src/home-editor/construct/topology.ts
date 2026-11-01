@@ -225,12 +225,14 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
   const ceilingHeight = input.defaultCeilingHeightMeters ?? 2.5;
   const walls: WallSpec[] = normalizedWallRuns.map(({ wall, classification }) => ({
     id: wall.id,
+    ...(wall.name ? { name: wall.name } : {}),
     from: wall.from,
     to: wall.to,
     classification,
     thicknessMeters:
       wall.thicknessMeters ??
       (classification === "interior" ? interiorThickness : exteriorThickness),
+    ...(wall.virtual ? { virtual: true } : {}),
     ...(wall.heightMeters && wall.heightMeters !== wallHeight
       ? { heightMeters: wall.heightMeters }
       : {}),
@@ -244,6 +246,7 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
     if (!ownerRun) return [];
     const shared = {
       id: opening.id,
+      ...(opening.name ? { name: opening.name } : {}),
       wallId: ownerRun.wallId,
       offsetFromWallStartPlanUnits: round(opening.offsetPlanUnits - ownerRun.startOffsetPlanUnits),
       widthPlanUnits: round(opening.widthPlanUnits),

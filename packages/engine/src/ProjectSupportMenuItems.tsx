@@ -14,10 +14,10 @@ export function ProjectSupportMenuItems() {
         <span>Send feedback</span>
       </a>
       <a
-        href="https://buymeacoffee.com/cabane"
+        href="https://paypal.me/hilliaapp"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Buy me a coffee (opens in a new tab)"
+        aria-label="Buy me a coffee via PayPal (opens in a new tab)"
         onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")}
       >
         <SceneMenuIcon name="coffee" />

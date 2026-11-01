@@ -28,7 +28,7 @@ type Props = {
   roomNames: Readonly<Record<string, string>>;
   deviceNames: Readonly<Record<string, string>>;
   disabled: boolean;
-  rooms: HomeProject["floors"][number]["rooms"];
+  rooms: readonly { id: string; name: string }[];
   devices: HomeProject["sceneItems"];
   query: string;
   setQuery: (query: string) => void;
@@ -58,6 +58,28 @@ export function ShortcutPicker({
   choose,
   onClose,
 }: Props) {
+  const deviceGroups = [
+    ...rooms.map((room) => ({ id: room.id, name: roomNames[room.id] ?? room.name })),
+    ...project.floors.map((floor) => ({
+      id: `outside-rooms:${floor.id}`,
+      name: project.floors.length > 1 ? `Outside rooms · ${floor.name}` : "Outside rooms",
+    })),
+  ]
+    .map((group) => ({
+      ...group,
+      choices: devices.filter((device) => {
+        const roomId = resolvedRoomIdForItem(device, project, deviceModels[device.modelId]);
+        const groupId = roomId ?? `outside-rooms:${device.floorId}`;
+        return (
+          groupId === group.id &&
+          (matching(group.name) ||
+            matching(
+              deviceNames[device.id] ?? deviceModels[device.modelId]?.label ?? device.modelId,
+            ))
+        );
+      }),
+    }))
+    .filter((group) => group.choices.length > 0);
   return (
     <div className="shortcuts-picker">
       <div className="shortcuts-picker__heading">
@@ -196,20 +218,9 @@ export function ShortcutPicker({
               );
             })}
         {picker.kind === "device" &&
-          rooms.map((room) => {
-            const roomName = roomNames[room.id] ?? room.name;
-            const choices = devices
-              .filter((device) => resolvedRoomIdForItem(device, project) === room.id)
-              .filter(
-                (device) =>
-                  matching(roomName) ||
-                  matching(
-                    deviceNames[device.id] ?? deviceModels[device.modelId]?.label ?? device.modelId,
-                  ),
-              );
-            if (!choices.length) return null;
+          deviceGroups.map(({ id, name: roomName, choices }) => {
             return (
-              <section className="shortcuts-picker__room" key={room.id} aria-label={roomName}>
+              <section className="shortcuts-picker__room" key={id} aria-label={roomName}>
                 <h3>{roomName}</h3>
                 <div className="shortcuts-picker__room-grid">
                   {choices.map((device) => {
@@ -237,8 +248,12 @@ export function ShortcutPicker({
               </section>
             );
           })}
-        {picker.kind === "device" && devices.length === 0 && (
-          <p>No room devices are available. Add one in Arrange first.</p>
+        {picker.kind === "device" && deviceGroups.length === 0 && (
+          <p>
+            {devices.length
+              ? "No devices match your search."
+              : "No devices are available. Add one in Arrange first."}
+          </p>
         )}
       </div>
     </div>

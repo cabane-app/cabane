@@ -29,6 +29,7 @@ await withModules(async (load) => {
       path = "/",
       corrupt = false,
       failRestore = false,
+      savedOrigin,
     } = typeof input === "string" ? { mode: input } : input;
     const { repository } = await initializeWorkspaces(indexedDB, window.localStorage, {
       skipLegacyMigration: true,
@@ -44,7 +45,10 @@ await withModules(async (load) => {
         version: 1,
         corrupt,
         document: exportWorkspaceBackup(
-          { ...entry.metadata, homeAssistantUrl: window.location.origin },
+          {
+            ...entry.metadata,
+            homeAssistantUrl: savedOrigin === undefined ? window.location.origin : savedOrigin,
+          },
           entry.record,
         ),
       };
@@ -74,6 +78,12 @@ await withModules(async (load) => {
         if (message.type === "cabane/workspaces/get") {
           if (failRestore) throw Error("Could not download the saved home");
           return saved;
+        }
+        if (message.type === "cabane/workspaces/delete") {
+          assert.equal(message.home_id, saved.home_id);
+          assert.equal(message.expected_version, saved.version);
+          saved = null;
+          return null;
         }
         if (message.type.startsWith("config/")) return [];
         throw Error(`Unexpected request ${message.type}`);
@@ -137,6 +147,16 @@ await withModules(async (load) => {
     };
   }
 
+  startupTest("native LAN HTTP startup discovers saved homes without OAuth", () =>
+    withStorageDom(async (dom) => {
+      const h = await dom.mount(mount, "saved");
+      await dom.until(() => dom.document.body.textContent.includes("Saved HA home"));
+      assert.ok(h.requests.includes("cabane/workspaces/list"));
+      assert.ok(!h.requests.includes("cabane/workspaces/put"));
+      assert.ok(!dom.document.body.textContent.includes("Open Cabane over HTTPS"));
+    }, "http://homeassistant.local:8123/cabane"),
+  );
+
   startupTest(
     "native library appends suggested cards and adds the exact saved home with sync",
     () =>
@@ -166,6 +186,57 @@ await withModules(async (load) => {
         await dom.until(() => dom.document.querySelector('[aria-label="Open Saved HA home"]'));
         assert.equal(target(), null);
       }),
+  );
+
+  startupTest("a remote card can delete a rejected saved home without restoring it", () =>
+    withStorageDom(async (dom) => {
+      const h = await dom.mount(mount, {
+        mode: "saved",
+        path: "/workspaces",
+        savedOrigin: "https://old-ha.test",
+      });
+      await dom.until(() =>
+        dom.document.querySelector('[aria-label="Add Saved HA home from Home Assistant"]'),
+      );
+      await act(async () =>
+        dom.document.querySelector('[aria-label="Add Saved HA home from Home Assistant"]').click(),
+      );
+      await dom.until(() => dom.document.body.textContent.includes("different Home Assistant"));
+      const card = dom.document.querySelector(".workspace-card--suggested");
+      await act(async () =>
+        [...card.querySelectorAll("button")]
+          .find((button) => button.textContent === "Delete")
+          .click(),
+      );
+      await dom.click("Delete permanently");
+      await dom.until(() => !dom.document.querySelector(".workspace-card--suggested"));
+      assert.equal(await h.repository.read(h.savedId), null);
+      assert.ok(h.requests.includes("cabane/workspaces/delete"));
+      assert.ok(!h.requests.includes("cabane/workspaces/put"));
+      assert.equal(dom.document.querySelector("dialog"), null);
+    }),
+  );
+
+  startupTest("the library permanently deletes both a local home and its HA copy", () =>
+    withStorageDom(async (dom) => {
+      const h = await dom.mount(mount, { mode: "local", path: "/workspaces" });
+      await dom.until(() => dom.document.querySelector('[aria-label="Open Saved HA home"]'));
+      const card = dom.document
+        .querySelector('[aria-label="Open Saved HA home"]')
+        .closest("article");
+      await act(async () =>
+        [...card.querySelectorAll("button")]
+          .find((button) => button.textContent === "Delete")
+          .click(),
+      );
+      await dom.until(() => dom.document.body.textContent.includes("Other devices may still"));
+      await dom.click("Delete permanently");
+      await dom.until(() => h.requests.includes("cabane/workspaces/delete"));
+      await dom.until(() => !dom.document.querySelector("dialog"));
+      assert.ok(h.requests.includes("cabane/workspaces/delete"));
+      assert.equal(dom.document.querySelector('[aria-label="Open Saved HA home"]'), null);
+      assert.equal(dom.document.querySelector(".workspace-card--suggested"), null);
+    }),
   );
 
   startupTest("native library omits local and corrupt homes from suggestions", async () => {

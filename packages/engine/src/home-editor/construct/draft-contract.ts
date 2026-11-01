@@ -31,6 +31,7 @@ export type FloorEditorTool =
   | "select"
   | "hedge"
   | "wall"
+  | "virtual-wall"
   | "door"
   | "niche"
   | "window"
@@ -108,7 +109,7 @@ export type FloorEditorAction =
   | { type: "set-tool"; tool: FloorEditorTool }
   | { type: "select"; selection: FloorEditorSelection }
   | { type: "set-view"; view: FloorEditorView }
-  | { type: "add-wall"; from: PlanPoint; to: PlanPoint; exteriorColor?: string }
+  | { type: "add-wall"; from: PlanPoint; to: PlanPoint; exteriorColor?: string; virtual?: boolean }
   | { type: "add-hedge"; hedge: Omit<HedgeSpec, "id"> }
   | { type: "update-hedge"; id: string; changes: Partial<Omit<HedgeSpec, "id">> }
   | { type: "add-pool"; polygon: Polygon }
@@ -148,6 +149,7 @@ export type FloorEditorAction =
       changes: Partial<
         Pick<
           EditorWall,
+          | "name"
           | "thicknessMeters"
           | "heightMeters"
           | "exteriorColor"

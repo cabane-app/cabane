@@ -1,3 +1,4 @@
+import { isAuxiliaryEntitySlot } from "./entity-slot-roles";
 import {
   bindingEntityCandidates,
   collectBindingSlots,
@@ -73,7 +74,7 @@ export const deviceMappingCandidates = ({
       const unresolvedSlotIds: string[] = [];
       let compatibleMatchCount = 0;
       let matchRank = 0;
-      for (const slot of device.entitySlots) {
+      for (const slot of device.entitySlots.filter((slot) => !isAuxiliaryEntitySlot(slot))) {
         const descriptor = collectBindingSlots(manifest).find(
           (candidate) => candidate.slotId === slot.id,
         );
@@ -115,7 +116,8 @@ export const applyDeviceMapping = (
   candidate: DeviceMappingCandidate | null,
 ) => {
   let next = profile;
-  for (const slot of device.entitySlots) next = replaceEntitySlotMapping(next, slot.id, null);
+  for (const slot of device.entitySlots.filter((slot) => !isAuxiliaryEntitySlot(slot)))
+    next = replaceEntitySlotMapping(next, slot.id, null);
   if (!candidate) return next;
   for (const [slotId, entityId] of Object.entries(candidate.entityIdsBySlotId)) {
     next = replaceEntitySlotMapping(next, slotId, entityId);
@@ -130,6 +132,7 @@ export const mappedHomeAssistantDeviceId = (
 ) => {
   const deviceIds = new Set(
     device.entitySlots
+      .filter((slot) => !isAuxiliaryEntitySlot(slot))
       .map((slot) => profile.entityIdsBySlotId[slot.id])
       .map(
         (entityId) =>

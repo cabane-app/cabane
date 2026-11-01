@@ -13,7 +13,9 @@ export const normalizeEntityStates = (
         entityId: entity.entity_id as EntityId,
         state: entity.state,
         attributes: entity.attributes,
-        available: !["unknown", "unavailable"].includes(entity.state),
+        available:
+          entity.state !== "unavailable" &&
+          (entity.state !== "unknown" || entity.entity_id.startsWith("event.")),
         stale,
         lastConfirmedAt: entity.last_updated,
         lastChanged: entity.last_changed,

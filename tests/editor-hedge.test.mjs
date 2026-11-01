@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { act, createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import { OrthographicCamera, Ray, Vector3 } from "three";
+import { Box3, Matrix4, OrthographicCamera, Ray, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -25,6 +25,9 @@ await withModules(async (load) => {
     "/packages/engine/src/home-project/legacy-floor-storage.ts",
   );
   const { layoutFloorFromEditorFloor } = await load("/apps/web/src/editor-preview/project-sync.ts");
+  const { TerrainSurfaceContext } = await load("/packages/engine/src/terrain/TerrainSurface.tsx");
+  const { createTerrainSurface } = await load("/packages/engine/src/terrain/terrain-surface.ts");
+  const { prepareBuildingWalk } = await load("/packages/engine/src/stairs/stair-navigation.ts");
   const base = engine.neutralDemoManifest.floors[0];
   const pointer = (x, z) => ({
     pointerId: 1,
@@ -192,6 +195,237 @@ await withModules(async (load) => {
     };
     assert.equal(engine.validateLayoutFloorSpec(floor).valid, false);
   });
+  test("ground boundaries follow varying terrain throughout their solids and Walk ranges", async () => {
+    const floor = {
+      ...base,
+      coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },
+      footprint: [
+        [0, 0],
+        [8, 0],
+        [8, 8],
+        [0, 8],
+      ],
+      hedges: [
+        {
+          id: "slope",
+          from: [0, -1],
+          to: [8, -1],
+          style: "clipped",
+          heightMeters: 1.4,
+          widthMeters: 0.7,
+        },
+      ],
+    };
+    const home = {
+      terrain: {
+        topLeftMeters: 0,
+        topRightMeters: -2,
+        bottomLeftMeters: -1,
+        bottomRightMeters: -3,
+      },
+    };
+    const terrain = createTerrainSurface(home.terrain, [floor]);
+    const matrix = new Matrix4();
+    for (const style of engine.HEDGE_STYLES.map((entry) => entry.id)) {
+      floor.hedges[0].style = style;
+      const renderer = await create(
+        createElement(
+          TerrainSurfaceContext.Provider,
+          { value: terrain },
+          createElement(ArchitecturalHedges, { floor }),
+        ),
+      );
+      try {
+        renderer.scene.instance.updateMatrixWorld(true);
+        const meshes = renderer.scene
+          .findAll((node) => node.instance.isMesh)
+          .map((node) => node.instance);
+        const samples = [];
+        for (const mesh of meshes) {
+          const positions = mesh.geometry.attributes.position;
+          for (let instance = 0; instance < (mesh.isInstancedMesh ? mesh.count : 1); instance++) {
+            matrix.copy(mesh.matrixWorld);
+            if (mesh.isInstancedMesh) {
+              const local = new Matrix4();
+              mesh.getMatrixAt(instance, local);
+              matrix.multiply(local);
+            }
+            for (let i = 0; i < positions.count; i++) {
+              const point = new Vector3().fromBufferAttribute(positions, i).applyMatrix4(matrix);
+              samples.push({
+                point,
+                above: point.y - (-0.05 + terrain.offsetAt(point.x, point.z)),
+              });
+            }
+          }
+        }
+        for (const x of [0.5, 2, 4, 6, 7.5]) {
+          const local = samples.filter(
+            ({ point }) => Math.abs(point.x - x) < (style === "post-rail" ? 0.9 : 0.55),
+          );
+          assert.ok(local.length, `${style}: geometry spans the full boundary`);
+          assert.ok(
+            Math.min(...local.map(({ above }) => above)) < 0.15,
+            `${style} floats at x=${x}`,
+          );
+          assert.ok(
+            Math.min(...local.map(({ above }) => above)) > -0.15,
+            `${style} sinks at x=${x}`,
+          );
+        }
+        if (style === "clipped" || style === "masonry" || style === "ivy-wall") {
+          for (const x of [1, 3, 5, 7]) {
+            const hits = new Raycaster(
+              new Vector3(x, -0.05 + terrain.offsetAt(x, -1) + 0.3, 2),
+              new Vector3(0, 0, -1),
+            ).intersectObjects(meshes);
+            assert.ok(hits.length > 0, `${style}: ray picking follows the grounded solid at ${x}`);
+          }
+        }
+      } finally {
+        await renderer.unmount();
+      }
+    }
+    const building = {
+      home,
+      coordinates: floor.coordinates,
+      floors: [floor],
+      stairs: [],
+      sceneItems: [],
+    };
+    const colliders = prepareBuildingWalk(building)
+      .colliders.get(floor.id)(new Set(), [])
+      .filter((entry) => entry.id.startsWith("slope-walk"));
+    assert.ok(colliders.length > 4, "collision follows the grade in short continuous segments");
+    for (const collider of colliders) {
+      const heights = [collider.from, collider.to].map(
+        ({ x, z }) => -0.05 + terrain.offsetAt(x, z),
+      );
+      assert.ok(Math.abs(collider.minY - Math.min(...heights)) < 0.015);
+      assert.ok(Math.abs(collider.maxY - Math.max(...heights) - 1.4) < 0.015);
+    }
+    const platformFloor = {
+      ...floor,
+      outdoorPlatforms: [
+        {
+          id: "terrace",
+          polygon: [
+            [0, -2],
+            [8, -2],
+            [8, 0],
+            [0, 0],
+          ],
+          finish: { kind: "preset", preset: "travertine" },
+          defaultEdge: { kind: "open" },
+          edges: [],
+        },
+      ],
+    };
+    const platformRenderer = await create(
+      createElement(
+        TerrainSurfaceContext.Provider,
+        { value: terrain },
+        createElement(ArchitecturalHedges, { floor: platformFloor }),
+      ),
+    );
+    try {
+      const collider = prepareBuildingWalk({ ...building, floors: [platformFloor] })
+        .colliders.get(floor.id)(new Set(), [])
+        .find((entry) => entry.id === "slope-walk");
+      assert.equal(collider.minY, 0, "authored platform boundary retains its support height");
+      assert.ok(
+        Math.abs(new Box3().setFromObject(platformRenderer.scene.instance).min.y + 0.05) < 1e-6,
+        "platform boundary solids retain their authored level",
+      );
+      assert.equal(
+        platformRenderer.scene.findByProps({ name: "hedge-slope" }).instance.position.y,
+        -0.05,
+      );
+    } finally {
+      await platformRenderer.unmount();
+    }
+    const upper = { ...floor, id: "upper", elevationMeters: 2.8 };
+    const renderer = await create(
+      createElement(
+        TerrainSurfaceContext.Provider,
+        { value: terrain },
+        createElement(ArchitecturalHedges, { floor: upper }),
+      ),
+    );
+    try {
+      assert.equal(renderer.scene.findByProps({ name: "hedge-slope" }).instance.position.y, -0.05);
+      const upperCollider = prepareBuildingWalk({ ...building, floors: [floor, upper] })
+        .colliders.get(upper.id)(new Set(), [])
+        .find((entry) => entry.id === "slope-walk");
+      assert.equal(upperCollider.minY, 2.8);
+      assert.ok(
+        Math.abs(new Box3().setFromObject(renderer.scene.instance).min.y + 0.05) < 1e-6,
+        "upper boundary solids retain their authored local level",
+      );
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
+  test("terrain boundary resizing and resetting rebuild geometry from the authored model", async () => {
+    const floor = {
+      ...base,
+      coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },
+      footprint: [
+        [0, 0],
+        [8, 0],
+        [8, 8],
+        [0, 8],
+      ],
+      hedges: [
+        {
+          id: "edit",
+          from: [0, -1],
+          to: [8, -1],
+          style: "clipped",
+          heightMeters: 1,
+          widthMeters: 0.5,
+        },
+      ],
+    };
+    const terrain = createTerrainSurface(
+      { topLeftMeters: -1, topRightMeters: -1, bottomLeftMeters: -1, bottomRightMeters: -1 },
+      [floor],
+    );
+    const render = (floor, terrain) =>
+      createElement(
+        TerrainSurfaceContext.Provider,
+        { value: terrain },
+        createElement(ArchitecturalHedges, { floor }),
+      );
+    const renderer = await create(render(floor, terrain));
+    try {
+      const edited = { ...floor, hedges: [{ ...floor.hedges[0], to: [4, -1], heightMeters: 2 }] };
+      await renderer.update(render(edited, terrain));
+      const solidBounds = () => {
+        renderer.scene.instance.updateMatrixWorld(true);
+        const bounds = new Box3();
+        renderer.scene
+          .findAll((node) => node.instance.isMesh && !node.instance.isInstancedMesh)
+          .forEach((node) => bounds.expandByObject(node.instance));
+        return bounds;
+      };
+      const bounds = solidBounds();
+      assert.ok(Math.abs(bounds.min.y + 1.05) < 1e-6, JSON.stringify(bounds));
+      assert.ok(
+        bounds.max.x < 4.2 && bounds.max.y > 0.94,
+        "resizing keeps the edited length and height",
+      );
+      await renderer.update(render(edited, null));
+      assert.ok(
+        Math.abs(solidBounds().min.y + 0.05) < 1e-6,
+        "reset to flat restores the original model geometry",
+      );
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("hedge, pool, and floor corner drags use neighboring angles and clear alignment on Alt", async () => {
     const angle = 0.3;
     const at = (x, y) => [

@@ -19,12 +19,10 @@ export function WorkspaceHost({
   id,
   repository,
   onboarding,
-  demoWorkspaceId,
 }: {
   id: string;
   repository: WorkspaceRepository;
   onboarding: ReturnType<typeof useWorkspaceOnboarding>;
-  demoWorkspaceId: string | null;
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -117,7 +115,6 @@ export function WorkspaceHost({
         >
           <WorkspaceModelAssetNotice record={loaded.record} id={id} />
           <ConnectedProduct
-            demoWorkspaceId={demoWorkspaceId}
             onboarding={{
               isDemo,
               welcome: isDemo && location.pathname === "/welcome",

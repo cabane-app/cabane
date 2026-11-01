@@ -4,6 +4,7 @@ import { wallStructuralHeight } from "./architecture-geometry/wall-structural-he
 import { wallSolidBands } from "./architecture-geometry/wall-solid-bands";
 import { wallFaceFinish, wallEdgeFinish } from "./architecture-geometry/wall-face-finish";
 import { wallLevelContact } from "./architecture-geometry/wall-level-contact";
+import { physicalFloor } from "./architecture-geometry/physical-floor";
 import { type MultiPolygon } from "polygon-clipping";
 
 import { BufferGeometry, Color, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
@@ -29,12 +30,13 @@ import type { FloorSpec, WallSpec } from "./types";
 
 /** Generalized version of the original house-wide occupied-grid wall union. */
 export function buildArchitecturalWallGeometries(
-  sourceFloor: FloorSpec,
+  requestedFloor: FloorSpec,
   interiorColor: string = DEFAULT_WALL_COLORS.interior,
   exteriorColor: string = DEFAULT_WALL_COLORS.exterior,
   baseElevationMeters = GROUND_ELEVATION_METERS,
   neighbors: { below?: FloorSpec; above?: FloorSpec } = {},
 ): ArchitecturalWallGeometryGroup[] {
+  const sourceFloor = physicalFloor(requestedFloor);
   // Continue exterior finish across the structural slab between ceiling and next level.
   const floor = neighbors.above
     ? {

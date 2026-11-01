@@ -1,5 +1,6 @@
 import costs from "./test-costs.json" with { type: "json" };
 import { selectVerificationTests } from "./verification-groups.mjs";
+import { assignTestShards } from "./test-shards.mjs";
 import { readdir, stat, readFile } from "node:fs/promises";
 import { after, describe } from "node:test";
 import { closeModules } from "./test-server.mjs";
@@ -28,43 +29,28 @@ export async function runShard(shardIndex, shardCount) {
   const suite = process.env.CABANE_TEST_SUITE;
   if (suite && suite !== "unit" && suite !== "browser")
     throw new Error(`Unknown test suite: ${suite}`);
-  if (suite) {
-    const classified = await Promise.all(
-      testFiles.map(async (name) => ({
-        name,
-        browser: /from ["'](?:playwright-core|\.\/browser-test-environment\.mjs)["']/.test(
-          await readFile(new URL(name, testsDirectory), "utf8"),
-        ),
-      })),
-    );
-    testFiles = classified
-      .filter((file) => file.browser === (suite === "browser"))
-      .map((file) => file.name);
-  }
-  // Browser setup and UI work dwarf source parsing; byte-only balancing used to
-  // put most browser work on one worker. Approximate milliseconds from profiling
-  // are sufficient here; unknown/new files retain a deterministic size fallback.
+  // Use the same browser boundary for suite selection and shard assignment.
+  // Unknown/new files retain a deterministic size fallback until profiled.
   const weightedFiles = await Promise.all(
     testFiles.map(async (name) => ({
       name,
+      browser: /from ["'](?:playwright-core|\.\/browser-test-environment\.mjs)["']/.test(
+        await readFile(new URL(name, testsDirectory), "utf8"),
+      ),
       cost: costs[name] ?? (await stat(new URL(name, testsDirectory))).size / 50,
     })),
   );
-  const shards = Array.from({ length: shardCount }, () => ({ cost: 0, files: [] }));
-
-  for (const file of weightedFiles.sort((left, right) => right.cost - left.cost)) {
-    const shard = shards.reduce((lightest, candidate) =>
-      candidate.cost < lightest.cost ? candidate : lightest,
-    );
-    shard.files.push(file.name);
-    shard.cost += file.cost;
-  }
+  const shards = assignTestShards(
+    weightedFiles.filter((file) => !suite || file.browser === (suite === "browser")),
+    shardCount,
+    { serialBrowser: process.env.CI === "true" },
+  );
 
   // An explicit suite owns teardown. A process-level after hook waits for an
   // idle event loop, which a reusable Chrome connection never provides.
   return describe(`Test shard ${shardIndex + 1}`, async () => {
     after(closeBrowserTestEnvironment);
     after(closeModules);
-    for (const testFile of shards[shardIndex].files.sort()) await import(`./${testFile}`);
+    for (const testFile of shards[shardIndex]) await import(`./${testFile}`);
   });
 }

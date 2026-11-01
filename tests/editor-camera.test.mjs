@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { act, createElement } from "react";
+import { Vector3, Raycaster, Plane, Vector2 } from "three";
 import { create } from "@react-three/test-renderer";
 import { withModules } from "./test-server.mjs";
 
@@ -56,6 +57,7 @@ await withModules(async (load) => {
 
   const createWheelCamera = async (element) => {
     const listeners = new Map();
+    if (element.props.savedCamera) element.props.savedCamera.current = null;
     const renderer = await create(element, {
       ...options,
       beforeReturn(canvas) {
@@ -102,6 +104,7 @@ await withModules(async (load) => {
 
   for (const [name, element] of [
     ["orbit", createElement(OrbitCamera, { floor, resetKey: 0 })],
+    ["editor top", createElement(PreviewCamera, cameraProps())],
     ["editor 3D", createElement(PreviewCamera, cameraProps({ view: "3d" }))],
   ]) {
     test(`${name} wheel zoom responds immediately and follows scroll distance, not event count`, async () => {
@@ -132,6 +135,53 @@ await withModules(async (load) => {
       }
     });
 
+    if (name === "orbit")
+      test("Orbit stops zooming out while the home remains at 70% of overview scale", async () => {
+        const { renderer, controls, wheel } = await createWheelCamera(element);
+        try {
+          const initial = pose(controls);
+          await wheel(10000, { clientX: 750, clientY: 150 });
+          assert.equal(controls.object.zoom, initial.zoom * 0.7);
+          const atLimit = pose(controls);
+          for (let i = 0; i < 20; i++) await wheel(200, { clientX: 750, clientY: 150 });
+          assert.deepEqual(
+            pose(controls),
+            atLimit,
+            "further scrolling cannot zoom or push the home away",
+          );
+        } finally {
+          await renderer.unmount();
+        }
+      });
+
+    test(`${name} zooming out off-center preserves the orbit distance and direction`, async () => {
+      const { renderer, controls, wheel } = await createWheelCamera(element);
+      try {
+        const offset = controls.object.position.clone().sub(controls.target);
+        const initial = pose(controls);
+        for (let i = 0; i < 12; i++) {
+          await wheel(150, { clientX: 750, clientY: 150 });
+          controls.update();
+        }
+        const after = controls.object.position.clone().sub(controls.target);
+        assert.ok(
+          after.distanceTo(offset) < 1e-7,
+          `zoom changed orbit offset: ${offset.toArray()} -> ${after.toArray()}`,
+        );
+        controls.update();
+        assert.ok(controls.object.position.clone().sub(controls.target).distanceTo(offset) < 1e-7);
+        const reverseDistance =
+          Math.log(initial.zoom / controls.object.zoom) / (0.0015 * controls.zoomSpeed);
+        await wheel(-reverseDistance, { clientX: 750, clientY: 150 });
+        controls.update();
+        assert.ok(Math.abs(controls.object.zoom - initial.zoom) < 1e-7);
+        assert.ok(controls.target.distanceTo(new Vector3(...initial.target)) < 1e-7);
+        assert.ok(controls.object.position.distanceTo(new Vector3(...initial.position)) < 1e-7);
+      } finally {
+        await renderer.unmount();
+      }
+    });
+
     test(`${name} wheel zoom preserves its cursor anchor, normalizes units and respects limits`, async () => {
       const { renderer, controls, wheel, listeners } = await createWheelCamera(element);
       try {
@@ -157,13 +207,38 @@ await withModules(async (load) => {
         assert.ok(Math.abs(camera.zoom - initial) < 1e-8);
         await wheel(16);
         assert.ok(Math.abs(camera.zoom - line) < 1e-8, "one line equals 16 pixels");
-        await wheel(1, { deltaMode: 2 });
+        await wheel(0.25, { deltaMode: 2 });
         const page = camera.zoom;
-        await wheel(-800);
-        assert.ok(Math.abs(camera.zoom - line) < 1e-8, "one page uses viewport height");
+        await wheel(-200);
+        assert.ok(Math.abs(camera.zoom - line) < 1e-8, "quarter-page input uses viewport height");
         assert.ok(page < line);
         await wheel(-10000);
-        assert.equal(camera.zoom, controls.maxZoom);
+        assert.equal(camera.zoom, 300, "small devices need a useful close-up ceiling");
+        const direction = new Vector3();
+        camera.getWorldDirection(direction);
+        const right = new Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+        const center = controls.target.clone();
+        const edge = center.clone().addScaledVector(right, 0.04);
+        const screen = center.clone().project(camera);
+        const edgeScreen = edge.clone().project(camera);
+        assert.ok(
+          Math.abs(edgeScreen.x - screen.x) * 500 > 11.9,
+          "a 4 cm sensor spans 12 CSS pixels",
+        );
+        assert.ok(
+          screen.z > -1 && screen.z < 1,
+          "close zoom keeps the target inside clipping planes",
+        );
+        const ray = new Raycaster();
+        ray.setFromCamera(new Vector2(screen.x + 3 / 500, screen.y), camera);
+        const hit = ray.ray.intersectPlane(
+          new Plane().setFromNormalAndCoplanarPoint(direction, center),
+          new Vector3(),
+        );
+        assert.ok(
+          Math.abs(hit.distanceTo(center) - 0.01) < 1e-8,
+          "three screen pixels resolve a 10 mm placement adjustment",
+        );
         const atLimit = pose(controls);
         await wheel(-10, cursor);
         assert.deepEqual(pose(controls), atLimit, "clamping must not move the cursor anchor");
@@ -182,6 +257,45 @@ await withModules(async (load) => {
       assert.equal(listeners.get("wheel").size, 0, "unmount removes wheel listeners");
     });
   }
+
+  test("active orthographic controls keep foreground geometry out of the near clipping plane", async () => {
+    const { renderer, controls } = await createWheelCamera(
+      createElement(OrbitCamera, { floor, resetKey: 0 }),
+    );
+    try {
+      const camera = controls.object;
+      const target = controls.target.clone();
+      const direction = camera.position.clone().sub(target).normalize();
+      camera.zoom = 160;
+      camera.updateProjectionMatrix();
+      camera.position.copy(target).add(direction);
+      controls.update();
+      camera.updateMatrixWorld();
+      const foreground = target.clone().addScaledVector(direction, 2);
+      const screen = foreground.project(camera);
+      assert.ok(Math.abs(screen.x) < 1 && Math.abs(screen.y) < 1, "the face is on screen");
+      assert.ok(screen.z >= -1 && screen.z <= 1, `foreground face clipped at depth ${screen.z}`);
+      assert.ok(camera.position.distanceTo(controls.target) > 2);
+      assert.equal(camera.zoom, 160, "safe camera depth does not change magnification");
+      assert.deepEqual(controls.target.toArray(), target.toArray());
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
+  test("large home overview stays inside the far clipping plane", async () => {
+    const large = { ...floor, coordinates: { ...floor.coordinates, metersPerPlanUnit: 50 } };
+    const { renderer, controls } = await createWheelCamera(
+      createElement(OrbitCamera, { floor: large, resetKey: 0 }),
+    );
+    try {
+      controls.object.updateMatrixWorld();
+      const center = controls.target.clone().project(controls.object);
+      assert.ok(center.z >= -1 && center.z <= 1, `overview clipped at depth ${center.z}`);
+    } finally {
+      await renderer.unmount();
+    }
+  });
 
   test("locked orbit blocks wheel and double-tap zoom, then resumes normal input", async () => {
     const props = { floor, resetKey: 0, locked: true };
@@ -222,6 +336,10 @@ await withModules(async (load) => {
       await tap(2000);
       await tap(2100);
       assert.ok(controls.object.zoom > zoom);
+      controls.object.zoom = 240;
+      await tap(3000);
+      await tap(3100);
+      assert.equal(controls.object.zoom, 300, "double-tap shares the close-up ceiling");
     } finally {
       await renderer.unmount();
     }
@@ -328,11 +446,14 @@ await withModules(async (load) => {
     try {
       const controls = controlsFor(renderer);
       controls.enableDamping = false;
+      controls.object.zoom = 240;
+      controls.object.updateProjectionMatrix();
       await act(async () => {
         dispatch(elementListeners, "pointerdown", 1, 400, 400);
         dispatch(elementListeners, "pointerdown", 2, 600, 400);
-        dispatch(documentListeners, "pointermove", 1, 430, 400);
+        dispatch(documentListeners, "pointermove", 1, 370, 400);
       });
+      assert.ok(controls.object.zoom > 240, "native touch pinch can zoom beyond the old ceiling");
       const before = controls.getAzimuthalAngle();
       await renderer.update(createElement(OrbitCamera, { ...props }));
       await act(async () => {
@@ -357,6 +478,8 @@ await withModules(async (load) => {
         beforePan,
         "one-finger pan must still work after the rotation ends",
       );
+      const panDistance = controls.target.distanceTo(new Vector3(...beforePan));
+      assert.ok(panDistance < 0.15, "close-up pan remains proportional to screen distance");
       await act(async () => dispatch(documentListeners, "pointerup", 3, 500, 430));
     } finally {
       await renderer.unmount();
@@ -455,7 +578,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("a compact Properties drawer centers the visible scene without changing the camera pose", async () => {
+  test("Properties changes preserve the camera pose and projected scene position", async () => {
     const props = cameraProps();
     const renderer = await create(createElement(PreviewCamera, props), {
       ...options,
@@ -470,16 +593,22 @@ await withModules(async (load) => {
       controls.object.position.x += 2;
       controls.target.x += 2;
       controls.update();
+      controls.object.updateProjectionMatrix();
       const before = pose(controls);
+      controls.object.updateMatrixWorld(true);
+      const projectedTarget = controls.target.clone().project(controls.object);
+      const projection = controls.object.projectionMatrix.toArray();
       await renderer.update(createElement(PreviewCamera, { ...props, rightPanelOpen: true }));
       assert.deepEqual(pose(controls), before);
-      assert.equal(controls.object.view.enabled, true);
-      assert.equal(controls.object.view.offsetX, 160);
+      assert.equal(controls.object.view?.enabled ?? false, false);
       controls.object.updateMatrixWorld(true);
-      assert.ok(Math.abs(controls.target.clone().project(controls.object).x + 0.32) < 0.0001);
+      assert.ok(
+        controls.target.clone().project(controls.object).distanceTo(projectedTarget) < 1e-10,
+      );
+      assert.deepEqual(controls.object.projectionMatrix.toArray(), projection);
       await renderer.update(createElement(PreviewCamera, props));
       assert.deepEqual(pose(controls), before);
-      assert.equal(controls.object.view.enabled, false);
+      assert.deepEqual(controls.object.projectionMatrix.toArray(), projection);
     } finally {
       await renderer.unmount();
     }

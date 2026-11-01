@@ -48,6 +48,7 @@ try {
     clip: { x: 12, y: 86, width: 276, height: 240 },
   });
   await page.getByRole("menuitem", { name: "Add floor above", exact: true }).click();
+  await page.getByRole("button", { name: "Add floor", exact: true }).click();
   const addedResult = await page.waitForFunction(async () => {
     const project = await window.readFixtureProject();
     return project.floors.length === 4 ? project : null;

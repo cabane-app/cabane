@@ -422,39 +422,45 @@ await withModules(async (load) => {
 
   test("event modules render read-only history and update through reconnects and repeated presses", async () => {
     await withDom(async ({ root, dom }) => {
+      const { normalizeEntityStates } = await load(
+        "/packages/engine/src/home-assistant-entity-snapshots.ts",
+      );
+      const manifest = structuredClone(connectedManifestFixture(neutralDemoManifest));
+      const room = manifest.floors[0].rooms[0];
+      room.dashboardSlots.push({
+        id: "remote", compatibleDomains: ["event"], required: false, autoMap: "manual",
+        presentation: { label: "Remote", dashboardRole: "primary" },
+      });
+      const profile = connectedProfileFixture();
+      profile.entityIdsBySlotId.remote = "event.synthetic_remote";
+      const runtime = connectedRuntimeFixture();
+      runtime.entityRegistry.push({
+        entity_id: "event.synthetic_remote", area_id: profile.roomAreaIds[room.id], device_id: null,
+        platform: "synthetic", name: "Remote", original_name: null, disabled_by: null,
+      });
       const event = {
-        entityId: "event.synthetic_remote",
         state: "2026-01-01T12:00:00.123+00:00",
         attributes: { event_type: "short_release" },
-        available: true,
-        stale: false,
       };
       let calls = 0;
-      const render = async (state) =>
-        act(async () =>
-          root.render(
-            React.createElement(RoomModule, {
-              module: {
-                id: "remote",
-                label: "Remote",
-                priority: "primary",
-                sourceOrder: 0,
-                issues: [],
-                entities: [
-                  { slotId: "remote", label: "Remote", domain: "event", state, issues: [] },
-                ],
-              },
-              canMutate: true,
-              focused: true,
-              onCallService: async () => {
-                calls++;
-              },
-            }),
-          ),
-        );
+      const render = async (state) => {
+        const entity = { entity_id: "event.synthetic_remote", last_changed: event.state, last_updated: event.state, ...state };
+        runtime.entityStates = {
+          ...runtime.entityStates,
+          ...normalizeEntityStates({ [entity.entity_id]: entity }, state.stale ?? false),
+        };
+        const resolved = resolveHomeAssistantBindings(manifest, profile, runtime).rooms[room.id];
+        const module = buildRoomModules(resolved).find((module) => module.label === "Remote");
+        await act(async () => root.render(React.createElement(RoomModule, {
+          module, canMutate: true, focused: true, onCallService: async () => { calls++; },
+        })));
+        return module;
+      };
       const reading = () => dom.window.document.querySelector("output")?.textContent;
-      await render({ ...event, state: "unknown", available: false });
+      const waiting = await render({ ...event, state: "unknown" });
+      assert.deepEqual(waiting.issues, [], "waiting for the first event is available");
       assert.equal(reading(), "No event received");
+      assert.equal(dom.window.document.querySelector(".room-module__issues"), null);
       await render(event);
       assert.match(reading(), /short_release/);
       const initial = reading();
@@ -1524,11 +1530,12 @@ await withModules(async (load) => {
       state: "unavailable",
       available: false,
     };
-    runtime.entityRegistry.find((entry) => entry.entity_id === "climate.demo").area_id = "outside";
-    const html = renderDashboard(runtime);
+    const profile = connectedProfileFixture();
+    profile.entityIdsBySlotId["demo-climate-slot"] = "switch.demo_coffee";
+    const html = renderDashboard(runtime, null, profile);
     assert.ok(html.includes("reconnecting"));
     assert.ok(html.includes("currently unavailable"));
-    assert.ok(html.includes("assigned to a different Home Assistant area"));
+    assert.ok(html.includes("connected to an incompatible entity type"));
     assert.ok(html.includes('disabled=""'));
     assert.equal(html.includes("sensor.demo_temperature"), false);
   });

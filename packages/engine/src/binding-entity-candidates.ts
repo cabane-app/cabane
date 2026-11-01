@@ -49,17 +49,9 @@ export const bindingEntityCandidates = ({
   runtime: HomeAssistantRuntimeSnapshot;
   scope?: BindingEntityCandidateScope;
 }): readonly BindingEntityCandidate[] => {
-  const outsideRooms = descriptor.kind === "device" && descriptor.roomIds.length === 0;
+  const outsideRooms = descriptor.roomIds.length === 0;
   const roomAreaId = profile.roomAreaIds[roomId];
-  if (
-    !outsideRooms &&
-    !roomAreaId &&
-    !(
-      (descriptor.kind === "opening-contact" || descriptor.kind === "opening-cover") &&
-      scope === "all-areas"
-    )
-  )
-    return [];
+  if (!outsideRooms && !roomAreaId && scope !== "all-areas") return [];
   const homeWideCamera = isShareableCameraDescriptor(descriptor);
   const claimed =
     homeWideCamera || descriptor.kind === "opening-contact"
@@ -94,7 +86,11 @@ export const bindingEntityCandidates = ({
                 : "Unavailable"
               : "Available";
       return {
-        matchRank: bindingDomainMatchRank(descriptor.spec, entry.entity_id.split(".")[0]),
+        matchRank: bindingDomainMatchRank(
+          descriptor.spec,
+          entry.entity_id.split(".")[0],
+          descriptor.deviceModel,
+        ),
         entityId: entry.entity_id,
         label: registryLabel(entry, runtime),
         areaId,

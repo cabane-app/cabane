@@ -64,6 +64,15 @@ export const validateWalls = (
         ),
       );
     }
+    if (rawWall.virtual !== undefined && typeof rawWall.virtual !== "boolean") {
+      issues.push(
+        issue(
+          "wall.virtual",
+          `${wallPath}.virtual`,
+          "Wall virtual flag must be a boolean when supplied.",
+        ),
+      );
+    }
     if (isPlanPoint(rawWall.from) && isPlanPoint(rawWall.to))
       issues.push(...validateWallNiches(rawWall, rawFloor, wallPath, context));
     if (rawWall.exteriorColor !== undefined && !isNonEmptyString(rawWall.exteriorColor)) {

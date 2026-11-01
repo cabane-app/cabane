@@ -1,3 +1,4 @@
+import { resolveModelLighting } from "../model-lighting/settings";
 import type {
   DeviceModelRegistry,
   FurnishingModelRegistry,
@@ -6,16 +7,17 @@ import type {
 import type { HomeProject } from "../home-project/types";
 import { ImportedModelGeometry } from "./ImportedModel";
 import type { CustomModel } from "./contracts";
+import { importedLightSources } from "./light-sources";
 
 const resolved = new WeakMap<readonly CustomModel[], ProjectModelRegistries>();
 const empty: readonly CustomModel[] = [];
 
 export function resolveProjectModels(
-  project: Pick<HomeProject, "customModels">,
+  project: Pick<HomeProject, "customModels" | "modelLights">,
   native: ProjectModelRegistries,
 ): ProjectModelRegistries {
   const models = project.customModels ?? empty;
-  if (!models.length) return native;
+  if (!models.length) return resolveModelLighting(project, native);
   let custom = resolved.get(models);
   if (!custom) {
     const furnishings: Record<string, FurnishingModelRegistry[string]> = Object.create(
@@ -45,10 +47,12 @@ export function resolveProjectModels(
       } else {
         devices[model.id] = {
           ...descriptor,
-          component: () => <ImportedModelGeometry model={model} />,
+          component: ({ state }) => <ImportedModelGeometry model={model} state={state} />,
           mountKind: model.placement === "wall" ? "wall" : "surface",
           supportedDomains: [model.profile],
-          ...(model.profile === "light" && model.light ? { sceneLight: model.light } : {}),
+          ...(model.profile === "light" && model.light
+            ? { sceneLight: model.light, sceneLights: importedLightSources(model.light) }
+            : {}),
           ...(model.profile === "camera"
             ? { liveMedia: { kind: "camera-stream" as const, slotRole: "primary" as const } }
             : {}),
@@ -62,8 +66,8 @@ export function resolveProjectModels(
     custom = { furnishingModels: furnishings, deviceModels: devices };
     resolved.set(models, custom);
   }
-  return {
+  return resolveModelLighting(project, {
     furnishingModels: { ...native.furnishingModels, ...custom.furnishingModels },
     deviceModels: { ...native.deviceModels, ...custom.deviceModels },
-  };
+  });
 }

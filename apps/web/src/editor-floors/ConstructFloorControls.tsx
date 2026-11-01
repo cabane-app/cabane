@@ -1,3 +1,4 @@
+import { ApartmentFloorDialog } from "./ApartmentFloorDialog";
 import { useCabaneDom } from "@cabane/engine";
 import { useEffect, useId, useRef, useState } from "react";
 import { EditorButton } from "../editor-chrome/EditorButton";
@@ -13,6 +14,8 @@ export function ConstructFloorControls({
   onAdd,
   onAddBelow,
   onSettings,
+  apartmentFloor = 0,
+  onApartmentFloor,
 }: {
   floors: readonly { id: string; name: string }[];
   selectedId: string;
@@ -21,8 +24,11 @@ export function ConstructFloorControls({
   onAdd: () => void;
   onAddBelow?: () => void;
   onSettings: () => void;
+  apartmentFloor?: number;
+  onApartmentFloor?: (floor: number) => void;
 }) {
   const dom = useCabaneDom();
+  const [apartmentOpen, setApartmentOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -150,7 +156,7 @@ export function ConstructFloorControls({
               onAdd();
             }}
           >
-            <EditorIcon name="plus" />
+            <EditorIcon name="floorAbove" />
             <span>Add floor above</span>
           </button>
           {onAddBelow && (
@@ -163,11 +169,35 @@ export function ConstructFloorControls({
                 onAddBelow();
               }}
             >
-              <EditorIcon name="plus" />
+              <EditorIcon name="floorBelow" />
               <span>Add floor below</span>
             </button>
           )}
+          {onApartmentFloor && (
+            <button
+              type="button"
+              role="menuitem"
+              tabIndex={-1}
+              onClick={() => {
+                close(true);
+                setApartmentOpen(true);
+              }}
+            >
+              <EditorIcon name="apartmentFloor" />
+              <span>Setup apartment floor</span>
+            </button>
+          )}
         </div>
+      )}
+      {apartmentOpen && !disabled && onApartmentFloor && (
+        <ApartmentFloorDialog
+          value={apartmentFloor}
+          onCancel={() => setApartmentOpen(false)}
+          onSave={(value) => {
+            onApartmentFloor(value);
+            setApartmentOpen(false);
+          }}
+        />
       )}
     </div>
   );

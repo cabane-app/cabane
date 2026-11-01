@@ -5,8 +5,9 @@ import { EditorIcon } from "../editor-chrome/EditorIcon";
 import illustration from "./assets/photo-to-model.png";
 import "./model-generation-guide.css";
 
-const skillRepository = "https://github.com/cabane-app/agent-skills";
-const installCommand = "npx skills add cabane-app/agent-skills --skill create-cabane-model";
+const skillRepository =
+  "https://github.com/cabane-app/cabane/tree/main/.agents/skills/create-cabane-model";
+const installCommand = "npx skills add cabane-app/cabane --skill create-cabane-model";
 
 export function ModelGenerationGuide({
   onClose,

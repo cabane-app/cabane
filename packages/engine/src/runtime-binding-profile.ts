@@ -116,7 +116,7 @@ export const validateRuntimeBindingProfile = (
       if (
         mappedRoomIds.length === 0 &&
         descriptor.roomIds.length > 0 &&
-        descriptor.kind !== "opening-contact"
+        !allowsCrossAreaEntityBinding(manifest, descriptor)
       ) {
         add(
           "profile.room-unmapped",
@@ -124,7 +124,9 @@ export const validateRuntimeBindingProfile = (
           `Slot "${slotId}" cannot be mapped until one of its rooms has an area mapping.`,
         );
       }
-      if (bindingDomainMatchRank(descriptor.spec, entityDomain(entityId)) < 0) {
+      if (
+        bindingDomainMatchRank(descriptor.spec, entityDomain(entityId), descriptor.deviceModel) < 0
+      ) {
         add(
           "profile.domain",
           path,

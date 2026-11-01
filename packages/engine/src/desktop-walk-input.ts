@@ -31,6 +31,9 @@ export const useDesktopWalkInput = (
         (target.isContentEditable || target.closest("input, textarea, select"))
       )
         return;
+      // HA listens above the panel's shadow root. Keep every walking key local,
+      // including keys such as E that only the host would otherwise handle.
+      event.stopPropagation();
       if (event.code === "Space") {
         event.preventDefault();
         if (!event.repeat && !keys.has("Space") && jumpRequestRef) jumpRequestRef.current = true;
@@ -57,6 +60,7 @@ export const useDesktopWalkInput = (
       }
     };
     const up = (event: KeyboardEvent) => {
+      event.stopPropagation();
       keys.delete(event.code);
       update();
     };

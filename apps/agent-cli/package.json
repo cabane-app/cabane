@@ -1,0 +1,13 @@
+{
+  "name": "@cabane/agent-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "cabane-agent": "src/cli.mjs"
+  },
+  "scripts": {
+    "pair": "node src/cli.mjs pair"
+  },
+  "license": "PolyForm-Noncommercial-1.0.0"
+}

@@ -330,9 +330,9 @@ export function ConstructionInteractionLayer(
           rotation={[0, preview.rotationYRadians, 0]}
           renderOrder={22}
         >
-          <boxGeometry args={[preview.length, 0.2, 0.12]} />
+          <boxGeometry args={[preview.length, 0.2, tool === "virtual-wall" ? 0.025 : 0.12]} />
           <ToonMaterial
-            color={tool === "wall" ? wallExteriorColor : "#ff754d"}
+            color={tool === "wall" || tool === "virtual-wall" ? wallExteriorColor : "#ff754d"}
             transparent
             opacity={0.72}
             depthTest={false}
@@ -346,17 +346,21 @@ export function ConstructionInteractionLayer(
           junctions={[segmentStart, segmentPreview]}
           coordinates={coordinates}
           planMode={planMode}
-          defaultThicknessMeters={tool === "wall" ? draft.interiorWallThicknessMeters : 0.055}
+          defaultThicknessMeters={
+            tool === "wall" || tool === "virtual-wall" ? draft.interiorWallThicknessMeters : 0.055
+          }
           labelKind={
             tool === "hedge"
               ? "Boundary"
               : tool === "wall"
                 ? "Wall"
-                : tool === "platform"
-                  ? "Platform edge"
-                  : tool === "pool"
-                    ? "Pool edge"
-                    : "Floor edge"
+                : tool === "virtual-wall"
+                  ? "Invisible wall"
+                  : tool === "platform"
+                    ? "Platform edge"
+                    : tool === "pool"
+                      ? "Pool edge"
+                      : "Floor edge"
           }
         />
       )}

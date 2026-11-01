@@ -2,6 +2,7 @@ import { deriveFloorLevels } from "../building/floor-levels";
 import { pointInsidePolygon, worldPointToPlan } from "../geometry";
 import { isWalkPointClear, type BoxWalkCollider, type WalkPoint } from "../navigation";
 import { deriveStairFlight } from "../stairs/flight-geometry";
+import { stairFloorIds } from "../stairs/stair-connection";
 import { safeBuildingSpawn } from "../stairs/stair-navigation";
 import type { BuildingGeometry } from "../stairs/types";
 import type { WalkToolLanding } from "../walk-tools";
@@ -22,8 +23,7 @@ export function resolveWalkLanding(
   // Stair interiors require traversal state; never manufacture that state by relocation.
   if (
     building.stairs.some((stair) => {
-      if (stair.lowerFloorId !== level.floorId && stair.upperFloorId !== level.floorId)
-        return false;
+      if (!stairFloorIds(stair).includes(level.floorId)) return false;
       const flight = deriveStairFlight(building, stair);
       return flight && pointInsidePolygon(plan, flight.footprint);
     })

@@ -1,3 +1,4 @@
+import { selectConstructionTool } from "../tests/editor-browser-tools.mjs";
 import { chromium } from "playwright-core";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -197,7 +198,7 @@ try {
   });
   await measure("construct-opening-placement", async () => {
     for (let index = 0; index < 6; index += 1) {
-      await page.getByRole("button", { name: "Door", exact: true }).click();
+      await selectConstructionTool(page, "Door");
       await page.mouse.move(570, scaleRecord ? 245 : 327);
       await page.mouse.click(570, scaleRecord ? 245 : 327);
       await page.waitForTimeout(100);
@@ -205,7 +206,7 @@ try {
     }
   });
   await measure("construct-wall-placement", async () => {
-    await page.getByRole("button", { name: "Wall", exact: true }).click();
+    await selectConstructionTool(page, "Wall");
     for (let index = 0; index < 8; index += 1) {
       await page.mouse.move(700 + index * 35, 760);
       await page.mouse.down();

@@ -19,7 +19,7 @@
     }
   },
   "semantics": {
-    "validationRevision": 3,
+    "validationRevision": 12,
     "migrationRevision": 1,
     "archiveRevision": 1
   },
@@ -319,10 +319,58 @@
                           "type": "number"
                         }
                       },
+                      "emissiveMaterials": {
+                        "optional": true,
+                        "schema": {
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "emissiveSurfaces": {
+                        "optional": true,
+                        "schema": {
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "illuminate": {
+                        "optional": true,
+                        "schema": {
+                          "anyOf": [
+                            {
+                              "const": false
+                            },
+                            {
+                              "const": true
+                            }
+                          ]
+                        }
+                      },
                       "maxIntensity": {
                         "optional": false,
                         "schema": {
                           "type": "number"
+                        }
+                      },
+                      "points": {
+                        "optional": true,
+                        "schema": {
+                          "items": {
+                            "tuple": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ],
+                            "elementFlags": [1, 1, 1]
+                          }
                         }
                       },
                       "position": {
@@ -340,6 +388,122 @@
                             }
                           ],
                           "elementFlags": [1, 1, 1]
+                        }
+                      },
+                      "sources": {
+                        "optional": true,
+                        "schema": {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "end": {
+                                    "optional": false,
+                                    "schema": {
+                                      "tuple": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        }
+                                      ],
+                                      "elementFlags": [1, 1, 1]
+                                    }
+                                  },
+                                  "kind": {
+                                    "optional": false,
+                                    "schema": {
+                                      "const": "strip"
+                                    }
+                                  },
+                                  "samples": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "start": {
+                                    "optional": false,
+                                    "schema": {
+                                      "tuple": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        }
+                                      ],
+                                      "elementFlags": [1, 1, 1]
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "properties": {
+                                  "kind": {
+                                    "optional": false,
+                                    "schema": {
+                                      "const": "point"
+                                    }
+                                  },
+                                  "position": {
+                                    "optional": false,
+                                    "schema": {
+                                      "tuple": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        }
+                                      ],
+                                      "elementFlags": [1, 1, 1]
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "strip": {
+                        "optional": true,
+                        "schema": {
+                          "properties": {
+                            "end": {
+                              "optional": false,
+                              "schema": {
+                                "tuple": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ],
+                                "elementFlags": [1, 1, 1]
+                              }
+                            },
+                            "samples": {
+                              "optional": false,
+                              "schema": {
+                                "type": "number"
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -1038,6 +1202,12 @@
                                 "const": "passage"
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1158,6 +1328,12 @@
                                     "const": 2
                                   }
                                 ]
+                              }
+                            },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
                               }
                             },
                             "offsetFromWallStartPlanUnits": {
@@ -1316,6 +1492,12 @@
                                 ]
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1472,6 +1654,12 @@
                                 "const": "door"
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1600,6 +1788,12 @@
                                 }
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1705,6 +1899,12 @@
                               "optional": false,
                               "schema": {
                                 "const": "passage"
+                              }
+                            },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
                               }
                             },
                             "offsetFromWallStartPlanUnits": {
@@ -2023,6 +2223,25 @@
                               }
                             ],
                             "elementFlags": [1, 1, 1, 4]
+                          }
+                        },
+                        "roomName": {
+                          "optional": true,
+                          "schema": {
+                            "type": "string"
+                          }
+                        },
+                        "useAsRoom": {
+                          "optional": true,
+                          "schema": {
+                            "anyOf": [
+                              {
+                                "const": false
+                              },
+                              {
+                                "const": true
+                              }
+                            ]
                           }
                         }
                       }
@@ -2614,6 +2833,12 @@
                             "type": "string"
                           }
                         },
+                        "name": {
+                          "optional": true,
+                          "schema": {
+                            "type": "string"
+                          }
+                        },
                         "niches": {
                           "optional": true,
                           "schema": {
@@ -2705,6 +2930,19 @@
                             ],
                             "elementFlags": [1, 1]
                           }
+                        },
+                        "virtual": {
+                          "optional": true,
+                          "schema": {
+                            "anyOf": [
+                              {
+                                "const": false
+                              },
+                              {
+                                "const": true
+                              }
+                            ]
+                          }
                         }
                       }
                     }
@@ -2718,6 +2956,12 @@
           "optional": false,
           "schema": {
             "properties": {
+              "apartmentFloor": {
+                "optional": true,
+                "schema": {
+                  "type": "number"
+                }
+              },
               "id": {
                 "optional": false,
                 "schema": {
@@ -2814,6 +3058,37 @@
                   }
                 }
               },
+              "terrain": {
+                "optional": true,
+                "schema": {
+                  "properties": {
+                    "bottomLeftMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "bottomRightMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "topLeftMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "topRightMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
               "walkStart": {
                 "optional": true,
                 "schema": {
@@ -2841,6 +3116,222 @@
                   }
                 }
               }
+            }
+          }
+        },
+        "modelLights": {
+          "optional": true,
+          "schema": {
+            "properties": {},
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "color": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "distance": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "emissiveMaterials": {
+                      "optional": true,
+                      "schema": {
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "emissiveSurfaces": {
+                      "optional": true,
+                      "schema": {
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "illuminate": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": false
+                          },
+                          {
+                            "const": true
+                          }
+                        ]
+                      }
+                    },
+                    "maxIntensity": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "points": {
+                      "optional": true,
+                      "schema": {
+                        "items": {
+                          "tuple": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ],
+                          "elementFlags": [1, 1, 1]
+                        }
+                      }
+                    },
+                    "position": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1, 1]
+                      }
+                    },
+                    "sources": {
+                      "optional": true,
+                      "schema": {
+                        "items": {
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "end": {
+                                  "optional": false,
+                                  "schema": {
+                                    "tuple": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ],
+                                    "elementFlags": [1, 1, 1]
+                                  }
+                                },
+                                "kind": {
+                                  "optional": false,
+                                  "schema": {
+                                    "const": "strip"
+                                  }
+                                },
+                                "samples": {
+                                  "optional": false,
+                                  "schema": {
+                                    "type": "number"
+                                  }
+                                },
+                                "start": {
+                                  "optional": false,
+                                  "schema": {
+                                    "tuple": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ],
+                                    "elementFlags": [1, 1, 1]
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "properties": {
+                                "kind": {
+                                  "optional": false,
+                                  "schema": {
+                                    "const": "point"
+                                  }
+                                },
+                                "position": {
+                                  "optional": false,
+                                  "schema": {
+                                    "tuple": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ],
+                                    "elementFlags": [1, 1, 1]
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "strip": {
+                      "optional": true,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "tuple": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "elementFlags": [1, 1, 1]
+                            }
+                          },
+                          "samples": {
+                            "optional": false,
+                            "schema": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         },
@@ -3088,6 +3579,22 @@
                                 "schema": {
                                   "type": "string"
                                 }
+                              },
+                              "showInScene": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": "if-present"
+                                    },
+                                    {
+                                      "const": false
+                                    },
+                                    {
+                                      "const": true
+                                    }
+                                  ]
+                                }
                               }
                             }
                           }
@@ -3316,6 +3823,22 @@
                                     "schema": {
                                       "type": "string"
                                     }
+                                  },
+                                  "showInScene": {
+                                    "optional": true,
+                                    "schema": {
+                                      "anyOf": [
+                                        {
+                                          "const": "if-present"
+                                        },
+                                        {
+                                          "const": false
+                                        },
+                                        {
+                                          "const": true
+                                        }
+                                      ]
+                                    }
                                   }
                                 }
                               }
@@ -3388,6 +3911,25 @@
                         "type": "string"
                       }
                     },
+                    "group": {
+                      "optional": true,
+                      "schema": {
+                        "properties": {
+                          "id": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "name": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "id": {
                       "optional": false,
                       "schema": {
@@ -3398,6 +3940,12 @@
                       "optional": false,
                       "schema": {
                         "const": "device"
+                      }
+                    },
+                    "lightSlotId": {
+                      "optional": true,
+                      "schema": {
+                        "type": "string"
                       }
                     },
                     "lightState": {
@@ -3596,10 +4144,253 @@
                         "type": "string"
                       }
                     },
+                    "entitySlots": {
+                      "optional": true,
+                      "schema": {
+                        "items": {
+                          "properties": {
+                            "autoMap": {
+                              "optional": false,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "manual"
+                                  },
+                                  {
+                                    "const": "unique-compatible"
+                                  }
+                                ]
+                              }
+                            },
+                            "compatibleDeviceClasses": {
+                              "optional": true,
+                              "schema": {
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "compatibleDomains": {
+                              "optional": false,
+                              "schema": {
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "const": "alarm_control_panel"
+                                    },
+                                    {
+                                      "const": "binary_sensor"
+                                    },
+                                    {
+                                      "const": "button"
+                                    },
+                                    {
+                                      "const": "camera"
+                                    },
+                                    {
+                                      "const": "climate"
+                                    },
+                                    {
+                                      "const": "cover"
+                                    },
+                                    {
+                                      "const": "fan"
+                                    },
+                                    {
+                                      "const": "humidifier"
+                                    },
+                                    {
+                                      "const": "input_boolean"
+                                    },
+                                    {
+                                      "const": "light"
+                                    },
+                                    {
+                                      "const": "lock"
+                                    },
+                                    {
+                                      "const": "media_player"
+                                    },
+                                    {
+                                      "const": "number"
+                                    },
+                                    {
+                                      "const": "select"
+                                    },
+                                    {
+                                      "const": "sensor"
+                                    },
+                                    {
+                                      "const": "siren"
+                                    },
+                                    {
+                                      "const": "switch"
+                                    },
+                                    {
+                                      "const": "vacuum"
+                                    },
+                                    {
+                                      "const": "valve"
+                                    },
+                                    {
+                                      "const": "water_heater"
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "deviceRole": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "primary"
+                                  },
+                                  {
+                                    "const": "secondary"
+                                  }
+                                ]
+                              }
+                            },
+                            "id": {
+                              "optional": false,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "presentation": {
+                              "optional": false,
+                              "schema": {
+                                "properties": {
+                                  "dashboardRole": {
+                                    "optional": false,
+                                    "schema": {
+                                      "anyOf": [
+                                        {
+                                          "const": "diagnostic"
+                                        },
+                                        {
+                                          "const": "hidden"
+                                        },
+                                        {
+                                          "const": "primary"
+                                        },
+                                        {
+                                          "const": "secondary"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "label": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "showInScene": {
+                                    "optional": true,
+                                    "schema": {
+                                      "anyOf": [
+                                        {
+                                          "const": "if-present"
+                                        },
+                                        {
+                                          "const": false
+                                        },
+                                        {
+                                          "const": true
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "required": {
+                              "optional": false,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": false
+                                  },
+                                  {
+                                    "const": true
+                                  }
+                                ]
+                              }
+                            },
+                            "sceneLight": {
+                              "optional": true,
+                              "schema": {
+                                "properties": {
+                                  "at": {
+                                    "optional": false,
+                                    "schema": {
+                                      "tuple": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        }
+                                      ],
+                                      "elementFlags": [1, 1]
+                                    }
+                                  },
+                                  "color": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "distance": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "elevationMeters": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "maxIntensity": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
                     "floorId": {
                       "optional": false,
                       "schema": {
                         "type": "string"
+                      }
+                    },
+                    "group": {
+                      "optional": true,
+                      "schema": {
+                        "properties": {
+                          "id": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "name": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
                       }
                     },
                     "id": {
@@ -3612,6 +4403,31 @@
                       "optional": false,
                       "schema": {
                         "const": "furnishing"
+                      }
+                    },
+                    "lightSlotId": {
+                      "optional": true,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "lightState": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "always-off"
+                          },
+                          {
+                            "const": "always-on"
+                          },
+                          {
+                            "const": "connected"
+                          },
+                          {
+                            "const": "night-only"
+                          }
+                        ]
                       }
                     },
                     "modelId": {
@@ -3953,6 +4769,22 @@
                         "const": "spiral"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "totalTurnDegrees": {
                       "optional": false,
                       "schema": {
@@ -3963,6 +4795,128 @@
                       "optional": false,
                       "schema": {
                         "type": "string"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "diameterMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "direction": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "clockwise"
+                          },
+                          {
+                            "const": "counterclockwise"
+                          }
+                        ]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "spiral"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalTurnDegrees": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
                       }
                     }
                   }
@@ -4030,6 +4984,22 @@
                       "optional": false,
                       "schema": {
                         "const": "l-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
                       }
                     },
                     "turn": {
@@ -4130,6 +5100,22 @@
                         "const": "u-shaped"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "turn": {
                       "optional": false,
                       "schema": {
@@ -4228,10 +5214,391 @@
                         "const": "straight"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "upperFloorId": {
                       "optional": false,
                       "schema": {
                         "type": "string"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "lowerRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "l-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "turn": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "upperRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "lowerRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "u-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "turn": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "upperRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "runMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": true,
+                      "schema": {
+                        "const": "straight"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
                       }
                     },
                     "widthMeters": {
@@ -4801,6 +6168,12 @@
                               "const": "passage"
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -4921,6 +6294,12 @@
                                   "const": 2
                                 }
                               ]
+                            }
+                          },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
                             }
                           },
                           "offsetFromWallStartPlanUnits": {
@@ -5079,6 +6458,12 @@
                               ]
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -5235,6 +6620,12 @@
                               "const": "door"
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -5363,6 +6754,12 @@
                               }
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -5468,6 +6865,12 @@
                             "optional": false,
                             "schema": {
                               "const": "passage"
+                            }
+                          },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
                             }
                           },
                           "offsetFromWallStartPlanUnits": {
@@ -5786,6 +7189,25 @@
                             }
                           ],
                           "elementFlags": [1, 1, 1, 4]
+                        }
+                      },
+                      "roomName": {
+                        "optional": true,
+                        "schema": {
+                          "type": "string"
+                        }
+                      },
+                      "useAsRoom": {
+                        "optional": true,
+                        "schema": {
+                          "anyOf": [
+                            {
+                              "const": false
+                            },
+                            {
+                              "const": true
+                            }
+                          ]
                         }
                       }
                     }
@@ -6377,6 +7799,12 @@
                           "type": "string"
                         }
                       },
+                      "name": {
+                        "optional": true,
+                        "schema": {
+                          "type": "string"
+                        }
+                      },
                       "niches": {
                         "optional": true,
                         "schema": {
@@ -6468,6 +7896,19 @@
                           ],
                           "elementFlags": [1, 1]
                         }
+                      },
+                      "virtual": {
+                        "optional": true,
+                        "schema": {
+                          "anyOf": [
+                            {
+                              "const": false
+                            },
+                            {
+                              "const": true
+                            }
+                          ]
+                        }
                       }
                     }
                   }
@@ -6480,6 +7921,12 @@
           "optional": false,
           "schema": {
             "ref": "project.properties.home"
+          }
+        },
+        "modelLights": {
+          "optional": true,
+          "schema": {
+            "ref": "project.properties.modelLights"
           }
         },
         "openingProfiles": {
@@ -6652,6 +8099,22 @@
                                     "schema": {
                                       "type": "string"
                                     }
+                                  },
+                                  "showInScene": {
+                                    "optional": true,
+                                    "schema": {
+                                      "anyOf": [
+                                        {
+                                          "const": "if-present"
+                                        },
+                                        {
+                                          "const": false
+                                        },
+                                        {
+                                          "const": true
+                                        }
+                                      ]
+                                    }
                                   }
                                 }
                               }
@@ -6724,6 +8187,25 @@
                         "type": "string"
                       }
                     },
+                    "group": {
+                      "optional": true,
+                      "schema": {
+                        "properties": {
+                          "id": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "name": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "id": {
                       "optional": false,
                       "schema": {
@@ -6734,6 +8216,12 @@
                       "optional": false,
                       "schema": {
                         "const": "device"
+                      }
+                    },
+                    "lightSlotId": {
+                      "optional": true,
+                      "schema": {
+                        "type": "string"
                       }
                     },
                     "lightState": {
@@ -6932,10 +8420,253 @@
                         "type": "string"
                       }
                     },
+                    "entitySlots": {
+                      "optional": true,
+                      "schema": {
+                        "items": {
+                          "properties": {
+                            "autoMap": {
+                              "optional": false,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "manual"
+                                  },
+                                  {
+                                    "const": "unique-compatible"
+                                  }
+                                ]
+                              }
+                            },
+                            "compatibleDeviceClasses": {
+                              "optional": true,
+                              "schema": {
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "compatibleDomains": {
+                              "optional": false,
+                              "schema": {
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "const": "alarm_control_panel"
+                                    },
+                                    {
+                                      "const": "binary_sensor"
+                                    },
+                                    {
+                                      "const": "button"
+                                    },
+                                    {
+                                      "const": "camera"
+                                    },
+                                    {
+                                      "const": "climate"
+                                    },
+                                    {
+                                      "const": "cover"
+                                    },
+                                    {
+                                      "const": "fan"
+                                    },
+                                    {
+                                      "const": "humidifier"
+                                    },
+                                    {
+                                      "const": "input_boolean"
+                                    },
+                                    {
+                                      "const": "light"
+                                    },
+                                    {
+                                      "const": "lock"
+                                    },
+                                    {
+                                      "const": "media_player"
+                                    },
+                                    {
+                                      "const": "number"
+                                    },
+                                    {
+                                      "const": "select"
+                                    },
+                                    {
+                                      "const": "sensor"
+                                    },
+                                    {
+                                      "const": "siren"
+                                    },
+                                    {
+                                      "const": "switch"
+                                    },
+                                    {
+                                      "const": "vacuum"
+                                    },
+                                    {
+                                      "const": "valve"
+                                    },
+                                    {
+                                      "const": "water_heater"
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "deviceRole": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "primary"
+                                  },
+                                  {
+                                    "const": "secondary"
+                                  }
+                                ]
+                              }
+                            },
+                            "id": {
+                              "optional": false,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "presentation": {
+                              "optional": false,
+                              "schema": {
+                                "properties": {
+                                  "dashboardRole": {
+                                    "optional": false,
+                                    "schema": {
+                                      "anyOf": [
+                                        {
+                                          "const": "diagnostic"
+                                        },
+                                        {
+                                          "const": "hidden"
+                                        },
+                                        {
+                                          "const": "primary"
+                                        },
+                                        {
+                                          "const": "secondary"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "label": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "showInScene": {
+                                    "optional": true,
+                                    "schema": {
+                                      "anyOf": [
+                                        {
+                                          "const": "if-present"
+                                        },
+                                        {
+                                          "const": false
+                                        },
+                                        {
+                                          "const": true
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "required": {
+                              "optional": false,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": false
+                                  },
+                                  {
+                                    "const": true
+                                  }
+                                ]
+                              }
+                            },
+                            "sceneLight": {
+                              "optional": true,
+                              "schema": {
+                                "properties": {
+                                  "at": {
+                                    "optional": false,
+                                    "schema": {
+                                      "tuple": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        }
+                                      ],
+                                      "elementFlags": [1, 1]
+                                    }
+                                  },
+                                  "color": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "distance": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "elevationMeters": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "maxIntensity": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
                     "floorId": {
                       "optional": true,
                       "schema": {
                         "type": "string"
+                      }
+                    },
+                    "group": {
+                      "optional": true,
+                      "schema": {
+                        "properties": {
+                          "id": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "name": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
                       }
                     },
                     "id": {
@@ -6948,6 +8679,31 @@
                       "optional": false,
                       "schema": {
                         "const": "furnishing"
+                      }
+                    },
+                    "lightSlotId": {
+                      "optional": true,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "lightState": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "always-off"
+                          },
+                          {
+                            "const": "always-on"
+                          },
+                          {
+                            "const": "connected"
+                          },
+                          {
+                            "const": "night-only"
+                          }
+                        ]
                       }
                     },
                     "modelId": {

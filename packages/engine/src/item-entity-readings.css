@@ -1,0 +1,33 @@
+.item-entity-readings {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(25, 35, 30, 0.94);
+  color: #faf8f1;
+  box-shadow: 0 4px 12px rgba(15, 25, 20, 0.2);
+  font-size: 12px;
+  line-height: 1.4;
+  box-sizing: border-box;
+  width: 220px;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+}
+.item-entity-readings > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: baseline;
+  gap: 10px;
+}
+.item-entity-readings span {
+  overflow-wrap: anywhere;
+}
+.item-entity-readings strong {
+  margin-left: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-entity-readings[hidden] {
+  display: none;
+}

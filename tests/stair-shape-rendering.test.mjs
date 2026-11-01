@@ -59,12 +59,46 @@ await withModules(async (load) => {
   });
 });
 await withModules(async (load) => {
+  const { StraightStairModel } = await load(
+    "/packages/engine/src/stairs/models/StraightStairModel.tsx",
+  );
+  const { stairStructureVolumes } = await load("/packages/engine/src/stairs/stair-clearance.ts");
   const { ShapedStairGuards } = await load(
     "/packages/engine/src/stairs/models/ShapedStairGuards.tsx",
   );
   const { deriveStairFlight } = await load("/packages/engine/src/stairs/flight-geometry.ts");
   const { makeStairProject } = await load("/tests/fixtures/multiple-floors.ts");
   const { Matrix4 } = await import("three");
+  test("Concrete and Stone close the stair base without changing the route or legacy open treads", async () => {
+    const project = makeStairProject();
+    const open = deriveStairFlight(project, project.stairs[0]);
+    assert.ok(stairStructureVolumes(open).at(-1).bottom > 2);
+    for (const style of ["concrete", "stone"]) {
+      const flight = deriveStairFlight(project, { ...project.stairs[0], style, railings: "none" });
+      assert.deepEqual(flight.path, open.path);
+      assert.ok(stairStructureVolumes(flight).every((volume) => volume.bottom === -0.06));
+      const renderer = await create(
+        createElement(StraightStairModel, { flight, showUpperGuard: false }),
+      );
+      try {
+        const last = renderer.scene.findByProps({
+          name: `stair-masonry-tread-${flight.stepCount - 1}`,
+        }).instance;
+        last.updateWorldMatrix(true, true);
+        const hits = new Raycaster(new Vector3(4, 1, 6.9), new Vector3(0, 0, -1)).intersectObject(
+          last,
+          true,
+        );
+        assert.ok(hits.length > 0, `${style}: solid riser blocks the space below the tread`);
+        last.traverse((object) => {
+          const positions = object.geometry?.getAttribute("position");
+          if (positions) assert.ok([...positions.array].every(Number.isFinite));
+        });
+      } finally {
+        await renderer.unmount();
+      }
+    }
+  });
   test("L-shaped rails protect the lower flight and stay level over its landing", async () => {
     const project = makeStairProject();
     const f = deriveStairFlight(project, {

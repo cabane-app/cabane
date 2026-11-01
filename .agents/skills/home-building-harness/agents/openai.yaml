@@ -1,0 +1,3 @@
+interface:
+  display_name: "Home-building harness"
+  short_description: "Fast local test homes for Cabane editor development"

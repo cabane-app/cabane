@@ -3,7 +3,7 @@ import type { CatalogEntry } from "./catalog";
 
 /** Standalone procedural previews can use the same queue as catalog entries. */
 export type ModelPreviewEntry =
-  | CatalogEntry
+  | (CatalogEntry & { variant?: string })
   | {
       key: string;
       kind: "procedural";

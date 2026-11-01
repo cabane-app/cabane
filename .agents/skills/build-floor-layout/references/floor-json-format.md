@@ -172,6 +172,10 @@ entity IDs during floor-layout generation.
   crossing. `at` is the exact shared point and `wallIds` lists every incident
   wall once, including a wall that passes through a T or crossing.
 - Opening jambs are not junctions.
+- `virtual: true` marks a wall that only divides rooms, for an open plan whose
+  areas still need their own names. It keeps its `thicknessMeters`, junctions
+  and `classification`, renders and collides as open floor, and cannot host an
+  opening. Omit it for every physical wall.
 
 Keep junction IDs stable and descriptive. A change in wall thickness must not
 change wall or junction coordinates.

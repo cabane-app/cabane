@@ -1,9 +1,11 @@
+import { indoorRoomsForFloor } from "../outdoor-platforms/platform-rooms";
 import { isOutdoorPlatformOutline } from "../outdoor-platforms/platform-geometry";
 import polygonClipping, { type MultiPolygon, type Polygon as ClipPolygon } from "polygon-clipping";
 import {
   differenceClippingGeometry,
   unionClippingPolygons,
 } from "../architecture-geometry/architecture-clipping";
+import { physicalFloor } from "../architecture-geometry/physical-floor";
 import { wallSolidFootprintPolygons } from "../architecture-geometry/wall-solid-footprints";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { planPointToWorld, slopedCeilingHeightAtPoint, worldPointToPlan } from "../geometry";
@@ -25,9 +27,10 @@ const worldPolygon = (points: readonly PlanPoint[], floor: FloorSpec): ClipPolyg
 
 /** Include the wall tops, but never fill an unroofed courtyard between rooms. */
 const coveredFloor = (floor: FloorSpec): MultiPolygon => {
+  const rooms = indoorRoomsForFloor(floor);
   const domain = unionClippingPolygons([
-    ...(floor.rooms.length
-      ? floor.rooms.map((room) => worldPolygon(room.polygon, floor))
+    ...(rooms.length
+      ? rooms.map((room) => worldPolygon(room.polygon, floor))
       : floor.outdoorPlatforms?.length
         ? []
         : (floor.footprintRegions ?? [floor.footprint]).map((polygon) =>
@@ -76,7 +79,8 @@ const ceilingWithWalls = (
   return polygonClipping.intersection(unionClippingPolygons(strips), domain);
 };
 
-export function deriveRoofRegions(floors: readonly FloorSpec[]): RoofRegion[] {
+export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRegion[] {
+  const floors = requestedFloors.map(physicalFloor);
   const levels = deriveFloorLevels(floors);
   const domains = floors.map(coveredFloor);
   const coverDomains = floors.map((floor, index) =>
@@ -88,6 +92,7 @@ export function deriveRoofRegions(floors: readonly FloorSpec[]): RoofRegion[] {
     ]),
   );
   return floors.flatMap((floor, index) => {
+    const rooms = indoorRoomsForFloor(floor);
     const domain = domains[index];
     if (!domain.length) return [];
     const elevation = levels[index].elevationMeters;
@@ -107,7 +112,7 @@ export function deriveRoofRegions(floors: readonly FloorSpec[]): RoofRegion[] {
       {
         id: "roof-default",
         kind: "flat" as const,
-        roomIds: floor.rooms.map((room) => room.id),
+        roomIds: rooms.map((room) => room.id),
         heightMeters: floor.defaultCeilingHeightMeters,
       },
     ];
@@ -130,10 +135,10 @@ export function deriveRoofRegions(floors: readonly FloorSpec[]): RoofRegion[] {
       } else {
         const height = elevation + ceiling.heightMeters + 0.16;
         const polygons = flat.get(height) ?? [];
-        const rooms = floor.rooms.filter((room) => ceiling.roomIds.includes(room.id));
-        for (const room of rooms)
+        const coveredRooms = rooms.filter((room) => ceiling.roomIds.includes(room.id));
+        for (const room of coveredRooms)
           polygons.push(...ceilingWithWalls(worldPolygon(room.polygon, floor), margin, domain));
-        if (!floor.rooms.length) polygons.push(...domain);
+        if (!rooms.length) polygons.push(...domain);
         flat.set(height, polygons);
       }
     }
@@ -147,7 +152,7 @@ export function deriveRoofRegions(floors: readonly FloorSpec[]): RoofRegion[] {
       ceilings.reduce((ids, ceiling) => {
         ceiling.roomIds.forEach((id) => ids.add(id));
         return ids;
-      }, new Set<string>()).size === floor.rooms.length
+      }, new Set<string>()).size === rooms.length
     ) {
       // A continuous ceiling also covers wall tops and enclosed construction
       // seams, rather than reproducing room-level gaps in the finished roof.

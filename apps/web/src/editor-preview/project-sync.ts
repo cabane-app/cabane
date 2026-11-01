@@ -12,7 +12,10 @@ import type {
 } from "@cabane/engine";
 import {
   composeHomeManifest,
+  indoorRoomsForFloor,
+  roomsForFloor,
   reconcileWorkspaceBindings,
+  itemBindingSlotIds,
   removeWorkspaceSlotReferences,
   validateHomeProject,
 } from "@cabane/engine";
@@ -47,7 +50,7 @@ export const layoutFloorFromEditorFloor = (floor: FloorSpec): DraftLayoutFloorSp
     ...(floor.ceilings
       ? { ceilings: floor.ceilings.filter((ceiling) => ceiling.kind === "flat") }
       : {}),
-    rooms: floor.rooms.map((room) => {
+    rooms: indoorRoomsForFloor(floor).map((room) => {
       const {
         furnishings: _furnishings,
         dashboardSlots: _dashboardSlots,
@@ -84,7 +87,7 @@ export const projectFromEditorState = (
       : base.floors.map((entry) => (entry.id === floor.id ? layoutFloor : entry));
   const nextRoomProfiles = Object.fromEntries(
     floors
-      .flatMap((entry) => entry.rooms)
+      .flatMap(roomsForFloor)
       .map((room) => [room.id, base.roomProfiles[room.id] ?? { dashboardSlots: [] }]),
   );
   const nextOpeningProfiles = Object.fromEntries(
@@ -145,17 +148,11 @@ export const workspaceSnapshotFromEditorState = (
   additionalIssues: readonly HomeProjectIssue[] = [],
 ): EditorWorkspaceSnapshot => {
   const project = projectFromEditorState(base.project, floor, sceneItems);
-  const retainedDeviceSlotIds = new Set(
-    project.sceneItems.flatMap((item) =>
-      item.kind === "device" ? item.entitySlots.map((slot) => slot.id) : [],
-    ),
-  );
-  const removedDeviceSlotIds = base.project.sceneItems.flatMap((item) =>
-    item.kind === "device"
-      ? item.entitySlots.map((slot) => slot.id).filter((id) => !retainedDeviceSlotIds.has(id))
-      : [],
-  );
-  let bindings = removeWorkspaceSlotReferences(base.bindings, removedDeviceSlotIds);
+  const retainedSlotIds = new Set(project.sceneItems.flatMap(itemBindingSlotIds));
+  const removedSlotIds = base.project.sceneItems
+    .flatMap(itemBindingSlotIds)
+    .filter((id) => !retainedSlotIds.has(id));
+  let bindings = removeWorkspaceSlotReferences(base.bindings, removedSlotIds);
   try {
     const validation = validateHomeProject(project, registries);
     if (![...validation.issues, ...additionalIssues].some((issue) => issue.severity === "error")) {

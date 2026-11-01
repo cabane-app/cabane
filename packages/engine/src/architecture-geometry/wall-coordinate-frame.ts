@@ -41,8 +41,15 @@ export const wallExteriorNormal = (wall: WallSpec, floor: WallPlanFloor): Horizo
   );
   const plusInside = pointInsideFloorFootprint(plus, floor);
   const minusInside = pointInsideFloorFootprint(minus, floor);
-  if (plusInside === minusInside) return null;
-  return plusInside ? [-frame.normal[0], -frame.normal[1]] : frame.normal;
+  if (plusInside !== minusInside)
+    return plusInside ? [-frame.normal[0], -frame.normal[1]] : frame.normal;
+  if (plusInside) return null;
+  // Outside the building, use the platform perimeter to orient parapets and side walls.
+  const onPlatform = (point: PlanPoint) =>
+    (floor.outdoorPlatforms ?? []).some((platform) => pointInsidePolygon(point, platform.polygon));
+  const plusOnPlatform = onPlatform(plus);
+  if (plusOnPlatform === onPlatform(minus)) return null;
+  return plusOnPlatform ? [-frame.normal[0], -frame.normal[1]] : frame.normal;
 };
 
 export const junctionArmHalfLength = (junction: WallJunctionSpec, floor: FloorSpec) => {

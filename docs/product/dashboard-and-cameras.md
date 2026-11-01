@@ -161,6 +161,9 @@ sheets, room sheets, and camera viewing share the normal dashboard surface.
 Visible scene lights respond to compatible light slots. Bound opening states
 control their visual state outside Walk proximity. Every door opens locally near
 the walker regardless of detector or cover state, so that state never blocks passage.
+Proximity uses the walker's actual terrain or stair height across storeys, so an
+entrance opens before the selected floor changes at its threshold. Doors on other
+storeys remain closed when their height puts them out of range.
 On departure or leaving Walk, the door resumes its bound state. Proximity never
 sends a Home Assistant command. Missing HA data keeps the architectural scene usable.
 The demo leaves door contacts and door covers unbound so doors, including the
@@ -191,6 +194,8 @@ Implementation: [dashboard](../../packages/engine/src/CabaneDashboard.tsx),
 Desktop Walk requires pointer lock. Explore requests it directly from the entry
 click; if the browser refuses it, the editor shows a permission error. Mouse
 motion turns the view and keyboard input moves only while the pointer is locked.
+Acquiring or resuming pointer lock focuses the scene so keyboard input reaches the
+native HA panel. Active walk keys stay inside Cabane instead of triggering HA shortcuts.
 Space triggers a jump on desktop while pointer lock is active and device controls
 are closed. Walking and sprinting continue during a jump; holding Space or
 pressing it while airborne does not trigger another jump. The jump follows floor
@@ -217,12 +222,10 @@ universal device or end-to-end 10× speed guarantee.
 Closing device controls while walking keeps the current walk camera and pose.
 Browser pointer-lock loss or refusal pauses mouse input without changing views;
 clicking the scene resumes mouse control. Explicit walk-mode exit remains available.
-Walk and draft Explore show Preferences in the top-right More options menu. The
-Preferences dialog offers Invert Y axis for mouse and touch look controls; the
-choice is saved locally in the browser and applies to both walking contexts.
-It also offers Always day, Always night, and Auto lighting. Auto uses the available
-sun state or local time. The smart bar lighting action remains available and
-updates the same local preference.
+The Home menu opens Settings in the editor. Settings → Explore offers Invert Y axis
+for mouse and touch look controls, preserving its existing browser-local preference.
+Settings → Orbital view contains visual style, room overlays, lighting and weather.
+The former Preferences dialog is removed.
 
 The More options menu uses aligned action rows for Switch workspace, Send feedback,
 and contextual connection actions. Send feedback opens the Cabane
@@ -380,3 +383,50 @@ rendered floor. It returns to its authored placement when cleaning stops. This i
 a decorative status visualization, not robot localization: external cleaning has
 no inferred destination and remains at the authored location. The destination is
 not persisted or written to HA. The activity studio includes a simulated vacuum.
+
+Item state visibility offers Always, Never, and Only if present. Existing true/false choices retain Always/Never behavior. Only if present requires a fresh, available state: booleans must be true/on, numbers must be greater than zero, and text must be nonempty and active (not off, closed, absent, idle, standby, unknown, unavailable or none). Missing, stale and unavailable values are hidden in this mode.
+
+Room labels, connection states and attached readings share one screen-space collision check and the existing viewport-dependent overlay limit. Card dimensions include multiple readings and wrapped labels; the layout follows camera movement, floor elevation and viewport resizing.
+
+Opted-in item readings appear above the furniture or device in the 3D map, with the authored label, state and reported unit. Unavailable, stale and unconnected readings show status text instead of a last-known value. These badges are non-interactive and hidden in Walk and editor previews. Auxiliary fridge/freezer telemetry does not become the room’s ambient temperature or presence. Map visibility and dashboard visibility are independent.
+
+## Walk tool extensions
+
+Optional walk tools are installed by the web host through `CabaneDashboard.walkTools`.
+The engine exposes `WalkToolDefinition`, `WalkToolProps`, and `raycastWalkScene` at
+its public root. A definition supplies an ID, label, icon, and scene module; its
+injected `activateTarget` accepts a modeled target and returns user-facing success
+or unavailable feedback. Runtime entity resolution and authorization remain in
+the engine. Tools receive no HA client, credentials, or household entity IDs.
+
+`packages/walk-laser` is an optional experiment, installed only in
+`apps/web/src/walk-tools.ts`. Its scene, model, effects, input, and CSS load when
+first equipped. Equipping prepares and retains the weapon and shot-effect shader
+programs, including the host’s offscreen render variant, before trigger input.
+The engine, catalog, and home never import it. Removing that
+registration and dependency removes the feature; stored `walk-tool` shortcuts
+remain readable and render as unavailable. The generic shortcut schema retains
+unknown tool IDs to preserve portable projects between hosts with different tools.
+
+Walk tools also receive `WalkToolNavigation`, a generic injected relocation
+interface. `resolveLanding` finds a clear supported floor near a world-space feet
+position; `teleport` revalidates that landing and updates the authoritative walker,
+camera, selected floor and room, resetting velocity and jump state. The controller's
+adapter lives in `walk-tools/useWalkToolNavigation.ts`; support/collision resolution
+lives in `navigation/walk-landing.ts`. Its optional terrain-support query reads the
+existing ground mesh (including pool/stair cutouts) to admit clear outdoor exits
+on the ground storey; ordinary spawn defaults are unchanged. Portal placement, pairing, traversal, input,
+and rendering remain private to `walk-laser/src/portals/`. Live destination views
+use package-private camera transforms, exit clipping, and bounded scene captures
+with the existing renderer and scene supplied by the canvas. No portal rendering
+contract or dependency is added to the engine, catalog, or home.
+
+The first gun equip shows a compact introduction styled like the editor tutorial.
+It explains device toggling and paired portal shortcuts with mouse or touch controls.
+Users dismiss it with Got it (or Enter while the pointer is captured); dismissal
+stays in browser-local storage, with a session fallback if storage is unavailable.
+
+Gun targeting supports lights, fans, AC climate modes, televisions/media players,
+and sprinkler switches or valves. One unambiguous, available binding is required;
+explicit slot targets remain scoped to that slot. Shots switch power on/off or
+open/close valves through the existing guarded runtime commands.

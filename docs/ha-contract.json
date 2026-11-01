@@ -1,9 +1,9 @@
 {
-  "revision": 12,
-  "fingerprint": "c58f63f1b32e6407621a0f32775ffb5fa175254d6f37413a7709465e40620de8",
-  "summary": "Support read-only event entity slots and imported model profiles",
+  "revision": 30,
+  "fingerprint": "c7078f0c13601dc5bd0a6c682c56be1368a2931e97e00b8eab2f0b8acbb132e8",
+  "summary": "Connect stairs to terrain and add masonry stair styles",
   "breakingChanges": [
-    "Older Cabane clients reject event domains and Event custom model profiles. Update the HA panel before importing these workspaces; existing workspaces need no migration."
+    "Existing floor-to-floor stairs and omitted styles remain compatible. Terrain connections and Concrete or Stone styles require the matching frontend and Home Assistant panel. Terrain rise, landing validation and Walk follow the current grade without adding a storey. No migration is required."
   ],
   "history": [
     {
@@ -81,6 +81,132 @@
       "summary": "Support reversible solid structural spaces in room properties",
       "breakingChanges": [
         "Older clients must update before importing projects containing the room isSolid field."
+      ]
+    },
+    {
+      "revision": 12,
+      "summary": "Add decorative apartment floors through Construct floor management",
+      "breakingChanges": [
+        "Existing homes retain their appearance. Homes saved with apartmentFloor require a matching updated Home Assistant panel; older panels reject the new field. Solid structural spaces from revision 11 remain supported."
+      ]
+    },
+    {
+      "revision": 13,
+      "summary": "Add outdoor room membership with shared room controls",
+      "breakingChanges": [
+        "Existing homes, apartment floors and solid structural spaces remain supported. Homes saving platform useAsRoom or roomName fields require an updated panel. Older clients keep unsupported fields blocked until updated through HACS. No data migration is required."
+      ]
+    },
+    {
+      "revision": 14,
+      "summary": "Unify model lighting authoring for personal and built-in models",
+      "breakingChanges": [
+        "Existing homes and single-point imports remain supported. Model lighting overrides, independent light relationships, surface selections and glow-only settings require an updated frontend and matching native panel. No asset or backend migration is required; older clients retain unsupported-field protection."
+      ]
+    },
+    {
+      "revision": 15,
+      "summary": "Support mixed light sources and remove fixed lighting cutoffs",
+      "breakingChanges": [
+        "Existing point and strip declarations remain readable without migration. Mixed explicit source layouts and expanded sample counts require this updated frontend and matching native panel. Older clients retain unsupported-data protection. No asset, HA binding or backend migration is required."
+      ]
+    },
+    {
+      "revision": 16,
+      "summary": "Keep misplaced items editable and add explicit placement repairs",
+      "breakingChanges": [
+        "Existing homes remain compatible. The updated panel treats geometric placement diagnostics as warnings, checks scaled bounds before Arrange edits, and offers per-copy repairs in Issues. Older panels can still block a home on legacy device contact errors. No data or asset migration is required."
+      ]
+    },
+    {
+      "revision": 17,
+      "summary": "Support independent furniture and device sensor readings with scene visibility and TV switch controls",
+      "breakingChanges": [
+        "Existing homes remain supported. Furniture entitySlots and slot presentation.showInScene require the matching updated frontend and Home Assistant panel. Mixed model lighting and placement repairs from revisions 15 and 16 remain supported. Older clients retain unsupported-field protection."
+      ]
+    },
+    {
+      "revision": 18,
+      "summary": "Add virtual room boundaries without physical geometry or collision",
+      "breakingChanges": [
+        "Existing homes remain supported. Homes using WallSpec.virtual require the matching updated frontend and Home Assistant panel; older clients keep unsupported fields blocked. Mixed lighting, placement repairs and independent entity readings from revisions 15 through 17 remain supported."
+      ]
+    },
+    {
+      "revision": 19,
+      "summary": "Keep native glow selections stable across model variants",
+      "breakingChanges": [
+        "Existing homes and immutable GLB selections remain supported. Native keyed emissiveSurfaces require the updated frontend and matching HA panel. Old native ordinals remain saved but inactive until explicitly reselected. No asset, binding or schema-version migration is required."
+      ]
+    },
+    {
+      "revision": 20,
+      "summary": "Keep dense model lighting renderable and isolate broken optional illumination",
+      "breakingChanges": [
+        "Existing authored sources, sample counts, model identities and connections remain unchanged. Older panels can reject valid lighting above eight samples or with no physical output; update HACS, restart Home Assistant and reload the frontend. Runtime recovery disables only malformed optional lighting without rewriting saved data."
+      ]
+    },
+    {
+      "revision": 21,
+      "summary": "Add persistent Arrange item groups",
+      "breakingChanges": [
+        "Existing homes remain supported. Homes saved with scene-item group metadata require an updated frontend and matching Home Assistant panel. Groups preserve individual models, lighting and connections without a schema-version or asset migration; older clients retain unsupported-field protection."
+      ]
+    },
+    {
+      "revision": 22,
+      "summary": "Allow eligible manual connections before room area setup",
+      "breakingChanges": [
+        "No saved fields, slot IDs or schema versions change. Every eligible manual function and reading can now map across Home Assistant areas or before its room has an area association. Older clients may report these mappings as unmapped until their frontend or panel is updated; no migration or device command is involved."
+      ]
+    },
+    {
+      "revision": 23,
+      "summary": "Conditional state visibility on models",
+      "breakingChanges": [
+        "Update older Cabane clients and the Home Assistant integration before opening projects using if-present map visibility. Existing boolean visibility settings remain supported."
+      ]
+    },
+    {
+      "revision": 24,
+      "summary": "Keep homes usable when catalog models are unavailable",
+      "breakingChanges": [
+        "Unavailable models now render as placeholders while preserving item IDs, placements and connections. Update Cabane in HACS, restart Home Assistant and reload to get this recovery behavior. Structural errors remain blocked; no saved fields or schema versions change."
+      ]
+    },
+    {
+      "revision": 25,
+      "summary": "Add optional display names for walls, doors, windows and passages; preserve architectural and binding identities.",
+      "breakingChanges": [
+        "Older Cabane clients reject projects containing wall or opening name fields. Update the Home Assistant integration and reload all clients before opening a renamed project."
+      ]
+    },
+    {
+      "revision": 26,
+      "summary": "Add sloped terrain with home-wide corner heights",
+      "breakingChanges": [
+        "Existing homes retain flat terrain. Homes saved with home.terrain require the updated frontend and matching Home Assistant panel. Older clients retain unsupported-field protection. No floor, asset or binding migration is required."
+      ]
+    },
+    {
+      "revision": 27,
+      "summary": "Warn about disconnected terrain exits and stabilize terrace clipping",
+      "breakingChanges": [
+        "No saved fields or migrations change. Terrain exit diagnostics are warning-only and do not block Save. Update the frontend and matching Home Assistant panel for these warnings and the terrace/basement clipping fix."
+      ]
+    },
+    {
+      "revision": 28,
+      "summary": "Allow shortcuts to devices outside rooms",
+      "breakingChanges": [
+        "No saved fields change. Outside-room device shortcuts now validate and open device controls directly. Older panels reject these targets as lacking a room sheet and require the matching update before using them."
+      ]
+    },
+    {
+      "revision": 29,
+      "summary": "Connect stairs directly to terrain",
+      "breakingChanges": [
+        "Existing floor-to-floor stairs remain compatible. Terrain stairs store one floor and a terrain endpoint and require the matching panel update. Their rise, landing validation and Walk route follow the current terrain without adding a storey."
       ]
     }
   ],

@@ -41,7 +41,8 @@ await withModules(async (load) => {
       },
       updateSelectedOpening: (patch) => calls.push(patch),
       replaceSelectedOpening: (opening) => calls.push(opening),
-      dispatch: (action) => calls.push(action),
+      reorientOpening: (openingId, change) =>
+        calls.push({ type: "reorient-opening", openingId, change }),
     };
     try {
       await act(async () => root.render(React.createElement(NicheProperties, { niche, editor })));

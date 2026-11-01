@@ -407,8 +407,8 @@ export const allLightsOffCall = (
 export const entityDisplayValue = (entity: EntityStateSnapshot) => {
   if (entity.entityId.startsWith("event.")) {
     if (entity.stale) return "Disconnected";
-    if (entity.state === "unknown") return "No event received";
     if (!entity.available) return "Unavailable";
+    if (entity.state === "unknown") return "No event received";
     const timestamp = Date.parse(entity.state);
     if (!Number.isFinite(timestamp)) return "Event time unavailable";
     const eventType = entity.attributes.event_type;

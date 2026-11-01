@@ -63,10 +63,21 @@ export interface ConstructEditorController extends ConstructEditorState {
     id: string,
     changes: Partial<Omit<import("@cabane/engine").OutdoorPlatformSpec, "id">>,
   ) => void;
+  addPlatform: (
+    polygon: Polygon,
+    finish: FloorFinishSpec,
+    defaultEdge: import("@cabane/engine").OutdoorPlatformEdgeConfiguration,
+  ) => void;
   poolDrawing: ReturnType<typeof usePoolDrawing>;
   selectPool: (id: string) => void;
   selectFloorZone: (id: string) => void;
   updatePool: (poolId: string, polygon: Polygon) => void;
+  addPool: (polygon: Polygon) => void;
+  addHedge: (hedge: Omit<import("@cabane/engine").HedgeSpec, "id">) => void;
+  updateHedge: (
+    id: string,
+    changes: Partial<Omit<import("@cabane/engine").HedgeSpec, "id">>,
+  ) => void;
   paintRoomFloor: (roomId: string, finish: FloorFinishSpec, clearZones: boolean) => void;
   addFloorZone: (roomId: string, polygon: Polygon, finish: FloorFinishSpec) => void;
   addGroundZone: (polygon: Polygon, finish: FloorFinishSpec) => void;
@@ -103,11 +114,27 @@ export interface ConstructEditorController extends ConstructEditorState {
     changes: Partial<
       Pick<
         EditorWall,
-        "thicknessMeters" | "heightMeters" | "exteriorColor" | "edgeColor" | "faceColors" | "niches"
+        | "name"
+        | "thicknessMeters"
+        | "heightMeters"
+        | "exteriorColor"
+        | "edgeColor"
+        | "faceColors"
+        | "niches"
       >
     >,
   ) => void;
+  updateWallMetadata: (
+    wallId: string,
+    changes: Parameters<ConstructEditorController["updateSelectedWallMetadata"]>[0],
+  ) => void;
+  addWallSegment: (
+    from: PlanPoint,
+    to: PlanPoint,
+    options?: { exteriorColor?: string; virtual?: boolean },
+  ) => void;
   updateFloorSettings: (settings: FloorEditorFloorSettings) => void;
+  setFloorName: (name: string) => void;
   updateRoom: (
     roomId: string,
     changes: Partial<
@@ -125,7 +152,7 @@ export interface ConstructEditorController extends ConstructEditorState {
       >
     >,
   ) => void;
-  resolveRoomMerge: (survivorId: string) => void;
+  resolveRoomMerge: (survivorId: string, roomId?: string) => void;
   translateWall: (wallId: string, delta: PlanPoint) => void;
   beginWall: (from: PlanPoint) => void;
   previewWall: (to: PlanPoint) => void;
@@ -137,7 +164,14 @@ export interface ConstructEditorController extends ConstructEditorState {
     wallId: string,
     offsetPlanUnits: number,
     side?: "left" | "right",
+    configuration?: import("@cabane/engine").DoorConfiguration,
+  ) => boolean;
+  updateOpening: (opening: EditorOpening) => boolean;
+  reorientOpening: (
+    openingId: string,
+    change: import("@cabane/engine").OpeningOrientationAction,
   ) => void;
+  resizeOpening: (openingId: string, offsetPlanUnits: number, widthPlanUnits: number) => boolean;
   updateSelectedOpening: (
     patch: Partial<
       Pick<
@@ -152,6 +186,7 @@ export interface ConstructEditorController extends ConstructEditorState {
   canDuplicateOpening: (openingId: string) => boolean;
   duplicateOpening: (openingId: string) => boolean;
   deleteSelected: () => void;
+  deleteElements: (targets: readonly FloorEditorSelectionTarget[]) => void;
   undo: () => void;
   redo: () => void;
   replaceFloor: (floor: FloorSpec) => void;

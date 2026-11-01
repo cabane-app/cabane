@@ -1,4 +1,4 @@
-import type { CustomModel } from "../imported-models/contracts";
+import type { CustomModel, CustomModelLight } from "../imported-models/contracts";
 import type {
   Assumption,
   EntityBindingSlotSpec,
@@ -16,6 +16,7 @@ import type {
 import type { StairSpec } from "../stairs/types";
 import type { RoofSettings } from "../roof/roof-settings";
 import type { ActionBarConfiguration } from "../action-bar/action-bar-config";
+import type { TerrainSettings } from "../terrain/terrain-settings";
 import { migrateLegacyProject } from "./migrations";
 
 export type LayoutRoomSpec = Omit<RoomSpec, "furnishings" | "dashboardSlots" | "devices"> & {
@@ -70,6 +71,12 @@ export type ItemPlacement =
     };
 
 interface SceneItemBase {
+  /** Flat Arrange group. Members share this metadata and retain independent bindings. */
+  group?: { id: string; name: string };
+  /** Independent lighting relationship; the entity slot is derived as <id>-entity. */
+  lightSlotId?: string;
+  /** Local scene appearance only; this never sends Home Assistant commands. */
+  lightState?: "always-off" | "always-on" | "night-only" | "connected";
   /** Optional six-digit hex fabric override; omitted preserves the model palette. */
   color?: string;
   /** Omitted values use the model's first variant. */
@@ -83,6 +90,8 @@ interface SceneItemBase {
 
 export interface FurnishingItemSpec extends SceneItemBase {
   kind: "furnishing";
+  /** Optional read-only sensor attachments, independent of model controls. */
+  entitySlots?: readonly EntityBindingSlotSpec[];
 }
 
 export interface DeviceItemSpec extends SceneItemBase {
@@ -105,10 +114,15 @@ export interface OpeningProfileSpec {
 }
 
 export interface HomeProject {
+  /** Home-local overrides for built-in models. Null disables their lighting. */
+  modelLights?: Readonly<Record<string, CustomModelLight | null>>;
   customModels?: readonly CustomModel[];
   schemaVersion: 2;
   seedRevision: string;
   home: {
+    terrain?: TerrainSettings;
+    /** Decorative storeys below the modeled home; zero preserves the original appearance. */
+    apartmentFloor?: number;
     walkStart?: { floorId: string; at: PlanPoint };
     roof?: RoofSettings;
     /** Clockwise from plan up (−Z); omitted means 0°. */

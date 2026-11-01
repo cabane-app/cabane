@@ -9,6 +9,7 @@ export function ConstructionBuildingSettings({
   onRoofChange,
   roof,
   northControls,
+  terrainControls,
   walkStartControls,
   tutorialControls,
   editor,
@@ -19,6 +20,7 @@ export function ConstructionBuildingSettings({
   | "onRoofChange"
   | "roof"
   | "northControls"
+  | "terrainControls"
   | "walkStartControls"
   | "tutorialControls"
   | "editor"
@@ -37,6 +39,7 @@ export function ConstructionBuildingSettings({
         </details>
       )}
       {northControls}
+      {terrainControls}
       {walkStartControls}
       <details className="construction-inspector__floor-disclosure">
         <SidebarSectionSummary

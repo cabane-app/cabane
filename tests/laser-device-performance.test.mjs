@@ -18,7 +18,7 @@ import '@cabane/engine/styles.css';
 const manifest=structuredClone(neutralDemoManifest);
 manifest.home.walkStart={floorId:manifest.floors[0].id,at:[2.4,1.8]};
 const slot={id:'probe',model:'probe',entitySlots:[{id:'power',deviceRole:'primary',compatibleDomains:['light']}]};
-const item={id:'probe',kind:'device',modelId:'probe',lightState:'connected',size:[1,1,1],entitySlots:slot.entitySlots,placement:{kind:'absolute',at:[2.4,2.6],elevationMeters:1.52,rotationYRadians:0}};
+const item={id:'probe',floorId:manifest.floors[0].id,kind:'device',modelId:'probe',lightState:'connected',size:[1,1,1],entitySlots:slot.entitySlots,placement:{kind:'absolute',at:[2.4,2.6],elevationMeters:1.52,rotationYRadians:0}};
 const models={probe:{bounds:{min:[0,0,0],max:[1,1,1]},sceneLight:{position:[0,0,0],color:'#ffffff',maxIntensity:5,distance:6}}};
 function ObservedGun(props) {
  const {gl,scene}=useThree();

@@ -1,3 +1,4 @@
+import { singleControlDescriptor } from "./auxiliary-mapping-choices";
 import type { ReactNode } from "react";
 import {
   bindingEntityCandidates,
@@ -77,10 +78,7 @@ export function ModeledDeviceMappingRow({
     );
   }
 
-  const singleSlotDescriptor =
-    device.entitySlots.length === 1
-      ? descriptors.find((descriptor) => descriptor.slotId === device.entitySlots[0].id)
-      : undefined;
+  const singleSlotDescriptor = singleControlDescriptor(device, descriptors);
   if (singleSlotDescriptor) {
     const current = profile.entityIdsBySlotId[singleSlotDescriptor.slotId];
     const candidates = bindingEntityCandidates({

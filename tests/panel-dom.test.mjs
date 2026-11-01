@@ -8,6 +8,9 @@ import { withModules } from "./test-server.mjs";
 await withModules(async (load) => {
   const { CabaneDomProvider, useCabaneDom } = await load("/packages/engine/src/CabaneDom.tsx");
   const { useDesktopWalkInput } = await load("/packages/engine/src/desktop-walk-input.ts");
+  const { requestWalkPointerLock } = await load(
+    "/packages/engine/src/request-walk-pointer-lock.ts",
+  );
   const { FloorPicker } = await load("/packages/engine/src/building/FloorPicker.tsx");
   const { ConstructFloorControls } = await load(
     "/apps/web/src/editor-floors/ConstructFloorControls.tsx",
@@ -30,6 +33,9 @@ await withModules(async (load) => {
       HTMLElement: browser.window.HTMLElement,
       IS_REACT_ACT_ENVIRONMENT: true,
     });
+    // React can initialize its legacy input watcher before JSDOM is installed.
+    browser.window.HTMLElement.prototype.attachEvent = () => {};
+    browser.window.HTMLElement.prototype.detachEvent = () => {};
     const shadow = document.querySelector("#panel").attachShadow({ mode: "open" });
     const container = document.createElement("div"),
       portals = document.createElement("div");
@@ -46,6 +52,32 @@ await withModules(async (load) => {
       Object.assign(globalThis, previous);
     }
   }
+  test("apartment floor follows Add floor below and saves through a separate dialog", async () =>
+    fixture(async ({ shadow, render }) => {
+      const saved = [];
+      await render(
+        h(ConstructFloorControls, {
+          floors: [{ id: "g", name: "Ground" }],
+          selectedId: "g",
+          disabled: false,
+          onSelect() {},
+          onAdd() {},
+          onAddBelow() {},
+          onSettings() {},
+          apartmentFloor: 3,
+          onApartmentFloor: (value) => saved.push(value),
+        }),
+      );
+      await act(async () => shadow.querySelector('[aria-label="Current floor"]').click());
+      const actions = [...shadow.querySelectorAll('[role="menuitem"]')];
+      assert.equal(actions.at(-2).textContent.trim(), "Add floor below");
+      assert.equal(actions.at(-1).textContent.trim(), "Setup apartment floor");
+      await act(async () => actions.at(-1).click());
+      assert.equal(shadow.querySelector("input").value, "3");
+      await act(async () => shadow.querySelector('button[type="submit"]').click());
+      assert.deepEqual(saved, [3]);
+      assert.equal(shadow.querySelector("dialog"), null);
+    }));
   test("DOM environment identity stays stable across unrelated renders", async () => {
     await fixture(async ({ render, shadow }) => {
       const values = [];
@@ -199,6 +231,75 @@ await withModules(async (load) => {
         ),
       );
       assert.deepEqual(movement.current, { x: 0, y: 0 });
+    }));
+  test("active walk input keeps movement and other keys out of host shortcuts", async () =>
+    fixture(async ({ browser, shadow, render }) => {
+      const movement = { current: { x: 0, y: 0 } },
+        sprint = { current: false };
+      function WalkInput({ active }) {
+        useDesktopWalkInput(active, movement, sprint);
+        return h("button", null, "Walk");
+      }
+      const hostKeys = [];
+      for (const type of ["keydown", "keyup"])
+        window.addEventListener(type, (event) => hostKeys.push(`${type}:${event.code}`));
+      const key = (code, target = shadow.querySelector("button"), type = "keydown") => {
+        const event = new browser.window.KeyboardEvent(type, {
+          code,
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        });
+        target.dispatchEvent(event);
+        return event;
+      };
+      await render(h(WalkInput, { active: true }));
+      const localKeys = [];
+      shadow.addEventListener("keydown", (event) => localKeys.push(event.code));
+      assert.equal(key("KeyW").defaultPrevented, true);
+      assert.equal(movement.current.y, -1);
+      key("KeyW", shadow.querySelector("button"), "keyup");
+      assert.deepEqual(movement.current, { x: 0, y: 0 });
+      key("KeyE");
+      assert.deepEqual(hostKeys, [], "HA must not open its entity search while walking");
+      assert.deepEqual(localKeys, ["KeyW", "KeyE"], "other Cabane key handlers still run");
+      key("KeyE", document.querySelector("#host"));
+      assert.deepEqual(hostKeys, ["keydown:KeyE"], "host input outside Cabane remains available");
+      await render(h(WalkInput, { active: false }));
+      key("KeyE");
+      assert.deepEqual(
+        hostKeys,
+        ["keydown:KeyE", "keydown:KeyE"],
+        "leaving walk restores host shortcuts",
+      );
+    }));
+  test("walk pointer lock focuses its persistent scene instead of the host or entry button", async () =>
+    fixture(async ({ browser, shadow, render }) => {
+      await render(h("main", null, h("button", null, "Explore")));
+      const scene = shadow.querySelector("main");
+      const button = shadow.querySelector("button");
+      let locked = null;
+      let focusCalls = 0;
+      const focus = scene.focus.bind(scene);
+      scene.focus = (options) => {
+        focusCalls++;
+        focus(options);
+      };
+      Object.defineProperty(shadow, "pointerLockElement", { get: () => locked });
+      scene.requestPointerLock = () => {
+        locked = scene;
+        document.dispatchEvent(new browser.window.Event("pointerlockchange"));
+        return Promise.resolve();
+      };
+      document.querySelector("#host").focus();
+      await requestWalkPointerLock(scene);
+      assert.ok(shadow.activeElement === scene, "keyboard input must enter the panel");
+      assert.equal(focusCalls, 1, "the event and Promise must not focus the scene twice");
+      button.remove();
+      assert.ok(shadow.activeElement === scene, "removing the entry UI must not lose focus");
+      document.querySelector("#host").focus();
+      await requestWalkPointerLock(scene);
+      assert.ok(shadow.activeElement === scene, "resuming existing pointer lock restores focus");
     }));
   test("editor tooltip stays inside the shadow portal and accounts for panel offsets", async () =>
     fixture(async ({ shadow, portals, render }) => {

@@ -1,11 +1,19 @@
 # Session transport acceptance
 
-Real-device launch requires browser-trusted HTTPS dashboard delivery and HTTPS
+Standalone real-device launch requires browser-trusted HTTPS dashboard delivery and HTTPS
 Home Assistant token requests with WSS connections. HTTP is permitted only for
 paired loopback development endpoints (`localhost`, IPv4 `127.0.0.0/8`, IPv6
 `[::1]`). Local demo and construction still work over HTTP without HA.
 A loopback endpoint refers to the browser's machine, not another LAN machine.
-There is no private-tunnel or ordinary LAN HTTP bypass.
+Standalone sessions have no private-tunnel or ordinary LAN HTTP bypass.
+
+The native panel borrows HA's existing connection and accepts matching HTTP or
+HTTPS page/host/workspace origins. Different schemes, hosts and ports are rejected.
+LAN HTTP works without a secure-context override, but remains unencrypted. HTTPS
+is recommended. Native startup is checked in the DOM harness; real IndexedDB
+model storage, UUID generation and SHA-256 fallback are checked at a synthetic
+non-loopback HTTP browser origin;
+this does not establish live household or network acceptance.
 
 The UI validates transport before sign-in. The runtime independently checks it
 before loading saved credentials or invoking the authentication SDK, including

@@ -1,3 +1,4 @@
+import { HomeAssistantActivityTracker } from "./home-assistant-activity";
 import { createSessionStorageSender } from "./home-assistant-storage-session";
 import { BorrowedHomeAssistantRuntime } from "./BorrowedHomeAssistantRuntime";
 import {
@@ -249,6 +250,7 @@ function HomeAssistantRuntimeProviderImpl({
           return;
         }
         connectionRef.current = connection;
+        const activity = new HomeAssistantActivityTracker();
 
         const refreshRegistries = async () => {
           const [nextAreas, nextDevices, nextEntities] = await Promise.all([
@@ -270,6 +272,7 @@ function HomeAssistantRuntimeProviderImpl({
 
         const handleReady = () => {
           if (!isCurrent()) return;
+          activity.reset();
           void refreshRegistries()
             .then(() => {
               if (!isCurrent()) return;
@@ -285,6 +288,7 @@ function HomeAssistantRuntimeProviderImpl({
         const handleDisconnected = () => {
           if (!isCurrent()) return;
           schedulerRef.current?.cancelPendingValues();
+          activity.reset();
           setEntityStates((current) => markEntityStatesStale(current));
           updateStatus("reconnecting");
         };
@@ -313,7 +317,10 @@ function HomeAssistantRuntimeProviderImpl({
         if (!isCurrent()) return;
         unsubscribeRef.current.push(
           client.subscribeEntities(connection, (states) => {
-            if (isCurrent()) setEntityStates(normalizeEntityStates(states));
+            if (isCurrent()) {
+              const snapshot = normalizeEntityStates(states, connection.connected === false);
+              setEntityStates(activity.update(snapshot));
+            }
           }),
         );
         for (const eventType of [

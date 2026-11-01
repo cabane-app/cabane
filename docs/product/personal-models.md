@@ -2,7 +2,7 @@
 
 Arrange exposes personal-model tools only inside **My models**, identified by
 a cube icon. This section offers **Import model (.glb file)** and **Generate a
-custom model**. A single preview grid lists the home's models, with download and
+custom model**. A single preview grid lists the home's models, with edit, download and
 unused-model removal icons on preview hover or keyboard focus, and always visible
 on touch devices. Clicking a model's name renames it; there is no second management
 list. The generation guide explains use of any AI tool, installation
@@ -18,12 +18,19 @@ the ground at their bottom, wall models contact the wall at their back, and
 ceiling models contact their support at their top. Placement, selection,
 rotation, uniform resizing, duplication, history, Reset, and Save use the normal
 editor paths. Floor instances have a simple bounding-envelope walk collider.
+Free placement uses the imported model's scaled lower bounds, including the
+centered origin of wall models. Invalid moves and resizes are refused. Existing
+geometric placement problems remain editable warnings with Select,
+Reset placement and Remove in Issues. Reset changes only the placed copy, without
+renormalizing the import or changing its other copies.
 
 Original GLB materials, colours, and embedded textures are preserved. Personal
 models receive scene lighting without compulsory toon conversion or contours.
 Native procedural models retain their materials, batching, LOD, and outlines.
 Animations remain in their initial pose; embedded cameras and lights are ignored
-with preview notices. Visual variants driven by HA state are outside this version.
+with preview notices. Light profiles may explicitly select named Standard/Physical
+materials whose emissive colour and intensity follow the connected light. Other
+visual variants driven by HA state are outside this version.
 Only the import owner may load personal GLB resources; catalog/home generation
 follows the [visual asset contract](geometry-and-rendering.md#visual-assets).
 
@@ -38,15 +45,42 @@ and the preceding persisted workspace usable.
 
 Every import allocates an independent `custom:<UUID>` model, including repeated
 imports of identical bytes. Identical files share their immutable SHA-256 asset.
-Models can be renamed or downloaded; deletion requires no remaining draft
+Models can be edited, renamed or downloaded; deletion requires no remaining draft
 instances. Published and active history references retain their assets even when
 a draft removes the corresponding model. Instances share loaded geometry,
 materials, and textures while retaining independent transforms and skeletons.
+Selected emissive materials alone receive per-instance copies. They retain their
+textures, are restored and disposed when the instance or preview closes, and
+never mutate cached materials or dispose shared geometry/textures.
 The final resource lease disposes the cache after previews or scenes close.
+
+**Edit model** reopens the import preview with the stored settings and verified
+original GLB. Saving updates the definition in place, keeping its custom ID and
+immutable asset reference. Every placed copy adopts the new light settings,
+orientation and dimensions. Copies retain their per-instance scale multiplier,
+floor and placement declaration (including support and yaw). Preferred placement
+sets the model's normalization origin and the support offered for new copies;
+it does not remount existing copies onto another wall or ceiling.
+
+Changing profile converts all copies to Furniture or the selected device kind.
+Device profile changes replace local slots with fresh manual primary slots and
+clear only the affected draft connections across all HA origins. Published
+mappings remain intact. The model, copies and private mapping cleanup share one
+undo/redo step. Cancel before saving leaves the workspace untouched; storage
+failure keeps the draft in memory, shows a retry/Undo message, and preserves the
+preceding stored record. Missing or damaged assets block saving and can be
+recovered through an intact model pack. Editing uses the existing project and
+asset contracts without a schema migration. Lighting editing uses the shared [model lighting](model-lighting.md) editor.
 
 `HomeProject` V2 optionally contains `customModels`: name, support, existing
 profile, asset hash/byte length, normalization, bounds, complexity, and optional
-Light source. Projects without it have an empty personal catalog. The public
+Light settings. Legacy single-point settings remain readable without migration.
+Optional legacy `light.points` adds points to `light.position`, or
+`light.strip` defines a distinct end and a safe-integer sample request of at least two.
+These alternatives cannot coexist. `light.emissiveMaterials` selects up to sixteen
+distinct exact material names. Unknown fields remain blocked in older panels,
+so homes using these fields require the matching updated HA frontend bundle.
+Projects without custom models have an empty personal catalog. The public
 engine resolves definitions per project before validation and composition;
 custom IDs never become a global catalog registration. Binaries occupy the
 separate IndexedDB `model-assets` store and never enter project/history JSON.
@@ -55,8 +89,29 @@ published, and active history references are preserved across edits and Reset.
 
 Device profiles reuse existing HA domains and controls. Each placed or duplicated
 device receives a fresh primary local slot. Exact entity IDs remain in private,
-origin-scoped binding profiles. Light adds a configurable point source and reuses
-brightness, colour, availability, and local scene-light rules. Camera opens the
+origin-scoped binding profiles. Light supports mixed points and multiple strips,
+plus selected glowing surfaces and named emissive materials. All sources share
+the primary connected entity; independent per-source entity mappings remain
+separate work. Positions and strip endpoints are metres in normalized support
+space, after the import's orientation and size corrections. Instance rotation and
+uniform resizing transform source positions and range alongside the model.
+Total intensity is shared between sources, then between each strip's samples,
+including both endpoints. Sample counts are explicit and survive endpoint edits.
+
+There is no eight-point logical model limit or source-discarding floor cutoff.
+The shared [execution policy](model-lighting.md#rendering) approximates all active
+sources within 64 physical lights per preview or floor. It reduces strip samples
+and, when necessary, merges nearby logical sources while conserving total
+brightness. Saved declarations and requested counts remain intact. The pool
+reuses bounded zero-intensity slots when lights turn off, avoiding
+shader rebuilds within its existing capacity. Off, unavailable, stale and
+disconnected connected lights have zero source and emissive intensity. Local
+Always on, Always off and Night only modes apply to both. Strip lighting
+approximates a line with points compatible with native toon and imported PBR
+materials; surface glow alone does not emit area light or bloom. The shared
+[lighting editor](model-lighting.md) supports camera navigation, glass passthrough,
+move/rotation gizmos, precise coordinates and simulated preview state.
+Camera opens the
 existing viewer. Sensor, Cover, and the other profiles retain static geometry.
 Import and preview never inspect or operate household devices.
 
@@ -81,6 +136,10 @@ scene items that currently point at a selected missing model ID. Pack imports
 reject unknown files, unreferenced assets, hash/size mismatches, and conflicting
 IDs; a same-ID model is accepted only when it points to the same asset.
 
+Imports and Edit use the engine's `editCustomModel` to update the definition,
+placed copies, lighting and draft connections in one history step. Restoring a
+missing definition keeps saved copy sizes because its prior normalization is unknown.
+
 JSON projects and workspace imports preserve unknown furnishing and device model
 IDs as warnings. The scene shows an editable generic cube with the saved size
 and placement until the model is imported or replaced. Structural errors still
@@ -101,18 +160,27 @@ native homes and ask for an update for homes containing GLB references.
 Unreferenced remote files and abandoned transfers expire after 24 hours; cleanup
 preserves assets referenced by any stored draft or published home.
 
-The public [`create-cabane-model` skill](https://github.com/cabane-app/agent-skills/tree/main/skills/create-cabane-model) contains `SKILL.md`, export guidance,
+The public [`create-cabane-model` skill](../../.agents/skills/create-cabane-model/SKILL.md) contains `SKILL.md`, export guidance,
 standalone Blender and Three.js examples, and a local Python validator. It emits
 a standard GLB without Cabane source or an additional manifest. Simplified
 proportions, a restrained palette, and Cabane-like finishes are defaults; explicit
 style preferences take precedence. Final validation also uses the Cabane import
 preview. Reference photos and household HA data are not deliverables. Install with
-`npx skills add cabane-app/agent-skills --skill create-cabane-model`. This public
-repository is the single source of the skill; Cabane does not keep a second copy.
+`npx skills add cabane-app/cabane --skill create-cabane-model`. The skill and its
+bundled resources retain their [MIT license](../../.agents/skills/create-cabane-model/LICENSE).
+This repository is the maintained source. The former `cabane-app/agent-skills`
+repository is archived; existing users must reinstall from `cabane-app/cabane`
+to receive future updates.
 
 Implementation: [import owner](../../packages/engine/src/imported-models/index.ts),
 [Arrange library](../../apps/web/src/custom-models/CustomModelLibrary.tsx),
 [HA asset client](../../apps/web/src/workspaces/ha-model-assets.ts),
-[portable skill](https://github.com/cabane-app/agent-skills/tree/main/skills/create-cabane-model).
+[portable skill](../../.agents/skills/create-cabane-model/SKILL.md).
 
 [Back to product overview](../../PRODUCT_SPEC.md).
+
+Personal import and Edit model expose **Model** and **Lighting** sections. The
+Lighting section shares the visual placement, surface selection and local preview
+used by built-in models. See [model lighting](model-lighting.md).
+
+Changing an imported model’s profile replaces only its primary control slot. Optional independent sensor readings retain their slot IDs, visibility and private mappings on every copy, including conversions between furniture and devices. Published mappings remain intact until Apply.

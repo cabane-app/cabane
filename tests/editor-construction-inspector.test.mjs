@@ -27,6 +27,7 @@ await withModules(async (load) => {
     deriveFloorTopology,
     composeHomeBindingManifest,
     parseHomeProjectSchema,
+    collectBindingSlots,
   } = await load("/packages/engine/src/index.ts");
   function ConstructionPanels(props) {
     return React.createElement(
@@ -110,6 +111,174 @@ await withModules(async (load) => {
           controller.previewFloor.openings.find((opening) => opening.id === id).color,
           undefined,
         );
+      });
+    }
+  });
+
+  test("construction names commit, cancel and survive history, reopening and connection composition", async (context) => {
+    const previousObservers = {
+      IntersectionObserver: globalThis.IntersectionObserver,
+      ResizeObserver: globalThis.ResizeObserver,
+    };
+    context.after(() => Object.assign(globalThis, previousObservers));
+    globalThis.IntersectionObserver = globalThis.ResizeObserver = class {
+      observe() {}
+      disconnect() {}
+    };
+    for (const kind of ["wall", "invisible-wall", "door", "window", "passage"]) {
+      const isWall = kind === "wall" || kind === "invisible-wall";
+      await withDom(async ({ dom, root }) => {
+        const floor = {
+          ...ownerHomeProject.floors[0],
+          walls: ownerHomeProject.floors[0].walls.map((wall) =>
+            isWall
+              ? { ...wall, ...(kind === "invisible-wall" ? { virtual: true } : {}) }
+              : { ...wall, name: "Kitchen wall" },
+          ),
+        };
+        if (kind === "invisible-wall") floor.openings = [];
+        if (kind === "passage") {
+          const source = floor.openings.find((opening) => opening.kind === "window");
+          floor.openings = floor.openings.map((opening) =>
+            opening.id === source.id
+              ? {
+                  id: source.id,
+                  kind: "passage",
+                  shape: "rectangular",
+                  wallId: source.wallId,
+                  offsetFromWallStartPlanUnits: source.offsetFromWallStartPlanUnits,
+                  widthPlanUnits: source.widthPlanUnits,
+                  openingHeightMeters: source.openingHeightMeters,
+                  sillHeightMeters: 0,
+                }
+              : opening,
+          );
+        }
+        const item = isWall ? floor.walls[0] : floor.openings.find((entry) => entry.kind === kind);
+        let controller;
+        function Harness() {
+          controller = useConstructEditor(floor);
+          return isWall
+            ? React.createElement(ConstructionSelectionProperties, {
+                editor: controller,
+                onClose() {},
+              })
+            : React.createElement(OpeningDetails, {
+                opening: controller.draft.openings.find((entry) => entry.id === item.id),
+                editor: controller,
+                disabled: false,
+                onClose() {},
+              });
+        }
+        await act(async () => root.render(React.createElement(Harness)));
+        await act(async () =>
+          isWall ? controller.selectWall(item.id) : controller.selectOpening(item.id),
+        );
+        const input = () =>
+          dom.window.document.querySelector(`[aria-label="${isWall ? "Wall" : "Opening"} name"]`);
+        const current = () =>
+          (isWall ? controller.previewFloor.walls : controller.previewFloor.openings).find(
+            (entry) => entry.id === item.id,
+          );
+        const heading = () =>
+          dom.window.document.querySelector(".selection-details h2").textContent;
+        const typeLabel =
+          kind === "invisible-wall" ? "Invisible wall" : kind[0].toUpperCase() + kind.slice(1);
+        assert.equal(heading(), typeLabel);
+        assert.equal(input().placeholder, item.id);
+        dom.window.HTMLElement.prototype.attachEvent = () => {};
+        dom.window.HTMLElement.prototype.detachEvent = () => {};
+        const type = async (value) => {
+          await act(async () => input().focus());
+          await act(async () => {
+            Object.getOwnPropertyDescriptor(
+              dom.window.HTMLInputElement.prototype,
+              "value",
+            ).set.call(input(), value);
+            input().dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+            input().dispatchEvent(
+              new dom.window.KeyboardEvent("keyup", { key: "o", bubbles: true }),
+            );
+          });
+        };
+        const key = async (key) =>
+          act(async () =>
+            input().dispatchEvent(new dom.window.KeyboardEvent("keydown", { key, bubbles: true })),
+          );
+        const name = `Kitchen ${kind}`;
+        await type(`  ${name}  `);
+        await key("Enter");
+        assert.equal(current().name, name);
+        assert.equal(current().id, item.id);
+        assert.equal(heading(), name);
+        assert.equal(
+          dom.window.document.querySelector(".selection-details__header p").textContent,
+          `${typeLabel} · ${floor.name}`,
+        );
+        if (!isWall) {
+          assert.equal(
+            dom.window.document.querySelector('[aria-label="Opening wall"]').value,
+            "Kitchen wall",
+          );
+          await act(async () => controller.updateWallMetadata(item.wallId, { name: "Patio wall" }));
+          assert.equal(
+            dom.window.document.querySelector('[aria-label="Opening wall"]').value,
+            "Patio wall",
+          );
+          await act(async () => controller.updateWallMetadata(item.wallId, { name: undefined }));
+          assert.equal(
+            dom.window.document.querySelector('[aria-label="Opening wall"]').value,
+            item.wallId,
+          );
+          await act(async () => controller.undo());
+          await act(async () => controller.undo());
+        }
+        await type("Cancelled");
+        await key("Escape");
+        assert.equal(input().value, name);
+        assert.equal(current().name, name);
+        await act(async () => controller.undo());
+        assert.equal(current().name, undefined);
+        assert.equal(heading(), typeLabel);
+        await act(async () => controller.redo());
+        assert.equal(current().name, name);
+        assert.equal(heading(), name);
+        if (kind === "door") {
+          await act(async () =>
+            dom.window.document.querySelector('[aria-label="Door presets"] button').click(),
+          );
+          assert.equal(current().name, name);
+        }
+        const saved = JSON.parse(JSON.stringify(controller.previewFloor));
+        const reopened = deriveFloorTopology(createFloorEditorDraft(saved)).floor;
+        assert.equal(
+          (isWall ? reopened.walls : reopened.openings).find((entry) => entry.id === item.id).name,
+          name,
+        );
+        const project = {
+          ...ownerHomeProject,
+          floors: ownerHomeProject.floors.map((entry) => (entry.id === floor.id ? saved : entry)),
+        };
+        assert.equal(parseHomeProjectSchema(project).valid, true);
+        if (kind === "door" || kind === "window") {
+          const slots = collectBindingSlots(
+            composeHomeBindingManifest(project, neutralDemoManifest.extensions),
+          );
+          const slot = slots.find((entry) => entry.openingId === item.id);
+          assert.equal(
+            slot.spec.presentation.label,
+            `${kind === "door" ? "Door" : "Window"} · ${name}`,
+          );
+          const previousSlot = collectBindingSlots(
+            composeHomeBindingManifest(ownerHomeProject, neutralDemoManifest.extensions),
+          ).find((entry) => entry.openingId === item.id);
+          assert.equal(slot.slotId, previousSlot.slotId);
+        }
+        await type("   ");
+        await act(async () => input().blur());
+        assert.equal(current().name, undefined);
+        assert.equal(input().placeholder, item.id);
+        assert.equal(heading(), typeLabel);
       });
     }
   });
@@ -401,7 +570,7 @@ await withModules(async (load) => {
     });
   });
 
-  test("Solid structure shares Room actions with deletion and survives history and reopening", async () => {
+  test("Use as room keeps structural conversion reversible through history and reopening", async () => {
     await withDom(async ({ dom, root }) => {
       const floor = ownerHomeProject.floors[0];
       const room = floor.rooms[0];
@@ -415,26 +584,29 @@ await withModules(async (load) => {
       }
       await act(async () => root.render(React.createElement(Harness)));
       await act(async () => controller.selectRoom(room.id));
-      const toggle = dom.window.document.querySelector(
-        '[role="switch"][aria-labelledby="room-solid-label"]',
-      );
+      const toggle = dom.window.document.querySelector('[role="switch"]');
       assert.ok(toggle);
       assert.equal(
         dom.window.document.getElementById(toggle.getAttribute("aria-labelledby")).textContent,
-        "Solid structure",
+        "Use as room",
       );
       assert.equal(
         dom.window.document.getElementById(toggle.getAttribute("aria-describedby")).textContent,
-        "Fill this space for a chimney, shaft or pillar.",
+        "Turn off to fill a cupboard, shaft or pillar as a structural block, without room navigation or area mapping.",
       );
       const section = toggle.closest("fieldset");
-      assert.equal(section.querySelector("legend").textContent, "Room actions");
+      assert.equal(section.querySelector("legend").textContent, "Room");
+      assert.equal(toggle.getAttribute("aria-checked"), "true");
+      assert.ok(dom.window.document.querySelector('[aria-label="Room name"]'));
+      await act(async () => toggle.click());
+      assert.equal(toggle.getAttribute("aria-checked"), "false");
+      assert.equal(dom.window.document.querySelector('[aria-label="Room name"]'), null);
+      assert.equal(dom.window.document.querySelector('[aria-label="Room ceiling height"]'), null);
       assert.ok(
-        [...section.querySelectorAll("button")].some(
-          (button) => button.textContent === "Delete room",
+        [...dom.window.document.querySelectorAll("button")].some(
+          (button) => button.textContent === "Delete space",
         ),
       );
-      await act(async () => toggle.click());
       assert.equal(
         controller.previewFloor.rooms.find((candidate) => candidate.id === room.id).isSolid,
         true,
@@ -480,6 +652,97 @@ await withModules(async (load) => {
         controller.previewFloor.rooms.find((candidate) => candidate.id === room.id).name,
         room.name,
       );
+    });
+  });
+
+  test("platforms share room controls and keep their name and outdoor geometry through toggle and history", async (context) => {
+    const priorObservers = {
+      IntersectionObserver: globalThis.IntersectionObserver,
+      ResizeObserver: globalThis.ResizeObserver,
+    };
+    context.after(() => Object.assign(globalThis, priorObservers));
+    globalThis.IntersectionObserver = globalThis.ResizeObserver = class {
+      observe() {}
+      disconnect() {}
+    };
+    await withDom(async ({ dom, root }) => {
+      const floor = ownerHomeProject.floors[0];
+      let controller;
+      function Harness() {
+        controller = useConstructEditor(floor);
+        return React.createElement(ConstructionSelectionProperties, {
+          editor: controller,
+          onClose() {},
+        });
+      }
+      await act(async () => root.render(React.createElement(Harness)));
+      await act(async () => controller.selectRoom(floor.rooms[0].id));
+      const originalSwitch = dom.window.document.querySelector('[role="switch"]');
+      const originalRowClass = originalSwitch.parentElement.className;
+      const originalCeilings = controller.previewFloor.ceilings;
+      await act(async () =>
+        controller.dispatch({
+          type: "add-outdoor-platform",
+          polygon: [
+            [100, 100],
+            [104, 100],
+            [104, 104],
+            [100, 104],
+          ],
+          finish: { kind: "solid", color: "#c8b79b" },
+          defaultEdge: { kind: "open" },
+        }),
+      );
+      const toggle = dom.window.document.querySelector('[role="switch"]');
+      assert.equal(toggle.parentElement.className, originalRowClass);
+      assert.equal(
+        dom.window.document.getElementById(toggle.getAttribute("aria-labelledby")).textContent,
+        "Use as room",
+      );
+      assert.match(
+        dom.window.document.getElementById(toggle.getAttribute("aria-describedby")).textContent,
+        /stays open to the sky/,
+      );
+      assert.equal(toggle.getAttribute("aria-checked"), "false");
+      assert.equal(dom.window.document.querySelector('[aria-label="Room name"]'), null);
+      await act(async () => toggle.click());
+      const name = () => dom.window.document.querySelector('[aria-label="Room name"]');
+      assert.equal(name().value, "Outdoor room");
+      dom.window.HTMLElement.prototype.attachEvent = () => {};
+      dom.window.HTMLElement.prototype.detachEvent = () => {};
+      const type = async (value) => {
+        await act(async () => name().focus());
+        await act(async () => {
+          Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, "value").set.call(
+            name(),
+            value,
+          );
+          name().dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+          name().dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+          name().dispatchEvent(new dom.window.KeyboardEvent("keyup", { key: "o", bubbles: true }));
+        });
+      };
+      const key = async (key) =>
+        act(async () =>
+          name().dispatchEvent(new dom.window.KeyboardEvent("keydown", { key, bubbles: true })),
+        );
+      await type("  Balcony  ");
+      await key("Enter");
+      assert.equal(controller.draft.outdoorPlatforms[0].roomName, "Balcony");
+      await type("Cancelled");
+      await key("Escape");
+      assert.equal(name().value, "Balcony");
+      assert.equal(controller.draft.outdoorPlatforms[0].roomName, "Balcony");
+      await act(async () => toggle.click());
+      assert.equal(controller.draft.outdoorPlatforms[0].useAsRoom, false);
+      assert.equal(controller.draft.outdoorPlatforms[0].roomName, "Balcony");
+      assert.equal(dom.window.document.querySelector('[aria-label="Room name"]'), null);
+      await act(async () => controller.undo());
+      assert.equal(name().value, "Balcony");
+      assert.equal(toggle.getAttribute("aria-checked"), "true");
+      assert.deepEqual(controller.previewFloor.ceilings, originalCeilings);
+      assert.equal(controller.previewFloor.rooms.length, floor.rooms.length);
+      assert.equal(controller.draft.outdoorPlatforms[0].isSolid, undefined);
     });
   });
 
@@ -779,7 +1042,11 @@ await withModules(async (load) => {
         root.render(
           React.createElement(OpeningDetails, {
             opening,
-            editor: { ...controller, dispatch: (action) => changes.push(action) },
+            editor: {
+              ...controller,
+              reorientOpening: (openingId, change) =>
+                changes.push({ type: "reorient-opening", openingId, change }),
+            },
             disabled: false,
             onClose: () => closed++,
           }),
@@ -999,7 +1266,10 @@ await withModules(async (load) => {
       for (const issue of issues) assert.ok(panel.textContent.includes(issue.message));
       assert.ok(panel.textContent.includes(issues[0].suggestion));
       assert.equal(panel.querySelectorAll("li").length, 3);
-      assert.equal(panel.querySelectorAll("li > div").length, 1);
+      assert.equal(
+        [...panel.querySelectorAll("li")].filter((row) => !row.querySelector("button")).length,
+        1,
+      );
       for (const button of panel.querySelectorAll("li button"))
         await act(async () => button.click());
       assert.deepEqual(focused, issues.slice(0, 2));
@@ -1041,8 +1311,11 @@ await withModules(async (load) => {
         ".construction-inspector__validation li button",
       );
       assert.equal(buttons.length, issues.length);
-      for (const button of buttons) {
-        assert.match(button.textContent, /Locate/);
+      for (const [index, button] of buttons.entries()) {
+        assert.match(
+          button.textContent,
+          issues[index].target.kind === "scene-item" ? /Select/ : /Locate/,
+        );
         await act(async () => button.click());
       }
       assert.deepEqual(focused, issues);

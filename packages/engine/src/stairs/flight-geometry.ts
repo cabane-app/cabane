@@ -1,16 +1,13 @@
 import { floorSupportPolygons } from "../outdoor-platforms/platform-geometry";
-import { deriveFloorLevels } from "../building/floor-levels";
 import { planPointToWorld, worldPointToPlan } from "../geometry";
 import type { Polygon } from "../types";
-import type { BuildingGeometry, StairSpec, StairShapeGeometry } from "./types";
-import { uShapedGeometry } from "./u-shaped-geometry";
-import { lShapedGeometry } from "./l-shaped-geometry";
-import { spiralGeometry, SPIRAL_CORE_RADIUS_METERS } from "./spiral-geometry";
+import type { BuildingGeometry, StairSpec } from "./types";
+import { SPIRAL_CORE_RADIUS_METERS } from "./spiral-geometry";
+import { resolveStairConnection } from "./stair-connection";
+import { stairShapeGeometry } from "./stair-shape-geometry";
 
 export const STAIR_LANDING_METERS = 0.6;
 export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) => {
-  const index = building.floors.findIndex((floor) => floor.id === stair.lowerFloorId);
-  if (index < 0 || building.floors[index + 1]?.id !== stair.upperFloorId) return null;
   if (![...stair.at, stair.rotationYRadians].every(Number.isFinite)) return null;
   const dimensions =
     stair.shape === "spiral"
@@ -31,44 +28,15 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
     !["left", "right"].includes(stair.turn)
   )
     return null;
-  const baseElevationMeters = deriveFloorLevels(building.floors)[index].elevationMeters;
-  const riseMeters = building.floors[index].floorToFloorHeightMeters;
+  const connection = resolveStairConnection(building, stair);
+  if (!connection) return null;
+  const { baseElevationMeters, riseMeters } = connection;
   if (!Number.isFinite(riseMeters) || riseMeters <= 0) return null;
   const stepCount = Math.max(2, Math.min(512, Math.ceil(riseMeters / 0.2)));
   const [x, z] = planPointToWorld(stair.at, building.coordinates);
   const forward = [Math.sin(stair.rotationYRadians), Math.cos(stair.rotationYRadians)] as const;
   const side = [forward[1], -forward[0]] as const;
-  let geometry: StairShapeGeometry;
-  if (stair.shape === "u-shaped") geometry = uShapedGeometry(stair, riseMeters, stepCount);
-  else if (stair.shape === "l-shaped") geometry = lShapedGeometry(stair, riseMeters, stepCount);
-  else if (stair.shape === "spiral") geometry = spiralGeometry(stair, riseMeters, stepCount);
-  else {
-    const w = stair.widthMeters,
-      r = stair.runMeters;
-    geometry = {
-      widthMeters: w,
-      runMeters: r,
-      path: [
-        { x: 0, z: 0, elevation: 0 },
-        { x: 0, z: r, elevation: riseMeters },
-      ],
-      footprint: [
-        [-w / 2, 0],
-        [w / 2, 0],
-        [w / 2, r],
-        [-w / 2, r],
-      ],
-      treads: Array.from({ length: stepCount }, (_, i) => ({
-        elevation: (riseMeters * (i + 1)) / stepCount,
-        polygon: [
-          [-w / 2, (r * i) / stepCount],
-          [w / 2, (r * i) / stepCount],
-          [w / 2, (r * (i + 1)) / stepCount],
-          [-w / 2, (r * (i + 1)) / stepCount],
-        ],
-      })),
-    };
-  }
+  const geometry = stairShapeGeometry(stair, riseMeters, stepCount);
   const world = (p: readonly [number, number]): [number, number] => [
     x + side[0] * p[0] + forward[0] * p[1],
     z + side[1] * p[0] + forward[1] * p[1],
@@ -118,6 +86,7 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
   const footprintWorld = geometry.footprint.map(world);
   return {
     ...stair,
+    ...connection,
     coordinates: building.coordinates,
     shape: stair.shape ?? "straight",
     spec: stair,
@@ -133,9 +102,13 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
     path,
     entranceForward,
     exitForward,
-    upperSupportWorld: floorSupportPolygons(building.floors[index + 1]).map((polygon) =>
-      polygon.map((p) => planPointToWorld(p, building.coordinates)),
-    ),
+    upperSupportWorld: building.floors
+      .filter((floor) => floor.id === connection.upperFloorId)
+      .flatMap((floor) =>
+        floorSupportPolygons(floor).map((polygon) =>
+          polygon.map((p) => planPointToWorld(p, building.coordinates)),
+        ),
+      ),
     footprintWorld,
     footprint: footprintWorld.map(plan) as unknown as Polygon,
     treads: geometry.treads.map((t) => ({ ...t, polygon: t.polygon.map(world) })),
@@ -147,7 +120,7 @@ export type StairFlight = NonNullable<ReturnType<typeof deriveStairFlight>>;
 export const deriveStairApertures = (building: BuildingGeometry) =>
   building.stairs.flatMap((stair) => {
     const flight = deriveStairFlight(building, stair);
-    return flight
+    return flight && !stair.terrain
       ? [
           {
             stairId: stair.id,

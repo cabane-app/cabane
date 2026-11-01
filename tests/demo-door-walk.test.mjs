@@ -18,9 +18,11 @@ await withModules(async (load) => {
   );
   const { openingWorldPlacement } = await load("/packages/engine/src/geometry.ts");
   const { WalkCameraController } = await load("/packages/engine/src/WalkCameraController.tsx");
+  const { deriveFloorLevels } = await load("/packages/engine/src/building/floor-levels.ts");
 
   test("fresh bundled demo opens doors on approach and closes them on departure on every floor", async () => {
     const definition = deriveDemoSessionDefinition(homeManifest);
+    const levels = deriveFloorLevels(homeManifest.floors);
     const bindings = resolveHomeAssistantBindings(
       homeManifest,
       definition.profile,
@@ -48,6 +50,7 @@ await withModules(async (load) => {
         const props = {
           floor,
           building: homeManifest,
+          elevation: levels.find((level) => level.floorId === floor.id).elevationMeters,
           poseRef,
           reducedMotion: true,
           movementInputRef: { current: { x: 0, y: 0 } },

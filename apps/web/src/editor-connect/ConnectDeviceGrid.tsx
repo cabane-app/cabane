@@ -1,9 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   DeviceCategoryIcon,
-  DeviceMappingGroup,
-  EntitySlotMappingRow,
-  ModeledDeviceMappingRow,
+  entityConnectionSummary,
   type DeviceMappingRelationship,
   type DeviceModelRegistry,
   type HomeBindingManifest,
@@ -63,59 +61,81 @@ export function ConnectDeviceGrid({
   manifest,
   models,
   onOpen,
-  onTrigger,
 }: {
   editor: ConnectEditor;
   manifest: HomeBindingManifest;
   models: DeviceModelRegistry;
   onOpen: (id: string) => void;
-  onTrigger: (id: string, element: HTMLButtonElement | null) => void;
 }) {
-  if (!editor.room) return null;
+  const [query, setQuery] = useState("");
+  const relationships = editor.groups.flatMap((group) => group.relationships);
+  const matches = relationships.filter((relationship) =>
+    relationship.label.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+  );
   return (
-    <div className="connect-device-grid">
-      {editor.groups.map((group) => (
-        <DeviceMappingGroup key={group.id} group={group}>
-          {group.relationships.map((relationship) => {
-            const props = {
-              room: editor.room!,
-              profile: editor.profile,
-              runtime: editor.displayRuntime,
-              disabled: false,
-              selected: false,
-              onOpen: () => onOpen(relationship.id),
-              onTriggerElement: (element: HTMLButtonElement | null) =>
-                onTrigger(relationship.id, element),
-              preview: (
-                <ConnectDevicePreview
-                  relationship={relationship}
-                  models={models}
-                  manifest={manifest}
-                />
-              ),
-            };
-            return relationship.kind === "modeled-device" ? (
-              <ModeledDeviceMappingRow
-                key={relationship.id}
-                {...props}
+    <nav className="connect-device-rail" aria-label="Devices in this room">
+      <header className="connect-device-rail__heading connection-column-heading">
+        <h2>{editor.room?.name}</h2>
+        <p>{relationships.length} devices and connections</p>
+      </header>
+      <label className="connect-device-search">
+        <input
+          type="search"
+          aria-label="Find a device in this room"
+          placeholder="Find a device…"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </label>
+      <div className="connect-device-rail__list">
+        {matches.map((relationship) => {
+          const descriptors =
+            relationship.kind === "modeled-device"
+              ? relationship.descriptors
+              : [relationship.descriptor];
+          const primary =
+            descriptors.find((descriptor) => descriptor.spec.deviceRole === "primary") ??
+            descriptors[0];
+          const current = primary ? editor.profile.entityIdsBySlotId[primary.slotId] : undefined;
+          const summary = entityConnectionSummary(current, editor.displayRuntime);
+          const missing = descriptors.filter(
+            (descriptor) =>
+              descriptor.spec.required && !editor.profile.entityIdsBySlotId[descriptor.slotId],
+          ).length;
+          return (
+            <button
+              type="button"
+              key={relationship.id}
+              aria-pressed={editor.relationshipId === relationship.id}
+              onClick={() => onOpen(relationship.id)}
+              className="connect-device-nav"
+            >
+              <ConnectDevicePreview
+                relationship={relationship}
+                models={models}
                 manifest={manifest}
-                device={relationship.device}
               />
-            ) : (
-              <EntitySlotMappingRow
-                key={relationship.id}
-                {...props}
-                descriptor={relationship.descriptor}
-              />
-            );
-          })}
-        </DeviceMappingGroup>
-      ))}
-      {editor.groups.length === 0 && (
-        <p className="connect-empty">
-          This room has no devices or controls to connect. Add a device in Arrange to get started.
-        </p>
-      )}
-    </div>
+              <span>
+                <strong>{relationship.label}</strong>
+                <small
+                  className={
+                    !current || missing ? "is-pending" : !summary.available ? "is-unavailable" : ""
+                  }
+                >
+                  {missing
+                    ? `${missing} connection${missing === 1 ? "" : "s"} to finish`
+                    : summary.status}
+                </small>
+              </span>
+            </button>
+          );
+        })}
+        {!matches.length && (
+          <p className="connect-empty">
+            {relationships.length ? "No matching devices." : "No devices in this room."}
+          </p>
+        )}
+      </div>
+    </nav>
   );
 }

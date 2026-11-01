@@ -27,7 +27,7 @@ await withModules(async (load) => {
     assert.throws(() => controls.toggleEntityCall(event), /read-only/);
     assert.throws(() => controls.buttonPressCall(event), /read-only/);
     assert.equal(
-      controls.entityDisplayValue({ ...event, state: "unknown", available: false }),
+      controls.entityDisplayValue({ ...event, state: "unknown", available: true }),
       "No event received",
     );
     assert.equal(

@@ -46,7 +46,7 @@ export function deriveOutdoorPlatformBarriers(floor: FloorSpec): OutdoorPlatform
       const ux = dx / length,
         uz = dz / length;
       const intervals = floor.walls
-        .filter((w) => w.classification === "exterior")
+        .filter((w) => w.classification === "exterior" && !w.virtual)
         .flatMap((w) => {
           const a = planPointToWorld(w.from, floor.coordinates),
             b = planPointToWorld(w.to, floor.coordinates);

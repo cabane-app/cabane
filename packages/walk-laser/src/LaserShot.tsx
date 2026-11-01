@@ -1,7 +1,7 @@
-import { ToonMaterial } from "@cabane/engine";
+import { SceneActivityPulse, ToonMaterial } from "@cabane/engine";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
-import { AdditiveBlending, Group, Mesh, MeshToonMaterial, Quaternion, Vector3 } from "three";
+import { AdditiveBlending, Group, Quaternion, Vector3 } from "three";
 import { ElectricArc } from "./ElectricArc";
 import { ElectricScorch } from "./ElectricScorch";
 import { sampleLaserPulse } from "./laser-pulse";
@@ -20,8 +20,6 @@ const noRaycast = () => undefined;
 
 export function LaserShot({ shot }: { shot: ShotVisual }) {
   const pulse = useRef<Group>(null);
-  const impact = useRef<Group>(null);
-  const ring = useRef<Mesh>(null);
   const age = useRef(0);
   const path = useMemo(() => {
     const direction = shot.end.clone().sub(shot.start);
@@ -43,17 +41,7 @@ export function LaserShot({ shot }: { shot: ShotVisual }) {
         .addScaledVector(path.direction, (sample.head + sample.tail) / 2);
       pulse.current.scale.set(1, 1, Math.max(0.001, sample.head - sample.tail));
     }
-    if (impact.current) {
-      impact.current.visible = shot.hit && sample.impact;
-      const expansion = 0.5 + sample.impactProgress * 2;
-      impact.current.scale.setScalar(expansion);
-      if (ring.current) ring.current.scale.setScalar(1 + sample.impactProgress);
-      for (const child of impact.current.children) {
-        if ((child as Mesh).isMesh)
-          ((child as Mesh).material as MeshToonMaterial).opacity =
-            (child.userData.glowOpacity ?? 1) * (1 - sample.impactProgress) ** 2;
-      }
-    }
+
   });
   const surfaceRotation = new Quaternion().setFromUnitVectors(
     new Vector3(0, 0, 1),
@@ -97,73 +85,14 @@ export function LaserShot({ shot }: { shot: ShotVisual }) {
           />
         </mesh>
       </group>
-      <group
-        name="laser-impact"
-        ref={impact}
-        position={surfacePoint.toArray()}
-        quaternion={surfaceRotation.toArray()}
-        visible={false}
-      >
-        <mesh raycast={noRaycast}>
-          <icosahedronGeometry args={[0.045, 1]} />
-          <ToonMaterial
-            color={shot.color ?? "#d5f6ff"}
-            emissive={shot.color ?? "#168fff"}
-            emissiveIntensity={3}
-            toneMapped={false}
-            transparent
-            depthWrite={false}
-            blending={AdditiveBlending}
+      {shot.hit && (
+        <group position={surfacePoint.toArray()} quaternion={surfaceRotation.toArray()}>
+          <SceneActivityPulse
+            color={shot.color}
+            delay={sampleLaserPulse(path.distance, 0).travelSeconds}
           />
-        </mesh>
-        <mesh ref={ring} raycast={noRaycast}>
-          <torusGeometry args={[0.052, 0.006, 5, 20]} />
-          <ToonMaterial
-            color={shot.color ?? "#6dcaff"}
-            emissive={shot.color ?? "#6dcaff"}
-            emissiveIntensity={2}
-            toneMapped={false}
-            transparent
-            depthWrite={false}
-            blending={AdditiveBlending}
-          />
-        </mesh>
-        <mesh userData={{ glowOpacity: 0.24 }} raycast={noRaycast}>
-          <sphereGeometry args={[0.09, 8, 6]} />
-          <ToonMaterial
-            color={shot.color ?? "#47eaff"}
-            emissive={shot.color ?? "#47eaff"}
-            emissiveIntensity={2}
-            toneMapped={false}
-            transparent
-            opacity={0.24}
-            depthWrite={false}
-            blending={AdditiveBlending}
-          />
-        </mesh>
-        {Array.from({ length: 7 }, (_, index) => {
-          const angle = (index * Math.PI * 2) / 7;
-          return (
-            <mesh
-              key={index}
-              position={[Math.cos(angle) * 0.07, Math.sin(angle) * 0.07, -0.008]}
-              rotation={[0, 0, angle - Math.PI / 2]}
-              raycast={noRaycast}
-            >
-              <coneGeometry args={[0.009, 0.06, 4]} />
-              <ToonMaterial
-                color={shot.color ?? "#d5f6ff"}
-                emissive={shot.color ?? "#218fff"}
-                emissiveIntensity={2}
-                toneMapped={false}
-                transparent
-                depthWrite={false}
-                blending={AdditiveBlending}
-              />
-            </mesh>
-          );
-        })}
-      </group>
+        </group>
+      )}
     </group>
   );
 }

@@ -5,7 +5,7 @@ there is no guaranteed response time. Keep discussions and product text in Engli
 
 ## Before a change
 
-Read the [engineering map](./docs/engineering-map.md), the matching product
+Read the [architecture guide](./docs/product/architecture.md), the matching product
 contract and [coding standards](./CODING_STANDARDS.md). Explain the concrete
 problem and expected behaviour. Keep changes focused and preserve saved-project
 compatibility, English UI, and the Construct, Arrange and Connect modes.
@@ -39,8 +39,8 @@ keep screenshots in ignored `screenshots/` or outside the repository.
 ## Pull requests
 
 Describe what changes, why it matters and how it was checked. Link the issue
-when one exists. Update the product contract and engineering map when ownership,
-interfaces, invariants or checks change; regenerate the map with `npm run map:generate`.
+when one exists. Update the relevant product contract when behavior changes, and
+[architecture guide](./docs/product/architecture.md) when code ownership or documentation paths change.
 
 The Verification workflow runs the full gate without household credentials.
 Merging requires maintainer review and passing checks. CI does not establish

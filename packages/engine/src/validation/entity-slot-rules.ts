@@ -1,3 +1,4 @@
+import { isAuxiliaryEntitySlot } from "../entity-slot-roles";
 import { type DeviceDomain, type DeviceModelDefinition, type ManifestIssue } from "../types";
 
 import {
@@ -33,7 +34,7 @@ export const validateEntitySlot = (
         "A slot requires at least one supported compatible domain.",
       ),
     );
-  } else if (definition) {
+  } else if (definition && !isAuxiliaryEntitySlot(rawSlot)) {
     rawSlot.compatibleDomains.forEach((domain, domainIndex) => {
       if (!definition.supportedDomains.includes(domain as DeviceDomain)) {
         issues.push(
@@ -122,6 +123,19 @@ export const validateEntitySlot = (
       issue("slot.presentation", `${slotPath}.presentation`, "A slot presentation is required."),
     );
   } else {
+    if (
+      rawSlot.presentation.showInScene !== undefined &&
+      typeof rawSlot.presentation.showInScene !== "boolean" &&
+      rawSlot.presentation.showInScene !== "if-present"
+    ) {
+      issues.push(
+        issue(
+          "slot.map-visibility",
+          `${slotPath}.presentation.showInScene`,
+          "Map visibility must be boolean or if-present.",
+        ),
+      );
+    }
     if (!isNonEmptyString(rawSlot.presentation.label)) {
       issues.push(
         issue("slot.label", `${slotPath}.presentation.label`, "A slot label is required."),

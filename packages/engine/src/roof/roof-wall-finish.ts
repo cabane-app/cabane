@@ -1,12 +1,14 @@
 import { createWallAssemblyPointTest } from "../architecture-geometry/wall-solid-footprints";
 import { wallFaceFinish } from "../architecture-geometry/wall-face-finish";
 import { wallFrame } from "../architecture-geometry/wall-coordinate-frame";
+import { physicalFloor } from "../architecture-geometry/physical-floor";
 import type { FloorSpec } from "../types";
 
 type Point = readonly [number, number];
 
 /** Keep roof infill aligned with the finish boundaries of the walls below it. */
-export function createRoofWallFinish(floor: FloorSpec) {
+export function createRoofWallFinish(requestedFloor: FloorSpec) {
+  const floor = physicalFloor(requestedFloor);
   const walls = floor.walls.map((wall) => ({
     wall,
     frame: wallFrame(wall, floor),
@@ -40,7 +42,8 @@ export function createRoofWallFinish(floor: FloorSpec) {
 }
 
 /** Split long union edges where adjacent walls can change exterior color. */
-export function roofWallBreaks(floor: FloorSpec, from: Point, to: Point): number[] {
+export function roofWallBreaks(requestedFloor: FloorSpec, from: Point, to: Point): number[] {
+  const floor = physicalFloor(requestedFloor);
   const dx = to[0] - from[0],
     dz = to[1] - from[1];
   const lengthSquared = dx * dx + dz * dz;

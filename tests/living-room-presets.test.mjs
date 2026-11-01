@@ -75,7 +75,7 @@ await withModules(async (load) => {
   });
   test("compact media television keeps wall contact and bounds in every connection state", async () => {
     const definition = device.stableDeviceRegistry["compact-wall-television"];
-    assert.deepEqual(definition.supportedDomains, ["media_player"]);
+    assert.deepEqual(definition.supportedDomains, ["media_player", "switch"]);
     for (const visualState of [
       "connected-active",
       "connected-inactive",

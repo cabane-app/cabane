@@ -1,3 +1,4 @@
+import { isPlatformRoomRecord } from "./platform-room";
 import { pointInsidePolygon, polygonSelfIntersects, polygonSignedArea } from "../geometry";
 
 import { type ManifestIssue } from "../types";
@@ -84,7 +85,7 @@ export const validateRooms = (
           ),
         );
       }
-      if (isPolygon(footprint)) {
+      if (isPolygon(footprint) && !isPlatformRoomRecord(rawFloor, rawRoom)) {
         rawRoom.polygon.forEach((point, pointIndex) => {
           if (!pointInsidePolygon(point, footprint) && !pointOnPolygonBoundary(point, footprint)) {
             issues.push(

@@ -1,5 +1,6 @@
 /* Interaction concepts were reviewed against ai_room_planner (MIT); this
  * reducer and metre-first state contract are original to Cabane. */
+import { indoorRoomsForFloor } from "../../outdoor-platforms/platform-rooms";
 import type { FloorSpec, Polygon } from "../../types";
 
 import { mapPoolOutline } from "../../pools/pool-footprint";
@@ -45,9 +46,11 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
   },
   walls: floor.walls.map((wall) => ({
     id: wall.id,
+    ...(wall.name ? { name: wall.name } : {}),
     from: [...wall.from],
     to: [...wall.to],
     thicknessMeters: wall.thicknessMeters,
+    ...(wall.virtual ? { virtual: true } : {}),
     ...(wall.heightMeters ? { heightMeters: wall.heightMeters } : {}),
     ...(wall.exteriorColor ? { exteriorColor: wall.exteriorColor } : {}),
     ...(wall.edgeColor ? { edgeColor: wall.edgeColor } : {}),
@@ -57,6 +60,7 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
   openings: floor.openings.map((opening) => {
     const shared = {
       id: opening.id,
+      ...(opening.name ? { name: opening.name } : {}),
       wallId: opening.wallId,
       offsetPlanUnits: opening.offsetFromWallStartPlanUnits,
       widthPlanUnits: opening.widthPlanUnits,
@@ -95,7 +99,7 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
         }
       : { ...shared, kind: "passage" as const, variant: "rectangular" as const };
   }),
-  rooms: floor.rooms.map((room) => {
+  rooms: indoorRoomsForFloor(floor).map((room) => {
     const ceiling = floor.ceilings?.find(
       (candidate) => candidate.kind === "flat" && candidate.roomIds.includes(room.id),
     );

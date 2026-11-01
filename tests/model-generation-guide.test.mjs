@@ -42,11 +42,11 @@ await withModules(async (load) => {
             },
           };
         });
-        const command = "npx skills add cabane-app/agent-skills --skill create-cabane-model";
+        const command = "npx skills add cabane-app/cabane --skill create-cabane-model";
         assert.equal(dom.document.querySelector("pre code").textContent, command);
         assert.equal(
           dom.document.querySelector("a").href,
-          "https://github.com/cabane-app/agent-skills",
+          "https://github.com/cabane-app/cabane/tree/main/.agents/skills/create-cabane-model",
         );
         await dom.click("Copy command");
         if (clipboard === "available") {

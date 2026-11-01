@@ -1,4 +1,5 @@
 import {
+  physicalFloor,
   pointOnFloorSupport,
   pointInsidePolygon,
   pointStrictlyOutsideFloorFootprint,
@@ -28,9 +29,10 @@ const invalid = (error: string): PlacementCandidate => ({ placement: null, error
 
 export function placementCandidate(
   entry: { definition: SceneModelEditorDescriptor },
-  floor: FloorSpec,
+  sourceFloor: FloorSpec,
   input: PlacementInput,
 ): PlacementCandidate {
+  const floor = physicalFloor(sourceFloor);
   const definition = entry.definition;
   const elevated = ((floor as FloorSpec & { elevationMeters?: number }).elevationMeters ?? 0) > 0;
   const outdoor = definition.placementEnvironment === "outdoor";

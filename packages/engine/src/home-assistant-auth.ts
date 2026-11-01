@@ -43,6 +43,18 @@ export const homeAssistantTransportError = (
   return "Open Cabane over HTTPS and use an HTTPS Home Assistant address. HTTP development requires both addresses to use localhost, 127.0.0.0/8, or [::1] on this machine.";
 };
 
+/** Native panels reuse the host socket, never a cross-origin OAuth connection. */
+export const borrowedHomeAssistantTransportError = (
+  dashboardUrl: string,
+  hostUrl: string,
+): string | null => {
+  const pageOrigin = normalizeHomeAssistantUrl(dashboardUrl);
+  const hostOrigin = normalizeHomeAssistantUrl(hostUrl);
+  return pageOrigin && pageOrigin === hostOrigin
+    ? null
+    : "Open the native Cabane panel on the same HTTP or HTTPS origin as its Home Assistant host. Standalone connections require HTTPS.";
+};
+
 export const loadStoredHomeAssistantUrl = (
   storage: Pick<Storage, "getItem" | "removeItem"> & Partial<Pick<Storage, "setItem">>,
 ) => {

@@ -1,3 +1,4 @@
+import { showEntityStateInScene } from "./entity-slot-visibility";
 import { omitUndefinedProperties } from "./defined-properties";
 import { coverPosition } from "./cover-state";
 import { bindingDomainMatchRank } from "./binding-slot-compatibility";
@@ -162,7 +163,7 @@ const resolveEntity = ({
       }),
     );
   }
-  if (bindingDomainMatchRank(descriptor.spec, domain) < 0) {
+  if (bindingDomainMatchRank(descriptor.spec, domain, descriptor.deviceModel) < 0) {
     issues.push(
       issue({
         code: "binding.domain-incompatible",
@@ -306,6 +307,7 @@ export const resolveHomeAssistantBindings = (
         }
       }
 
+      const sceneEntities: ResolvedEntityBinding[] = [];
       const sections: {
         primary: ResolvedEntityBinding[];
         secondary: ResolvedEntityBinding[];
@@ -323,6 +325,7 @@ export const resolveHomeAssistantBindings = (
           continue;
         }
         const resolved = resolveEntity({ entityId, descriptor, room, manifest, profile, runtime });
+        if (showEntityStateInScene(spec, resolved.state)) sceneEntities.push(resolved);
         if (spec.presentation.dashboardRole !== "hidden") {
           sections[spec.presentation.dashboardRole].push(resolved);
         }
@@ -358,13 +361,15 @@ export const resolveHomeAssistantBindings = (
             runtime,
           });
           entities.push(resolved);
+          if (showEntityStateInScene(spec, resolved.state)) sceneEntities.push(resolved);
           deviceIssues.push(...resolved.issues);
         }
         const primarySlot = slot.entitySlots.find(
           (entitySlot) => entitySlot.deviceRole === "primary",
         );
-        const displayEntity =
-          entities.find((entity) => entity.slotId === primarySlot?.id) ?? entities[0];
+        const displayEntity = primarySlot
+          ? entities.find((entity) => entity.slotId === primarySlot.id)
+          : entities[0];
         const haDevice = runtime.devices.find((device) => device.id === displayEntity?.deviceId);
         const friendlyName = displayEntity?.state?.attributes.friendly_name;
         const displayName =
@@ -377,6 +382,7 @@ export const resolveHomeAssistantBindings = (
       });
       roomIssues.push(...devices.flatMap((device) => device.issues));
       rooms[room.id] = {
+        sceneEntities,
         room,
         displayName: !floor.rooms.some((candidate) => candidate.id === room.id)
           ? room.name

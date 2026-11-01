@@ -50,3 +50,12 @@ export const releasePointer = (event: PointerEvent3D) => {
     target?.releasePointerCapture?.(event.pointerId);
   }
 };
+
+const drawingTools: readonly FloorEditorTool[] = [
+  "wall",
+  "virtual-wall",
+  "hedge",
+  "pool",
+  "platform",
+];
+export const isConstructionDrawingTool = (tool: FloorEditorTool) => drawingTools.includes(tool);

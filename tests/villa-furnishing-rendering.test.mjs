@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import { Box3 } from "three";
+import { Box3, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -127,5 +127,67 @@ await withModules(async (load) => {
       }
     }
     assert.equal(palettes.size, definition.variants.length);
+  });
+
+  test("countertop finishes preserve resized slabs, appliance clearance and the open L corner", async () => {
+    const ids = ["countertop", "corner-countertop"];
+    for (const modelId of ids) {
+      const definition = stableFurnishingRegistry[modelId];
+      const palettes = new Set();
+      for (const { id: variant } of definition.variants) {
+        for (const factor of [
+          [1, 1, 1],
+          [1.6, 0.5, 0.8],
+        ]) {
+          const size = definition.defaultSize.map((value, axis) => value * factor[axis]);
+          const renderer = await create(createElement(definition.component, { size, variant }));
+          try {
+            const scene = renderer.scene.instance;
+            scene.position.y = 0.87;
+            scene.updateMatrixWorld(true);
+            const box = new Box3().setFromObject(scene);
+            assert.ok(Math.abs(box.min.y - 0.87) < 0.001, "underside leaves room for appliances");
+            box
+              .getSize(new Vector3())
+              .toArray()
+              .forEach((value, axis) => {
+                assert.ok(Math.abs(value - size[axis]) < 0.001, `${modelId}: resized axis ${axis}`);
+              });
+            const colors = new Set();
+            let triangles = 0,
+              meshes = 0;
+            scene.traverse((node) => {
+              assert.notEqual(
+                node.userData.walkCollider,
+                true,
+                "suspended slab is not a floor obstacle",
+              );
+              if (!node.material?.isMeshToonMaterial) return;
+              colors.add(node.material.color.getHexString());
+              meshes++;
+              triangles +=
+                (node.geometry.index?.count ?? node.geometry.attributes.position.count) / 3;
+            });
+            assert.ok(meshes <= definition.complexity.visibleMeshes);
+            assert.ok(triangles <= definition.complexity.triangles);
+            palettes.add([...colors].sort().join(","));
+            assert.equal(scene.getObjectByName("countertop-surface").receiveShadow, true);
+            const hit = (x, z) =>
+              new Raycaster(new Vector3(x, 0, z), new Vector3(0, 1, 0)).intersectObject(
+                scene,
+                true,
+              );
+            assert.ok(hit(-size[0] / 4, -size[2] / 4).length, "return arm is solid");
+            assert.ok(hit(size[0] / 4, size[2] / 4).length, "front arm is solid");
+            if (modelId === "corner-countertop") {
+              assert.equal(hit(size[0] / 4, -size[2] / 4).length, 0, "inner corner stays open");
+            }
+          } finally {
+            await renderer.unmount();
+          }
+        }
+      }
+      assert.equal(palettes.size, 6, "six distinct material palettes");
+    }
   });
 });

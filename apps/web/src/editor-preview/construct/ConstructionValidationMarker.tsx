@@ -1,3 +1,4 @@
+import { MeasurementText, formatMeasurementText, useMeasurementUnits } from "@cabane/engine";
 import { useCabaneDom } from "@cabane/engine";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -18,6 +19,7 @@ export function ConstructionValidationMarker({
   onDismiss: () => void;
 }) {
   const dom = useCabaneDom();
+  const units = useMeasurementUnits();
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const tooltip = useRef<HTMLDivElement>(null);
@@ -111,7 +113,7 @@ export function ConstructionValidationMarker({
           ref={trigger}
           type="button"
           className="construction-validation-marker__details"
-          aria-label={`${label}. ${issues.map((issue) => issue.message).join(" ")}`}
+          aria-label={`${label}. ${issues.map((issue) => formatMeasurementText(issue.message, units)).join(" ")}`}
           aria-describedby={open ? id : undefined}
           onClick={(event) => {
             event.stopPropagation();
@@ -151,8 +153,12 @@ export function ConstructionValidationMarker({
             <ul>
               {issues.map((issue, index) => (
                 <li key={index}>
-                  <p>{issue.message}</p>
-                  <p>{issue.suggestion}</p>
+                  <p>
+                    <MeasurementText>{issue.message}</MeasurementText>
+                  </p>
+                  <p>
+                    <MeasurementText>{issue.suggestion}</MeasurementText>
+                  </p>
                 </li>
               ))}
             </ul>

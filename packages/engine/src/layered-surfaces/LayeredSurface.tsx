@@ -8,12 +8,21 @@ export type LayeredSurfaceProps = Pick<
   /** Integer paint order: higher layers cover lower layers on the same local XY plane. */
   layer: number;
   name?: string;
+  castShadow?: boolean;
+  receiveShadow?: boolean;
   /** A planar XY geometry; place and rotate the complete surface using a parent group. */
   children: ReactNode;
 };
 
 /** Opaque flat artwork with bounded depth bias and ordinary scene occlusion. */
-export function LayeredSurface({ layer, name, children, ...material }: LayeredSurfaceProps) {
+export function LayeredSurface({
+  layer,
+  name,
+  castShadow = false,
+  receiveShadow = false,
+  children,
+  ...material
+}: LayeredSurfaceProps) {
   if (!Number.isInteger(layer) || layer < 0 || layer > 64)
     throw new Error("LayeredSurface layer must be an integer from 0 to 64.");
   return (
@@ -21,6 +30,8 @@ export function LayeredSurface({ layer, name, children, ...material }: LayeredSu
       name={name ?? `surface-layer-${layer}`}
       position-z={layer * 0.00001}
       userData={{ cabaneSurfaceLayer: layer }}
+      castShadow={castShadow}
+      receiveShadow={receiveShadow}
       raycast={() => undefined}
     >
       {children}

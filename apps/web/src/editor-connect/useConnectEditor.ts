@@ -2,21 +2,31 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   deviceMappingRooms,
   automaticallyMapRuntimeBindings,
+  collectBindingSlots,
   createEmptyRuntimeBindingProfile,
+  entityMatchesBindingSlot,
   groupRoomMappingRelationships,
   normalizeWorkspaceBindingOrigin,
   replaceRoomAreaMapping,
+  replaceEntitySlotMapping,
   saveRoomAreaDraft,
   validateRuntimeBindingProfile,
   type HomeAssistantRuntimeValue,
+  type EntityId,
   type HomeBindingManifest,
   type HomeProjectIssue,
   type RuntimeBindingProfile,
   type WorkspaceBindings,
+  type ReadingPresentation,
 } from "@cabane/engine";
 import { stageImportedProfile } from "./profile-transfer";
 import { deviceRoom, type EditorOpenRequest } from "./connect-navigation";
 export type { EditorOpenRequest } from "./connect-navigation";
+
+type AssignmentResult =
+  | { status: "applied" | "unchanged" }
+  | { status: "confirmation-required"; clearedSlotIds: readonly string[] }
+  | { status: "rejected"; message: string };
 
 export function useConnectEditor({
   manifest,
@@ -25,6 +35,7 @@ export function useConnectEditor({
   origin,
   active,
   onChange,
+  onAddReading,
   initialRequest,
   routeView,
   onViewChange,
@@ -37,6 +48,7 @@ export function useConnectEditor({
   origin: string | null;
   active: boolean;
   onChange: (bindings: WorkspaceBindings) => void;
+  onAddReading?: (itemId: string, entityId: EntityId, presentation?: ReadingPresentation) => void;
   initialRequest?: EditorOpenRequest;
   routeView?: "rooms" | "devices";
   onViewChange?: ((view: "rooms" | "devices") => void) | undefined;
@@ -75,9 +87,14 @@ export function useConnectEditor({
   const [relationshipId, setRelationshipId] = useState<string | null>(
     initialRequest?.relationshipId ?? null,
   );
-  const [pendingAreaChange, setPendingAreaChange] = useState<ReturnType<
-    typeof saveRoomAreaDraft
-  > | null>(null);
+  const [slotId, setSlotId] = useState<string | null>(null);
+  const [pendingAreaChange, setPendingAreaChange] = useState<
+    | (ReturnType<typeof saveRoomAreaDraft> & {
+        origin: string;
+        sourceProfile: RuntimeBindingProfile;
+      })
+    | null
+  >(null);
   const [message, setMessage] = useState<string | null>(null);
   const disconnected = runtime.status !== "connected" || runtime.origin !== key;
   const cache = useRef<{ origin: string; runtime: HomeAssistantRuntimeValue } | null>(null);
@@ -103,7 +120,7 @@ export function useConnectEditor({
   const roomDeviceSummaries = useMemo(
     () =>
       Object.fromEntries(
-        rooms.map((candidate) => {
+        deviceRooms.map((candidate) => {
           // Optional opening contacts should not make the room look unfinished.
           const categories = groupsByRoom[candidate.id]
             .map((group) => ({
@@ -122,16 +139,30 @@ export function useConnectEditor({
             candidate.id,
             {
               // Count each device/control once, even when it has several mapped functions.
-              mapped: relationships.filter((relationship) =>
-                relationship.slotIds.some((id) => Boolean(profile.entityIdsBySlotId[id])),
-              ).length,
+              mapped: relationships.filter((relationship) => {
+                const descriptors =
+                  relationship.kind === "modeled-device"
+                    ? relationship.descriptors
+                    : [relationship.descriptor];
+                const required = descriptors.filter((descriptor) => descriptor.spec.required);
+                const checked = required.length
+                  ? required
+                  : [
+                      descriptors.find((descriptor) => descriptor.spec.deviceRole === "primary") ??
+                        descriptors[0],
+                    ];
+                return checked.every(
+                  (descriptor) =>
+                    descriptor && Boolean(profile.entityIdsBySlotId[descriptor.slotId]),
+                );
+              }).length,
               total: relationships.length,
               categories,
             },
           ];
         }),
       ),
-    [groupsByRoom, profile.entityIdsBySlotId, rooms],
+    [groupsByRoom, profile.entityIdsBySlotId, deviceRooms],
   );
   const relationship =
     groups
@@ -180,6 +211,93 @@ export function useConnectEditor({
     },
     [empty],
   );
+  const assignRoomArea = (
+    targetRoomId: string,
+    areaId: string | null,
+    confirmClearedSlots = false,
+  ): AssignmentResult => {
+    const latest = current.current;
+    if (!latest.key) return { status: "rejected", message: "Set a Home Assistant address first." };
+    if (
+      !latest.manifest.floors.some((floor) => floor.rooms.some((room) => room.id === targetRoomId))
+    )
+      return { status: "rejected", message: `Room ${targetRoomId} was not found.` };
+    if (areaId && latest.disconnected)
+      return { status: "rejected", message: "Home Assistant is not connected for this workspace." };
+    if (
+      areaId &&
+      (!latest.runtime.areas.some((area) => area.area_id === areaId) ||
+        Object.entries(latest.profile.roomAreaIds).some(
+          ([id, assigned]) => id !== targetRoomId && assigned === areaId,
+        ))
+    )
+      return {
+        status: "rejected",
+        message: `Home Assistant area ${areaId} is unavailable or already mapped.`,
+      };
+    const next = replaceRoomAreaMapping(latest.profile, targetRoomId, areaId);
+    const proposed = saveRoomAreaDraft({
+      manifest: latest.manifest,
+      savedProfile: latest.profile,
+      roomAreaIds: next.roomAreaIds,
+    });
+    if (proposed.clearedSlotIds.length && !confirmClearedSlots) {
+      setPendingAreaChange({ ...proposed, origin: latest.key, sourceProfile: latest.profile });
+      return { status: "confirmation-required", clearedSlotIds: proposed.clearedSlotIds };
+    }
+    if (!proposed.changedRoomIds.length && latest.state?.manualRoomIds.includes(targetRoomId))
+      return { status: "unchanged" };
+    commitProfile(proposed.profile, [targetRoomId], proposed.clearedSlotIds);
+    setPendingAreaChange(null);
+    return { status: "applied" };
+  };
+  const assignEntities = (
+    entityIdsBySlotId: RuntimeBindingProfile["entityIdsBySlotId"],
+    manualSlotIds: readonly string[] = relationship?.slotIds ?? [],
+  ): AssignmentResult => {
+    const latest = current.current;
+    if (!latest.key) return { status: "rejected", message: "Set a Home Assistant address first." };
+    const changed = [
+      ...new Set([
+        ...Object.keys(latest.profile.entityIdsBySlotId),
+        ...Object.keys(entityIdsBySlotId),
+      ]),
+    ].filter((id) => latest.profile.entityIdsBySlotId[id] !== entityIdsBySlotId[id]);
+    const slots = collectBindingSlots(latest.manifest);
+    for (const slotId of changed) {
+      const slot = slots.find((candidate) => candidate.slotId === slotId);
+      if (!slot) return { status: "rejected", message: `Binding slot ${slotId} was not found.` };
+      const entityId = entityIdsBySlotId[slotId];
+      if (!entityId) continue;
+      const entry = latest.runtime.entityRegistry.find(
+        (candidate) => candidate.entity_id === entityId,
+      );
+      if (
+        latest.disconnected ||
+        !entry ||
+        entry.disabled_by ||
+        entry.hidden_by ||
+        !entityMatchesBindingSlot(slot, entityId, latest.runtime)
+      )
+        return {
+          status: "rejected",
+          message: `Home Assistant entity ${entityId} is unavailable or incompatible with slot ${slotId}.`,
+        };
+    }
+    if (!changed.length && manualSlotIds.every((id) => latest.state?.manualSlotIds.includes(id)))
+      return { status: "unchanged" };
+    commitProfile({ ...latest.profile, entityIdsBySlotId }, [], [...changed, ...manualSlotIds]);
+    return { status: "applied" };
+  };
+  const assignEntity = (slotId: string, entityId: EntityId | null): AssignmentResult => {
+    const latest = current.current;
+    if (!collectBindingSlots(latest.manifest).some((slot) => slot.slotId === slotId))
+      return { status: "rejected", message: `Binding slot ${slotId} was not found.` };
+    return assignEntities(
+      replaceEntitySlotMapping(latest.profile, slotId, entityId).entityIdsBySlotId,
+      [slotId],
+    );
+  };
   // History edits are deliberately absent from this trigger. Undo must stay undone.
   const entryKey = JSON.stringify([
     key,
@@ -239,6 +357,10 @@ export function useConnectEditor({
       severity: "warning",
     });
   }
+  const selectRelationship = useCallback((id: string | null) => {
+    setRelationshipId(id);
+    setSlotId(null);
+  }, []);
   return {
     view,
     defaultView,
@@ -252,17 +374,47 @@ export function useConnectEditor({
     deviceRooms,
     roomId: room?.id ?? null,
     room,
+    slotId,
+    selectSlot: (id: string) => {
+      const destination = deviceRooms.find((room) =>
+        groupsByRoom[room.id].some((group) =>
+          group.relationships.some((relationship) => relationship.slotIds.includes(id)),
+        ),
+      );
+      const target =
+        destination &&
+        groupsByRoom[destination.id]
+          .flatMap((group) => group.relationships)
+          .find((relationship) => relationship.slotIds.includes(id));
+      if (!destination || !target) return false;
+      setView("devices");
+      setRoomId(destination.id);
+      setRelationshipId(target.id);
+      setSlotId(id);
+      return true;
+    },
+    selectSlotId: setSlotId,
+    showPlan: () => {
+      setRoomId(null);
+      setRelationshipId(null);
+      setSlotId(null);
+      setPendingAreaChange(null);
+    },
     selectRoom: (id: string) => {
       setRoomId(id);
       setRelationshipId(null);
       setPendingAreaChange(null);
+      setSlotId(null);
     },
     relationshipId,
     relationship,
-    selectRelationship: setRelationshipId,
+    selectRelationship,
     groups,
     roomDeviceSummaries,
     profile,
+    addItemReading: (itemId: string, entityId: EntityId, presentation?: ReadingPresentation) => {
+      if (!disconnected) onAddReading?.(itemId, entityId, presentation);
+    },
     selectDevice: (id: string) => {
       const destination = deviceRoom(manifest, id);
       setView("devices");
@@ -283,46 +435,29 @@ export function useConnectEditor({
     issues,
     message,
     pendingAreaChange,
-    assignArea: (areaId: string) => {
-      if (!room || !key || (disconnected && areaId)) return;
-      if (
-        areaId &&
-        (!runtime.areas.some((area) => area.area_id === areaId) ||
-          Object.entries(profile.roomAreaIds).some(
-            ([id, assigned]) => id !== room.id && assigned === areaId,
-          ))
-      )
-        return;
-      const next = replaceRoomAreaMapping(profile, room.id, areaId || null);
-      const proposed = saveRoomAreaDraft({
-        manifest,
-        savedProfile: profile,
-        roomAreaIds: next.roomAreaIds,
-      });
-      if (proposed.clearedSlotIds.length) setPendingAreaChange(proposed);
-      else commitProfile(proposed.profile, [room.id]);
-    },
+    assignRoomArea,
+    assignEntity,
+    assignArea: (areaId: string) => room && assignRoomArea(room.id, areaId || null),
     confirmAreaChange: () => {
       if (!pendingAreaChange) return;
-      commitProfile(
-        pendingAreaChange.profile,
-        pendingAreaChange.changedRoomIds,
-        pendingAreaChange.clearedSlotIds,
-      );
+      if (pendingAreaChange.origin === key && pendingAreaChange.sourceProfile === profile)
+        commitProfile(
+          pendingAreaChange.profile,
+          pendingAreaChange.changedRoomIds,
+          pendingAreaChange.clearedSlotIds,
+        );
       setPendingAreaChange(null);
     },
     cancelAreaChange: () => setPendingAreaChange(null),
-    assignEntities: (entityIdsBySlotId: RuntimeBindingProfile["entityIdsBySlotId"]) => {
-      const changed = [
-        ...new Set([...Object.keys(profile.entityIdsBySlotId), ...Object.keys(entityIdsBySlotId)]),
-      ].filter((id) => profile.entityIdsBySlotId[id] !== entityIdsBySlotId[id]);
-      if (disconnected && changed.some((id) => entityIdsBySlotId[id])) return;
-      commitProfile(
-        { ...profile, entityIdsBySlotId },
-        [],
-        [...changed, ...(relationship?.slotIds ?? [])],
-      );
-    },
+    addReading:
+      onAddReading &&
+      relationship?.kind === "modeled-device" &&
+      manifest.sceneItems.some((item) => item.kind === "device" && item.id === relationship.id)
+        ? (entityId: EntityId, presentation?: ReadingPresentation) => {
+            if (!disconnected) onAddReading(relationship.id, entityId, presentation);
+          }
+        : undefined,
+    assignEntities,
     refresh: async () => {
       if (disconnected) return;
       try {

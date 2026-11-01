@@ -838,7 +838,7 @@ await withModules(async (load) => {
         [...cameraChoices.querySelectorAll(".device-mapping-inspector__option")].map((option) =>
           option.textContent.trim(),
         ),
-        ["Not connected", "Garden camera · Outside fixture area"],
+        ["Not connected", "Garden camera · Outside fixture area camera.fixture_garden"],
       );
       assert.equal(cameraChoices.querySelector("input[value='']").checked, true);
       await act(async () =>

@@ -97,6 +97,12 @@ Reload the browser afterward. This is a build/restart workflow, not Vite HMR.
 `ha:up` reuses the installed build; use `ha:refresh` after changing frontend code
 or switching checkouts. A failed build leaves the running installation alone.
 
+To test an integration change alongside the panel, pass its local checkout:
+
+```sh
+npm run ha:refresh -- --integration-source /path/to/cabane-home-assistant
+```
+
 Generated integration files live under ignored `test-results/ha-dev/`. Only this
 local copy receives a small adapter allowing development-marked bundles when
 `CABANE_LOCAL_DEVELOPMENT=1` is set in the test container. Asset checksums and

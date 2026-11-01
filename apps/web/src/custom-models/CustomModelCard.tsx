@@ -6,17 +6,20 @@ import type { CatalogEntry } from "../editor-preview/furnish/catalog/catalog";
 import { ModelThumbnail } from "../editor-preview/furnish/catalog/ModelThumbnailRenderer";
 import type { useEditorWorkspace } from "../editor-preview/useEditorWorkspace";
 import "./custom-model-card.css";
+import { renameCustomModel, removeCustomModel } from "./custom-model-edits";
 
 export function CustomModelCard({
   workspace,
   entry,
   disabled,
   onChoose,
+  onEdit,
 }: {
   workspace: ReturnType<typeof useEditorWorkspace>;
   entry: CatalogEntry;
   disabled: boolean;
   onChoose: () => void;
+  onEdit: (model: CustomModel) => void;
 }) {
   const [name, setName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,11 +27,6 @@ export function CustomModelCard({
   const model = models.find((model) => model.id === entry.modelId);
   if (!model) return null;
   const used = workspace.snapshot.project.sceneItems.some((item) => item.modelId === model.id);
-  const setModels = (customModels: readonly CustomModel[]) =>
-    workspace.commit({
-      ...workspace.snapshot,
-      project: { ...workspace.snapshot.project, customModels },
-    });
   const download = () => {
     setError(null);
     void createModelAssetRepository(window.indexedDB)
@@ -61,6 +59,15 @@ export function CustomModelCard({
         <div className="custom-model-preview-actions">
           <EditorButton
             className="custom-model-icon"
+            aria-label={`Edit ${model.name}`}
+            title="Edit model"
+            disabled={disabled}
+            onClick={() => onEdit(model)}
+          >
+            <EditorIcon name="settings" />
+          </EditorButton>
+          <EditorButton
+            className="custom-model-icon"
             aria-label={`Download ${model.name} GLB`}
             title="Download GLB"
             disabled={disabled}
@@ -73,7 +80,7 @@ export function CustomModelCard({
             aria-label={`Remove ${model.name}`}
             title={used ? "Remove this model's instances first." : "Remove unused model"}
             disabled={disabled || used}
-            onClick={() => setModels(models.filter((item) => item.id !== model.id))}
+            onClick={() => workspace.commit(removeCustomModel(workspace.snapshot, model.id))}
           >
             <EditorIcon name="delete" />
           </EditorButton>
@@ -85,11 +92,7 @@ export function CustomModelCard({
           onSubmit={(event) => {
             event.preventDefault();
             if (!disabled && name.trim()) {
-              setModels(
-                models.map((item) =>
-                  item.id === model.id ? { ...item, name: name.trim() } : item,
-                ),
-              );
+              workspace.commit(renameCustomModel(workspace.snapshot, model.id, name));
               setName(null);
             }
           }}

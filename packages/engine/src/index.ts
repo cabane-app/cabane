@@ -1,9 +1,13 @@
+export { SceneActivityPulse } from "./SceneActivityPulse";
+export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";
 export * from "./types";
+export { isAuxiliaryEntitySlot } from "./entity-slot-roles";
 export * from "./walk-tools";
 export * from "./action-bar/action-bar-config";
 export * from "./action-bar/ha-action-shortcuts";
 export { DEFAULT_ROOF_SETTINGS, type RoofSettings } from "./roof/roof-settings";
+export { FLAT_TERRAIN, type TerrainSettings } from "./terrain/terrain-settings";
 export * from "./room-types";
 export * from "./devices";
 export * from "./geometry";
@@ -11,6 +15,7 @@ export * from "./pools/pool-footprint";
 export * from "./floor-finishes";
 export * from "./opening-orientation";
 export * from "./architecture-geometry";
+export { physicalFloor } from "./architecture-geometry/physical-floor";
 export * from "./architecture-models";
 export * from "./lighting";
 export * from "./SceneLighting";
@@ -47,10 +52,20 @@ export {
   homeAssistantAuthStorageKey,
   normalizeHomeAssistantUrl,
   homeAssistantTransportError,
+  borrowedHomeAssistantTransportError,
 } from "./home-assistant-auth";
 export { setupStorageKey, setupCollapseSessionKey } from "./setup-progress";
 export { HomePlanMapping } from "./home-assistant-mapping/HomePlanMapping";
 export { DeviceMappingInspector } from "./home-assistant-mapping/DeviceMappingInspector";
+export { DeviceConnectionWorkbench } from "./home-assistant-mapping/DeviceConnectionWorkbench";
+export { ConnectionSourcePicker } from "./home-assistant-mapping/ConnectionSourcePicker";
+export { ReadingConnectionForm } from "./home-assistant-mapping/ReadingConnectionForm";
+export { ConnectionIcon } from "./home-assistant-mapping/ConnectionIcon";
+export {
+  connectionSlotLabel,
+  entityConnectionSummary,
+  type ReadingPresentation,
+} from "./home-assistant-mapping/connection-presentation";
 export { DeviceMappingGroup } from "./home-assistant-mapping/DeviceMappingGroup";
 export { ModeledDeviceMappingRow } from "./home-assistant-mapping/ModeledDeviceMappingRow";
 export { EntitySlotMappingRow } from "./home-assistant-mapping/EntitySlotMappingRow";
@@ -119,6 +134,7 @@ export { sha256Hex } from "./sha256-digest";
 
 export { DEFAULT_WALL_COLORS } from "./wall-colors";
 
+export { ScenePreferences } from "./ScenePreferences";
 export type { WeatherSource, WeatherPreview } from "./weather";
 export {
   useMeasurementUnits,
@@ -130,3 +146,30 @@ export {
   formatArea,
   parseLength,
 } from "./measurement-units";
+export { formatMeasurementText } from "./measurement-text";
+export { MeasurementText } from "./MeasurementText";
+
+export { MAX_ORTHOGRAPHIC_ZOOM, MIN_EDITOR_ZOOM } from "./navigation/camera-zoom";
+
+export {
+  defaultModelLighting,
+  projectModelLighting,
+  lightingSlotForItem,
+  primaryLightSlot,
+  lightingEntitySlotId,
+  modelLightingPointCount,
+} from "./model-lighting/settings";
+export { editModelLighting } from "./model-lighting/edit";
+export { SCENE_LIGHT_BUDGET, modelLightingExecution } from "./model-lighting/execution";
+
+export {
+  modelLightingSurfaces,
+  modelLightingSurfaceAt,
+  controlModelLightMaterials,
+  type ModelLightingSurfaceOption,
+} from "./model-lighting/surfaces";
+
+export {
+  ModelLightingStateContext,
+  useModelLightingState,
+} from "./model-lighting/ModelLightingSurface";
