@@ -39,7 +39,12 @@ export function ItemEntityReadings({
   const { anchorRef, labelRef, visible } = useSceneOverlay({
     id: `item:${item.id}`,
     labelWidth: 220,
-    labelHeight: 16 + readings.length * 21,
+    labelHeight:
+      16 +
+      readings.reduce(
+        (height, reading) => height + (states[reading.id]?.entityId.startsWith("event.") ? 53 : 21),
+        0,
+      ),
     priority: 1,
     enabled: readings.length > 0,
   });
@@ -51,7 +56,10 @@ export function ItemEntityReadings({
       <Html center zIndexRange={[7, 0]} pointerEvents="none">
         <div ref={labelRef} className="item-entity-readings" hidden={!visible}>
           {readings.map((reading) => (
-            <div key={reading.id}>
+            <div
+              key={reading.id}
+              className={states[reading.id]?.entityId.startsWith("event.") ? "is-event" : undefined}
+            >
               <span>{reading.label}</span>
               <strong>{reading.value}</strong>
             </div>
