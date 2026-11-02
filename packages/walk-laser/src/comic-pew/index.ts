@@ -1,2 +1,2 @@
-export { ComicPew } from "./ComicPew";
+export { ComicPew } from "@cabane/engine";
 export { useMuzzleAnchor } from "./useMuzzleAnchor";

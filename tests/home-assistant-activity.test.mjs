@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import React from "react";
-import { create, act } from "@react-three/test-renderer";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { withStorageDom } from "./dom-test-environment.mjs";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -10,9 +11,10 @@ await withModules(async (load) => {
   const { HomeAssistantActivityTracker } = await load(
     "/packages/engine/src/home-assistant-activity.ts",
   );
-  const { SceneItemActivityFeedback } = await load(
-    "/packages/engine/src/SceneItemActivityFeedback.tsx",
+  const { useEntityActivityFeedback } = await load(
+    "/packages/engine/src/useEntityActivityFeedback.ts",
   );
+  const { ComicPew } = await load("/packages/engine/src/comic-pew/ComicPew.tsx");
   const { normalizeEntityStates } = await load(
     "/packages/engine/src/home-assistant-entity-snapshots.ts",
   );
@@ -119,13 +121,22 @@ await withModules(async (load) => {
     );
   });
 
-  test("device feedback baselines mappings/remounts and cleans up its shared zap effect without timers", async () => {
-    const bounds = { min: [-0.04, 0, 0], max: [0.04, 0.08, 0.015] };
-    const render = (sequence, entityId = "event.remote", reducedMotion = false) =>
-      React.createElement(SceneItemActivityFeedback, {
-        bounds,
-        reducedMotion,
-        entities: [
+  const { pewArt } = await load("/packages/engine/src/comic-pew/pew-art.ts");
+  test("the gun keeps its alternating words while devices request ZAP", () => {
+    assert.deepEqual(
+      [1, 2, 3].map((id) => pewArt(id).label),
+      ["PEW!", "ZAP!", "POW!"],
+    );
+    assert.deepEqual(
+      [1, 2, 3].map((id) => pewArt(id, undefined, "ZAP!").label),
+      ["ZAP!", "ZAP!", "ZAP!"],
+    );
+  });
+
+  test("device comic feedback baselines mappings/remounts and clears only after its own animation", async () => {
+    await withStorageDom(async ({ document, window }) => {
+      function Feedback({ sequence, entityId = "event.remote", reducedMotion = false }) {
+        const { pulse, clear } = useEntityActivityFeedback([
           {
             slotId: "remote",
             entityId,
@@ -138,57 +149,53 @@ await withModules(async (load) => {
               activitySequence: sequence,
             },
           },
-        ],
-      });
-    const renderer = await create(render(10));
-    const count = () =>
-      renderer.scene.findAllByProps({ name: "scene-item-activity-feedback" }).length;
-    try {
-      assert.equal(count(), 0, "mounting history is silent");
-      await renderer.update(render(11));
-      assert.equal(count(), 1);
-      const store = renderer.scene.instance.__r3f.root;
-      let invalidations = 0;
-      const invalidate = store.getState().invalidate;
-      store.setState({
-        invalidate: () => {
-          invalidations++;
-          invalidate();
-        },
-      });
-      await renderer.advanceFrames(1, 10);
-      assert.equal(
-        renderer.scene.findByProps({ name: "laser-impact" }).instance.visible,
-        true,
-        "first idle delta cannot consume the pulse",
-      );
-      await renderer.advanceFrames(2, 0.1);
-      assert.ok(invalidations >= 3, "the pulse requests its own demand frames");
-      await act(async () => renderer.advanceFrames(1, 0.6));
-      assert.equal(count(), 0);
-      await renderer.update(render(11));
-      assert.equal(count(), 0, "rerender does not replay the latest activity");
-      await renderer.update(render(20, "event.replacement"));
-      assert.equal(count(), 0, "remapping establishes its own baseline");
-      await renderer.update(render(21, "event.replacement", true));
-      await renderer.advanceFrames(1, 0.1);
-      const pulse = renderer.scene.findByProps({ name: "laser-impact" }).instance;
-      assert.deepEqual(
-        pulse.scale.toArray(),
-        [1, 1, 1],
-        "reduced motion keeps feedback stationary",
-      );
-      assert.equal(pulse.children.length, 3, "reduced motion omits the expanding rays");
-      await act(async () => renderer.advanceFrames(1, 0.6));
-      assert.equal(count(), 0);
-    } finally {
-      await renderer.unmount();
-    }
-    const remounted = await create(render(21, "event.replacement"));
-    assert.equal(
-      remounted.scene.findAllByProps({ name: "scene-item-activity-feedback" }).length,
-      0,
-    );
-    await remounted.unmount();
+        ]);
+        return pulse
+          ? React.createElement(ComicPew, {
+              shotId: pulse,
+              word: "ZAP!",
+              reducedMotion,
+              onComplete: clear,
+            })
+          : null;
+      }
+      const container = document.createElement("div");
+      document.body.append(container);
+      let root = createRoot(container);
+      const render = async (sequence, entityId = "event.remote", reducedMotion = false) =>
+        act(async () =>
+          root.render(React.createElement(Feedback, { sequence, entityId, reducedMotion })),
+        );
+      const bubble = () => container.querySelector(".comic-pew");
+      const finish = async (element = bubble()) =>
+        act(async () => element.dispatchEvent(new window.Event("animationend", { bubbles: true })));
+      try {
+        await render(10);
+        assert.equal(bubble(), null, "initial history is silent");
+        await render(11);
+        assert.ok(bubble().querySelector("svg"), "uses the shared comic artwork");
+        await finish(bubble().querySelector(".comic-pew__rays"));
+        assert.ok(bubble(), "child ray animation cannot dismiss the bubble early");
+        await render(12);
+        assert.equal(bubble().querySelector("title").textContent, "ZAP!");
+        assert.equal(bubble().dataset.shot, "12", "a new press restarts the comic animation");
+        await finish();
+        assert.equal(bubble(), null, "completion removes the overlay");
+        await render(12);
+        assert.equal(bubble(), null, "duplicate snapshot stays quiet");
+        await render(20, "event.replacement");
+        assert.equal(bubble(), null, "remapping establishes its baseline");
+        await render(21, "event.replacement", true);
+        assert.equal(bubble().dataset.reducedMotion, "true");
+        await finish();
+        assert.equal(bubble(), null);
+        await act(async () => root.unmount());
+        root = createRoot(container);
+        await render(21, "event.replacement");
+        assert.equal(bubble(), null, "remounting does not replay history");
+      } finally {
+        await act(async () => root.unmount());
+      }
+    });
   });
 });

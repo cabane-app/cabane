@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { SceneActivityPulse } from "./SceneActivityPulse";
+import { useMemo } from "react";
+import { Vector3 } from "three";
+import { Html } from "@react-three/drei";
+import { ComicPew } from "./comic-pew/ComicPew";
+import { useEntityActivityFeedback } from "./useEntityActivityFeedback";
 import type { DeviceModelDefinition, ResolvedEntityBinding } from "./types";
 
 /** Binding-local feedback: mounting, remapping or copying a device establishes a baseline. */
@@ -12,44 +15,32 @@ export function SceneItemActivityFeedback({
   bounds: DeviceModelDefinition["bounds"];
   reducedMotion: boolean;
 }) {
-  const previous = useRef(new Map<string, { entityId: string; sequence?: number }>());
-  const [pulse, setPulse] = useState(0);
-  const clear = useCallback(() => setPulse(0), []);
-  useEffect(() => {
-    const next = new Map<string, { entityId: string; sequence?: number }>();
-    let activity = 0;
-    for (const binding of entities) {
-      const sequence = binding.state?.activitySequence;
-      const before = previous.current.get(binding.slotId);
-      if (
-        before?.entityId === binding.entityId &&
-        sequence !== undefined &&
-        sequence !== before.sequence &&
-        binding.state?.available &&
-        !binding.state.stale &&
-        !binding.issues.some((issue) => issue.severity === "error")
-      )
-        activity = Math.max(activity, sequence);
-      next.set(binding.slotId, {
-        entityId: binding.entityId,
-        ...(sequence === undefined ? {} : { sequence }),
-      });
-    }
-    previous.current = next;
-    if (activity) setPulse(activity);
-  }, [entities]);
+  const projected = useMemo(() => new Vector3(), []);
+  const { pulse, clear } = useEntityActivityFeedback(entities);
   if (!pulse) return null;
   return (
     <group
       name="scene-item-activity-feedback"
       position={[
         (bounds.min[0] + bounds.max[0]) / 2,
-        (bounds.min[1] + bounds.max[1]) / 2,
-        bounds.max[2] + 0.035,
+        bounds.max[1] + 0.08,
+        (bounds.min[2] + bounds.max[2]) / 2,
       ]}
       userData={{ walkToolVisual: true }}
     >
-      <SceneActivityPulse key={pulse} reducedMotion={reducedMotion} onComplete={clear} />
+      <Html
+        zIndexRange={[9, 0]}
+        pointerEvents="none"
+        calculatePosition={(object, camera, size) => {
+          projected.setFromMatrixPosition(object.matrixWorld).project(camera);
+          return [
+            Math.max(90, Math.min(size.width - 90, ((projected.x + 1) * size.width) / 2)),
+            Math.max(110, Math.min(size.height - 20, ((1 - projected.y) * size.height) / 2)),
+          ];
+        }}
+      >
+        <ComicPew word="ZAP!" shotId={pulse} reducedMotion={reducedMotion} onComplete={clear} />
+      </Html>
     </group>
   );
 }

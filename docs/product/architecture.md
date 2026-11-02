@@ -29,6 +29,7 @@ areas:
       [
         packages/engine/src/architecture-scene/,
         packages/engine/src/rendering.tsx,
+        packages/engine/src/comic-pew/,
         packages/engine/src/styles.css,
       ]
     docs: [docs/product/geometry-and-rendering.md]
