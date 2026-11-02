@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createElement } from "react";
+import { create } from "@react-three/test-renderer";
 import { IDBFactory } from "fake-indexeddb";
 import { Mesh, MeshBasicMaterial, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 await withModules(async (load) => {
   const e = await load("/packages/engine/src/index.ts");
@@ -10,6 +14,10 @@ await withModules(async (load) => {
   const { splitWallSurfaceGeometry } = await load(
     "/packages/engine/src/architecture-geometry/wall-surface-geometry.ts",
   );
+  const { ArchitecturalWall, ArchitecturalWalls } = await load(
+    "/packages/engine/src/architecture-scene/ArchitecturalWalls.tsx",
+  );
+  const { WALL_FADE_MIN_OPACITY } = await load("/packages/engine/src/wall-fade.ts");
   const finish = { pattern: "subway-tile", color: "#237a91", repeatMeters: 1.2 };
   const wallpaper = { pattern: "striped-wallpaper", color: "#a15d72", repeatMeters: 0.8 };
   const project = () =>
@@ -103,6 +111,65 @@ await withModules(async (load) => {
         .faceFinishes,
       expected,
     );
+  });
+
+  test("changing wall finishes preserves settled fading in both renderers", async () => {
+    const floor = structuredClone(e.neutralDemoManifest.floors[0]);
+    floor.coordinates = { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" };
+    floor.footprint = [
+      [0, 0],
+      [4, 0],
+      [4, 3],
+      [0, 3],
+    ];
+    delete floor.footprintRegions;
+    floor.wallJunctions = [];
+    floor.openings = [];
+    const wall = {
+      id: "fading-wall",
+      from: [0, 0],
+      to: [4, 0],
+      classification: "exterior",
+      thicknessMeters: 0.2,
+      heightMeters: 2.5,
+    };
+    for (const Component of [ArchitecturalWall, ArchitecturalWalls]) {
+      const view = (currentWall) =>
+        createElement(Component, {
+          floor: { ...floor, walls: [currentWall] },
+          wall: currentWall,
+          openings: [],
+          interiorColor: "#eeeeee",
+          exteriorColor: "#cccccc",
+          fade: true,
+          reducedMotion: true,
+        });
+      const renderer = await create(view(wall), { camera: { position: [0, 3, -10] } });
+      const assertFaded = () => {
+        let meshes = 0;
+        renderer.scene.instance.traverse((node) => {
+          if (!node.isMesh) return;
+          meshes++;
+          assert.ok(
+            Math.abs(node.material.opacity - WALL_FADE_MIN_OPACITY) < 1e-6,
+            `${Component.name}: new surfaces keep the existing wall fade`,
+          );
+        });
+        assert.ok(meshes > 0);
+      };
+      try {
+        await renderer.advanceFrames(2, 1 / 60);
+        assertFaded();
+        await renderer.update(view({ ...wall, faceFinishes: { left: finish, right: wallpaper } }));
+        await renderer.advanceFrames(2, 1 / 60);
+        assertFaded();
+        await renderer.update(view(wall));
+        await renderer.advanceFrames(2, 1 / 60);
+        assertFaded();
+      } finally {
+        await renderer.unmount();
+      }
+    }
   });
 
   test("standalone patterns retain the original junction-trimmed geometry", async () => {

@@ -581,8 +581,6 @@
 .furnishing-editor-inspector > * {
   flex-shrink: 0;
 }
-.construction-inspector button,
-.furnishing-editor-inspector button,
 .construction-inspector .wall-surface-field {
   display: grid;
   gap: 10px;
@@ -596,6 +594,8 @@
   align-items: center;
   gap: 6px;
 }
+.construction-inspector button,
+.furnishing-editor-inspector button,
 .construction-inspector input,
 .furnishing-editor-inspector input {
   font-family: inherit;
