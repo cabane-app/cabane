@@ -1,9 +1,9 @@
 {
-  "revision": 31,
-  "fingerprint": "67ec1c4859217d78d06197c27b947a51b732ac0ee711bae186c460f0908db70e",
-  "summary": "Support read-only event readings and live device feedback",
+  "revision": 32,
+  "fingerprint": "70ee9a1f2a5523758d02f5f8970fcdd4e9a76122813f8df779b0f9c0bbfba4f5",
+  "summary": "Add generated per-face wall tiles and wallpaper",
   "breakingChanges": [
-    "Event slots, Event personal-model profiles and optional event readings require the matching frontend and Home Assistant panel. Existing homes, lighting, terrain and apartment floors remain supported without migration. Runtime activity is transient and changes no saved fields."
+    "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Older clients retain the unsupported-field recovery path. Existing paint-only homes need no migration; HA workspace storage preserves the nested finishes."
   ],
   "history": [
     {
@@ -214,6 +214,13 @@
       "summary": "Connect stairs to terrain and add masonry stair styles",
       "breakingChanges": [
         "Existing floor-to-floor stairs and omitted styles remain compatible. Terrain connections and Concrete or Stone styles require the matching frontend and Home Assistant panel. Terrain rise, landing validation and Walk follow the current grade without adding a storey. No migration is required."
+      ]
+    },
+    {
+      "revision": 31,
+      "summary": "Support read-only event readings and live device feedback",
+      "breakingChanges": [
+        "Event slots, Event personal-model profiles and optional event readings require the matching frontend and Home Assistant panel. Existing homes, lighting, terrain and apartment floors remain supported without migration. Runtime activity is transient and changes no saved fields."
       ]
     }
   ],

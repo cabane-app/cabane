@@ -7,6 +7,9 @@ import { withModules } from "./test-server.mjs";
 await withModules(async (load) => {
   const e = await load("/packages/engine/src/index.ts");
   const { layoutFloorFromEditorFloor } = await load("/apps/web/src/editor-preview/project-sync.ts");
+  const { splitWallSurfaceGeometry } = await load(
+    "/packages/engine/src/architecture-geometry/wall-surface-geometry.ts",
+  );
   const finish = { pattern: "subway-tile", color: "#237a91", repeatMeters: 1.2 };
   const wallpaper = { pattern: "striped-wallpaper", color: "#a15d72", repeatMeters: 0.8 };
   const project = () =>
@@ -103,9 +106,6 @@ await withModules(async (load) => {
   });
 
   test("standalone patterns retain the original junction-trimmed geometry", async () => {
-    const { splitWallSurfaceGeometry } = await load(
-      "/packages/engine/src/architecture-geometry/wall-surface-geometry.ts",
-    );
     const { Float32BufferAttribute } = await import("three");
     const floor = structuredClone(e.neutralDemoManifest.floors[0]);
     const wall = floor.walls[0];
