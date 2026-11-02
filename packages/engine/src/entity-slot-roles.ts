@@ -1,4 +1,4 @@
-/** Optional read-only attachments never drive a model's primary appearance or commands. */
+/** Optional read-only attachments are separate from primary state and commands. */
 export const isAuxiliaryEntitySlot = (slot: {
   deviceRole?: unknown;
   required?: unknown;
