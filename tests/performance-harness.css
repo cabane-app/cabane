@@ -1,0 +1,42 @@
+.perf-panel {
+  position: fixed;
+  z-index: 9999;
+  top: 8px;
+  left: 8px;
+  width: min(310px, calc(100vw - 16px));
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #aebbc8;
+  border-radius: 8px;
+  background: #f8fafbf5;
+  color: #203244;
+  font:
+    13px/1.4 system-ui,
+    sans-serif;
+}
+.perf-panel p {
+  margin: 6px 0;
+}
+.perf-panel label {
+  display: block;
+}
+.perf-panel input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 4px 0 8px;
+}
+.perf-panel button {
+  min-height: 36px;
+  padding: 6px 12px;
+}
+.perf-panel a {
+  display: inline-block;
+  margin: 6px 14px 0 0;
+  color: #164e87;
+}
+.perf-running {
+  pointer-events: none;
+}
+.perf-running > :not(#perf-status) {
+  display: none;
+}

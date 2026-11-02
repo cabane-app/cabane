@@ -53,7 +53,7 @@ areas:
     docs: [home/README.md, docs/agent-home-generation.md, docs/product/generation.md]
   verification_and_delivery:
     code: [scripts/, tests/]
-    docs: [docs/product/verification-and-delivery.md, docs/test-guidelines.md]
+    docs: [docs/product/verification-and-delivery.md, docs/test-guidelines.md, docs/performance.md]
 ---
 
 # Architecture

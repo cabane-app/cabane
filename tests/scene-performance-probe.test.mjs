@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { PerspectiveCamera } from "three";
+import { OrthographicCamera, PerspectiveCamera, Vector3 } from "three";
 import { measureScene } from "../scripts/scene-performance/browser-probe.mjs";
+import { captureRuntime } from "../scripts/scene-performance/runtime-probe.mjs";
 
 for (const motion of [false, true])
   test(
@@ -158,3 +159,107 @@ for (const motion of [false, true])
       }
     },
   );
+
+for (const interrupted of [false, true])
+  test(`runtime capture accumulates passes and restores state (hidden=${interrupted})`, async (t) => {
+    const after = new Set(),
+      subscribers = new Map();
+    const document = Object.assign(new EventTarget(), { visibilityState: "visible" });
+    const canvas = Object.assign(new EventTarget(), { width: 390, height: 844 });
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, "document");
+    Object.defineProperty(globalThis, "document", { configurable: true, value: document });
+    t.after(() => {
+      if (descriptor) Object.defineProperty(globalThis, "document", descriptor);
+      else delete globalThis.document;
+    });
+    let clock = 100;
+    t.mock.method(performance, "now", () => (clock += 5));
+    const camera = new OrthographicCamera();
+    camera.position.set(10, 12, 10);
+    const pose = {
+      position: camera.position.clone(),
+      quaternion: camera.quaternion.clone(),
+      zoom: camera.zoom,
+    };
+    const gl = {
+      domElement: canvas,
+      getPixelRatio: () => 1,
+      info: {
+        autoReset: true,
+        reset() {
+          this.render = { calls: 0, triangles: 0 };
+        },
+      },
+      render(triangles) {
+        if (this.info.autoReset) this.info.reset();
+        this.info.render.calls++;
+        this.info.render.triangles += triangles;
+      },
+    };
+    const originalRender = gl.render;
+    let pending = false,
+      frames = 0;
+    const state = {
+      gl,
+      camera,
+      controls: { target: new Vector3(), enabled: true },
+      internal: {
+        priority: 1,
+        subscribe(ref, priority) {
+          subscribers.set(ref, priority);
+          return () => subscribers.delete(ref);
+        },
+      },
+      invalidate() {
+        if (pending) return;
+        pending = true;
+        setImmediate(() => {
+          pending = false;
+          if (!subscribers.size) return;
+          for (const [ref] of [...subscribers].sort((a, b) => a[1] - b[1])) ref.current();
+          gl.render(120); // beauty (including submitted shadow triangles)
+          gl.render(2); // contour postprocessing
+          frames++;
+          if (interrupted && frames === 2) {
+            document.visibilityState = "hidden";
+            document.dispatchEvent(new Event("visibilitychange"));
+          }
+          for (const effect of after) effect();
+        });
+      },
+    };
+    const measurement = captureRuntime({
+      root: { store: { getState: () => state } },
+      addAfterEffect(effect) {
+        after.add(effect);
+        return () => after.delete(effect);
+      },
+      seconds: 0.08,
+      warmupSeconds: 0,
+    });
+    if (interrupted) await assert.rejects(measurement, /Tab was hidden/);
+    else {
+      const result = await measurement;
+      assert.ok(result.frameIntervalsMs.length >= 2);
+      assert.deepEqual(
+        result.calls,
+        result.calls.map(() => 2),
+      );
+      assert.deepEqual(
+        result.triangles,
+        result.triangles.map(() => 122),
+      );
+      assert.deepEqual(
+        result.cpuSubmitMs,
+        result.cpuSubmitMs.map(() => 10),
+      );
+      assert.ok(result.frameIntervalsMs.every((value) => value === 25));
+    }
+    assert.equal(subscribers.size + after.size, 0);
+    assert.equal(gl.render, originalRender);
+    assert.equal(gl.info.autoReset, true);
+    assert.equal(state.controls.enabled, true);
+    assert.deepEqual(camera.position, pose.position);
+    assert.ok(camera.quaternion.equals(pose.quaternion));
+    assert.equal(camera.zoom, pose.zoom);
+  });

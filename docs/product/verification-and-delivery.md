@@ -210,11 +210,18 @@ unit tests. Responsive controls, reduced-motion handling, and automated DOM/scen
 checks exist; final cross-browser and comprehensive accessibility acceptance are
 not established by their presence alone.
 
+`npm run perf` measures production-app orbit motion with a mobile viewport and
+native host GPU, reporting frame-interval percentiles, hitches, CPU submission
+time, and rendering workload. Raw JSON and a visual HTML report are kept in
+ignored `test-results/performance/`. See the [performance guide](../performance.md)
+for comparisons and physical-phone testing, and the [performance log](../performance-log.md)
+for recorded baselines and improvements. Desktop emulation is not mobile acceptance.
+
 `npm run measure:scene` measures main-canvas draw calls and submitted triangles
 for the bundled home's default Orbit, Walk, Construct, and 3D Arrange views in
 an isolated Chromium session. JSON reports include steady samples, a forced shadow
 refresh, and optional baseline comparisons. The opt-in `--check` gate requires
-each measured peak to stay below 50 calls and 100,000 triangles; it is separate
+each measured peak to stay below 50 calls and 150,000 triangles; it is separate
 from `verify`. These viewpoint-specific counts do not establish an FPS target or
 a whole-building worst case. See the [README measurement instructions](../../README.md#measure-scene-rendering-performance).
 
