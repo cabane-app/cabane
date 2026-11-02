@@ -7,6 +7,7 @@ import {
 
 import {
   lightBrightnessCall,
+  lightBrightnessRatio,
   supportsLightBrightness,
   type SupportedServiceCall,
 } from "../home-assistant-controls";
@@ -15,7 +16,7 @@ import type { ResolvedEntityBinding } from "../types";
 
 import { useOptimisticCommand } from "./control-primitives";
 
-import { confirmationKey, numberAttribute, toggleCallForPressed } from "./entity-field-contract";
+import { confirmationKey, toggleCallForPressed } from "./entity-field-contract";
 
 export function PhysicalToggle(props: {
   binding: ResolvedEntityBinding;
@@ -88,6 +89,15 @@ function LightDimmer(props: {
   return <LightDimmerWithEntity {...props} binding={{ ...props.binding, state: entity }} />;
 }
 
+/**
+ * The dimmer's reading: 0 for a light that is off, unavailable or stale (Home Assistant reports no brightness for an off light, so
+ * the attribute cannot be used), and 1 to 100 for a lit one, which never reads 0.
+ */
+export const lightDimmerPercent = (entity: Parameters<typeof lightBrightnessRatio>[0]) => {
+  const ratio = lightBrightnessRatio(entity);
+  return ratio === 0 ? 0 : Math.min(100, Math.max(1, Math.round(ratio * 100)));
+};
+
 function LightDimmerWithEntity({
   binding,
   enabled,
@@ -98,10 +108,7 @@ function LightDimmerWithEntity({
   onCallService: (call: SupportedServiceCall) => Promise<unknown>;
 }) {
   const entity = binding.state;
-  const brightness = Math.min(
-    100,
-    Math.max(1, Math.round(numberAttribute(entity.attributes.brightness, 255) / 2.55)),
-  );
+  const brightness = lightDimmerPercent(entity);
   const brightnessConfirmationKey = confirmationKey(entity, brightness);
   const requestedLevel = useRef({ confirmed: brightness, requested: brightness });
   useLayoutEffect(() => {
@@ -150,7 +157,7 @@ function LightDimmerWithEntity({
         <input
           type="range"
           aria-label={`${binding.label} brightness`}
-          min={1}
+          min={0}
           max={100}
           value={level.value}
           readOnly
