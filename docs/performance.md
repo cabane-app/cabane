@@ -9,7 +9,7 @@ on a physical phone before calling them mobile improvements.
 
 | Metric                             | What it tells us                                                                                                              |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Frame interval p95                 | How slowly the worst 5% of sampled frames arrive. Our primary smoothness metric; lower is better.                             |
+| Frame interval p95                 | 95% of sampled frames arrive within this interval. Our primary smoothness metric; lower is better.                            |
 | Frames over 33.3 ms / 50 ms        | How often conspicuous hitches occur. These are project heuristics, not universal pass/fail limits.                            |
 | Frame interval p50 and average FPS | Typical cadence and a familiar summary. Average FPS can hide occasional stalls.                                               |
 | CPU submission time                | Wall time inside the main canvas's `renderer.render()` calls. Excludes other frame callbacks and asynchronous GPU completion. |
@@ -87,7 +87,7 @@ must remain visible while measuring. Stop the server when finished.
 
 Use a meaningful label such as `pixel-7-chrome-baseline`. Record the phone model,
 OS/browser version, battery/charging state, and whether the device is cool or hot
-in the performance log. Repeat three times under similar conditions. Preserve
+in the performance log. Each click runs three captures; keep conditions similar. Preserve
 the actual viewport, DPR, and drawing-buffer values from the report. Compare the
 same device and browser, and include a short observation about touch/orbit
 smoothness. No physical-phone result has been recorded yet.

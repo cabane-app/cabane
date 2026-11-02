@@ -224,7 +224,7 @@ for synthetic HA devices and synchronization, and the
 ### Measure scene rendering performance
 
 `npm run perf -- --label baseline` measures production-app camera motion with a
-mobile viewport and the host GPU, saving JSON and a visual HTML report. Compare
+mobile viewport and Chrome's normal GPU selection, saving JSON and a visual HTML report. Compare
 before/after frame intervals, hitches, and rendering workload on the same device.
 `npm run measure:scene` provides detailed draw-call and triangle diagnostics in
 Orbit, Walk, Construct and Arrange. See the [performance guide](docs/performance.md)

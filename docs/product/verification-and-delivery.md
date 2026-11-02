@@ -211,7 +211,7 @@ checks exist; final cross-browser and comprehensive accessibility acceptance are
 not established by their presence alone.
 
 `npm run perf` measures production-app orbit motion with a mobile viewport and
-native host GPU, reporting frame-interval percentiles, hitches, CPU submission
+Chrome's normal GPU selection, reporting frame-interval percentiles, hitches, CPU submission
 time, and rendering workload. Raw JSON and a visual HTML report are kept in
 ignored `test-results/performance/`. See the [performance guide](../performance.md)
 for comparisons and physical-phone testing, and the [performance log](../performance-log.md)
