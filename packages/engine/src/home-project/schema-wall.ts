@@ -1,4 +1,5 @@
 import { WALL_SURFACE_PATTERNS } from "../types";
+import { wallSurfaceImageError } from "../wall-image";
 import { record, keys, string, finite, point } from "./schema-json-values";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
 import { wallNichesSchema } from "./schema-wall-niches";
@@ -62,8 +63,19 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
         const at = `${path}.faceFinishes.${side}`;
         const finish = record(finishes[side], at, issues);
         if (!finish) continue;
-        keys(finish, ["pattern", "color", "repeatMeters"], at, issues);
+        keys(
+          finish,
+          [
+            "pattern",
+            "color",
+            "repeatMeters",
+            ...(finish.pattern === "custom-image" ? ["image"] : []),
+          ],
+          at,
+          issues,
+        );
         if (
+          finish.pattern !== "custom-image" &&
           !WALL_SURFACE_PATTERNS.includes(finish.pattern as (typeof WALL_SURFACE_PATTERNS)[number])
         )
           addProjectIssue(
@@ -72,6 +84,16 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
             `${at}.pattern`,
             "Wall pattern is not supported.",
           );
+        if (finish.pattern === "custom-image") {
+          const error = wallSurfaceImageError(finish.image);
+          if (error || finish.color !== "#ffffff")
+            addProjectIssue(
+              issues,
+              "project.wall-image",
+              `${at}.image`,
+              error ?? "Image finishes use their original colors.",
+            );
+        }
         if (typeof finish.color !== "string" || !/^#[0-9a-f]{6}$/i.test(finish.color))
           addProjectIssue(
             issues,
@@ -83,13 +105,15 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
           typeof finish.repeatMeters !== "number" ||
           !Number.isFinite(finish.repeatMeters) ||
           finish.repeatMeters < 0.1 ||
-          finish.repeatMeters > 5
+          finish.repeatMeters > (finish.pattern === "custom-image" ? 20 : 5)
         )
           addProjectIssue(
             issues,
             "project.wall-pattern-scale",
             `${at}.repeatMeters`,
-            "Pattern repeat must be between 0.1 and 5 meters.",
+            finish.pattern === "custom-image"
+              ? "Image width must be between 0.1 and 20 meters."
+              : "Pattern repeat must be between 0.1 and 5 meters.",
           );
       }
     }

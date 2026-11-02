@@ -1,4 +1,5 @@
 import { WALL_SURFACE_PATTERNS } from "../types";
+import { wallSurfaceImageError } from "../wall-image";
 import { validateWallNiches } from "./wall-niche-rules";
 import { wallLengthPlanUnits } from "../geometry";
 
@@ -110,20 +111,23 @@ export const validateWalls = (
           if (finish === undefined) continue;
           if (
             !isObject(finish) ||
-            !WALL_SURFACE_PATTERNS.includes(
-              finish.pattern as (typeof WALL_SURFACE_PATTERNS)[number],
-            ) ||
+            (finish.pattern !== "custom-image" &&
+              !WALL_SURFACE_PATTERNS.includes(
+                finish.pattern as (typeof WALL_SURFACE_PATTERNS)[number],
+              )) ||
+            (finish.pattern === "custom-image" &&
+              (finish.color !== "#ffffff" || wallSurfaceImageError(finish.image) !== null)) ||
             typeof finish.color !== "string" ||
             !/^#[0-9a-f]{6}$/i.test(finish.color) ||
             !isFiniteNumber(finish.repeatMeters) ||
             finish.repeatMeters < 0.1 ||
-            finish.repeatMeters > 5
+            finish.repeatMeters > (finish.pattern === "custom-image" ? 20 : 5)
           )
             issues.push(
               issue(
                 "wall.face-finish",
                 `${wallPath}.faceFinishes.${side}`,
-                "Use a supported wall pattern, six-digit hex color and repeat between 0.1 and 5 meters.",
+                "Use a valid wall finish and a width between 0.1 and 5 meters (20 meters for images).",
               ),
             );
         }

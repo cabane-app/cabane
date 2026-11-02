@@ -19,11 +19,37 @@ export const WALL_SURFACE_PATTERNS = [
   "striped-wallpaper",
   "dotted-wallpaper",
 ] as const;
-export interface WallSurfaceFinish {
+export interface WallPatternFinish {
   pattern: (typeof WALL_SURFACE_PATTERNS)[number];
   color: string;
   /** Width and height of one complete pattern repeat, in meters. */
   repeatMeters: number;
+}
+
+export interface WallSurfaceImage {
+  name: string;
+  /** An optimized, opaque JPEG, embedded so ordinary project transfers retain it. */
+  dataUrl: string;
+  width: number;
+  height: number;
+}
+
+export interface WallImageFinish {
+  pattern: "custom-image";
+  color: "#ffffff";
+  /** Physical width of the complete image. Height follows its aspect ratio. */
+  repeatMeters: number;
+  image: WallSurfaceImage;
+}
+
+export type WallSurfaceFinish = WallPatternFinish | WallImageFinish;
+
+export function wallSurfaceRepeatHeight(finish: WallSurfaceFinish | undefined): number {
+  if (!finish) return 1;
+  return (
+    finish.repeatMeters *
+    (finish.pattern === "custom-image" ? finish.image.height / finish.image.width : 1)
+  );
 }
 
 export interface WallSpec {

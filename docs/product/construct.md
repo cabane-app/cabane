@@ -439,11 +439,26 @@ and back. Pattern color and repeat size (0.1–5 meters per complete repeat) are
 editable in the same Finish group. Interior walls share a finish until split;
 merging sides copies Side A's finish. Patterns wrap neither caps nor opening
 reveals and retain door, window and niche cutouts. They are generated locally,
-without remote textures. Custom image uploads are not supported: the private
-asset/archive/HA transfer contract currently accepts GLB model assets only.
+without remote textures.
+
+Custom image in the same selector accepts a local PNG, JPG or WebP of up to
+10 MiB and 32 megapixels. Choosing or replacing an image shows a preview and
+filename. Image width (0.1–20 meters) sets the horizontal repeat; the vertical
+repeat preserves the image's proportions and both dimensions are shown in the
+selected measurement units. Invalid replacements leave the previous finish intact.
+Preparation happens entirely in the browser: images are resized to at most 1024
+pixels per edge, flattened onto white and saved as JPEG with metadata removed,
+within 192 KiB per image. Transparent images therefore have a white background.
+Choosing Paint or a generated pattern removes the image from that face through
+ordinary undo/redo. The image repeats across the whole face and respects the same
+caps, reveals and cutouts as generated patterns.
+
 Optional `WallSpec.faceFinishes.left/right` overrides the selected face's paint
-without deleting it, survives history/publication/JSON/HA storage, and requires a
-matching updated frontend on every client. Older clients reject the new field
+without deleting it. Optimized custom images are embedded in that JSON metadata,
+so history, publication, JSON/`.cabane` backups and HA storage preserve them without
+changing the separate GLB asset protocol. The existing workspace document size
+limit still applies. Custom images and generated patterns require a matching
+updated frontend on every client. Older clients reject unsupported finish data
 instead of stripping it. Existing projects need no migration.
 
 The Construct floor menu places **Setup apartment floor** directly below **Add floor below**.

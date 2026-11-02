@@ -1,5 +1,11 @@
 import { LengthInput } from "../../editor-chrome/LengthInput";
-import { WALL_SURFACE_PATTERNS, type WallSurfaceFinish } from "@cabane/engine";
+import {
+  WALL_SURFACE_PATTERNS,
+  type WallSurfaceFinish,
+  type WallPatternFinish,
+} from "@cabane/engine";
+import { useState } from "react";
+import { WallImageField } from "./WallImageField";
 import { EditorButton } from "../../editor-chrome/EditorButton";
 import { DebouncedColorInput } from "./DebouncedColorInput";
 import { useWallFinishPreview } from "./WallFinishPreview";
@@ -31,6 +37,8 @@ export function WallColorField({
   sides: readonly WallFinishSide[];
 }) {
   const { setHighlight } = useWallFinishPreview();
+  const [imageRequested, setImageRequested] = useState(false);
+  const imageMode = imageRequested || finish?.pattern === "custom-image";
   return (
     <div
       className="wall-surface-field"
@@ -49,18 +57,21 @@ export function WallColorField({
           {label} finish
           <select
             aria-label={`${label} finish`}
-            value={finish?.pattern ?? "paint"}
-            onChange={(event) =>
+            value={imageMode ? "custom-image" : (finish?.pattern ?? "paint")}
+            onChange={(event) => {
+              const isImage = event.target.value === "custom-image";
+              setImageRequested(isImage);
+              if (isImage) return;
               onFinishChange(
                 event.target.value === "paint"
                   ? undefined
                   : {
-                      pattern: event.target.value as WallSurfaceFinish["pattern"],
+                      pattern: event.target.value as WallPatternFinish["pattern"],
                       color: finish?.color ?? "#8da69c",
-                      repeatMeters: finish?.repeatMeters ?? 1.2,
+                      repeatMeters: Math.min(finish?.repeatMeters ?? 1.2, 5),
                     },
-              )
-            }
+              );
+            }}
           >
             <option value="paint">Paint</option>
             {WALL_SURFACE_PATTERNS.map((pattern, index) => (
@@ -72,20 +83,35 @@ export function WallColorField({
                 }
               </option>
             ))}
+            <option value="custom-image">Custom image</option>
           </select>
         </label>
       )}
-      <label>
-        {label}
-        <DebouncedColorInput
-          label={inputLabel}
-          value={finish?.color ?? value}
-          onCommit={(color) =>
-            finish && onFinishChange ? onFinishChange({ ...finish, color }) : onCommit(color)
-          }
+      {imageMode && onFinishChange ? (
+        <WallImageField
+          label={label}
+          finish={finish?.pattern === "custom-image" ? finish : undefined}
+          repeatMeters={finish?.repeatMeters ?? 1.2}
+          onChange={(next) => {
+            setImageRequested(false);
+            onFinishChange(next);
+          }}
         />
-      </label>
-      {finish && onFinishChange && (
+      ) : (
+        <label>
+          {finish ? "Pattern color" : label}
+          <DebouncedColorInput
+            label={inputLabel}
+            value={finish?.color ?? value}
+            onCommit={(color) =>
+              finish && finish.pattern !== "custom-image" && onFinishChange
+                ? onFinishChange({ ...finish, color })
+                : onCommit(color)
+            }
+          />
+        </label>
+      )}
+      {finish && !imageMode && onFinishChange && (
         <label>
           Pattern repeat
           <span className="wall-surface-field__length">

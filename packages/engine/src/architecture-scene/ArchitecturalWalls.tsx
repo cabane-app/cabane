@@ -63,7 +63,6 @@ export function ArchitecturalWall({
   fade: boolean;
   reducedMotion: boolean;
 }) {
-  const textures = useWallSurfaceTextures();
   const geometry = useMemo(() => {
     const result = splitArchitectureGeometry(buildContinuousWallGeometry(wall, floor, openings));
     const frame = wallFrame(wall, floor);
@@ -99,6 +98,7 @@ export function ArchitecturalWall({
       ),
     ];
   }, [floor, openings, wall, interiorColor, exteriorColor]);
+  const textures = useWallSurfaceTextures(geometry);
   useEffect(() => () => geometry.forEach((surface) => surface.geometry.dispose()), [geometry]);
   const normal = wallExteriorNormal(wall, floor) ?? ([0, 0] as const);
   return (
@@ -147,7 +147,6 @@ export function ArchitecturalWalls({
   reducedMotion: boolean;
 }) {
   const selectionHandlers = useWallRoomSelection(floor, onSelectRoom);
-  const textures = useWallSurfaceTextures();
   const groups = useMemo(
     () =>
       buildArchitecturalWallGeometries(floor, interiorColor, exteriorColor, baseElevationMeters, {
@@ -156,6 +155,7 @@ export function ArchitecturalWalls({
       }),
     [exteriorColor, floor, interiorColor, baseElevationMeters, below, above],
   );
+  const textures = useWallSurfaceTextures(groups);
   useEffect(() => () => groups.forEach(({ geometry }) => geometry.dispose()), [groups]);
   return (
     <>

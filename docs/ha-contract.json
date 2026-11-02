@@ -1,9 +1,9 @@
 {
-  "revision": 32,
-  "fingerprint": "70ee9a1f2a5523758d02f5f8970fcdd4e9a76122813f8df779b0f9c0bbfba4f5",
-  "summary": "Add generated per-face wall tiles and wallpaper",
+  "revision": 33,
+  "fingerprint": "884514262f8fe3e458eaf7483dafb667e69b36d15fa84f8ffb207253f2ee8bed",
+  "summary": "Support custom image wall finishes",
   "breakingChanges": [
-    "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Older clients retain the unsupported-field recovery path. Existing paint-only homes need no migration; HA workspace storage preserves the nested finishes."
+    "Homes using embedded custom wall images require this updated frontend and matching Home Assistant panel. Existing paint and generated patterns remain compatible. Images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
   ],
   "history": [
     {
@@ -221,6 +221,13 @@
       "summary": "Support read-only event readings and live device feedback",
       "breakingChanges": [
         "Event slots, Event personal-model profiles and optional event readings require the matching frontend and Home Assistant panel. Existing homes, lighting, terrain and apartment floors remain supported without migration. Runtime activity is transient and changes no saved fields."
+      ]
+    },
+    {
+      "revision": 32,
+      "summary": "Add generated per-face wall tiles and wallpaper",
+      "breakingChanges": [
+        "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Older clients retain the unsupported-field recovery path. Existing paint-only homes need no migration; HA workspace storage preserves the nested finishes."
       ]
     }
   ],

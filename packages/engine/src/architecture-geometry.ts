@@ -27,6 +27,7 @@ import {
   createWallAssemblyPointTest,
 } from "./architecture-geometry/wall-solid-footprints";
 import type { FloorSpec, WallSpec, WallSurfaceFinish } from "./types";
+import { wallSurfaceRepeatHeight } from "./wall-types";
 
 /** Generalized version of the original house-wide occupied-grid wall union. */
 export function buildArchitecturalWallGeometries(
@@ -67,6 +68,17 @@ export function buildArchitecturalWallGeometries(
     finish?: WallSurfaceFinish;
   };
   const bands = wallSolidBands(floor);
+  // Image payloads can be large. Intern each finish once, outside the band/triangle loops.
+  const finishIds = new Map<WallSurfaceFinish, number>();
+  const finishDefinitions = new Map<string, number>();
+  for (const wall of floor.walls)
+    for (const finish of Object.values(wall.faceFinishes ?? {})) {
+      if (!finish) continue;
+      const definition = JSON.stringify(finish);
+      if (!finishDefinitions.has(definition))
+        finishDefinitions.set(definition, finishDefinitions.size);
+      finishIds.set(finish, finishDefinitions.get(definition)!);
+    }
 
   const buffersByDirection = new Map<string, Buffers>();
   const buffersFor = (
@@ -126,7 +138,7 @@ export function buildArchitecturalWallGeometries(
               (point[2] - frame.from[1]) * frame.direction[1]) /
               repeat
           : 0,
-        y / repeat,
+        y / wallSurfaceRepeatHeight(buffers.finish),
       );
     }
     for (let vertex = 0; vertex < 3; vertex += 1) buffers.colors.push(color.r, color.g, color.b);
@@ -294,7 +306,7 @@ export function buildArchitecturalWallGeometries(
             const buffers = face.finish
               ? buffersFor(
                   fadeNormal,
-                  `${fadeNormal?.join(":") ?? "interior"}:${JSON.stringify(face.finish)}`,
+                  `${fadeNormal?.join(":") ?? "interior"}:${finishIds.get(face.finish)}`,
                 )
               : buffersFor(fadeNormal);
             if (face.finish) buffers.finish = face.finish;

@@ -151,6 +151,7 @@
       "wall-fade-platform.test.mjs",
       "wall-niche-properties.test.mjs",
       "wall-niches.test.mjs",
+      "wall-image-browser.test.mjs",
       "workspace-publication.test.mjs",
       "measurement-units.test.mjs",
       "wall-surface-finishes.test.mjs"

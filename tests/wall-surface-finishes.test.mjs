@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
 import { IDBFactory } from "fake-indexeddb";
@@ -7,6 +8,9 @@ import { Mesh, MeshBasicMaterial, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+const image = JSON.parse(
+  await readFile(new URL("./fixtures/wall-image.json", import.meta.url), "utf8"),
+);
 
 await withModules(async (load) => {
   const e = await load("/packages/engine/src/index.ts");
@@ -20,6 +24,7 @@ await withModules(async (load) => {
   const { WALL_FADE_MIN_OPACITY } = await load("/packages/engine/src/wall-fade.ts");
   const finish = { pattern: "subway-tile", color: "#237a91", repeatMeters: 1.2 };
   const wallpaper = { pattern: "striped-wallpaper", color: "#a15d72", repeatMeters: 0.8 };
+  const custom = { pattern: "custom-image", color: "#ffffff", repeatMeters: 8, image };
   const project = () =>
     e.defineHomeProject({
       schemaVersion: 1,
@@ -72,9 +77,9 @@ await withModules(async (load) => {
     history = e.floorEditorReducer(history, {
       type: "update-wall-metadata",
       wallId,
-      changes: { faceFinishes: { left: finish, right: wallpaper } },
+      changes: { faceFinishes: { left: custom, right: wallpaper } },
     });
-    const expected = { left: finish, right: wallpaper };
+    const expected = { left: custom, right: wallpaper };
     assert.deepEqual(
       e.deriveFloorTopology(history.present).floor.walls.find((w) => w.id === wallId).faceFinishes,
       expected,
@@ -111,6 +116,38 @@ await withModules(async (load) => {
         .faceFinishes,
       expected,
     );
+  });
+
+  test("custom wall images round trip embedded bytes and reject unsafe or inconsistent image metadata", () => {
+    const p = project();
+    p.floors[0].walls[0].faceFinishes = { left: custom };
+    const parsed = e.parseHomeProjectSchema(JSON.parse(JSON.stringify(p)));
+    assert.equal(parsed.valid, true, JSON.stringify(parsed.issues));
+    assert.deepEqual(parsed.project.floors[0].walls[0].faceFinishes.left, custom);
+    assert.equal(e.wallSurfaceRepeatHeight(custom), 4, "vertical repeat preserves the image ratio");
+    for (const invalid of [
+      { ...custom, color: "#ff0000" },
+      { ...custom, repeatMeters: 20.1 },
+      { ...custom, image: undefined },
+      ...[
+        { ...image, dataUrl: "https://example.test/wall.jpg" },
+        { ...image, dataUrl: "data:image/svg+xml;base64,PHN2Zy8+" },
+        { ...image, dataUrl: "data:image/jpeg;base64,not-a-jpeg" },
+        { ...image, dataUrl: "data:image/jpeg;base64,AAAA" },
+        {
+          ...image,
+          dataUrl: `data:image/jpeg;base64,${"A".repeat(4 * Math.ceil(e.WALL_IMAGE_LIMITS.storedBytes / 3) + 4)}`,
+        },
+        { ...image, width: image.width + 1 },
+        { ...image, height: 0 },
+        { ...image, width: 1025 },
+        { ...image, name: "" },
+        { ...image, url: "https://example.test/wall.jpg" },
+      ].map((image) => ({ ...custom, image })),
+    ]) {
+      p.floors[0].walls[0].faceFinishes = { left: invalid };
+      assert.equal(e.parseHomeProjectSchema(p).valid, false);
+    }
   });
 
   test("changing wall finishes preserves settled fading in both renderers", async () => {
@@ -160,7 +197,7 @@ await withModules(async (load) => {
       try {
         await renderer.advanceFrames(2, 1 / 60);
         assertFaded();
-        await renderer.update(view({ ...wall, faceFinishes: { left: finish, right: wallpaper } }));
+        await renderer.update(view({ ...wall, faceFinishes: { left: custom, right: wallpaper } }));
         await renderer.advanceFrames(2, 1 / 60);
         assertFaded();
         await renderer.update(view(wall));
@@ -182,7 +219,7 @@ await withModules(async (load) => {
       new Float32BufferAttribute(new Array(source.getAttribute("position").count * 3).fill(0.5), 3),
     );
     const original = Array.from(source.getAttribute("position").array);
-    wall.faceFinishes = { left: finish, right: wallpaper };
+    wall.faceFinishes = { left: custom, right: wallpaper };
     const surfaces = splitWallSurfaceGeometry(source, wall, floor);
     const triples = (array) =>
       Array.from({ length: array.length / 9 }, (_, i) =>
@@ -193,6 +230,15 @@ await withModules(async (load) => {
       triples(original),
     );
     assert.ok(surfaces.some((s) => s.finish));
+    for (const surface of surfaces.filter((s) => s.finish)) {
+      const positions = surface.geometry.getAttribute("position");
+      const uv = surface.geometry.getAttribute("uv");
+      for (let i = 0; i < positions.count; i++)
+        assert.ok(
+          Math.abs(uv.getY(i) - positions.getY(i) / e.wallSurfaceRepeatHeight(surface.finish)) <
+            1e-5,
+        );
+    }
     surfaces.forEach((s) => s.geometry.dispose());
   });
 
@@ -228,7 +274,7 @@ await withModules(async (load) => {
         },
       ];
       const plain = e.buildArchitecturalWallGeometries(floor);
-      wall.faceFinishes = { left: finish, right: wallpaper };
+      wall.faceFinishes = { left: custom, right: wallpaper };
       const groups = e.buildArchitecturalWallGeometries(floor);
       assert.equal(
         groups.reduce((n, g) => n + g.geometry.index.count, 0),
@@ -252,7 +298,7 @@ await withModules(async (load) => {
               uv.getX(i) - ((p.getX(i) - 1) * dx + (p.getZ(i) - 1) * dz) / surface.repeatMeters,
             ) < 1e-5,
           );
-          assert.ok(Math.abs(uv.getY(i) - p.getY(i) / surface.repeatMeters) < 1e-5);
+          assert.ok(Math.abs(uv.getY(i) - p.getY(i) / e.wallSurfaceRepeatHeight(surface)) < 1e-5);
         }
       }
       const meshes = groups.map((g) => new Mesh(g.geometry, new MeshBasicMaterial()));

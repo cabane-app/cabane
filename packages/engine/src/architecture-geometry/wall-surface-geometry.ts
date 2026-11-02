@@ -1,11 +1,17 @@
 import { BufferGeometry, Float32BufferAttribute } from "three";
 import { wallFrame } from "./wall-coordinate-frame";
 import type { FloorSpec, WallSpec, WallSurfaceFinish } from "../types";
+import { wallSurfaceRepeatHeight } from "../wall-types";
 
 /** Partition the existing standalone mesh without changing its junction trims or cutouts. */
 export function splitWallSurfaceGeometry(source: BufferGeometry, wall: WallSpec, floor: FloorSpec) {
   if (!wall.faceFinishes) return [{ geometry: source, finish: undefined }];
   const frame = wallFrame(wall, floor);
+  const finishKeys = new Map(
+    Object.values(wall.faceFinishes)
+      .filter((finish): finish is WallSurfaceFinish => !!finish)
+      .map((finish) => [finish, JSON.stringify(finish)]),
+  );
   const positions = source.getAttribute("position"),
     normals = source.getAttribute("normal"),
     colors = source.getAttribute("color");
@@ -19,7 +25,7 @@ export function splitWallSurfaceGeometry(source: BufferGeometry, wall: WallSpec,
       Math.abs(alignment) > 0.999
         ? wall.faceFinishes[alignment >= 0 ? "left" : "right"]
         : undefined;
-    const key = finish ? JSON.stringify(finish) : "paint";
+    const key = finish ? finishKeys.get(finish)! : "paint";
     let group = groups.get(key);
     if (!group) {
       group = { positions: [], colors: [], uvs: [], finish };
@@ -34,7 +40,7 @@ export function splitWallSurfaceGeometry(source: BufferGeometry, wall: WallSpec,
       group.uvs.push(
         ((x - frame.from[0]) * frame.direction[0] + (z - frame.from[1]) * frame.direction[1]) /
           (finish?.repeatMeters ?? 1),
-        y / (finish?.repeatMeters ?? 1),
+        y / wallSurfaceRepeatHeight(finish),
       );
     }
   }
