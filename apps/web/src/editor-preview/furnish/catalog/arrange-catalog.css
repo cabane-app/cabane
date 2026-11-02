@@ -9,6 +9,7 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 .arrange-catalog-mount[hidden] {
   display: none;
@@ -19,6 +20,7 @@
   flex-direction: column;
   width: 100%;
   min-height: 0;
+  min-width: 0;
 }
 .arrange-catalog__body,
 .catalog-results {
@@ -190,10 +192,10 @@
   align-content: start;
   gap: 18px 10px;
   min-height: 0;
+  min-width: 0;
   overflow: auto;
   scrollbar-width: thin;
   padding: 3px 3px 16px;
-  margin: -3px;
 }
 .catalog-card {
   display: flex;

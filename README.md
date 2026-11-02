@@ -248,8 +248,7 @@ homes use the same portable project schema. See the [bundled home guide](home/RE
 ## Documentation
 
 - [Product specification](PRODUCT_SPEC.md) — implemented features and focused contracts.
-- [Engineering map](docs/engineering-map.md) — module owners, interfaces and relevant checks.
-- [Architecture](docs/product/architecture.md) — package boundaries and ownership.
+- [Architecture](docs/product/architecture.md) — main code areas, package boundaries and associated documentation.
 - [Catalog](packages/catalog/README.md) and [personal models](docs/product/personal-models.md) — built-in models and GLB imports.
 - [Home generation workflow](docs/agent-home-generation.md) — authoring layouts and rooms with an agent.
 - [Agent skills](#build-with-ai) — floor layouts, room furnishing and standalone custom models.

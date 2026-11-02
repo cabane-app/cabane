@@ -1,15 +1,29 @@
 import { matchRoutes } from "react-router";
 import type { EditorOpenRequest } from "./editor-connect/connect-navigation";
 
+import { settingsSections } from "./editor-settings/settings-sections";
+
 export const editorRoutes = [
+  {
+    path: "/workspaces/:workspaceId/settings",
+    handle: { mode: "construct", panel: "settings", settingsSection: "home-assistant" },
+  },
+  ...settingsSections.map(({ id }) => ({
+    path: `/workspaces/:workspaceId/settings/${id}`,
+    handle: { mode: "construct" as const, panel: "settings" as const, settingsSection: id },
+  })),
+  {
+    path: "/workspaces/:workspaceId/home-assistant",
+    handle: { mode: "construct", panel: "settings", settingsSection: "home-assistant" },
+  },
   { path: "/build", handle: { mode: "construct" } },
   {
     path: "/workspaces/:workspaceId/shortcuts",
-    handle: { mode: "construct", panel: "action-bar" },
+    handle: { mode: "construct", panel: "settings", settingsSection: "shortcuts" },
   },
   {
     path: "/workspaces/:workspaceId/action-bar",
-    handle: { mode: "construct", panel: "action-bar" },
+    handle: { mode: "construct", panel: "settings", settingsSection: "shortcuts" },
   },
   { path: "/workspaces/:workspaceId/construct", handle: { mode: "construct" } },
   { path: "/workspaces/:workspaceId/arrange", handle: { mode: "furnish" } },
@@ -45,8 +59,10 @@ export function workspaceIdForPath(pathname: string): string | null {
 
 export function editorPath(request: EditorOpenRequest, workspaceId: string): string {
   const base = workspaceHomePath(workspaceId);
-  if (request.panel === "home-assistant") return `${base}/home-assistant`;
-  if (request.panel === "action-bar") return `${base}/shortcuts`;
+  if (request.panel === "home-assistant") return `${base}/settings/home-assistant`;
+  if (request.panel === "settings")
+    return `${base}/settings/${request.settingsSection ?? "home-assistant"}`;
+  if (request.panel === "action-bar") return `${base}/settings/shortcuts`;
   if (request.mode === "construct") return `${base}/construct`;
   if (request.mode === "furnish") return `${base}/arrange`;
   return request.relationshipId

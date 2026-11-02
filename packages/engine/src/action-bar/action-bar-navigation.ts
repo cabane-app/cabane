@@ -1,8 +1,9 @@
+import { outsideRoomDevices } from "../outside-room-devices";
 import type { HomeManifest } from "../types";
 import type { ActionBarTarget } from "./action-bar-config";
 
 export function resolveActionBarDestination(
-  manifest: Pick<HomeManifest, "floors">,
+  manifest: Pick<HomeManifest, "floors"> & Partial<Pick<HomeManifest, "sceneItems" | "extensions">>,
   target: ActionBarTarget,
 ): { floorId: string; roomId: string; deviceId?: string } | null {
   for (const floor of manifest.floors) {
@@ -16,6 +17,20 @@ export function resolveActionBarDestination(
       ) {
         return { floorId: floor.id, roomId: room.id, deviceId: target.deviceId };
       }
+    }
+  }
+  if (target.kind === "device" && manifest.sceneItems && manifest.extensions) {
+    for (const floor of manifest.floors) {
+      const outside = outsideRoomDevices(
+        {
+          floors: manifest.floors,
+          sceneItems: manifest.sceneItems,
+          extensions: manifest.extensions,
+        },
+        floor.id,
+      );
+      if (outside?.devices.some((device) => device.id === target.deviceId))
+        return { floorId: floor.id, roomId: outside.id, deviceId: target.deviceId };
     }
   }
   return null;

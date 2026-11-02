@@ -13,6 +13,9 @@ import {
 } from "./fixtures/home-assistant.mjs";
 
 await withModules(async (load) => {
+  const { normalizeEntityStates } = await load(
+    "/packages/engine/src/home-assistant-entity-snapshots.ts",
+  );
   const { useRoomModuleOrder } = await load(
     "/packages/engine/src/home-assistant-dashboard/useRoomModuleOrder.ts",
   );
@@ -419,6 +422,83 @@ await withModules(async (load) => {
     ];
     return buildRoomModules(room).find((module) => module.label === label);
   };
+
+  test("event modules render read-only history and update through reconnects and repeated presses", async () => {
+    await withDom(async ({ root, dom }) => {
+      const manifest = structuredClone(connectedManifestFixture(neutralDemoManifest));
+      const room = manifest.floors[0].rooms[0];
+      room.dashboardSlots.push({
+        id: "remote",
+        compatibleDomains: ["event"],
+        required: false,
+        autoMap: "manual",
+        presentation: { label: "Remote", dashboardRole: "primary" },
+      });
+      const profile = connectedProfileFixture();
+      profile.entityIdsBySlotId.remote = "event.synthetic_remote";
+      const runtime = connectedRuntimeFixture();
+      runtime.entityRegistry.push({
+        entity_id: "event.synthetic_remote",
+        area_id: profile.roomAreaIds[room.id],
+        device_id: null,
+        platform: "synthetic",
+        name: "Remote",
+        original_name: null,
+        disabled_by: null,
+      });
+      const event = {
+        state: "2026-01-01T12:00:00.123+00:00",
+        attributes: { event_type: "short_release" },
+      };
+      let calls = 0;
+      const render = async (state) => {
+        const entity = {
+          entity_id: "event.synthetic_remote",
+          last_changed: event.state,
+          last_updated: event.state,
+          ...state,
+        };
+        runtime.entityStates = {
+          ...runtime.entityStates,
+          ...normalizeEntityStates({ [entity.entity_id]: entity }, state.stale ?? false),
+        };
+        const resolved = resolveHomeAssistantBindings(manifest, profile, runtime).rooms[room.id];
+        const module = buildRoomModules(resolved).find((module) => module.label === "Remote");
+        await act(async () =>
+          root.render(
+            React.createElement(RoomModule, {
+              module,
+              canMutate: true,
+              focused: true,
+              onCallService: async () => {
+                calls++;
+              },
+            }),
+          ),
+        );
+        return module;
+      };
+      const reading = () => dom.window.document.querySelector("output")?.textContent;
+      const waiting = await render({ ...event, state: "unknown" });
+      assert.deepEqual(waiting.issues, [], "waiting for the first event is available");
+      assert.equal(reading(), "No event received");
+      assert.equal(dom.window.document.querySelector(".room-module__issues"), null);
+      await render(event);
+      assert.match(reading(), /short_release/);
+      const initial = reading();
+      await render({ ...event, state: "2026-01-01T12:00:05.123+00:00" });
+      assert.notEqual(reading(), initial);
+      await render({ ...event, stale: true });
+      assert.equal(reading(), "Disconnected");
+      await render({ ...event, state: "unavailable", available: false });
+      assert.equal(reading(), "Unavailable");
+      await render(event);
+      assert.equal(reading(), initial);
+      assert.equal(dom.window.document.querySelectorAll("button,input,select").length, 0);
+      assert.equal(calls, 0);
+      await act(async () => root.render(null));
+    });
+  });
 
   test("renders balanced light, switch, and sensor modules without technical IDs", () => {
     const html = renderModules(connectedRuntimeFixture());

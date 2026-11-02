@@ -16,6 +16,7 @@ import { connectedCanvasEvents, ToonMaterial } from "@cabane/engine";
 import type { ModelPreviewEntry } from "./model-preview-entry";
 import { ModelVisual } from "./ModelVisual";
 import { paintThumbnail, readThumbnail, saveThumbnail } from "./thumbnailCache";
+import { copyWebGLPreview } from "../../../webgl-preview";
 
 interface Request {
   cacheKey?: string;
@@ -121,9 +122,7 @@ function ThumbnailScene({
         const dpr = Math.min(globalThis.devicePixelRatio || 1, 1.5);
         target.width = Math.max(1, Math.round(rect.width * dpr));
         target.height = Math.max(1, Math.round(rect.height * dpr));
-        const context = target.getContext("2d");
-        if (!context) throw new Error("Preview canvas unavailable");
-        context.drawImage(gl.domElement, 0, 0, target.width, target.height);
+        copyWebGLPreview(gl.domElement, target);
         if (request.cacheKey)
           saveThumbnail(
             request.cacheKey.replace(/[^/]+$/, `${target.width}:${target.height}`),

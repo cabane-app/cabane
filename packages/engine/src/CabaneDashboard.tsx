@@ -29,6 +29,7 @@ export function CabaneDashboard({
   mappingRequest,
   focusRoomId,
   onEditHome,
+  onOpenSettings,
   onCustomizeActionBar,
   onExportBrowserData,
   onWorkspaces,
@@ -68,6 +69,7 @@ export function CabaneDashboard({
         mappingRequest={mappingRequest}
         focusRoomId={focusRoomId}
         onEditHome={onEditHome}
+        onOpenSettings={onOpenSettings}
         onCustomizeActionBar={onCustomizeActionBar}
         onExportBrowserData={onExportBrowserData}
         onWorkspaces={onWorkspaces}
@@ -90,6 +92,7 @@ export function CabaneDashboard({
       mappingRequest={mappingRequest}
       focusRoomId={focusRoomId}
       onEditHome={onEditHome}
+      onOpenSettings={onOpenSettings}
       onCustomizeActionBar={onCustomizeActionBar}
       onExportBrowserData={onExportBrowserData}
       onWorkspaces={onWorkspaces}

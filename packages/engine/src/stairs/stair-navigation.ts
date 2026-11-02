@@ -1,4 +1,7 @@
+import { createTerrainSurface } from "../terrain/terrain-surface";
 import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
+import { GROUND_ELEVATION_METERS } from "../ground-elevation";
+import { WALK_MAX_STEP_METERS } from "../navigation/walk-navigation-contract";
 import { resolveTerrainWalking } from "../navigation/terrain-walking";
 import { prepareWalkColliders } from "../navigation/prepared-walk-colliders";
 import { resolveItemTransform } from "../home-project/placements";
@@ -30,13 +33,19 @@ export interface BuildingWalkPoint extends WalkPoint {
 /** Prepared once per architecture revision, with content-aware door/furniture updates. */
 export const prepareBuildingWalk = (building: BuildingGeometry) => {
   const levels = deriveFloorLevels(building.floors);
+  const terrain = building.home?.apartmentFloor
+    ? null
+    : createTerrainSurface(building.home?.terrain, building.floors);
   return {
+    levels,
+    terrain,
     colliders: new Map(
       building.floors.map((floor) => [
         floor.id,
         prepareWalkColliders(
           floor,
           levels.find((level) => level.floorId === floor.id)!.elevationMeters,
+          terrain,
         ),
       ]),
     ),
@@ -100,6 +109,7 @@ const hasUnsupportedStairAperture = (
 ) =>
   flights.some(
     (flight) =>
+      !flight?.terrain &&
       flight?.upperFloorId === floorId &&
       flight.id !== exitingStairId &&
       pointInsidePolygon(point, flight.footprint) &&
@@ -108,6 +118,7 @@ const hasUnsupportedStairAperture = (
   // Only spiral upper landings render a bridge; other landing polygons need floor underneath.
   !flights.some(
     (flight) =>
+      !flight?.terrain &&
       flight?.upperFloorId === floorId &&
       flight.shape === "spiral" &&
       flight.widthMeters >= WALK_PLAYER_RADIUS * 2 &&
@@ -127,14 +138,40 @@ export const moveBuildingWalker = (
     allowUnsupported?: boolean;
     terrainHeight?: (point: WalkPoint) => number | null;
   } = {},
-) => {
+): BuildingWalkPoint => {
   const floor = building.floors.find((f) => f.id === pose.floorId);
   if (!floor) return pose;
   const levels = deriveFloorLevels(building.floors);
   const floorElevation = levels.find((level) => level.floorId === floor.id)!.elevationMeters;
+  const flights =
+    prepared?.flights ?? building.stairs.map((stair) => deriveStairFlight(building, stair));
+  let verticalRange = options.verticalRange;
+  const activeFlight = pose.stairId ? flights.find((flight) => flight?.id === pose.stairId) : null;
+  // The last step covers a supporting facade below its landing. Keep that wall
+  // from catching the player's horizontal radius before their feet reach the slab.
+  if (activeFlight?.terrain && verticalRange) {
+    for (const upper of [false, true]) {
+      const floorId = upper ? activeFlight.upperFloorId : activeFlight.lowerFloorId;
+      if (!floorId) continue;
+      const end = upper ? activeFlight.path.at(-1)! : activeFlight.path[0];
+      const at = stairEndCoordinates(
+        pose,
+        end,
+        upper ? activeFlight.exitForward : activeFlight.entranceForward,
+      );
+      const elevation = activeFlight.baseElevationMeters + end.elevation;
+      if (Math.abs(at.along) <= WALK_PLAYER_RADIUS + 0.2)
+        verticalRange = { ...verticalRange, minY: Math.max(verticalRange.minY, elevation + 1e-6) };
+    }
+  }
+  const terrain = prepared
+    ? prepared.terrain
+    : building.home?.apartmentFloor
+      ? null
+      : createTerrainSurface(building.home?.terrain, building.floors);
   const floorColliders =
     prepared?.colliders.get(floor.id)?.(openIds, furniture) ??
-    deriveWalkColliders(floor, openIds, furniture, floorElevation);
+    deriveWalkColliders(floor, openIds, furniture, floorElevation, terrain);
   const next = resolveCircleMovement(
     pose,
     movement,
@@ -152,21 +189,25 @@ export const moveBuildingWalker = (
                     openIds,
                     [],
                     levels.find((level) => level.floorId === other.id)!.elevationMeters,
+                    terrain,
                   ),
               ),
           ]
         : floorColliders,
-      options.verticalRange,
+      verticalRange,
     ),
   );
   const candidate = { ...pose, ...next };
-  const flights =
-    prepared?.flights ?? building.stairs.map((stair) => deriveStairFlight(building, stair));
   const plan = worldPointToPlan(next, building.coordinates);
   if (pose.stairId) {
     // The active flight owns traversal even when another footprint overlaps it.
     const flight = flights.find((flight) => flight?.id === pose.stairId);
-    if (!flight || (pose.floorId !== flight.lowerFloorId && pose.floorId !== flight.upperFloorId))
+    if (
+      !flight ||
+      (!flight.terrain &&
+        pose.floorId !== flight.lowerFloorId &&
+        pose.floorId !== flight.upperFloorId)
+    )
       return pose;
     const halfWidth = flight.widthMeters / 2 - WALK_PLAYER_RADIUS;
     if (halfWidth < 0) return pose;
@@ -174,15 +215,38 @@ export const moveBuildingWalker = (
     const bottom = stairEndCoordinates(next, flight.path[0], flight.entranceForward);
     const top = stairEndCoordinates(next, flight.path[flight.path.length - 1], flight.exitForward);
     const exitingBelow =
-      localElevation < 0.4 && bottom.along <= 1e-8 && Math.abs(bottom.across) <= halfWidth;
+      localElevation < 0.4 && bottom.along <= 0 && Math.abs(bottom.across) <= halfWidth;
     const exitingAbove =
       localElevation > flight.riseMeters - 0.4 &&
-      top.along >= -1e-8 &&
+      top.along >= 0 &&
       Math.abs(top.across) <= halfWidth;
     if (exitingBelow || exitingAbove) {
-      const destinationId = exitingBelow ? flight.lowerFloorId : flight.upperFloorId;
+      const endpointFloorId = exitingBelow ? flight.lowerFloorId : flight.upperFloorId;
+      const endElevation = flight.baseElevationMeters + (exitingBelow ? 0 : flight.riseMeters);
+      let terrainLanding: BuildingWalkPoint | null = null;
+      if (!endpointFloorId) {
+        const height = options.terrainHeight?.(next);
+        if (
+          height === undefined ||
+          height === null ||
+          Math.abs(height - GROUND_ELEVATION_METERS - endElevation) > WALK_MAX_STEP_METERS
+        )
+          return pose;
+        terrainLanding = resolveTerrainWalking(
+          building,
+          { ...candidate, elevation: endElevation },
+          candidate,
+          options.terrainHeight!,
+        );
+      }
+      const destinationId = endpointFloorId ?? terrainLanding?.floorId;
       const destination = building.floors.find((f) => f.id === destinationId);
-      if (!destination || !pointOnFloorSupport(plan, destination)) return pose;
+      if (
+        !destinationId ||
+        !destination ||
+        (endpointFloorId && !pointOnFloorSupport(plan, destination))
+      )
+        return pose;
       if (hasUnsupportedStairAperture(flights, destinationId, plan, flight.id)) return pose;
       const destinationElevation = levels.find(
         (level) => level.floorId === destinationId,
@@ -190,8 +254,8 @@ export const moveBuildingWalker = (
       const items = landingItemColliders(building, destination, destinationElevation, registries);
       const allColliders =
         prepared?.colliders.get(destinationId)?.(openIds, items) ??
-        deriveWalkColliders(destination, openIds, items, destinationElevation);
-      const colliders = walkCollidersForVerticalRange(allColliders, options.verticalRange);
+        deriveWalkColliders(destination, openIds, items, destinationElevation, terrain);
+      const colliders = walkCollidersForVerticalRange(allColliders, verticalRange);
       const resolved = resolveCircleMovement(
         pose,
         { x: next.x - pose.x, z: next.z - pose.z },
@@ -206,7 +270,7 @@ export const moveBuildingWalker = (
       return {
         ...landed,
         floorId: destinationId,
-        elevation: flight.baseElevationMeters + (exitingBelow ? 0 : flight.riseMeters),
+        elevation: terrainLanding?.elevation ?? endElevation,
       };
     }
     const projected = projectStairPath(flight, next, localElevation);
@@ -216,37 +280,54 @@ export const moveBuildingWalker = (
   let entrance: { stairId: string; elevation: number } | undefined;
   let blockedByFootprint = false;
   for (const flight of flights) {
-    if (!flight || (pose.floorId !== flight.lowerFloorId && pose.floorId !== flight.upperFloorId))
-      continue;
-    const fromBelow = pose.floorId === flight.lowerFloorId;
-    const end = fromBelow ? flight.path[0] : flight.path[flight.path.length - 1];
-    const forward = fromBelow ? flight.entranceForward : flight.exitForward;
-    const previous = stairEndCoordinates(pose, end, forward),
-      current = stairEndCoordinates(next, end, forward);
-    const halfWidth = flight.widthMeters / 2 - WALK_PLAYER_RADIUS;
-    const entering = fromBelow
-      ? previous.along <= 1e-8 && current.along >= -1e-8
-      : previous.along >= -1e-8 && current.along <= 1e-8;
-    if (entering && halfWidth >= 0 && Math.abs(current.across) <= halfWidth) {
-      const projected = projectStairPath(flight, next, fromBelow ? 0 : flight.riseMeters);
-      // Stable IDs break ties independently of persisted stair array order.
-      if (
-        projected &&
-        projected.distance <= halfWidth &&
-        (!entrance || flight.id < entrance.stairId)
-      ) {
-        entrance = {
-          stairId: flight.id,
-          elevation: flight.baseElevationMeters + projected.elevation,
-        };
-      }
-    }
     if (
-      fromBelow &&
-      pointInsidePolygon(plan, flight.footprint) &&
-      !pointInsidePolygon(plan, flight.lowerLanding)
+      !flight ||
+      (!flight.terrain &&
+        pose.floorId !== flight.lowerFloorId &&
+        pose.floorId !== flight.upperFloorId)
     )
-      blockedByFootprint = true;
+      continue;
+    for (const fromBelow of flight.terrain
+      ? [true, false]
+      : [pose.floorId === flight.lowerFloorId]) {
+      const endpointFloorId = fromBelow ? flight.lowerFloorId : flight.upperFloorId;
+      const endpointElevation = flight.baseElevationMeters + (fromBelow ? 0 : flight.riseMeters);
+      if (
+        flight.terrain &&
+        ((endpointFloorId && endpointFloorId !== pose.floorId) ||
+          Math.abs(pose.elevation - endpointElevation) > WALK_MAX_STEP_METERS)
+      )
+        continue;
+      if (!endpointFloorId && !options.terrainHeight) continue;
+      const end = fromBelow ? flight.path[0] : flight.path[flight.path.length - 1];
+      const forward = fromBelow ? flight.entranceForward : flight.exitForward;
+      const previous = stairEndCoordinates(pose, end, forward),
+        current = stairEndCoordinates(next, end, forward);
+      const halfWidth = flight.widthMeters / 2 - WALK_PLAYER_RADIUS;
+      const entering = fromBelow
+        ? previous.along <= 1e-8 && current.along >= -1e-8
+        : previous.along >= -1e-8 && current.along <= 1e-8;
+      if (entering && halfWidth >= 0 && Math.abs(current.across) <= halfWidth) {
+        const projected = projectStairPath(flight, next, fromBelow ? 0 : flight.riseMeters);
+        // Stable IDs break ties independently of persisted stair array order.
+        if (
+          projected &&
+          projected.distance <= halfWidth &&
+          (!entrance || flight.id < entrance.stairId)
+        ) {
+          entrance = {
+            stairId: flight.id,
+            elevation: flight.baseElevationMeters + projected.elevation,
+          };
+        }
+      }
+      if (
+        fromBelow &&
+        pointInsidePolygon(plan, flight.footprint) &&
+        !pointInsidePolygon(plan, flight.lowerLanding)
+      )
+        blockedByFootprint = true;
+    }
   }
   if (entrance) return { ...candidate, ...entrance };
   if (blockedByFootprint || hasUnsupportedStairAperture(flights, floor.id, plan)) return pose;
@@ -293,7 +374,14 @@ export const safeBuildingSpawn = (
     (f) => f.floorId === floorId,
   )!.elevationMeters;
   const items = landingItemColliders(building, floor, elevation);
-  const colliders = [...deriveWalkColliders(floor, new Set(), [], elevation), ...holes, ...items];
+  const terrain = building.home?.apartmentFloor
+    ? null
+    : createTerrainSurface(building.home?.terrain, building.floors);
+  const colliders = [
+    ...deriveWalkColliders(floor, new Set(), [], elevation, terrain),
+    ...holes,
+    ...items,
+  ];
   if (start) {
     const [x, z] = planPointToWorld(start, building.coordinates);
     const supported =

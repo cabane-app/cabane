@@ -1,3 +1,5 @@
+export { ComicPew } from "./comic-pew/ComicPew";
+export { SceneActivityPulse } from "./SceneActivityPulse";
 export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";
 export * from "./types";
@@ -133,6 +135,7 @@ export { sha256Hex } from "./sha256-digest";
 
 export { DEFAULT_WALL_COLORS } from "./wall-colors";
 
+export { ScenePreferences } from "./ScenePreferences";
 export type { WeatherSource, WeatherPreview } from "./weather";
 export {
   useMeasurementUnits,
@@ -144,6 +147,8 @@ export {
   formatArea,
   parseLength,
 } from "./measurement-units";
+export { formatMeasurementText } from "./measurement-text";
+export { MeasurementText } from "./MeasurementText";
 
 export { MAX_ORTHOGRAPHIC_ZOOM, MIN_EDITOR_ZOOM } from "./navigation/camera-zoom";
 

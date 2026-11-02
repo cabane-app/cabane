@@ -20,8 +20,13 @@ Doors, windows, passages, and walls (including invisible walls) expose a Name fi
 above Dimensions in Properties. Unnamed items display their existing identifier.
 Enter or leaving the field commits a trimmed name; Escape cancels the edit.
 Clearing the field restores the identifier fallback. Names persist through history,
-reopening, export/import and Apply. Door/window connection labels use the custom
-name while architectural identifiers, binding slots and existing mappings stay unchanged.
+reopening, export/import and Apply. Custom names identify walls and openings in
+Properties headings, an opening's supporting-wall field, Arrange's Fit to window
+choices (including sliding glass doors), Issues rows and their Locate actions,
+door/window connection labels and garage interaction prompts. Unnamed fields and choices retain their identifier fallback;
+Properties headings and interaction prompts retain their type fallback. Renaming
+or clearing a name refreshes these labels without changing architectural identifiers,
+binding slots or existing mappings.
 
 Add floor above/below opens a dialog with an empty-plan default and a
 “Duplicate this floor” option for the selected floor. Copies are appended above
@@ -169,7 +174,7 @@ laurel), or Ivy-covered wall from a thumbnail grid using Arrange’s shared prev
 renderer and cache. New styles use suitable default dimensions; restyling an
 existing hedge retains its height and width. Both dimensions remain editable. Select a
 hedge to move it or drag either endpoint; deletion, undo/redo, project export,
-and Apply preserve boundaries. The picker retains all five hedge styles and adds Picket fence, Privacy fence, Post and rail, Metal fence, and Low masonry wall. Existing `hedges` records, IDs, style IDs and dimensions remain unchanged; new styles use the same record and lifecycle. Restyling retains dimensions. All styles are procedural toon geometry and block walking across their continuous segment envelope, including gaps between rails or bars. Leave explicit segment gaps for entrances; garden and driveway gates are deferred.
+and Apply preserve boundaries. The picker retains all five hedge styles and adds Picket fence, Privacy fence, Post and rail, Metal fence, and Low masonry wall. Existing `hedges` records, IDs, style IDs and dimensions remain unchanged; new styles use the same record and lifecycle. Restyling retains dimensions. All styles are procedural toon geometry and block walking across their continuous segment envelope, including gaps between rails or bars. Ground-floor boundaries outside indoor or platform support follow custom terrain along their full length, including posts and plant roots. Upper-floor boundaries and boundaries on authored indoor/platform support retain that level. The plan view stays flat. Leave explicit segment gaps for entrances; garden and driveway gates are deferred.
 
 Wall, hedge, pool, and custom floor outlines share segment drawing gestures, snapping,
 angle references, and edge measurements. Pool and floor outline editing shares
@@ -221,7 +226,25 @@ either endpoint to change length/direction, or either side handle to resize widt
 symmetrically. Measurements update throughout the gesture. Escape and interrupted
 gestures cancel; each completed gesture is one undoable edit.
 
-Stairs also support L-shaped and spiral connections between adjacent floors. Choose
+Stairs offers **Between floors** and **To ground** connections. Between floors
+links adjacent storeys. To ground links the selected floor or its outdoor platform
+to terrain without requiring another floor. It remains available on the top floor;
+apartment shells must be set to zero first. For a straight flight, draw from the
+floor landing to the ground endpoint. For a turning flight, click the floor landing,
+the turn, then the ground endpoint. Height and step count follow the terrain at
+that endpoint, including after later terrain edits. Landing warnings identify
+unsupported floor connections, pools and terrain that cannot meet the final step.
+Connected terrain stairs resolve the corresponding terrain exit warning and are
+walkable in both directions. They use ordinary undo, autosave, Save and export.
+
+Both connections offer **Open treads**, **Concrete**, and **Stone** styles,
+independent of the four stair shapes. Concrete uses a solid base and closed risers;
+Stone adds contrasting stone tread caps. To ground starts with Concrete, while
+Between floors and existing stairs retain Open treads. Railings remain optional.
+The placement thumbnails show the selected style; selected stair properties can
+change it without altering the route or landings.
+
+Stairs also support L-shaped and spiral connections. Choose
 Straight, L-shaped, or Spiral before drawing from the left sidebar's procedural 3D
 preview palette, styled like the door picker, or in the selected stair's properties.
 During placement, the sidebar groups the previews, shape-specific instructions, and

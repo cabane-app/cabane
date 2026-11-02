@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-31T10:07:41.435Z",
+  "generatedAt": "2026-10-31T21:26:39.642Z",
   "title": "Design System: Cabane web editor",
   "extensions": {
     "colorMeta": {
@@ -255,6 +255,34 @@
           "oklch(84% 0.0196 107.27)",
           "oklch(95% 0.0196 107.27)"
         ]
+      },
+      "settings-ink": {
+        "role": "secondary",
+        "displayName": "Settings Violet Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0724 307.26)",
+          "oklch(26% 0.0724 307.26)",
+          "oklch(38% 0.0724 307.26)",
+          "oklch(49% 0.0724 307.26)",
+          "oklch(61% 0.0724 307.26)",
+          "oklch(72% 0.0724 307.26)",
+          "oklch(84% 0.0724 307.26)",
+          "oklch(95% 0.0724 307.26)"
+        ]
+      },
+      "settings-selected": {
+        "role": "neutral",
+        "displayName": "Settings Violet Selection",
+        "tonalRamp": [
+          "oklch(15% 0.0206 311.08)",
+          "oklch(26% 0.0206 311.08)",
+          "oklch(38% 0.0206 311.08)",
+          "oklch(49% 0.0206 311.08)",
+          "oklch(61% 0.0206 311.08)",
+          "oklch(72% 0.0206 311.08)",
+          "oklch(84% 0.0206 311.08)",
+          "oklch(95% 0.0206 311.08)"
+        ]
       }
     },
     "typographyMeta": {
@@ -405,6 +433,13 @@
       "description": "Underlined Tools, Properties and Issues controls inside the shared full-screen Construct and Arrange dialog. Arrange labels Tools as Catalog.",
       "html": "<div class=\"ds-panel-tabs\" role=\"group\" aria-label=\"Editor panels\"><button type=\"button\" aria-pressed=\"false\">Tools</button><button type=\"button\" aria-pressed=\"true\">Properties</button><button type=\"button\" aria-pressed=\"false\">Issues</button></div>",
       "css": ".ds-panel-tabs { display: flex; gap: 24px; min-height: 44px; margin: 0 0 4px; padding: 0; border-bottom: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14)); background: var(--preview-paper, #f5f0e7); } .ds-panel-tabs button { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 8px 0 10px; margin: 0 0 -1px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--preview-muted, #6f7771); font: 500 0.875rem/1.4 \"Roboto\", sans-serif; cursor: pointer; } .ds-panel-tabs button[aria-pressed=\"true\"] { border-bottom-color: var(--editor-panel-accent, #934c2e); color: var(--editor-panel-accent, #934c2e); } .ds-panel-tabs button:focus-visible { outline: 2px solid var(--editor-panel-accent, #934c2e); outline-offset: 3px; } .ds-panel-tabs button:disabled { opacity: 0.45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Settings Section Navigation",
+      "kind": "nav",
+      "description": "The selected Settings mode and sidebar section share a distinct violet accent.",
+      "html": "<nav class=\"ds-settings-navigation\" aria-label=\"Settings sections\"><button type=\"button\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/></svg><span>Shortcuts</span><svg class=\"ds-settings-chevron\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"m9 5 7 7-7 7\"/></svg></button><button type=\"button\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 15V3m-5 5 5-5 5 5M4 16v5h16v-5\"/></svg><span>Backups</span><svg class=\"ds-settings-chevron\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"m9 5 7 7-7 7\"/></svg></button></nav>",
+      "css": ".ds-settings-navigation { display: grid; gap: 4px; font: 400 var(--editor-text-control, 0.875rem)/1.5 \"Roboto\", sans-serif; } .ds-settings-navigation button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 10px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--preview-ink, #2e3835); font: inherit; text-align: left; cursor: pointer; } .ds-settings-navigation button:hover:not(:disabled) { background: #eae5d9; } .ds-settings-navigation button[aria-current=\"page\"], .ds-settings-navigation button[aria-current=\"page\"]:hover { background: var(--editor-settings-selected, #e9e1ef); color: var(--editor-settings-ink, #67517c); font-weight: 600; } .ds-settings-navigation button:focus-visible { outline: 2px solid #985637; outline-offset: 3px; } .ds-settings-navigation button:disabled { cursor: not-allowed; opacity: 0.38; } .ds-settings-navigation button > span { flex: 1; } .ds-settings-navigation svg { flex: none; width: 19px; height: 19px; } .ds-settings-navigation .ds-settings-chevron { width: 14px; height: 14px; } @media (max-width: 760px) { .ds-settings-navigation { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; } .ds-settings-navigation button { flex: none; width: auto; min-height: 44px; gap: 8px; white-space: nowrap; } .ds-settings-navigation .ds-settings-chevron { display: none; } }"
     }
   ],
   "narrative": {

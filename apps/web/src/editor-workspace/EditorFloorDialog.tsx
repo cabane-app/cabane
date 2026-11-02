@@ -1,4 +1,4 @@
-import { createBrowserUuid } from "@cabane/engine";
+import { createBrowserUuid, stairFloorIds } from "@cabane/engine";
 import { FloorManagementDialog } from "../editor-floors";
 import type { useHomeEditorController } from "./useHomeEditorController";
 
@@ -34,10 +34,8 @@ export function EditorFloorDialog({
             snapshot.project.sceneItems.filter((item) => item.floorId === activeFloorId).length
           }
           stairCount={
-            snapshot.project.stairs.filter(
-              (stair) =>
-                stair.upperFloorId === activeFloorId || stair.lowerFloorId === activeFloorId,
-            ).length
+            snapshot.project.stairs.filter((stair) => stairFloorIds(stair).includes(activeFloorId))
+              .length
           }
           onCancel={() => setFloorDialog(null)}
           onSave={(name, height, duplicate = false) => {

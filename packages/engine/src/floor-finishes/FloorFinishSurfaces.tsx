@@ -63,6 +63,7 @@ function FinishSurface({
   const groundTerrain =
     cutPools && variant === "scene" && floor.id === terrain?.floorId ? terrain : null;
   const apertures = useStairSurfaceApertures("floor");
+  const terrainApertures = useStairSurfaceApertures("terrain");
   const geometry = useMemo(
     () =>
       conformToTerrain(
@@ -70,12 +71,12 @@ function FinishSurface({
           polygon,
           floor.coordinates,
           repeatMeters,
-          [...apertures, ...(groundTerrain?.cutouts ?? [])],
+          [...apertures, ...(cutPools ? terrainApertures : []), ...(groundTerrain?.cutouts ?? [])],
           cutPools ? floor : undefined,
         ),
         groundTerrain,
       ),
-    [cutPools, floor, polygon, repeatMeters, apertures, groundTerrain],
+    [cutPools, floor, polygon, repeatMeters, apertures, terrainApertures, groundTerrain],
   );
   useEffect(() => () => geometry.dispose(), [geometry]);
   const texture = finish.kind === "preset" ? textureSet.get(finish.preset, finish.color) : null;

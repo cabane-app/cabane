@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import type { ConstructionInspectorProps } from "./construction-inspector-contract";
 export type { ConstructionInspectorProps } from "./construction-inspector-contract";
 import { EditorButton } from "../../editor-chrome/EditorButton";
@@ -89,7 +90,11 @@ export function ConstructionInspector({
               value={editor.doorConfiguration}
               onChange={editor.setDoorConfiguration}
             />
-            {editor.openingError && <p role="alert">{editor.openingError}</p>}
+            {editor.openingError && (
+              <p role="alert">
+                <MeasurementText>{editor.openingError}</MeasurementText>
+              </p>
+            )}
           </div>
         )}
         {editor.tool === "niche" && (
@@ -103,7 +108,11 @@ export function ConstructionInspector({
               Click a wall face to place a recess. Drag it along the wall and use its handles to
               change the width. Properties controls its height, depth and height from floor.
             </p>
-            {editor.openingError && <p role="alert">{editor.openingError}</p>}
+            {editor.openingError && (
+              <p role="alert">
+                <MeasurementText>{editor.openingError}</MeasurementText>
+              </p>
+            )}
           </div>
         )}
         {editor.tool === "pool" && (
@@ -117,7 +126,11 @@ export function ConstructionInspector({
               Click to add corners, then return to the first corner to close the pool. Undo removes
               the last corner. Escape cancels.
             </p>
-            {editor.poolDrawing?.error && <p role="alert">{editor.poolDrawing.error}</p>}
+            {editor.poolDrawing?.error && (
+              <p role="alert">
+                <MeasurementText>{editor.poolDrawing.error}</MeasurementText>
+              </p>
+            )}
             {editor.poolDrawing?.active && (
               <EditorButton variant="secondary" type="button" onClick={editor.poolDrawing.cancel}>
                 Cancel pool

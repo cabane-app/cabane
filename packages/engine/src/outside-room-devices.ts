@@ -3,7 +3,7 @@ import type { HomeBindingManifest, RoomSpec } from "./types";
 
 /** A device-list group only; never added to architectural floor rooms. */
 export function outsideRoomDevices(
-  manifest: HomeBindingManifest,
+  manifest: Pick<HomeBindingManifest, "floors" | "sceneItems" | "extensions">,
   floorId: string,
 ): RoomSpec | null {
   const floor = manifest.floors.find((candidate) => candidate.id === floorId);
@@ -57,7 +57,7 @@ export function outsideRoomDevices(
 }
 
 export function deviceMappingRooms(
-  manifest: HomeBindingManifest,
+  manifest: Pick<HomeBindingManifest, "floors" | "sceneItems" | "extensions">,
   floorId?: string,
 ): readonly RoomSpec[] {
   return manifest.floors

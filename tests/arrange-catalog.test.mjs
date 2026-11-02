@@ -640,6 +640,12 @@ await withModules(async (load) => {
         .length,
     );
     assert.ok(filterCatalog(entries, "devices", "").every((entry) => entry.kind === "device"));
+    const kitchenLight = get("under-cabinet-led-strip");
+    for (const category of ["devices", "lights", "kitchen"]) {
+      assert.ok(filterCatalog(entries, category, "").includes(kitchenLight));
+    }
+    assert.ok(filterCatalog(entries, "lights", "floor lamp").includes(get("floor-lamp")));
+    assert.deepEqual(filterCatalog(entries, "lights", "television"), []);
     assert.deepEqual(filterCatalog(entries, "devices", "sectional furniture"), []);
     assert.deepEqual(filterCatalog(entries, "bedroom", "floor lamp"), []);
     assert.equal(filterCatalog(entries, "living-room", "floor lamp")[0].kind, "device");
@@ -1026,6 +1032,7 @@ await withModules(async (load) => {
       "light",
       "switch",
       "input_boolean",
+      "event",
     ]);
     const towelRail = createCatalogItem(get("heated-towel-rail"), placement, []);
     assert.deepEqual(towelRail.entitySlots[0].compatibleDomains, ["climate", "switch"]);

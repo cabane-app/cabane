@@ -8,8 +8,9 @@ import {
 import { WALK_MAX_STEP_METERS, WALK_PLAYER_RADIUS } from "../navigation/walk-navigation-contract";
 import { floorSlabPolygons, floorSupportPolygons } from "../outdoor-platforms/platform-geometry";
 import { deriveStairFlight } from "../stairs/flight-geometry";
+import { stairFloorIds } from "../stairs/stair-connection";
+import { stairEndSupported } from "../stairs/stair-landing-support";
 import { projectStairPath } from "../stairs/path-projection";
-import { stairLandingSupported } from "../stairs/stair-clearance";
 import type { BuildingGeometry } from "../stairs/types";
 import type { ManifestIssue, PlanPoint } from "../types";
 import { pointOnPolygonBoundary } from "../validation/geometry";
@@ -37,14 +38,9 @@ export function validateTerrainExits(building: BuildingGeometry): ManifestIssue[
   const flights = building.stairs
     .map((stair) => deriveStairFlight(building, stair))
     .filter((flight) => flight !== null);
-  const connectedFlights = flights.filter((flight) =>
-    [
-      { floorId: flight.lowerFloorId, polygon: flight.lowerLanding },
-      { floorId: flight.upperFloorId, polygon: flight.upperLanding },
-    ].every(({ floorId, polygon }) => {
-      const floor = supports.find((support) => support.floor.id === floorId);
-      return floor && stairLandingSupported(polygon, floor.polygons, building.coordinates);
-    }),
+  const connectedFlights = flights.filter(
+    (flight) =>
+      stairEndSupported(building, flight, false) && stairEndSupported(building, flight, true),
   );
   const supportedOutside = (point: PlanPoint, floorId: string, elevation: number) => {
     const plan = worldPointToPlan({ x: point[0], z: point[1] }, building.coordinates);
@@ -58,7 +54,7 @@ export function validateTerrainExits(building: BuildingGeometry): ManifestIssue[
       return true;
     if (
       connectedFlights.some((flight) => {
-        if (flight.lowerFloorId !== floorId && flight.upperFloorId !== floorId) return false;
+        if (!stairFloorIds(flight.spec).includes(floorId)) return false;
         if (!contains(flight.footprint, plan)) return false;
         const localElevation = elevation - flight.baseElevationMeters;
         const projected = projectStairPath(flight, { x: point[0], z: point[1] }, localElevation);

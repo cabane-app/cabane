@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { TerrainSettingsEditor } from "../editor-preview/construct/TerrainSettingsEditor";
 import { ConstructionToolCards } from "../editor-chrome/ConstructionToolCards";
 import type { CustomModel } from "@cabane/engine";
@@ -73,7 +73,8 @@ type Props = Pick<
   onSelectPlacedItem: (id: string) => void;
   sidebar: React.RefObject<HTMLElement | null>;
   iconUrl: string;
-  shortcutsMode: boolean;
+  settingsMode: boolean;
+  settingsNavigation: ReactNode;
   floorControlsDisabled: boolean;
   addFloorAbove: () => void;
   addFloorBelow: () => void;
@@ -126,7 +127,8 @@ export function EditorSidebar({
   onSelectPlacedItem,
   sidebar,
   iconUrl,
-  shortcutsMode,
+  settingsMode,
+  settingsNavigation,
   floorControlsDisabled,
   addFloorAbove,
   addFloorBelow,
@@ -168,7 +170,7 @@ export function EditorSidebar({
               )}
             </div>
           </div>
-          {!shortcutsMode && mode === "construct" && (
+          {!settingsMode && mode === "construct" && (
             <ConstructFloorControls
               floors={snapshot.project.floors}
               selectedId={activeFloorId}
@@ -183,17 +185,12 @@ export function EditorSidebar({
               }
             />
           )}
-          <EditorModeIntroduction mode={shortcutsMode ? "shortcuts" : mode} />
-          {!shortcutsMode && mode === "construct" && (
+          <EditorModeIntroduction mode={settingsMode ? "settings" : mode} />
+          {!settingsMode && mode === "construct" && (
             <ConstructionToolCards
               inert={editingLocked || unsettled || reference.adjusting}
               tool={constructEditor.tool}
               stairsActive={Boolean(stairPlacement)}
-              stairsDisabledReason={
-                snapshot.project.floors.at(-1)?.id === activeFloorId
-                  ? "Add a floor above first."
-                  : undefined
-              }
               onToolChange={(tool) => {
                 setStairPlacement(null);
                 constructEditor.setTool(tool);
@@ -201,24 +198,11 @@ export function EditorSidebar({
               }}
               onStairs={() => {
                 startStairs();
-                onMobileToolChoose();
               }}
             />
           )}
-          {shortcutsMode && (
-            <div className="shortcuts-guide">
-              <h3>Add a shortcut</h3>
-              <p>
-                Select the empty slot in the bar, then choose an action, room, device, scene or
-                script.
-              </p>
-              <h3>Edit your bar</h3>
-              <p>Select a shortcut to replace, move or remove it.</p>
-              <h3>Update Home</h3>
-              <p>Your changes save as a draft. Choose Save when your bar is ready.</p>
-            </div>
-          )}
-          {!shortcutsMode && tutorial.state?.status === "active" && (
+          {settingsMode && settingsNavigation}
+          {!settingsMode && tutorial.state?.status === "active" && (
             <BuildTutorial
               state={tutorial.state}
               mode={mode}
@@ -229,7 +213,7 @@ export function EditorSidebar({
               onDismiss={tutorial.dismiss}
             />
           )}
-          {!shortcutsMode &&
+          {!settingsMode &&
             mode === "construct" &&
             tutorial.state?.status !== "active" &&
             isPristineConstructionFloor(constructEditor.previewFloor) && (
@@ -237,9 +221,15 @@ export function EditorSidebar({
                 Your plan starts here. Choose Wall, then click each corner to draw your first room.
               </p>
             )}
-          {!shortcutsMode && mode === "construct" && stairPlacement && (
+          {!settingsMode && mode === "construct" && stairPlacement && (
             <StairPlacementPanel
               shape={stairPlacement.shape ?? "straight"}
+              style={stairPlacement.style ?? "open"}
+              onStyleChange={(style) => setStairPlacement({ ...stairPlacement, style })}
+              terrain={Boolean(stairPlacement.terrain)}
+              canConnectFloors={snapshot.project.floors.at(-1)?.id !== activeFloorId}
+              canConnectTerrain={!snapshot.project.home.apartmentFloor}
+              onConnectionChange={startStairs}
               issues={stairLiveIssues ?? []}
               onChange={(shape) =>
                 setStairPlacement(convertStairShape(snapshot.project, stairPlacement, shape))
@@ -247,7 +237,7 @@ export function EditorSidebar({
               onCancel={() => setStairPlacement(null)}
             />
           )}
-          {!shortcutsMode && mode === "construct" && !stairPlacement && (
+          {!settingsMode && mode === "construct" && !stairPlacement && (
             <ConstructionInspector
               inert={reference.adjusting}
               referencePlanControls={
@@ -362,7 +352,7 @@ export function EditorSidebar({
               }}
             />
           )}
-          {!shortcutsMode && mode === "connect" && (
+          {!settingsMode && mode === "connect" && (
             <ConnectSidebar
               editor={connect}
               runtime={runtime}
@@ -370,7 +360,7 @@ export function EditorSidebar({
               onSettings={onHomeAssistantSettings}
             />
           )}
-          <div className="arrange-catalog-mount" hidden={shortcutsMode || mode !== "furnish"}>
+          <div className="arrange-catalog-mount" hidden={settingsMode || mode !== "furnish"}>
             <ArrangePlacedItems
               key={activeFloorId}
               floor={placementFloor}
@@ -383,7 +373,7 @@ export function EditorSidebar({
               onSelectMany={furnishingEditor.selectMany}
             />
             <ArrangeCatalog
-              enabled={!shortcutsMode && mode === "furnish"}
+              enabled={!settingsMode && mode === "furnish"}
               furnishingModels={furnishingModels}
               deviceModels={deviceModels}
               browsing={catalogBrowsing}

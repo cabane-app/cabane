@@ -26,6 +26,7 @@ export interface ValidatedDashboardProps {
   focusRoomId?: string | undefined;
   mappingRequest?: (DashboardMappingRequest | null) | undefined;
   onEditHome?: ((mode?: EditorMode) => void) | undefined;
+  onOpenSettings?: (() => void) | undefined;
   onCustomizeActionBar?: (() => void) | undefined;
   onExportBrowserData?: (() => void | Promise<void>) | undefined;
   onHomeAssistantSettings?: (() => void) | undefined;

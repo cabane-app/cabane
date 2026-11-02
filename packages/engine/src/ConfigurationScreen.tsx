@@ -1,3 +1,4 @@
+import { MeasurementText } from "./MeasurementText";
 import { useState } from "react";
 import type { ManifestIssue } from "./types";
 
@@ -53,7 +54,9 @@ export function ConfigurationScreen({
             {issues.map((issue) => (
               <li key={`${issue.path}-${issue.code}`}>
                 <code>{issue.path}</code>
-                <span>{issue.message}</span>
+                <span>
+                  <MeasurementText>{issue.message}</MeasurementText>
+                </span>
               </li>
             ))}
           </ol>

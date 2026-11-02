@@ -91,7 +91,12 @@ export function WalkCameraController({
   // This also catches edits that reuse a FloorSpec object instead of its identity.
   const navigationKey = JSON.stringify(
     building
-      ? { floors: building.floors, stairs: building.stairs, coordinates: building.coordinates }
+      ? {
+          floors: building.floors,
+          stairs: building.stairs,
+          coordinates: building.coordinates,
+          home: building.home,
+        }
       : floor,
   );
   const buildingMode = Boolean(building);
@@ -226,22 +231,6 @@ export function WalkCameraController({
       z: (rightZ * velocity.current.x - forwardZ * velocity.current.y) * delta,
     };
 
-    let nextOpen: Set<string> | null = null;
-    for (const opening of floor.openings) {
-      if (opening.kind !== "door") continue;
-      const currentlyOpen = (nextOpen ?? openIdsRef.current).has(opening.id);
-      const shouldOpen = shouldAutoOpenDoor(distanceToOpening(pose, opening, floor), currentlyOpen);
-      if (shouldOpen !== currentlyOpen) {
-        nextOpen ??= new Set(openIdsRef.current);
-        if (shouldOpen) nextOpen.add(opening.id);
-        else nextOpen.delete(opening.id);
-      }
-    }
-    if (nextOpen) {
-      openIdsRef.current = nextOpen;
-      onOpeningsChange(nextOpen);
-    }
-
     const current = walker.current;
     // Frame updates can outrun React’s floor selection commit at a landing.
     // Keep the physical walker authoritative until a different floor is selected.
@@ -254,6 +243,34 @@ export function WalkCameraController({
       current.z === pose.z
         ? current
         : { ...pose, floorId: floor.id, elevation };
+
+    let nextOpen: Set<string> | null = null;
+    for (const openingFloor of building?.floors ?? [floor]) {
+      const openingElevation =
+        navigation.building?.levels.find((level) => level.floorId === openingFloor.id)
+          ?.elevationMeters ?? elevation;
+      for (const opening of openingFloor.openings) {
+        if (opening.kind !== "door") continue;
+        const currentlyOpen = (nextOpen ?? openIdsRef.current).has(opening.id);
+        const shouldOpen = shouldAutoOpenDoor(
+          Math.hypot(
+            distanceToOpening(pose, opening, openingFloor),
+            start.elevation - openingElevation,
+          ),
+          currentlyOpen,
+        );
+        if (shouldOpen !== currentlyOpen) {
+          nextOpen ??= new Set(openIdsRef.current);
+          if (shouldOpen) nextOpen.add(opening.id);
+          else nextOpen.delete(opening.id);
+        }
+      }
+    }
+    if (nextOpen) {
+      openIdsRef.current = nextOpen;
+      onOpeningsChange(nextOpen);
+    }
+
     if (standingSupport.current)
       jumpHeight.current = Math.max(0, standingSupport.current.elevation - start.elevation);
     const previousFeetElevation = start.elevation + jumpHeight.current;

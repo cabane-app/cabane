@@ -1,13 +1,10 @@
+import { useCabaneDom } from "./CabaneDom";
 import { SceneOverlayLayout } from "./room-status/SceneOverlayLayout";
 import { useDashboardOrbitView } from "./navigation/orbit-view";
 import { useWeatherController } from "./weather/useWeatherController";
 import { WeatherScene } from "./weather/WeatherScene";
 import { deriveSolarLighting } from "./lighting";
-import {
-  filterOverlayStatuses,
-  loadOverlayPreferences,
-  saveOverlayPreferences,
-} from "./room-status/overlay-preferences";
+import { filterOverlayStatuses, loadOverlayPreferences } from "./room-status/overlay-preferences";
 import { resolveDashboardActionTargets } from "./action-bar/dashboard-action-targets";
 import type { WalkToolNavigation } from "./walk-tools";
 import { activateWalkTarget, canActivateWalkTarget } from "./walk-tools/activate-walk-target";
@@ -23,15 +20,7 @@ import { PerformanceMonitor } from "@react-three/drei";
 
 import { Canvas } from "@react-three/fiber";
 
-import {
-  Suspense,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { Suspense, useMemo, useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { ArchitectureScene } from "./ArchitectureScene";
 
@@ -61,22 +50,16 @@ import { CustomizeActionBarMenuItem } from "./CustomizeActionBarMenuItem";
 
 import { SceneMenuIcon } from "./SceneMenuIcon";
 import { ProjectSupportMenuItems } from "./ProjectSupportMenuItems";
-import {
-  WalkPreferences,
-  WalkPreferencesMenuItem,
-  loadInvertYAxis,
-  saveInvertYAxis,
-} from "./WalkPreferences";
+import { loadInvertYAxis } from "./walk-preferences";
 
 import { useDashboardController } from "./useDashboardController";
 
 export function ValidatedDashboardView(props: Parameters<typeof useDashboardController>[0]) {
+  const dom = useCabaneDom();
   const toolNavigationRef = useRef<WalkToolNavigation | null>(null);
   const roomFocus = useRoomFocusFrame();
-  const [overlayPreferences, setOverlayPreferences] = useState(loadOverlayPreferences);
-  const [preferencesOpen, setPreferencesOpen] = useState(false);
-  const [invertYAxis, setInvertYAxis] = useState(loadInvertYAxis);
-  const closePreferences = useCallback(() => setPreferencesOpen(false), []);
+  const [overlayPreferences] = useState(loadOverlayPreferences);
+  const [invertYAxis] = useState(loadInvertYAxis);
   const dashboard = useDashboardController(props);
   const weather = useWeatherController(
     dashboard.runtime,
@@ -100,8 +83,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
     canvasDpr,
     walkMode,
     quality,
-    lightingMode,
-    chooseLightingMode,
     sunState,
     solarLighting,
     nightLighting,
@@ -171,18 +152,25 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
       ? props.walkTools?.find((tool) => tool.id === equippedToolId)
       : undefined;
   const toolInputEnabled =
-    documentVisible &&
-    !setupOpen &&
-    !mappingOpen &&
-    !deviceOverlay &&
-    !selectedCamera &&
-    !preferencesOpen;
+    documentVisible && !setupOpen && !mappingOpen && !deviceOverlay && !selectedCamera;
   const actionBarItems = resolvePublishedActionBarItems(manifest.actionBar, props.walkTools);
   const overlayStatuses = useMemo(
     () => filterOverlayStatuses(roomStatuses, overlayPreferences),
     [roomStatuses, overlayPreferences],
   );
-  const preferencesMenuItem = <WalkPreferencesMenuItem onOpen={() => setPreferencesOpen(true)} />;
+  const settingsMenuItem = props.onOpenSettings && (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.currentTarget.closest("details")?.removeAttribute("open");
+        if (dom.root.pointerLockElement) document.exitPointerLock();
+        props.onOpenSettings?.();
+      }}
+    >
+      <SceneMenuIcon name="preferences" />
+      <span>Settings</span>
+    </button>
+  );
   const actionBarTargets = resolveDashboardActionTargets(
     actionBarItems,
     manifest,
@@ -414,7 +402,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
 
           <header className="scene-hud">
             <DashboardLocation dashboard={dashboard} />
-            <details className="scene-menu">
+            <details className="scene-menu" hidden={Boolean(walkthrough)}>
               <summary aria-label="More options">
                 <span aria-hidden="true">•••</span>
                 {setupAction?.attention && (
@@ -422,7 +410,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                 )}
               </summary>
               <div>
-                {walkthrough && preferencesMenuItem}
                 {!walkthrough && (
                   <>
                     <p>
@@ -510,7 +497,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                         <span>Retry connection</span>
                       </button>
                     )}
-                    {preferencesMenuItem}
+                    {settingsMenuItem}
                     <ProjectSupportMenuItems />
                     {!demoSession &&
                       ["connected", "connecting", "reconnecting", "error"].includes(
@@ -533,25 +520,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
               </div>
             </details>
           </header>
-          {preferencesOpen && (
-            <WalkPreferences
-              weather={weather}
-              overlayPreferences={overlayPreferences}
-              onOverlayPreferencesChange={(value) => {
-                setOverlayPreferences(value);
-                saveOverlayPreferences(value);
-              }}
-              inverted={invertYAxis}
-              lightingSource={solarLighting.source}
-              lightingMode={lightingMode}
-              onLightingModeChange={chooseLightingMode}
-              onChange={(value) => {
-                setInvertYAxis(value);
-                saveInvertYAxis(value);
-              }}
-              onClose={closePreferences}
-            />
-          )}
 
           {controlRoom && resolvedBindings.rooms[controlRoom.id] && (
             <RoomDashboardPanel

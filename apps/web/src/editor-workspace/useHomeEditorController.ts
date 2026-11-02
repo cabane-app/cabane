@@ -67,9 +67,7 @@ export function useHomeEditorController({
   const { error: workspaceError, saving: workspaceSaving, busy: workspaceBusy } = workspace;
   const { snapshot, commit, flush } = workspace;
   const floorNavigation = useFloorNavigation(snapshot.project.floors);
-  const { activeFloorId: floorNavigationActiveFloorId, selectFloor: floorNavigationSelectFloor } =
-    floorNavigation;
-  const activeFloorId = floorNavigationActiveFloorId;
+  const { activeFloorId, selectFloor: floorNavigationSelectFloor } = floorNavigation;
   const floorReferences = useAdjacentFloorReferences(snapshot.project.floors, activeFloorId);
   const runtime = useHomeAssistantRuntime();
   const [connectionBusy, setConnectionBusy] = useState(false);
@@ -323,10 +321,12 @@ export function useHomeEditorController({
     setDragging,
   });
 
-  const startStairs = () => {
-    if (editingLocked || unsettled) return;
+  const stairPlacementLocked =
+    editingLocked || dragging || reference.adjusting || northOrientation.active;
+  const startStairs = (connection?: "floors" | "terrain") => {
+    if (stairPlacementLocked || (unsettled && !stairPlacement)) return;
     setActiveIssueKey(null);
-    beginStairPlacement();
+    beginStairPlacement(connection);
   };
   const closeEditor = useCallback(async () => {
     if (editingLocked || unsettled) return;

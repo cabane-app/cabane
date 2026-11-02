@@ -6,6 +6,26 @@ type SelectionContext = Pick<
   "mode" | "activeFloorId" | "constructEditor" | "stairDialog" | "furnishingEditor"
 >;
 
+/** Placement options stay reachable between stair gestures, including on touch. */
+export function editorPanelsBusy(
+  controller: Pick<
+    ReturnType<typeof useHomeEditorController>,
+    "unsettled" | "stairPlacement" | "dragging" | "marqueeSelecting"
+  > & {
+    constructEditor: Pick<
+      ReturnType<typeof useHomeEditorController>["constructEditor"],
+      "drawStart"
+    >;
+  },
+) {
+  return (
+    (controller.unsettled && !controller.stairPlacement) ||
+    controller.dragging ||
+    controller.marqueeSelecting ||
+    Boolean(controller.constructEditor.drawStart)
+  );
+}
+
 /** Panel identity follows selection; property edits never reopen a collapsed panel. */
 export function editorPanelSelection(
   { mode, activeFloorId, constructEditor, stairDialog, furnishingEditor }: SelectionContext,

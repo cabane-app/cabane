@@ -435,6 +435,17 @@ await withModules(async (load) => {
       }
       await act(async () => root.render(React.createElement(Harness)));
       assert.ok(document.querySelector('[aria-label="Catalog categories"]'));
+      assert.equal(
+        document.querySelector(".catalog-categories h3").textContent,
+        "Browse by category",
+      );
+      assert.ok(document.querySelector('.catalog-category-grid [aria-label="Devices"]'));
+      const lightsCategory = document.querySelector('.catalog-category-grid [aria-label="Lights"]');
+      assert.ok(lightsCategory);
+      await act(async () => lightsCategory.click());
+      assert.ok(document.querySelector('[aria-label="Add Floor lamp"]'));
+      assert.equal(document.querySelector('[aria-label="Add Television"]'), null);
+      await act(async () => document.querySelector(".catalog-navigation button").click());
       assert.equal(document.querySelector(".catalog-grid"), null);
       const chooseRoom = async (name) => {
         await act(async () => document.querySelector(".catalog-navigation button")?.click());
@@ -528,6 +539,16 @@ await withModules(async (load) => {
   test("fitting a blind from Properties updates size and placement as one undoable edit", async () => {
     await withDom(async ({ root, document, window }) => {
       const definition = ownerProjectRegistries.deviceModels["motorized-blind"];
+      let floor = {
+        ...ownerHomeProject.floors[0],
+        openings: ownerHomeProject.floors[0].openings.map((opening) =>
+          opening.id === "living-terrace-slider"
+            ? { ...opening, name: "Patio door" }
+            : opening.kind === "window"
+              ? { ...opening, name: "Kitchen window" }
+              : opening,
+        ),
+      };
       const wall = ownerHomeProject.floors[0].walls[0];
       const item = {
         id: "test-blind",
@@ -552,7 +573,7 @@ await withModules(async (load) => {
           ...ownerProjectRegistries,
           items: editor.items,
           selectedId: item.id,
-          floor: ownerHomeProject.floors[0],
+          floor,
           onPlacementChange: editor.updatePlacement,
           onSizeChange: editor.updateSize,
           onClose() {},
@@ -568,7 +589,9 @@ await withModules(async (load) => {
       const select = document.querySelector("select");
       assert.ok(select.options.length > 1);
       const optionLabels = [...select.options].map((option) => option.textContent);
-      assert.ok(optionLabels.some((label) => label.includes("living-terrace-slider")));
+      assert.ok(optionLabels.some((label) => label.includes("Patio door")));
+      assert.ok(optionLabels.some((label) => label.includes("Kitchen window")));
+      assert.ok(optionLabels.every((label) => !label.includes("living-terrace-slider")));
       assert.ok(optionLabels.some((label) => label.includes("dining-terrace-slider")));
       await act(async () => {
         select.value = "0";
@@ -583,6 +606,21 @@ await withModules(async (load) => {
       );
       await act(async () => editor.undo());
       assert.deepEqual(editor.items[0], item);
+      floor = {
+        ...floor,
+        openings: floor.openings.map((opening) =>
+          opening.id === "living-terrace-slider" ? { ...opening, name: "Garden door" } : opening,
+        ),
+      };
+      await act(async () => root.render(React.createElement(Harness)));
+      assert.ok([...select.options].some((option) => option.textContent.includes("Garden door")));
+      assert.ok([...select.options].every((option) => !option.textContent.includes("Patio door")));
+      floor = ownerHomeProject.floors[0];
+      await act(async () => root.render(React.createElement(Harness)));
+      assert.ok(
+        [...select.options].some((option) => option.textContent.includes("living-terrace-slider")),
+      );
+      assert.deepEqual(editor.items[0], item, "renaming changes labels without moving the blind");
     });
   });
 

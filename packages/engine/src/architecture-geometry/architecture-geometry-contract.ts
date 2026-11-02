@@ -6,7 +6,7 @@ export type Horizontal = readonly [number, number];
 
 export type WallPlanFloor = Pick<
   FloorSpec,
-  "walls" | "wallJunctions" | "coordinates" | "footprint" | "footprintRegions"
+  "walls" | "wallJunctions" | "coordinates" | "footprint" | "footprintRegions" | "outdoorPlatforms"
 >;
 
 export type MaterialBucket = 0 | 1;

@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { CommittedTextInput } from "./CommittedTextInput";
 import { LengthInput } from "../../editor-chrome/LengthInput";
 import type { ReactNode } from "react";
@@ -21,6 +22,7 @@ export function OpeningProperties({
   advanced?: boolean;
   orientationControls?: ReactNode;
 }) {
+  const wall = editor.draft.walls.find((wall) => wall.id === selectedOpening.wallId);
   const wallPosition = (
     <fieldset>
       <legend>Wall position</legend>
@@ -37,9 +39,9 @@ export function OpeningProperties({
       <label>
         Wall
         <input
-          aria-label="Opening wall identifier"
+          aria-label="Opening wall"
           type="text"
-          value={selectedOpening.wallId}
+          value={wall?.name || selectedOpening.wallId}
           readOnly
         />
       </label>
@@ -293,7 +295,11 @@ export function OpeningProperties({
         </fieldset>
       )}
 
-      {editor.openingError && <p role="alert">{editor.openingError}</p>}
+      {editor.openingError && (
+        <p role="alert">
+          <MeasurementText>{editor.openingError}</MeasurementText>
+        </p>
+      )}
       {advanced === undefined ? (
         <details className="opening-properties__advanced">
           <summary>Advanced</summary>

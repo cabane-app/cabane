@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { LengthInput } from "../editor-chrome/LengthInput";
 import { useState } from "react";
 import { SidebarSectionSummary } from "../editor-chrome/SidebarSectionSummary";
@@ -136,12 +137,14 @@ export function ReferencePlanPanel({
       {r.loading && <p role="status">Opening image…</p>}
       {r.error && (
         <p role="alert" className="reference-plan__error">
-          {r.error}
+          <MeasurementText>{r.error}</MeasurementText>
         </p>
       )}
       {r.storage.error && (
         <div role="alert" className="reference-plan__error">
-          <p>{r.storage.error}</p>
+          <p>
+            <MeasurementText>{r.storage.error}</MeasurementText>
+          </p>
           <EditorButton onClick={r.storage.retry}>Retry</EditorButton>
         </div>
       )}

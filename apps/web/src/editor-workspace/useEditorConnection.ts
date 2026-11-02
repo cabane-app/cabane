@@ -101,7 +101,11 @@ export function useEditorConnection({
   const { selectRelationship: connectSelectRelationship, defaultView: connectDefaultView } =
     connect;
   useEffect(() => {
-    if (navigation?.request.mode === "connect" && !navigation.request.view) {
+    if (
+      navigation?.request.mode === "connect" &&
+      !navigation.request.panel &&
+      !navigation.request.view
+    ) {
       connectSelectRelationship(null);
       navigation.go({ ...navigation.request, view: connectDefaultView }, true);
     }

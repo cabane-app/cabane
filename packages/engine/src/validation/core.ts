@@ -95,6 +95,7 @@ export const DOMAINS = new Set<DeviceDomain>([
   "camera",
   "sensor",
   "binary_sensor",
+  "event",
 ]);
 
 export const STABLE_MODELS = new Set([

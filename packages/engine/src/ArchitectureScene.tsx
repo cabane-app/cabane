@@ -14,6 +14,7 @@ import {
   SpiralStairModel,
 } from "./stairs/models";
 import { deriveStairFlight, deriveStairApertures } from "./stairs/flight-geometry";
+import { stairFloorIds } from "./stairs/stair-connection";
 import { StairSurfaceApertures } from "./stairs/surface-apertures";
 import { memo, useMemo } from "react";
 import { FloorScene, type FloorSceneProps } from "./building/FloorScene";
@@ -65,6 +66,14 @@ export const ArchitectureScene = memo(function ArchitectureScene({
       !floor.belowGround && (floor.elevationMeters === undefined || floor.elevationMeters === 0),
   );
   const apertureKey = JSON.stringify(deriveStairApertures(manifest));
+  const terrainApertureKey = JSON.stringify(
+    manifest.stairs
+      .filter((stair) => stair.terrain)
+      .flatMap((stair) => {
+        const flight = deriveStairFlight(manifest, stair);
+        return flight ? [flight.footprint] : [];
+      }),
+  );
   const apertureFloorsKey = JSON.stringify(
     manifest.floors.map(({ id, outdoorPlatforms }) => ({ id, outdoorPlatforms })),
   );
@@ -78,6 +87,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
       floors.map((floor) => [
         floor.id,
         {
+          terrain: JSON.parse(terrainApertureKey) as import("./types").Polygon[],
           floor: apertures
             .filter((a) => a.floorId === floor.id && a.surface === "floor")
             .map((a) => a.polygon),
@@ -92,7 +102,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
         },
       ]),
     );
-  }, [apertureKey, apertureFloorsKey]);
+  }, [apertureKey, apertureFloorsKey, terrainApertureKey]);
   const floorManifests = useMemo(
     () =>
       new Map(
@@ -119,7 +129,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
   // illuminate the floor above.
   return (
     <SceneRoomSelection.Provider value={selectedRoomId}>
-      <TerrainSurfaceContext.Provider value={terrain}>
+      <TerrainSurfaceContext.Provider value={view === "plan" ? null : terrain}>
         <group name="architecture-scene" position={[0, offset, 0]}>
           {apartmentFloor > 0 && lowest && contextBounds && view !== "plan" && (
             <>
@@ -176,8 +186,8 @@ export const ArchitectureScene = memo(function ArchitectureScene({
           {manifest.stairs.map((stair) => {
             if (
               view === "plan"
-                ? stair.lowerFloorId !== active && stair.upperFloorId !== active
-                : !visible.has(stair.lowerFloorId)
+                ? !stairFloorIds(stair).includes(active)
+                : !visible.has(stair.terrain ? stair.terrain.floorId : stair.lowerFloorId)
             )
               return null;
             const flight = deriveStairFlight(manifest, stair);
@@ -191,7 +201,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
                   key={stair.id}
                   flight={flight}
                   coordinates={manifest.coordinates}
-                  showUpperGuard={visible.has(stair.upperFloorId)}
+                  showUpperGuard={Boolean(flight.upperFloorId && visible.has(flight.upperFloorId))}
                 />
               );
             if (flight?.shape === "u-shaped")
@@ -200,7 +210,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
                   key={stair.id}
                   flight={flight}
                   coordinates={manifest.coordinates}
-                  showUpperGuard={visible.has(stair.upperFloorId)}
+                  showUpperGuard={Boolean(flight.upperFloorId && visible.has(flight.upperFloorId))}
                 />
               );
             if (flight?.shape === "l-shaped")
@@ -209,7 +219,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
                   key={stair.id}
                   flight={flight}
                   coordinates={manifest.coordinates}
-                  showUpperGuard={visible.has(stair.upperFloorId)}
+                  showUpperGuard={Boolean(flight.upperFloorId && visible.has(flight.upperFloorId))}
                 />
               );
             return flight ? (
@@ -217,7 +227,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
                 key={stair.id}
                 flight={flight}
                 plan={view === "plan"}
-                showUpperGuard={visible.has(stair.upperFloorId)}
+                showUpperGuard={Boolean(flight.upperFloorId && visible.has(flight.upperFloorId))}
               />
             ) : null;
           })}

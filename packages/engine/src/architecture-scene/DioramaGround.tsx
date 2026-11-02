@@ -51,23 +51,24 @@ export const DioramaGround = memo(function DioramaGround({
   const centerZ = terrain?.centerZ ?? requestedCenterZ;
   const size = terrain?.size ?? requestedSize;
   const apertures = useStairSurfaceApertures("floor");
+  const terrainApertures = useStairSurfaceApertures("terrain");
   const baseShape = useMemo(
     () =>
       cutStairGroundOpenings(
         cutPoolOpenings(roundedDioramaShape(centerX, centerZ, size, 0.42), floor),
         floor.coordinates,
-        [...apertures, ...(terrain?.cutouts ?? [])],
+        [...apertures, ...terrainApertures, ...(terrain?.cutouts ?? [])],
       ),
-    [centerX, centerZ, size, floor, apertures, terrain],
+    [centerX, centerZ, size, floor, apertures, terrainApertures, terrain],
   );
   const grassShape = useMemo(
     () =>
       cutStairGroundOpenings(
         cutPoolOpenings(roundedDioramaShape(centerX, centerZ, size - 0.1, 0.36), floor),
         floor.coordinates,
-        [...apertures, ...(terrain?.cutouts ?? [])],
+        [...apertures, ...terrainApertures, ...(terrain?.cutouts ?? [])],
       ),
-    [centerX, centerZ, size, floor, apertures, terrain],
+    [centerX, centerZ, size, floor, apertures, terrainApertures, terrain],
   );
   const topY = GROUND_ELEVATION_METERS;
   const grassThickness = 0.1;

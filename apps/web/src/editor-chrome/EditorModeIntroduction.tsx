@@ -13,14 +13,13 @@ const introductions = {
     title: "Connect",
     description: "Link your rooms and devices to Home Assistant to control them from Home.",
   },
-  shortcuts: {
-    title: "Shortcuts",
-    description:
-      "Customize the action bar on Home with your favorite actions, rooms, devices, scenes and scripts.",
+  settings: {
+    title: "Settings",
+    description: "Manage your home and make Cabane feel natural to you.",
   },
-} satisfies Record<EditorMode | "shortcuts", { title: string; description: string }>;
+} satisfies Record<EditorMode | "settings", { title: string; description: string }>;
 
-export function EditorModeIntroduction({ mode }: { mode: EditorMode | "shortcuts" }) {
+export function EditorModeIntroduction({ mode }: { mode: EditorMode | "settings" }) {
   const { title, description } = introductions[mode];
   return (
     <header className="editor-mode-introduction">

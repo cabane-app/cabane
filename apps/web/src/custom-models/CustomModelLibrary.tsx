@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { useRef, useState } from "react";
 import {
   CUSTOM_MODEL_LIMITS,
@@ -189,7 +190,7 @@ export function CustomModelLibrary({
       />
       {error && (
         <p role="alert" className="catalog-add-error">
-          {error}
+          <MeasurementText>{error}</MeasurementText>
         </p>
       )}
       {editingModel && (
@@ -229,7 +230,7 @@ export function CustomModelLibrary({
             </p>
             {error && (
               <p role="alert" className="catalog-add-error">
-                {error}
+                <MeasurementText>{error}</MeasurementText>
               </p>
             )}
             <div className="custom-model-pack-actions">

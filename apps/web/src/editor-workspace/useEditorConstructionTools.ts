@@ -1,4 +1,9 @@
-import { editorWallAttachments, createBrowserUuid, type StairSpec } from "@cabane/engine";
+import {
+  editorWallAttachments,
+  createBrowserUuid,
+  stairFloorIds,
+  type StairSpec,
+} from "@cabane/engine";
 
 import { type FloorFinishSpec } from "@cabane/engine";
 
@@ -39,8 +44,7 @@ export function useEditorConstructionTools(
   }, [project.stairs]);
   useEffect(() => {
     setStairDialog((current) =>
-      mode !== "construct" ||
-      (current && ![current.lowerFloorId, current.upperFloorId].includes(activeFloorId))
+      mode !== "construct" || (current && !stairFloorIds(current).includes(activeFloorId))
         ? null
         : current,
     );
@@ -106,21 +110,25 @@ export function useEditorConstructionTools(
     [constructEditorPaintRoomFloor, floorFinish, pendingRoomPaintId],
   );
 
-  const startStairs = () => {
+  const startStairs = (connection?: "floors" | "terrain") => {
     constructEditorSetTool("select");
     constructEditorClearSelection();
     const index = project.floors.findIndex((f) => f.id === activeFloorId);
     const floor = project.floors[index];
     const upperFloor = project.floors[index + 1];
-    if (!floor || !upperFloor) return;
+    if (!floor) return;
+    const terrain = connection === "terrain" || (!connection && !upperFloor);
+    if (!terrain && !upperFloor) return;
     setStairDialog(null);
     setStairPlacement({
       id: `stairs-${createBrowserUuid()}`,
-      lowerFloorId: activeFloorId,
-      upperFloorId: upperFloor.id,
+      ...(terrain
+        ? { terrain: { floorId: activeFloorId, end: "lower" as const } }
+        : { lowerFloorId: activeFloorId, upperFloorId: upperFloor!.id }),
       at: floor.footprint[0] ?? floor.coordinates.origin,
       widthMeters: 1,
-      runMeters: floor.floorToFloorHeightMeters * 1.5,
+      ...(terrain ? { style: "concrete" as const } : {}),
+      runMeters: terrain ? 2 : floor.floorToFloorHeightMeters * 1.5,
       rotationYRadians: 0,
     });
   };
