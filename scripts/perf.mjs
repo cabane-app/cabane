@@ -193,7 +193,7 @@ async function measure(options) {
             button.getClientRects().length,
         ),
     );
-    const demo = page.getByRole("button", { name: "Explore the demo", exact: true });
+    const demo = page.getByRole("button", { name: /^Explore the demo/ });
     if (await demo.isVisible()) await demo.click();
     await page.waitForFunction(() => window.__cabanePerf?.ready() === true);
     console.log(
