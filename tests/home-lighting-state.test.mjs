@@ -21,7 +21,13 @@ await withModules(async (load) => {
       ...native.lighting,
       maxIntensity: 6,
       sources: [
-        { kind: "strip", start: [-0.3, 0.01, 0], end: [0.3, 0.01, 0], samples: 4, maxSpacingMeters: 0.4 },
+        {
+          kind: "strip",
+          start: [-0.3, 0.01, 0],
+          end: [0.3, 0.01, 0],
+          samples: 4,
+          maxSpacingMeters: 0.4,
+        },
       ],
     };
     const floor = {
@@ -33,43 +39,105 @@ await withModules(async (load) => {
     };
     const rotationYRadians = 0.7;
     const placement = { kind: "absolute", at: [400, 600], elevationMeters: 0.8, rotationYRadians };
-    const entitySlots = [{ id: "strip-primary", deviceRole: "primary", compatibleDomains: ["light"] }];
+    const entitySlots = [
+      { id: "strip-primary", deviceRole: "primary", compatibleDomains: ["light"] },
+    ];
     for (const path of ["native", "resolved", "override"]) {
       const lighting = path === "override" ? override : native.lighting;
-      const devices = path === "native" ? stableDeviceRegistry : engine.resolveProjectModels(
-        path === "override" ? { modelLights: { [modelId]: override } } : {},
-        { deviceModels: stableDeviceRegistry, furnishingModels: {} },
-      ).deviceModels;
+      const devices =
+        path === "native"
+          ? stableDeviceRegistry
+          : engine.resolveProjectModels(
+              path === "override" ? { modelLights: { [modelId]: override } } : {},
+              { deviceModels: stableDeviceRegistry, furnishingModels: {} },
+            ).deviceModels;
       for (const width of [1, 3.1, 100]) {
         for (const legacy of [false, true]) {
           const item = {
-            id: "adaptive-strip", floorId: floor.id, modelId, kind: "device", placement,
-            size: [width, ...native.defaultSize.slice(1)], lightState: "always-on", entitySlots,
+            id: "adaptive-strip",
+            floorId: floor.id,
+            modelId,
+            kind: "device",
+            placement,
+            size: [width, ...native.defaultSize.slice(1)],
+            lightState: "always-on",
+            entitySlots,
           };
-          const renderer = await create(createElement(engine.HomeAssistantSceneLighting, {
-            floor, deviceModels: devices, extensionDeviceModels: {},
-            sceneItems: legacy ? [] : [item],
-            resolvedBindings: {
-              rooms: legacy ? {
-                [`outside-rooms:${floor.id}`]: {
-                  sections: {}, devices: [{
-                    slot: { id: item.id, model: modelId, placement: { ...placement, scale: width }, entitySlots },
-                    entities: [{ slotId: "strip-primary", domain: "light", state: { state: "on", available: true, stale: false, attributes: {} } }],
-                  }],
-                },
-              } : {}, openings: {}, issues: [],
-            },
-          }));
+          const renderer = await create(
+            createElement(engine.HomeAssistantSceneLighting, {
+              floor,
+              deviceModels: devices,
+              extensionDeviceModels: {},
+              sceneItems: legacy ? [] : [item],
+              resolvedBindings: {
+                rooms: legacy
+                  ? {
+                      [`outside-rooms:${floor.id}`]: {
+                        sections: {},
+                        devices: [
+                          {
+                            slot: {
+                              id: item.id,
+                              model: modelId,
+                              placement: { ...placement, scale: width },
+                              entitySlots,
+                            },
+                            entities: [
+                              {
+                                slotId: "strip-primary",
+                                domain: "light",
+                                state: {
+                                  state: "on",
+                                  available: true,
+                                  stale: false,
+                                  attributes: {},
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    }
+                  : {},
+                openings: {},
+                issues: [],
+              },
+            }),
+          );
           try {
-            const lights = renderer.scene.findAll((node) => node.instance.isPointLight).map((node) => node.instance);
+            const lights = renderer.scene
+              .findAll((node) => node.instance.isPointLight)
+              .map((node) => node.instance);
             const source = lighting.sources[0];
-            const count = Math.min(64, Math.max(source.samples, Math.ceil((source.end[0] - source.start[0]) * width / source.maxSpacingMeters) + 1));
+            const count = Math.min(
+              64,
+              Math.max(
+                source.samples,
+                Math.ceil(((source.end[0] - source.start[0]) * width) / source.maxSpacingMeters) +
+                  1,
+              ),
+            );
             assert.equal(lights.length, count, `${path}, width ${width}, legacy ${legacy}`);
-            for (const [index, endpoint] of [[0, source.start], [lights.length - 1, source.end]]) {
-              const expected = [3 + endpoint[0] * width * Math.cos(rotationYRadians), 0.8 + endpoint[1] * (legacy ? width : 1), 4 - endpoint[0] * width * Math.sin(rotationYRadians)];
-              lights[index].position.toArray().forEach((coordinate, axis) => assert.ok(Math.abs(coordinate - expected[axis]) < 1e-8));
+            for (const [index, endpoint] of [
+              [0, source.start],
+              [lights.length - 1, source.end],
+            ]) {
+              const expected = [
+                3 + endpoint[0] * width * Math.cos(rotationYRadians),
+                0.8 + endpoint[1] * (legacy ? width : 1),
+                4 - endpoint[0] * width * Math.sin(rotationYRadians),
+              ];
+              lights[index].position
+                .toArray()
+                .forEach((coordinate, axis) =>
+                  assert.ok(Math.abs(coordinate - expected[axis]) < 1e-8),
+                );
             }
-            assert.ok(Math.abs(lights.reduce((sum, light) => sum + light.intensity, 0) - lighting.maxIntensity) < 1e-8);
+            assert.ok(
+              Math.abs(
+                lights.reduce((sum, light) => sum + light.intensity, 0) - lighting.maxIntensity,
+              ) < 1e-8,
+            );
           } finally {
             await renderer.unmount();
           }

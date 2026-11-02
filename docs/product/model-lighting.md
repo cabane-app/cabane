@@ -90,8 +90,8 @@ the lighting editor and runtime. Each preview and active floor has a budget of
 or customized copies share the floor budget. Sample counts are requests for
 spatial resolution, not array sizes or guaranteed physical light counts. Saved
 logical sources, counts, connections and total brightness are never truncated or
-rewritten. Legacy point, points and strip forms use the same policy. Portable
-types and migrations are unchanged. Manifest validation imposes no separate
+rewritten. Legacy point, points and strip forms use the same policy. No schema-version
+change or data migration is required. Manifest validation imposes no separate
 per-model emitter count limit and accepts empty, glow-only, zero-brightness and
 zero-range output. Four strips with four samples remain sixteen physical lights
 when the shared budget permits.
