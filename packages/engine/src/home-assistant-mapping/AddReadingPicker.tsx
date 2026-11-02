@@ -1,27 +1,9 @@
 import { useState } from "react";
+import { newReadingDescriptor } from "./connection-candidates";
 import { bindingEntityCandidates } from "../binding-entity-candidates";
-import type {
-  BindingSlotDescriptor,
-  EntityId,
-  HomeAssistantRuntimeSnapshot,
-  RuntimeBindingProfile,
-} from "../types";
+import type { EntityId, HomeAssistantRuntimeSnapshot, RuntimeBindingProfile } from "../types";
 import { entityDeviceNames, type MappingOption } from "./auxiliary-mapping-choices";
 import { mappingOptionMatches } from "./MappingChoicePicker";
-
-const READING_DESCRIPTOR: BindingSlotDescriptor = {
-  slotId: "new-reading",
-  kind: "dashboard",
-  roomIds: [],
-  spec: {
-    id: "new-reading",
-    compatibleDomains: ["sensor", "binary_sensor"],
-    deviceRole: "secondary",
-    required: false,
-    autoMap: "manual",
-    presentation: { label: "Reading", dashboardRole: "secondary" },
-  },
-};
 
 interface ReadingOption extends MappingOption {
   value: EntityId;
@@ -34,7 +16,7 @@ export const readingMappingOptions = (
 ): ReadingOption[] => {
   const names = entityDeviceNames(runtime);
   return bindingEntityCandidates({
-    descriptor: READING_DESCRIPTOR,
+    descriptor: newReadingDescriptor,
     roomId: "",
     profile,
     runtime,
@@ -72,7 +54,7 @@ export function AddReadingPicker({
   return (
     <details className="device-mapping-inspector__add-reading" open={Boolean(query.trim())}>
       <summary>Add reading</summary>
-      <p>Choose a sensor to show its reading on this object.</p>
+      <p>Choose a sensor or event to show its reading on this object.</p>
       {matches.slice(0, limit).map((option) => {
         const added = attached.includes(option.value);
         return (
@@ -95,7 +77,7 @@ export function AddReadingPicker({
       })}
       {!matches.length && (
         <p role="status">
-          {disabled ? "Reconnect to load sensors." : "No sensors match this search."}
+          {disabled ? "Reconnect to load readings." : "No readings match this search."}
         </p>
       )}
       {matches.length > limit && (

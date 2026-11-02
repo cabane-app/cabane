@@ -1,3 +1,5 @@
+import type { EntityStateSnapshot } from "./entity-state";
+export type { EntityStateSnapshot } from "./entity-state";
 import type { WallSpec, WallJunctionSpec } from "./wall-types";
 export type { WallSpec, WallJunctionSpec, WallNicheSpec } from "./wall-types";
 import type { StableDeviceModelId } from "./stable-device-model-id";
@@ -33,9 +35,13 @@ export type DeviceDomain =
   | "button"
   | "camera"
   | "sensor"
-  | "binary_sensor";
+  | "binary_sensor"
+  | "event";
 
-export type ControllableDeviceDomain = Exclude<DeviceDomain, "camera" | "sensor" | "binary_sensor">;
+export type ControllableDeviceDomain = Exclude<
+  DeviceDomain,
+  "camera" | "sensor" | "binary_sensor" | "event"
+>;
 
 export interface Assumption {
   id: string;
@@ -401,17 +407,6 @@ export interface ShortcutSpec {
   action: BuiltInShortcutId;
   context: "overview" | "room" | "both";
   order: number;
-}
-
-export interface EntityStateSnapshot {
-  entityId: EntityId;
-  state: string;
-  attributes: Readonly<Record<string, unknown>>;
-  available: boolean;
-  stale: boolean;
-  lastConfirmedAt?: string;
-  lastChanged?: string;
-  lastUpdated?: string;
 }
 
 export type HomeAssistantConnectionStatus =

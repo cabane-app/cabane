@@ -104,8 +104,13 @@ await withModules(async (load) => {
       }),
     );
     try {
-      await renderer.advanceFrames(3, 1 / 60);
-      assert.equal(renderer.scene.findByProps({ name: "laser-impact" }).instance.visible, false);
+      for (const frames of [3, 12, 40]) {
+        await renderer.advanceFrames(frames, 1 / 60);
+        const visibleImpacts = renderer.scene
+          .findAllByProps({ name: "laser-impact" })
+          .filter((impact) => impact.instance.visible);
+        assert.equal(visibleImpacts.length, 0);
+      }
     } finally {
       await renderer.unmount();
     }

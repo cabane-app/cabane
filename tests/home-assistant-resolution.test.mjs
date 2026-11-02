@@ -11,6 +11,54 @@ await withModules(async (load) => {
   const { resolveOpeningPositions } = await load("/packages/engine/src/opening-pose.ts");
   const { neutralDemoManifest } = await load("/packages/engine/src/demo.ts");
   const resolver = await load("/packages/engine/src/home-assistant-resolver.ts");
+  const { bindingEntityCandidates } = await load("/packages/engine/src/runtime-binding-profile.ts");
+
+  test("event slots offer compatible remotes and resolve without mutation or an on state", async () => {
+    const manifest = structuredClone(connectedManifestFixture(neutralDemoManifest));
+    const room = manifest.floors[0].rooms.find((room) => room.id === "demo-room");
+    const slot = {
+      id: "remote-event",
+      compatibleDomains: ["event"],
+      required: false,
+      autoMap: "manual",
+      presentation: { label: "Remote", dashboardRole: "primary" },
+    };
+    room.dashboardSlots.push(slot);
+    const profile = connectedProfileFixture();
+    const runtime = connectedRuntimeFixture();
+    const entityId = "event.synthetic_remote";
+    runtime.entityStates[entityId] = {
+      entityId,
+      state: "2026-01-01T12:00:00.000+00:00",
+      attributes: { event_type: "short_release" },
+      available: true,
+      stale: false,
+    };
+    runtime.entityRegistry.push({
+      entity_id: entityId,
+      unique_id: "synthetic-remote",
+      platform: "synthetic",
+      area_id: profile.roomAreaIds[room.id],
+      device_id: null,
+      disabled_by: null,
+      hidden_by: null,
+    });
+    const candidates = bindingEntityCandidates({
+      descriptor: { kind: "dashboard", slotId: slot.id, roomIds: [room.id], spec: slot },
+      roomId: room.id,
+      profile,
+      runtime,
+    });
+    assert.ok(candidates.some((candidate) => candidate.entityId === entityId));
+    assert.ok(candidates.every((candidate) => candidate.entityId.startsWith("event.")));
+    profile.entityIdsBySlotId[slot.id] = entityId;
+    const resolved = resolver
+      .resolveHomeAssistantBindings(manifest, profile, runtime)
+      .rooms[room.id].sections.primary.find((binding) => binding.slotId === slot.id);
+    assert.equal(resolved.domain, "event");
+    assert.deepEqual(resolved.issues, []);
+    assert.equal(resolver.bindingCanMutate(resolved), false);
+  });
 
   test("resolves only exact active-profile slots in generated order and honors area precedence", () => {
     const manifest = connectedManifestFixture(neutralDemoManifest);

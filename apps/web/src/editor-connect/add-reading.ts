@@ -26,7 +26,7 @@ export function addReadingToSnapshot(
     !entry ||
     !runtime.origin ||
     runtime.status !== "connected" ||
-    (domain !== "sensor" && domain !== "binary_sensor")
+    (domain !== "sensor" && domain !== "binary_sensor" && domain !== "event")
   )
     return null;
   const origin = normalizeWorkspaceBindingOrigin(runtime.origin);
