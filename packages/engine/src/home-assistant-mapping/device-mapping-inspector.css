@@ -79,6 +79,132 @@
   display: grid;
   gap: 13px;
 }
+.device-mapping-inspector__search {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: #20352d;
+  background: #fffaf2;
+  border: 1px solid #9aaba1;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 1rem;
+}
+.device-mapping-inspector__search::placeholder {
+  color: #53685e;
+}
+.device-mapping-inspector__picker > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 4px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.device-mapping-inspector__picker > summary::-webkit-details-marker {
+  display: none;
+}
+.device-mapping-inspector__selection {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.device-mapping-inspector__picker-action {
+  color: #285143;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+.device-mapping-inspector__picker > summary > svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+.device-mapping-inspector__picker[open] > summary > svg {
+  transform: rotate(90deg);
+}
+.device-mapping-inspector__more {
+  min-height: 44px;
+  padding: 10px 4px;
+  color: #285143;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+}
+.device-mapping-inspector__search:focus-visible,
+.device-mapping-inspector__picker > summary:focus-visible,
+.device-mapping-inspector__more:focus-visible {
+  outline: 2px solid #285143;
+  outline-offset: 2px;
+}
+.device-mapping-inspector__entity-id {
+  display: block;
+  margin-top: 3px;
+  color: #53685e;
+  font-size: 0.7rem;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.device-mapping-inspector__add-reading {
+  padding-top: 8px;
+  border-top: 1px solid #d9dfd8;
+  color: #20352d;
+  font-size: 0.875rem;
+}
+.device-mapping-inspector__add-reading > summary {
+  min-height: 44px;
+  padding-block: 12px;
+  color: #285143;
+  font-weight: 600;
+  cursor: pointer;
+}
+.device-mapping-inspector__add-reading > p {
+  margin: 0 0 12px;
+  color: #53685e;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.device-mapping-inspector__reading-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 12px 4px;
+  border: 0;
+  border-top: 1px solid #d9dfd8;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.device-mapping-inspector__reading-option strong {
+  font-weight: 500;
+}
+.device-mapping-inspector__reading-option > span:last-child {
+  color: #285143;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.device-mapping-inspector__reading-option:hover:not(:disabled) {
+  background: #edf0e9;
+}
+.device-mapping-inspector__reading-option:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.device-mapping-inspector__add-reading > summary:focus-visible,
+.device-mapping-inspector__reading-option:focus-visible {
+  outline: 2px solid #285143;
+  outline-offset: 2px;
+}
 .device-mapping-inspector__choice fieldset {
   min-width: 0;
   padding: 0;
@@ -183,12 +309,12 @@
   border: 1px solid #d8ded7;
   border-radius: 11px;
 }
-.device-mapping-inspector__functions summary,
-.device-mapping-inspector__details summary {
+.device-mapping-inspector__functions > summary,
+.device-mapping-inspector__details > summary {
   min-height: 44px;
   cursor: pointer;
 }
-.device-mapping-inspector__functions summary {
+.device-mapping-inspector__functions > summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -196,10 +322,10 @@
   font-weight: 760;
   list-style: none;
 }
-.device-mapping-inspector__functions summary::-webkit-details-marker {
+.device-mapping-inspector__functions > summary::-webkit-details-marker {
   display: none;
 }
-.device-mapping-inspector__functions summary span {
+.device-mapping-inspector__functions > summary > span {
   display: grid;
   place-items: center;
   min-width: 24px;

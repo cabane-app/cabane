@@ -183,9 +183,14 @@
 }
 .shortcuts-workspace__bar-zone {
   position: relative;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
   min-height: 132px;
+  padding: 16px 4px;
 }
 .shortcuts-workspace__bar-measure {
   display: flex;
@@ -214,21 +219,25 @@
   height: 28px;
 }
 .shortcuts-workspace__tray {
-  position: absolute;
-  z-index: 5;
-  bottom: calc(50% + 52px);
-  left: 50%;
   display: flex;
+  flex: none;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 5px;
-  max-width: min(92vw, 1000px);
-  overflow-x: auto;
+  width: fit-content;
+  max-width: 100%;
   padding: 6px;
   border-radius: 12px;
   color: white;
   background: #263b31;
   box-shadow: 0 12px 32px rgba(26, 41, 29, 0.2);
-  transform: translateX(-50%);
+}
+.shortcuts-workspace__tray-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
 }
 .shortcuts-workspace__tray button {
   display: inline-flex;
@@ -258,15 +267,11 @@
   position: static;
 }
 .shortcuts-workspace .scene-action-overflow__tray {
+  right: 0;
   bottom: calc(100% + 12px);
+  left: auto;
+  max-width: 100%;
 }
-.direction-preview.is-shortcuts .editor-floor-controls,
-.direction-preview.is-shortcuts .direction-camera,
-.direction-preview.is-shortcuts .editor-action-bar,
-.direction-preview.is-shortcuts .direction-status {
-  display: none;
-}
-
 @media (max-width: 760px) {
   .shortcuts-workspace {
     --scene-action-size: 44px;
@@ -293,10 +298,7 @@
     min-height: 110px;
   }
   .shortcuts-workspace__tray {
-    bottom: calc(50% + 42px);
-    width: max-content;
-    max-width: calc(100vw - 24px);
-    overflow-x: auto;
+    width: 100%;
   }
   .shortcuts-workspace__tray button {
     font-size: 0.72rem;
@@ -316,9 +318,6 @@
   }
   .shortcuts-workspace__prompt {
     display: none;
-  }
-  .shortcuts-workspace__tray {
-    bottom: calc(50% + 33px);
   }
 }
 

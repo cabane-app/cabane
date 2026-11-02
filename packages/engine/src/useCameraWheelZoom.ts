@@ -39,7 +39,6 @@ export function useCameraWheelZoom(controls: RefObject<OrbitControls | null>, en
       if (active.zoomToCursor) {
         after.set(x, y, 0).unproject(camera);
         before.sub(after);
-        camera.position.add(before);
         if (!active.screenSpacePanning) {
           // Keep the orbit pivot on its navigation plane as the camera moves.
           camera.getWorldDirection(after);
@@ -47,6 +46,9 @@ export function useCameraWheelZoom(controls: RefObject<OrbitControls | null>, en
           if (Math.abs(vertical) > 1e-6)
             before.addScaledVector(after, -before.dot(camera.up) / vertical);
         }
+        // Translate camera and pivot together. Moving only the pivot onto its
+        // plane changes the orbit radius and can push the camera through it.
+        camera.position.add(before);
         active.target.add(before);
         camera.updateMatrixWorld();
       }

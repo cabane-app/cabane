@@ -12,11 +12,11 @@ await withModules(async (load) => {
   const {
     RoomStatusOverlayButton,
     roomStatusOverlayPosition,
-    roomStatusOverlayLimitForWidth,
     roomStatusOverlayPriority,
-    selectRoomStatusOverlayIds,
     shouldShowRoomStatusOverlays,
   } = await load("/packages/engine/src/room-status/RoomStatusOverlays.tsx");
+  const { sceneOverlayLimitForWidth, selectSceneOverlayIds, SceneOverlayLayout, useSceneOverlay } =
+    await load("/packages/engine/src/room-status/SceneOverlayLayout.tsx");
   const { loadOverlayPreferences, saveOverlayPreferences, filterOverlayStatuses } = await load(
     "/packages/engine/src/room-status/overlay-preferences.ts",
   );
@@ -94,8 +94,8 @@ await withModules(async (load) => {
   });
 
   test("uses a compact cap and prioritizes useful status before center distance", () => {
-    assert.equal(roomStatusOverlayLimitForWidth(759), 6);
-    assert.equal(roomStatusOverlayLimitForWidth(760), 10);
+    assert.equal(sceneOverlayLimitForWidth(759), 6);
+    assert.equal(sceneOverlayLimitForWidth(760), 10);
     assert.equal(roomStatusOverlayPriority(summary), 3);
     assert.equal(
       roomStatusOverlayPriority({
@@ -117,7 +117,7 @@ await withModules(async (load) => {
       priority: index === 6 ? 2 : 1,
       inViewport: true,
     }));
-    const selected = selectRoomStatusOverlayIds(candidates, 5);
+    const selected = selectSceneOverlayIds(candidates, 5);
     assert.equal(selected.size, 5);
     assert.equal(selected.has("room-6"), true);
     assert.equal(selected.has("room-4"), false);
@@ -125,7 +125,7 @@ await withModules(async (load) => {
   });
 
   test("declutters overlapping labels and ignores off-screen rooms", () => {
-    const selected = selectRoomStatusOverlayIds(
+    const selected = selectSceneOverlayIds(
       [
         {
           id: "priority",
@@ -169,6 +169,88 @@ await withModules(async (load) => {
     assert.deepEqual([...selected], ["priority", "clear"]);
   });
 
+  test("room labels and reading cards share a collision budget, including tall cards", () => {
+    const candidate = {
+      screenX: 100,
+      screenY: 100,
+      distanceFromCenter: 0.1,
+      labelWidth: 100,
+      priority: 1,
+      inViewport: true,
+    };
+    const room = { ...candidate, id: "room:kitchen", priority: 3 };
+    const connection = {
+      ...candidate,
+      id: "item:fridge",
+      labelWidth: 220,
+      labelHeight: 100,
+      screenY: 160,
+    };
+    const reading = {
+      ...candidate,
+      id: "item:meter",
+      labelWidth: 220,
+      labelHeight: 80,
+      screenX: 350,
+    };
+    assert.deepEqual(
+      [...selectSceneOverlayIds([room, connection, reading], 10)],
+      [room.id, reading.id],
+    );
+    assert.equal(
+      selectSceneOverlayIds([room, { ...connection, screenY: 240 }, reading], 10).size,
+      3,
+    );
+    assert.equal(selectSceneOverlayIds([room, { ...reading, screenX: 220 }], 10).size, 1);
+  });
+
+  test("the scene layout applies shared visibility and updates after zooming or removal", async () => {
+    const { create } = await import("@react-three/test-renderer");
+    const visibility = {};
+    const { useThree } = await import("@react-three/fiber");
+    let camera;
+    function Overlay({ id, x, priority = 1, height = 48 }) {
+      camera = useThree((state) => state.camera);
+      const overlay = useSceneOverlay({ id, labelWidth: 100, labelHeight: height, priority });
+      visibility[id] = overlay.visible;
+      return React.createElement("group", { ref: overlay.anchorRef, position: [x, 0, 0] });
+    }
+    const scene = (showRoom = true) =>
+      React.createElement(
+        SceneOverlayLayout,
+        null,
+        showRoom && React.createElement(Overlay, { id: "room:kitchen", x: 0, priority: 3 }),
+        React.createElement(Overlay, { id: "item:connection", x: 0.3 }),
+        React.createElement(Overlay, { id: "item:reading", x: 3 }),
+      );
+    const renderer = await create(scene(), {
+      width: 1200,
+      height: 800,
+      camera: { position: [0, 0, 10] },
+    });
+    try {
+      await act(async () => renderer.advanceFrames(1, 0.016));
+      assert.deepEqual(visibility, {
+        "room:kitchen": true,
+        "item:connection": false,
+        "item:reading": true,
+      });
+      camera.zoom = 10;
+      camera.updateProjectionMatrix();
+      await act(async () => renderer.advanceFrames(1, 0.016));
+      assert.equal(visibility["item:connection"], true);
+      assert.equal(visibility["item:reading"], false);
+      camera.zoom = 1;
+      camera.updateProjectionMatrix();
+      await renderer.update(scene(false));
+      await act(async () => renderer.advanceFrames(1, 0.016));
+      assert.equal(visibility["item:connection"], true);
+      await renderer.update(scene());
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("keeps nearby readable labels and more rooms than the previous cap", () => {
     const candidates = Array.from({ length: 20 }, (_, index) => ({
       id: `room-${index}`,
@@ -179,15 +261,9 @@ await withModules(async (load) => {
       priority: 1,
       inViewport: true,
     }));
-    assert.equal(
-      selectRoomStatusOverlayIds(candidates, roomStatusOverlayLimitForWidth(1200)).size,
-      10,
-    );
-    assert.equal(
-      selectRoomStatusOverlayIds(candidates, roomStatusOverlayLimitForWidth(390)).size,
-      6,
-    );
-    assert.equal(selectRoomStatusOverlayIds(candidates.slice(0, 8), 10).size, 8);
+    assert.equal(selectSceneOverlayIds(candidates, sceneOverlayLimitForWidth(1200)).size, 10);
+    assert.equal(selectSceneOverlayIds(candidates, sceneOverlayLimitForWidth(390)).size, 6);
+    assert.equal(selectSceneOverlayIds(candidates.slice(0, 8), 10).size, 8);
   });
 
   test("selects the exact room on click", async () => {

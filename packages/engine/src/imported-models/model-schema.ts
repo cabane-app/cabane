@@ -1,3 +1,4 @@
+import { validateModelLighting, validateModelLightOverrides } from "../model-lighting/schema";
 import { keys, record, array, string, finite } from "../home-project/schema-json-values";
 import { addProjectIssue, type HomeProjectIssue } from "../home-project/validation-types";
 import { CUSTOM_MODEL_LIMITS, CUSTOM_MODEL_PROFILES } from "./contracts";
@@ -103,19 +104,7 @@ export function validateCustomModels(
         )
           error(`complexity.${key}`, `Model exceeds the ${limit} ${key} limit.`);
     }
-    if (model.light !== undefined) {
-      if (model.profile !== "light") error("light", "Only Light models have a light source.");
-      const light = record(model.light, `${path}.light`, issues);
-      if (light) {
-        keys(light, ["position", "color", "maxIntensity", "distance"], `${path}.light`, issues);
-        vector(light.position, `${path}.light.position`, issues);
-        string(light.color, `${path}.light.color`, issues);
-        for (const key of ["maxIntensity", "distance"]) {
-          finite(light[key], `${path}.light.${key}`, issues);
-          if (Number(light[key]) < 0) error(`light.${key}`, "Light settings must be non-negative.");
-        }
-      }
-    }
+    if (model.light !== undefined) validateModelLighting(model.light, `${path}.light`, issues);
   });
   if ([...assets.values()].reduce((sum, size) => sum + size, 0) > CUSTOM_MODEL_LIMITS.homeBytes)
     addProjectIssue(
@@ -124,4 +113,12 @@ export function validateCustomModels(
       pathRoot,
       "A house may contain at most 100 MiB of distinct GLB assets.",
     );
+}
+
+export function validateProjectModelCatalogs(
+  project: Record<string, unknown>,
+  issues: HomeProjectIssue[],
+) {
+  if (project.customModels !== undefined) validateCustomModels(project.customModels, issues);
+  validateModelLightOverrides(project.modelLights, issues);
 }

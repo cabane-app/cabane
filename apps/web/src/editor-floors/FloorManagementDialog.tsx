@@ -16,12 +16,12 @@ export function FloorManagementDialog({
   onRemove,
   removeDisabledReason,
 }: {
-  action: "rename" | "remove";
+  action: "rename" | "remove" | "add-above" | "add-below";
   name: string;
   itemCount: number;
   stairCount: number;
   height: number;
-  onSave: (name: string, height: number) => void;
+  onSave: (name: string, height: number, duplicate?: boolean) => void;
   onCancel: () => void;
   onRemove?: (() => void) | undefined;
   removeDisabledReason?: string | undefined;
@@ -33,6 +33,8 @@ export function FloorManagementDialog({
   const removeHintId = useId();
   const [value, setValue] = useState(name);
   const [floorHeight, setFloorHeight] = useState(String(height));
+  const adding = action === "add-above" || action === "add-below";
+  const [duplicate, setDuplicate] = useState(false);
   const invalid =
     action === "rename" &&
     (!value.trim() || !Number.isFinite(Number(floorHeight)) || Number(floorHeight) <= 0);
@@ -56,16 +58,43 @@ export function FloorManagementDialog({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          if (!invalid) onSave(value.trim(), Number(floorHeight));
+          if (!invalid) onSave(value.trim(), Number(floorHeight), duplicate);
         }}
       >
         <header>
-          <h2 id={titleId}>{action === "remove" ? `Remove ${name}?` : "Floor settings"}</h2>
+          <h2 id={titleId}>
+            {adding
+              ? `Add floor ${action === "add-below" ? "below" : "above"}`
+              : action === "remove"
+                ? `Remove ${name}?`
+                : "Floor settings"}
+          </h2>
           <EditorButton aria-label="Close floor settings" onClick={onCancel}>
             <EditorIcon name="close" />
           </EditorButton>
         </header>
-        {action === "remove" ? (
+        {adding ? (
+          <div className="floor-management-dialog__fields">
+            <p>
+              The new floor will be added{" "}
+              {action === "add-below" ? "beneath the lowest floor" : "above the top floor"}.
+            </p>
+            <label className="floor-management-dialog__choice">
+              <input
+                type="checkbox"
+                checked={duplicate}
+                onChange={(event) => setDuplicate(event.target.checked)}
+              />
+              Duplicate this floor ({name})
+            </label>
+            {duplicate && (
+              <p>
+                Copies the Construct elements with new IDs. Furniture, devices and stairs are not
+                copied.
+              </p>
+            )}
+          </div>
+        ) : action === "remove" ? (
           <p>
             This removes this floor, its {itemCount} items and {stairCount} connecting stairs. You
             can undo this change.
@@ -113,7 +142,7 @@ export function FloorManagementDialog({
             disabled={invalid}
             className={action === "remove" ? "floor-management-dialog__remove" : undefined}
           >
-            {action === "remove" ? "Remove floor" : "Save floor"}
+            {adding ? "Add floor" : action === "remove" ? "Remove floor" : "Save floor"}
           </EditorButton>
         </footer>
         {action === "rename" && removeDisabledReason && (

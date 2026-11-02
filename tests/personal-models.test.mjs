@@ -14,6 +14,9 @@ await withModules(async (load) => {
   const { createCatalogItem } = await load(
     "/apps/web/src/editor-preview/furnish/placement/item-creation.ts",
   );
+  const { resetSceneItemPlacement } = await load(
+    "/apps/web/src/editor-preview/furnish/placement/repair-placement.ts",
+  );
   const native = { furnishingModels: {}, deviceModels: {} };
   const bytes = testGlb();
   const asset = { bytes, byteLength: bytes.length, sha256: await api.modelAssetHash(bytes) };
@@ -245,6 +248,63 @@ await withModules(async (load) => {
     invalid.customModels[0].normalization.bounds.min = [5, 5, 5];
     assert.equal(api.parseHomeProjectSchema(invalid).valid, false);
   });
+  test("a wall-normalized personal device moved freely does not block the home", () => {
+    const custom = model("wall", "sensor");
+    custom.normalization = api.normalizeGlb(decoded.root, "wall", [0, 0, 0], 4);
+    const home = project([custom]);
+    const floor = home.floors[0];
+    const definition = api.resolveProjectModels(home, native).deviceModels[custom.id];
+    const item = createCatalogItem(
+      { modelId: custom.id, kind: "device", definition },
+      {
+        kind: "absolute",
+        at: api.polygonCentroid(floor.rooms[0].polygon),
+        elevationMeters: 1,
+        rotationYRadians: 0,
+      },
+      [],
+      [],
+      floor.id,
+    );
+    home.sceneItems = [item];
+    assert.equal(api.validateHomeProject(home, native).valid, true);
+    const manifest = api.composeHomeManifest(home, { ...native, openingModels: {} });
+    const validation = api.validateHomeManifest(manifest, {
+      deviceModels: manifest.extensions.deviceModels,
+    });
+    assert.equal(validation.canRender, true, JSON.stringify(validation.issues));
+    const legacyValidation = api.validateHomeManifest(
+      { ...manifest, sceneItems: [] },
+      {
+        deviceModels: manifest.extensions.deviceModels,
+      },
+    );
+    assert.equal(legacyValidation.canRender, true, JSON.stringify(legacyValidation.issues));
+    assert.equal(
+      legacyValidation.issues.find((issue) => issue.code === "device.surface-contact")?.severity,
+      "warning",
+    );
+    const invalid = { ...item, size: item.size.map((value) => value * 2) };
+    home.sceneItems = [invalid];
+    const priorModel = structuredClone(custom);
+    const warning = api.validateHomeProject(home, native);
+    assert.equal(warning.valid, true, JSON.stringify(warning.issues));
+    assert.equal(
+      warning.issues.find((issue) => issue.code === "project.item-elevation")?.severity,
+      "warning",
+    );
+    const repaired = resetSceneItemPlacement(invalid, home, definition);
+    assert.ok(repaired.placement, repaired.error);
+    assert.deepEqual(repaired.placement.at, item.placement.at);
+    assert.ok(Math.abs(repaired.placement.elevationMeters - 2.001) < 1e-8);
+    home.sceneItems = [{ ...invalid, placement: repaired.placement }];
+    assert.deepEqual(api.validateHomeProject(home, native).issues, []);
+    assert.deepEqual(
+      custom,
+      priorModel,
+      "repair does not change the shared import or its other copies",
+    );
+  });
   test("preview leases share resources until the final close and normalization ignores preview parenting", async () => {
     const { Group } = await import("three");
     const first = await api.openGlbPreview(bytes),
@@ -277,12 +337,13 @@ await withModules(async (load) => {
     restored.release();
   });
   test("imported devices reuse controls, camera viewer and light rules; additions create fresh primary slots", () => {
-    for (const profile of ["light", "sensor", "camera", "cover"]) {
+    for (const profile of ["light", "sensor", "camera", "cover", "event"]) {
       const custom = model("floor", profile);
       const definition = api.resolveProjectModels(project([custom]), native).deviceModels[
         custom.id
       ];
       assert.deepEqual(definition.supportedDomains, [profile]);
+      assert.equal(api.parseHomeProjectSchema(project([custom])).valid, true);
       assert.equal(
         definition.interaction.target,
         profile === "camera" ? "camera-viewer" : undefined,
@@ -299,6 +360,12 @@ await withModules(async (load) => {
       const second = createCatalogItem(entry, first.placement, [first], [], first.floorId);
       assert.notEqual(first.entitySlots[0].id, second.entitySlots[0].id);
       assert.equal(first.entitySlots[0].deviceRole, "primary");
+      if (profile === "event") {
+        const saved = project([custom]);
+        saved.sceneItems = [first];
+        assert.equal(api.parseHomeProjectSchema(JSON.parse(JSON.stringify(saved))).valid, true);
+        assert.deepEqual(first.entitySlots[0].compatibleDomains, ["event"]);
+      }
     }
   });
   test("catalog reference and bytes commit atomically, deduplicate across instances and survive publication/reload", async () => {

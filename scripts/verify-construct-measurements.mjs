@@ -1,3 +1,4 @@
+import { selectConstructionTool } from "../tests/editor-browser-tools.mjs";
 import assert from "node:assert/strict";
 import { chromium } from "playwright-core";
 
@@ -112,7 +113,7 @@ try {
   };
 
   const original = await snapshot();
-  await page.getByRole("button", { name: "Wall", exact: true }).click();
+  await selectConstructionTool(page, "Wall");
   await move(720, 740);
   await page.mouse.down();
   await move(920, 740);

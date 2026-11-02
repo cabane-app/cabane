@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import type { ConstructionInspectorProps } from "./construction-inspector-contract";
 export type { ConstructionInspectorProps } from "./construction-inspector-contract";
 import { EditorButton } from "../../editor-chrome/EditorButton";
@@ -15,6 +16,7 @@ export function ConstructionInspector({
   tutorialControls,
   walkStartControls,
   northControls,
+  terrainControls,
   roof,
   onRoofChange,
   editor,
@@ -33,31 +35,41 @@ export function ConstructionInspector({
         {(editor.tool === "floor" || editor.tool === "platform") && floorPainting && (
           <FloorToolProperties editor={editor} painting={floorPainting} />
         )}
-        {editor.tool === "wall" && (
+        {(editor.tool === "wall" || editor.tool === "virtual-wall") && (
           <div className="construction-inspector__selection">
             <header>
               <div>
-                <strong>Draw walls</strong>
+                <strong>
+                  {editor.tool === "virtual-wall" ? "Draw invisible walls" : "Draw walls"}
+                </strong>
               </div>
             </header>
             <p className="construction-inspector__tool-hint">
               Click and drag a wall segment. Continue from its endpoint to draw a connected wall.
             </p>
-            <fieldset>
-              <legend>Finish</legend>
-              <label>
-                Exterior
-                <DebouncedColorInput
-                  label="New wall exterior color"
-                  value={editor.exteriorWallColor}
-                  onCommit={(exteriorColor) => {
-                    editor.setExteriorWallColor(exteriorColor);
-                    if (editor.selection?.kind === "wall")
-                      editor.updateSelectedWallMetadata({ exteriorColor });
-                  }}
-                />
-              </label>
-            </fieldset>
+            {editor.tool === "virtual-wall" && (
+              <p className="construction-inspector__tool-hint">
+                Divide an open space into rooms without building a wall. Dashed lines appear only in
+                Construct; people can walk through them.
+              </p>
+            )}
+            {editor.tool === "wall" && (
+              <fieldset>
+                <legend>Finish</legend>
+                <label>
+                  Exterior
+                  <DebouncedColorInput
+                    label="New wall exterior color"
+                    value={editor.exteriorWallColor}
+                    onCommit={(exteriorColor) => {
+                      editor.setExteriorWallColor(exteriorColor);
+                      if (editor.selection?.kind === "wall")
+                        editor.updateSelectedWallMetadata({ exteriorColor });
+                    }}
+                  />
+                </label>
+              </fieldset>
+            )}
           </div>
         )}
         {editor.tool === "door" && (
@@ -78,7 +90,11 @@ export function ConstructionInspector({
               value={editor.doorConfiguration}
               onChange={editor.setDoorConfiguration}
             />
-            {editor.openingError && <p role="alert">{editor.openingError}</p>}
+            {editor.openingError && (
+              <p role="alert">
+                <MeasurementText>{editor.openingError}</MeasurementText>
+              </p>
+            )}
           </div>
         )}
         {editor.tool === "niche" && (
@@ -92,7 +108,11 @@ export function ConstructionInspector({
               Click a wall face to place a recess. Drag it along the wall and use its handles to
               change the width. Properties controls its height, depth and height from floor.
             </p>
-            {editor.openingError && <p role="alert">{editor.openingError}</p>}
+            {editor.openingError && (
+              <p role="alert">
+                <MeasurementText>{editor.openingError}</MeasurementText>
+              </p>
+            )}
           </div>
         )}
         {editor.tool === "pool" && (
@@ -106,7 +126,11 @@ export function ConstructionInspector({
               Click to add corners, then return to the first corner to close the pool. Undo removes
               the last corner. Escape cancels.
             </p>
-            {editor.poolDrawing?.error && <p role="alert">{editor.poolDrawing.error}</p>}
+            {editor.poolDrawing?.error && (
+              <p role="alert">
+                <MeasurementText>{editor.poolDrawing.error}</MeasurementText>
+              </p>
+            )}
             {editor.poolDrawing?.active && (
               <EditorButton variant="secondary" type="button" onClick={editor.poolDrawing.cancel}>
                 Cancel pool
@@ -121,6 +145,7 @@ export function ConstructionInspector({
           planImportControls,
           roof,
           northControls,
+          terrainControls,
           walkStartControls,
           tutorialControls,
           editor,

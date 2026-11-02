@@ -373,7 +373,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("rejects a device shortcut when its model has no room sheet", () => {
+  test("allows outside-room device shortcuts and rejects targets with no floor", () => {
     const project = fixtureHomeProject();
     project.sceneItems = project.sceneItems.map((item) =>
       item.id === "wall-switch"
@@ -387,7 +387,16 @@ await withModules(async (load) => {
       items: [{ id: "outside", target: { kind: "device", deviceId: "wall-switch" } }],
     };
     const result = validateHomeProject(project, fixtureHomeExtensions());
-    assert.ok(result.issues.some((issue) => issue.path === "actionBar.items[0].target.deviceId"));
+    assert.equal(
+      result.issues.some((issue) => issue.path === "actionBar.items[0].target.deviceId"),
+      false,
+    );
+    project.sceneItems.find((item) => item.id === "wall-switch").floorId = "missing-floor";
+    assert.ok(
+      validateHomeProject(project, fixtureHomeExtensions()).issues.some(
+        (issue) => issue.path === "actionBar.items[0].target.deviceId",
+      ),
+    );
   });
 
   test("defines a serializable home project without runtime components", () => {
@@ -944,7 +953,7 @@ await withModules(async (load) => {
     );
   });
 
-  test("rejects duplicate ids, missing models, and missing supports", () => {
+  test("warns about missing models while rejecting duplicate ids and missing supports", () => {
     const project = structuredClone(fixtureHomeProject());
     project.sceneItems[1].id = project.sceneItems[0].id;
     project.sceneItems[0].modelId = "missing-model";
@@ -956,7 +965,7 @@ await withModules(async (load) => {
         code: "project.model-missing",
         path: "sceneItems[0].modelId",
         message:
-          "Model “missing-model” is not registered; a generic placeholder will be shown until it is imported.",
+          "Model “missing-model” is unavailable. A placeholder is shown. Its placement and connections are kept.",
         severity: "warning",
       },
       {
@@ -1144,8 +1153,11 @@ await withModules(async (load) => {
       hanging.placement.elevationMeters = elevation;
       hanging.size = [0.6, height, 0.6];
       const result = validateHomeProject(project, extensions);
-      assert.equal(result.valid, false);
-      assert.ok(result.issues.some((issue) => issue.code === "project.wall-support-height"));
+      assert.equal(result.valid, true);
+      assert.equal(
+        result.issues.find((issue) => issue.code === "project.wall-support-height")?.severity,
+        "warning",
+      );
     }
   });
 });

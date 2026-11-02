@@ -1,7 +1,19 @@
 # Home-generation agent workflow
 
 Read before setting up, generating, or equipping an owner home. Product
-development uses the engineering map and product contracts instead.
+development uses the [architecture guide](product/architecture.md) and product contracts instead.
+
+## Choose the authoring target
+
+For a home in the native HA panel, prefer the paired agent workflow in
+[`build-floor-layout`](../.agents/skills/build-floor-layout/SKILL.md). The agent
+uses editor commands; architecture, history and draft persistence stay in the
+browser. Inspect the chosen workspace before editing and keep the panel open.
+Browser edits do not rewrite repository files. Review the unfurnished layout
+before publishing or furnishing it.
+
+For an explicitly requested source-authored home or floor JSON, follow the
+repository workflow below. Keep these outputs separate from browser drafts.
 
 ## Current repository baseline
 
@@ -32,6 +44,10 @@ helping a user set up, build, or equip their home with Cabane. Do not invoke
 these skills when developing, debugging, or improving the Cabane product
 itself, even when the task involves setup, architecture, furniture, or devices.
 
+For disposable homes needed during product development, use
+[`home-building-harness`](../.agents/skills/home-building-harness/SKILL.md). It prepares a local
+editor through agent commands for feature testing or bug reproduction.
+
 For user home-building tasks only:
 
 - For initial setup or starting the app to build a home, use `$bootstrap-cabane`.
@@ -53,7 +69,7 @@ furnishing without a new user instruction.
 - Inspect all task attachments relevant to the current stage. Plans and photos
   remain task inputs; do not copy them into the repository.
 - Record material inferred dimensions, scale, topology, and placements in the
-  home manifest assumptions. State them in the handoff as well.
+  handoff; source-authored homes also keep them in the home manifest assumptions.
 - Preserve stable floor, room, wall, junction, opening, device, and slot IDs across
   corrections. Rename only when the user changes the represented concept.
 - V2 projects and manifests use ordered `floors[]`, a shared building coordinate
@@ -74,8 +90,8 @@ furnishing without a new user instruction.
   Personal user-uploaded GLBs still use the validated public import APIs owned
   by `packages/engine/src/imported-models/`. Their self-contained validation and
   prohibition on executable user code remain unchanged.
-  The standalone `create-cabane-model` skill remains in the public
-  [cabane-app/agent-skills](https://github.com/cabane-app/agent-skills) repository.
+  The standalone [create-cabane-model skill](../.agents/skills/create-cabane-model/SKILL.md)
+  is maintained in this repository and can be installed without a Cabane checkout.
 - Use the engine's public toon materials and restrained outlines for authored
   home geometry. Hosted models may retain their original materials; engine-owned
   atmospheric effects may use suitable particle materials.
@@ -88,14 +104,13 @@ furnishing without a new user instruction.
 
 ## Home Assistant safety and privacy
 
-Generation does not require or access Home Assistant. Do not request MCP or
-CLI access, registry exports, credentials, OAuth material, long-lived tokens,
-area IDs, or entity IDs. Generated code declares typed local slots only.
-Exact household mapping belongs to the authenticated browser runtime after the
-owner explicitly completes OAuth.
+The paired workflow uses only Cabane's scoped relay session for the selected
+workspace. Source generation runs offline. Neither workflow requires HA API
+credentials or registry exports. Generated code declares typed local slots;
+exact household mapping belongs to Connect in the authenticated browser.
 
-Even if a Home Assistant tool is available, never call it during generation.
-Do not inspect or control devices, call services, change configuration, create
+Keep generation separate from HA device administration. Do not inspect or
+control devices, call services, change configuration, create
 automations, modify exposure, or use runtime service endpoints. Runtime
 automatic mapping and rescans are read-only registry operations and must never
 call HA services.

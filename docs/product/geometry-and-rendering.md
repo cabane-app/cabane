@@ -2,7 +2,7 @@
 
 ## Visual styles
 
-Menu → Preferences offers Default and Sims styles, saved per
+Settings → Orbital view offers Default and Sims styles, saved per
 browser origin on this device. Default preserves the existing renderer. Sims
 uses a continuous diffuse ramp, flat face normals, a stronger 24-hue material
 palette, no drawn contours, and a stronger directional light with less ambient
@@ -15,6 +15,12 @@ render pass or assets, and does not reproduce the original game's assets or fixe
 camera.
 
 ## Visual assets
+
+Catalog and workspace previews copy the rendered WebGL drawing buffer through
+explicit RGBA readback before resizing or encoding. This avoids GPU canvas-copy
+channel swaps while retaining image orientation and transparent model cutouts.
+Preview caches are disposable. Catalog previews follow the rendering revision;
+workspace previews discard images from the older copy path.
 
 Hosted and bundled textures and 3D models are allowed in product, catalog and
 home-local renderers. Prefer version-pinned HTTPS asset URLs and retain required
@@ -37,15 +43,32 @@ meters-per-plan-unit scale; positive floor-to-floor heights determine elevations
 Floors marked `belowGround: true` form a bottom-to-top prefix before ground.
 Ground remains at zero; basement elevations accumulate downward. Changing a
 basement height moves that floor and deeper floors without moving ground.
-Basements are hidden in the whole-building view and visible when selected in
+With default flat terrain, basements are hidden in the whole-building view and visible when selected in
 cutaway or entered in Walk. Basement cutaways hide terrain and floors above.
-Ground terrain stays at ground level, with stair apertures through every layer.
+Optional home-wide corner heights slope the terrain between the ground/basement
+building bounds, continuing level beyond each edge. Exterior views then include
+basement facades. Grass, soil and outdoor finish zones follow the grade while
+excavating indoor rooms and retaining pool/stair apertures through every layer.
+Courtyards and outdoor platforms do not excavate indoor volumes. Floors,
+platforms and pools retain their authored levels. Ground-floor boundaries outside
+indoor or platform support follow the terrain along their solids and individual
+plant roots. Boundaries on authored floor/platform support and upper floors retain
+their levels. Plan overlays remain flat. Walk follows
+rendered terrain and crosses near-level basement entrances with ordinary wall
+and pool collision. Tool relocation retains conservative ground-level support.
+All-zero or omitted heights preserve existing rendering. Apartment shells keep
+their existing decorative ground and suspend custom terrain.
 Footprint/room polygons, straight walls, explicit wall junctions, and wall-owned
 openings define architecture. Junction/opening clearance uses the finite spans of
 adjoining walls: a shallow-angle continuation extending away from an opening
 does not obstruct it. Actual intersecting wall spans remain protected, with a
 2 cm finish tolerance. Junction clearance only reserves spans where the adjoining
 wall rises above the opening sill; windows above low partitions remain valid.
+Exterior walls fade away from the building: a wall fades toward the side outside the
+floor's footprint. An exterior wall wholly outside the footprint (a terrace's parapet or
+side wall, drawn as an ordinary wall) fades away from an outdoor platform when only one
+side borders the platform. Walls with platform on both sides or touching neither a
+footprint nor a platform keep no outward fade direction.
 Openings inherit wall thickness, orientation, fade,
 and cutout behavior. Door/window orientation is relative to wall direction.
 Doors support hinged/sliding variants, windows fixed/casement variants, and
@@ -68,7 +91,11 @@ exterior material groups. Wall face finishes retain each wall’s boundaries,
 including continuous bands above doors and windows and each side of a corner.
 Polygon clipping and numerical normalization prevent
 near-coincident seams from destabilizing geometry. Opening cuts extend 1 mm
-past both wall faces so diagonal walls cannot leave opaque slivers across the aperture. Wall bases extend to outdoor
+past both wall faces so diagonal walls cannot leave opaque slivers across the aperture.
+Platform slab coverage and floor/ceiling apertures share the world-space clipping
+precision grid, preserving holes and ceiling undersides where nearly coincident
+terrace and lower-floor outlines meet. Numerical normalization affects derived
+geometry without rounding saved outlines. Wall bases extend to outdoor
 terrain, 5 cm below the indoor floor datum, without shifting openings or wall tops. Floor-level exterior doors and passages
 have solid thresholds bridging that terrain-to-floor difference. Ceilings support flat and
 sloped runtime surfaces. Project authoring has the narrower flat-ceiling schema.
@@ -113,10 +140,14 @@ owned, shared, and disposed by the dedicated import module and use ordinary
 draws. Floor imports add a simple envelope collider. The exception does not
 permit asset loading in native models or generated home extensions. See
 [personal models](personal-models.md).
-Physical lights render only on the active floor. On that floor, supported emitters
+Physical lights render only on the active floor. Room, dashboard and device
+emissions share the [bounded model-lighting execution policy](model-lighting.md#rendering),
+which preserves authored declarations and total brightness within 64 physical
+point lights. Only positive-intensity sources need active slots; native and
+dashboard declarations prewarm spare bounded slots for first-activation reuse. Allocated slots
 stay mounted at zero intensity while off or unavailable. Device and dashboard
-light updates change uniforms without changing shader light counts, avoiding
-synchronous scene shader compilation during interaction. Device emitters, including
+updates within the existing peak capacity change uniforms without changing shader
+light counts. First growth to a larger bounded peak can compile shaders. Device emitters, including
 fallbacks from resolved bindings, are scoped to their owning floor so stair
 transitions never recreate another storey’s light at the active floor’s elevation. Indoor sources close to an
 opaque wall retain their unshadowed point source at the bulb. The beauty pass
@@ -167,7 +198,7 @@ and without HA bindings; other unbound devices show their disconnected state.
 Garden lanterns use a short, warm inverse-square falloff to softly illuminate
 nearby ground in night mode.
 
-Walk collision derives from walls, openings, junctions, pools, and boundaries. Boundary styles (including open fences) use the existing continuous hedge segment collider at their authored width; visible rail gaps do not create walk apertures. Furniture, hedge, and outdoor-platform barrier colliders retain their world vertical extent so a sufficiently high jump can clear them. Walls and pool edges remain full-height blockers. Explicitly marked furniture collider tops act as landing surfaces without turning other collider bounds into walkable platforms. Navigation derives optional clear spawn points and checks room connectivity; rooms without
+Walk collision derives from walls, openings, junctions, pools, and boundaries. Boundary styles (including open fences) use a continuous hedge segment collider at their authored width; visible rail gaps do not create walk apertures. Terrain-following boundaries use short connected collider runs with vertical ranges matching the local grade and boundary height, including the grass datum. Furniture, hedge, and outdoor-platform barrier colliders retain their world vertical extent so a sufficiently high jump can clear them. Walls and pool edges remain full-height blockers. Explicitly marked furniture collider tops act as landing surfaces without turning other collider bounds into walkable platforms. Navigation derives optional clear spawn points and checks room connectivity; rooms without
 a safe spawn (such as small cupboards) do not produce a validation diagnostic.
 Walk entry still requires a safe spawn and skips rooms without one. Navigation
 does not maintain a second hand-authored collision plan. Walk controls support keyboard/mouse and touch
@@ -197,7 +228,15 @@ Implementation: [contracts](../../packages/engine/src/types.ts),
 [Back to product overview](../../PRODUCT_SPEC.md).
 
 Straight, L-shaped, and spiral stairs derive treads, landings, guards, floor/ceiling apertures, and walk
-ramps from adjacent levels. Walking updates the selected floor at landings.
+ramps from adjacent levels. A terrain connection instead stores one floor and which
+route end meets the ground; its elevation and rise derive from the current grade.
+It retains the same shape geometry, guards and continuous Walk route. Terrain
+connections cut grass, soil and outdoor finish zones without making indoor slab or
+ceiling apertures. Floor and terrain landings must both be supported for exit advice
+to treat the connection as usable. Walking updates the selected floor at landings.
+Concrete and Stone stairs use solid tread bodies down to their base elevation;
+Stone adds separate tread caps. Their structural clearance uses the full solid
+body, while their walking route and apertures match the open-tread versions.
 
 Only ground-floor walls extend to the terrain datum. Shared-level wall caps are
 clipped where the neighboring wall continues, preserving exposed terrace caps.
@@ -235,7 +274,9 @@ bounds. Walls share their height slices and opening cuts with the renderer; clos
 door state does not fill these structural apertures. Bounds retain model-origin
 offsets and vertical clearance, including the spiral bridge. Unknown model bounds
 are not guessed; missing-model validation remains authoritative. Whole landing
-polygons are checked against floor regions. Width and slope are unrestricted. Full-turn
+polygons are checked against floor regions. Stair-to-stair advice compares rendered
+tread slabs and rendered spiral upper bridges at their building elevations, so
+vertically separated flights may share a stairwell without an overlap warning. Width and slope are unrestricted. Full-turn
 spirals retain the current route elevation at their coincident entrance and exit.
 Shaped plan strokes and guard rails are instanced; each model family has its own
 renderer. Legacy straight-stair geometry and stored records remain supported.
@@ -285,6 +326,14 @@ otherwise an authored exterior color is used, falling back to the general interi
 rendering share this rule. Shared horizontal junction surfaces use the general
 finish when their participating walls disagree, without changing geometry,
 collision, shadows or fade ownership.
+
+An optional `WallSpec.virtual` wall divides rooms without being built: it adds no
+geometry, collision, shadow, lighting plane, roof seam, or opening host, and junctions
+keep only their physical walls (dropped below two). Rooms and ceilings are unchanged.
+Validation requires a boolean flag and rejects openings and supported scene items on a
+virtual wall. Arrange uses the public `physicalFloor()` projection for wall support and
+corner snapping. Shared opening-clearance intervals ignore virtual incident walls.
+Construct alone draws these boundaries as dashed plan strokes, without filled joints.
 
 Interior right-angle endpoint junctions use filled corner footprints. Architectural planes retain exact geometry during LOD changes and shadows during camera cutaways.
 
@@ -346,7 +395,9 @@ using parent groups. Disjoint patches can reuse a layer; overlapping patches
 must use different layers. The component owns depth testing, depth writing,
 opaque toon material, and bounded polygon bias. A small local Z separation matches
 the paint order; callers do not supply material depth overrides. Colours and
-emissive colour/intensity remain configurable. This is not a transparent-glass or
+emissive colour/intensity remain configurable. Physical surfaces can opt into
+`castShadow` and `receiveShadow`; both default to false for flat artwork.
+This is not a transparent-glass or
 volumetric-overlay primitive, and depth bias does not replace physical clearance
 between separate objects.
 
@@ -358,3 +409,26 @@ joins are not conflicts. Detection uses transformed triangle geometry, material
 groups, and draw ranges. It is a model-space diagnostic, not a guarantee against
 all camera precision, transparency-sorting, animated intersections, or shader
 instability; the toon camera-motion regression covers the separate lighting case.
+
+## Engine UI styles
+
+`@cabane/engine/styles.css` is the single public stylesheet used by both the web
+app and the Home Assistant panel. Its ordered imports load global tokens, base
+rules, accessibility and animation defaults from `packages/engine/src/styles/`,
+and feature styles beside their owning React components. Keep the entry point's
+import order explicit: it preserves the existing cascade across component rules
+and layout overrides, independently of React mounting order.
+
+Room controls and device fields own their styles in `home-assistant-dashboard/`;
+status badges and overlays live in `room-status/`, scene actions in `action-bar/`,
+and mapping controls in `home-assistant-mapping/`. Root-level components retain
+adjacent stylesheets, including `camera-viewer.css` and `walk-preferences.css`.
+The `dashboard-*-layout.css` and `dashboard-compact-chrome.css` files beside
+`CabaneDashboard.tsx` coordinate multiple surfaces at existing breakpoints.
+`room-navigation/room-navigation.css` owns the coordinated room-focus frame,
+sheet placement and navigation overrides. Read it alongside the room sheet files
+when changing room-focus layout. Global reduced-motion overrides remain in
+`styles/reduced-motion.css`; feature-specific motion rules stay with their feature.
+
+Stylesheet extraction preserves selectors, declarations, conditions and source
+order. Responsive and reduced-motion behavior changes are separate product work.

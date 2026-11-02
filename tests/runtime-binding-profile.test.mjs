@@ -367,7 +367,7 @@ await withModules(async (load) => {
     assert.equal(result.profile.entityIdsBySlotId["demo-ac-climate-slot"], "climate.demo");
   });
 
-  test("scopes automatic candidates to the room while allowing manual single-slot entities across areas", () => {
+  test("scopes automatic candidates to the room while allowing every compatible manual function across areas", () => {
     const manifest = manifestFixture();
     const room = manifest.floors[0].rooms[0];
     const climateSlot = room.dashboardSlots.find((slot) => slot.id === "demo-climate-slot");
@@ -470,7 +470,12 @@ await withModules(async (load) => {
     });
     assert.equal(
       profileModule.validateRuntimeBindingProfile(profile, manifest, runtime).valid,
-      false,
+      true,
+    );
+    const withoutArea = { ...profile, roomAreaIds: {} };
+    assert.equal(
+      profileModule.validateRuntimeBindingProfile(withoutArea, manifest, runtime).valid,
+      true,
     );
 
     const strictManifest = manifestFixture();
@@ -485,13 +490,13 @@ await withModules(async (load) => {
       strictManifest,
       strictRuntime,
     );
-    assert.equal(strictValidation.valid, false);
+    assert.equal(strictValidation.valid, true);
     assert.deepEqual(
       strictValidation.issues
         .filter((issue) => issue.code === "profile.area")
         .map((issue) => issue.path)
         .sort(),
-      ["entityIdsBySlotId.demo-climate-slot"],
+      [],
     );
 
     const wrongAreaRuntime = connectedRuntimeFixture();

@@ -243,9 +243,13 @@ await withModules(async (load) => {
   });
   for (const [page, origin, expected] of [
     ["https://ha.example/cabane", "https://ha.example", "connected"],
-    ["http://ha.lan/cabane", "http://ha.lan", "error"],
+    ["http://ha.lan/cabane", "http://ha.lan", "connected"],
     ["https://ha.example/cabane", "http://ha.example", "error"],
-    ["http://localhost:5173/cabane", "http://127.0.0.1:8123", "connected"],
+    ["http://localhost:5173/cabane", "http://127.0.0.1:8123", "error"],
+    ["http://ha.lan:8123/cabane", "http://ha.lan:8124", "error"],
+    ["https://ha.example/cabane", "https://other.example", "error"],
+    ["http://192.0.2.1:8123/cabane", "http://192.0.2.1:8123", "connected"],
+    ["http://homeassistant.local:8123/cabane", "http://homeassistant.local:8123", "connected"],
   ])
     test(`borrowed transport: ${page} to ${origin}`, async () => {
       const dom = new JSDOM('<div id="root"></div>', { url: page });

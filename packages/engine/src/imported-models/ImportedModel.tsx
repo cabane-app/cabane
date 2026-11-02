@@ -1,3 +1,4 @@
+import { useModelLightingState } from "../model-lighting/ModelLightingSurface";
 import { useEffect, useMemo, useState } from "react";
 import { useThree } from "@react-three/fiber";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
@@ -5,14 +6,20 @@ import type { Object3D } from "three";
 import { ToonMaterial } from "../rendering";
 import { acquireGlb, disposeGlbSkeletons } from "./glb-resources";
 import type { CustomModel, ModelVector } from "./contracts";
+import type { EntityStateSnapshot } from "../types";
+import { ImportedModelSurface } from "./ImportedModelSurface";
 
 export function ImportedModelGeometry({
   model,
   size = model.normalization.size,
+  state,
 }: {
   model: CustomModel;
   size?: ModelVector;
+  state?: EntityStateSnapshot | undefined;
 }) {
+  const lightingContext = useModelLightingState();
+  const lightState = lightingContext ? lightingContext.state : state;
   const invalidate = useThree((state) => state.invalidate);
   const [loaded, setLoaded] = useState<{ root?: Object3D; error?: string }>({});
   const hash = model.asset.sha256,
@@ -65,7 +72,7 @@ export function ImportedModelGeometry({
       {loaded.root ? (
         <group position={normalization.offset}>
           <group rotation={normalization.rotation} scale={normalization.scale}>
-            <primitive object={loaded.root} dispose={null} />
+            <ImportedModelSurface root={loaded.root} light={model.light} state={lightState} />
           </group>
         </group>
       ) : (

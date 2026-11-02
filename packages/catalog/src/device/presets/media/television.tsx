@@ -22,7 +22,14 @@ const screenPalette = (visualState: HomeDeviceModelProps["visualState"]) => {
 function RoundedTvShell() {
   return (
     <group name="catalog-television-rounded-shell" position={[0, 0.515, 0]}>
-      <RoundedBox args={[1.54, 0.84, 0.06]} radius={0.025} smoothness={2} castShadow receiveShadow>
+      <RoundedBox
+        userData={{ modelGlowKey: "tv.shell" }}
+        args={[1.54, 0.84, 0.06]}
+        radius={0.025}
+        smoothness={2}
+        castShadow
+        receiveShadow
+      >
         <ToonMaterial color={CHARCOAL} />
       </RoundedBox>
     </group>
@@ -35,20 +42,20 @@ export function TelevisionModel({ visualState, liveMedia, reducedMotion }: HomeD
   return (
     <group name="catalog-television">
       <RoundedTvShell />
-      <mesh position={[0, 0.515, 0.036]} receiveShadow>
+      <mesh userData={{ modelGlowKey: "tv.screen" }} position={[0, 0.515, 0.036]} receiveShadow>
         <boxGeometry args={[1.405, 0.675, 0.014]} />
         <ToonMaterial color={palette.screen} />
       </mesh>
       {liveMedia ? (
-        <group position={[0, 0.515, 0.047]}>
+        <group userData={{ modelGlowIgnore: true }} position={[0, 0.515, 0.047]}>
           <LiveCameraSurface media={liveMedia} width={1.405} height={0.675} opacity={1} />
         </group>
       ) : visualState === "connected-active" ? (
-        <group position={[0, 0.515, 0.047]}>
+        <group userData={{ modelGlowIgnore: true }} position={[0, 0.515, 0.047]}>
           <TelevisionPicture width={1.405} height={0.675} reducedMotion={reducedMotion} />
         </group>
       ) : (
-        <group>
+        <group userData={{ modelGlowIgnore: true }}>
           <mesh position={[-0.38, 0.69, 0.047]} rotation={[0, 0, -0.1]}>
             <boxGeometry args={[0.42, 0.018, 0.006]} />
             <ToonMaterial color={palette.reflection} transparent opacity={0.34} />
@@ -61,18 +68,27 @@ export function TelevisionModel({ visualState, liveMedia, reducedMotion }: HomeD
       )}
       {[-0.54, 0.54].map((x) => (
         <group key={x} position={[x, 0, 0]}>
-          <mesh position={[0, 0.075, 0]} rotation={[0, 0, x < 0 ? -0.25 : 0.25]} castShadow>
+          <mesh
+            userData={{ modelGlowKey: `tv.leg.${x < 0 ? "left" : "right"}.stem` }}
+            position={[0, 0.075, 0]}
+            rotation={[0, 0, x < 0 ? -0.25 : 0.25]}
+            castShadow
+          >
             <capsuleGeometry args={[0.024, 0.1, 5, 12]} />
             <ToonMaterial color={METAL} />
           </mesh>
-          <mesh position={[0, 0.014, 0.018]} castShadow>
+          <mesh
+            userData={{ modelGlowKey: `tv.leg.${x < 0 ? "left" : "right"}.foot` }}
+            position={[0, 0.014, 0.018]}
+            castShadow
+          >
             <boxGeometry args={[0.25, 0.028, 0.15]} />
             <ToonMaterial color={METAL} />
             <Outlines color="#303937" thickness={0.004} screenspace={false} />
           </mesh>
         </group>
       ))}
-      <mesh position={[0, 0.119, 0.046]}>
+      <mesh userData={{ modelGlowKey: "tv.badge" }} position={[0, 0.119, 0.046]}>
         <boxGeometry args={[0.25, 0.025, 0.014]} />
         <ToonMaterial color="#222928" />
       </mesh>

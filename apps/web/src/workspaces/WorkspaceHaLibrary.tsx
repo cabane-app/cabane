@@ -9,6 +9,7 @@ import { useWorkspaceSyncCoordinator } from "./useWorkspaceSyncCoordinator";
 import type { HaWorkspaceSummary } from "./ha-workspace-client";
 import { HomeAssistantIcon } from "./HomeAssistantIcon";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
+import { WorkspaceDeletion } from "./WorkspaceDeletion";
 import { downloadConnectData } from "../editor-connect/profile-transfer";
 
 function WorkspaceHaLibraryContent({
@@ -28,8 +29,10 @@ function WorkspaceHaLibraryContent({
   const { runtime, client, coordinator } = useWorkspaceSyncCoordinator(repository);
   const [remote, setRemote] = useState<HaWorkspaceSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<HaWorkspaceSummary | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const busy = pendingId !== null;
+  const busy = pendingId !== null || deleteBusy;
   useEffect(() => {
     onBusyChange?.(busy);
   }, [busy, onBusyChange]);
@@ -41,13 +44,14 @@ function WorkspaceHaLibraryContent({
       setError(cause instanceof Error ? cause.message : "Could not list HA workspaces.");
     }
   }, [client]);
+  const localIds = localWorkspaceIds?.join("\0");
   useEffect(() => {
     if (runtime.status !== "connected") return;
     void load();
     const refresh = () => void load();
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
-  }, [runtime.status, load]);
+  }, [runtime.status, load, localIds]);
   const restore = async (summary: HaWorkspaceSummary) => {
     setPendingId(summary.home_id);
     setError(null);
@@ -73,6 +77,19 @@ function WorkspaceHaLibraryContent({
       setError(cause instanceof Error ? cause.message : "Could not download HA data.");
     }
   };
+  const deleteDialog = deleting && (
+    <WorkspaceDeletion
+      repository={repository}
+      target={{ saved: deleting, origin: runtime.origin! }}
+      onCancel={() => setDeleting(null)}
+      onBusyChange={setDeleteBusy}
+      onDeleted={async () => {
+        setRemote((items) => items.filter((item) => item.home_id !== deleting.home_id));
+        setDeleting(null);
+        setError(null);
+      }}
+    />
+  );
   if (localWorkspaceIds) {
     const suggestions = remote.filter(
       (item) => !item.corrupt && !localWorkspaceIds.includes(item.home_id),
@@ -90,6 +107,18 @@ function WorkspaceHaLibraryContent({
                 aria-busy={pendingId === item.home_id}
                 onClick={() => void restore(item)}
               />
+              <details>
+                <summary aria-label={`Actions for ${item.name}`}>•••</summary>
+                <div className="workspace-menu">
+                  <button
+                    type="button"
+                    disabled={busy || disabled}
+                    onClick={() => setDeleting(item)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </details>
               <h2>{item.name}</h2>
               <p className="workspace-suggestion-description">Saved in Home Assistant</p>
               <p className="workspace-server workspace-suggestion-server">
@@ -104,6 +133,7 @@ function WorkspaceHaLibraryContent({
               </div>
             </article>
           ))}
+        {deleteDialog}
         {(error || runtime.error) && (
           <div className="workspace-suggestion-error">
             <p role="alert" className="workspace-error">
@@ -157,10 +187,14 @@ function WorkspaceHaLibraryContent({
               >
                 {item.corrupt ? "Download raw data" : "Open"}
               </button>
+              <button type="button" disabled={busy} onClick={() => setDeleting(item)}>
+                Delete
+              </button>
             </div>
           ))}
         </>
       )}
+      {deleteDialog}
       {runtime.error && <p role="alert">{runtime.error}</p>}
       {error && <p role="alert">{error}</p>}
     </div>

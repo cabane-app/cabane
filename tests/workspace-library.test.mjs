@@ -7,7 +7,13 @@ import { JSDOM } from "jsdom";
 import { withModules } from "./test-server.mjs";
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
+  const { HomeAssistantHostSessionProvider } = await load(
+    "/packages/engine/src/HomeAssistantHostSession.tsx",
+  );
   const { WorkspaceLibrary } = await load("/apps/web/src/workspaces/WorkspaceLibrary.tsx");
+  const { WorkspaceDeleteDialog } = await load(
+    "/apps/web/src/workspaces/WorkspaceDeleteDialog.tsx",
+  );
   const entry = {
     metadata: {
       id: "a",
@@ -17,7 +23,7 @@ await withModules(async (load) => {
       createdAt: 1,
     },
   };
-  async function mount(overrides = {}) {
+  async function mount(overrides = {}, hosted = false) {
     const dom = new JSDOM('<!doctype html><div id="root"></div>', {
       url: "http://synthetic.invalid",
     });
@@ -43,6 +49,7 @@ await withModules(async (load) => {
           "Export",
           "Recover",
           "ExportRaw",
+          "AgentPilot",
         ].map((name) => [
           `on${name}`,
           async (...args) => {
@@ -52,9 +59,24 @@ await withModules(async (load) => {
       ),
       ...overrides,
     };
+    props.renderDelete = (selected, onCancel) =>
+      createElement(WorkspaceDeleteDialog, {
+        name: selected.metadata.name,
+        busy: false,
+        error: null,
+        onCancel,
+        onDelete: () => props.onDelete(selected.metadata.id),
+        onBackup: () => props.onExport(selected.metadata.id, true),
+      });
     const root = createRoot(dom.window.document.getElementById("root"));
     await act(async () =>
-      root.render(createElement(MemoryRouter, null, createElement(WorkspaceLibrary, props))),
+      root.render(
+        createElement(
+          HomeAssistantHostSessionProvider,
+          { session: hosted ? { connection: {}, origin: "https://ha.test" } : null },
+          createElement(MemoryRouter, null, createElement(WorkspaceLibrary, props)),
+        ),
+      ),
     );
     return {
       dom,
@@ -108,6 +130,19 @@ await withModules(async (load) => {
       await h.close();
     }
   });
+  test("the workspace menu opens the selected home for agent pairing in HA only", async () => {
+    const standalone = await mount();
+    assert.ok(!standalone.dom.window.document.body.textContent.includes("Connect LLM agent"));
+    await standalone.close();
+    const h = await mount({}, true);
+    try {
+      await act(async () => h.dom.window.document.querySelector("summary").click());
+      await h.click("Connect LLM agent");
+      assert.deepEqual(h.calls, [["AgentPilot", "a"]]);
+    } finally {
+      await h.close();
+    }
+  });
   test("a damaged home keeps recovery actions instead of a hidden open target", async () => {
     const h = await mount({ entries: [{ ...entry, error: "Record needs recovery" }] });
     try {
@@ -135,21 +170,17 @@ await withModules(async (load) => {
       await h.close();
     }
   });
-  test("delete requires confirmation and errors preserve the dialog for retry", async () => {
-    const h = await mount({
-      onDelete: async () => {
-        throw new Error("Storage unavailable");
-      },
-    });
+  test("delete opens the supplied dialog without deleting until confirmed", async () => {
+    const h = await mount();
     try {
       await h.click("Delete");
       assert.match(h.dom.window.document.querySelector("dialog").textContent, /Delete Lake house/);
-      await h.click("Delete workspace");
-      assert.equal(
-        h.dom.window.document.querySelector('[role="alert"]').textContent,
-        "Storage unavailable",
-      );
+      assert.deepEqual(h.calls, []);
+      await h.click("Download backup");
+      assert.deepEqual(h.calls, [["Export", "a", true]]);
       assert.ok(h.dom.window.document.querySelector("dialog"));
+      await h.click("Delete permanently");
+      assert.deepEqual(h.calls.at(-1), ["Delete", "a"]);
       await h.click("Cancel");
       assert.equal(
         h.dom.window.document.activeElement,

@@ -6,6 +6,21 @@ await withModules(async (load) => {
   const { parseHomeProjectSchema } = await load("/packages/engine/src/home-project/validation.ts");
   const { makeLegacyProject } = await load("/tests/fixtures/multiple-floors.ts");
 
+  test("apartment floor survives serialization and rejects invalid storey counts", () => {
+    const project = parseHomeProjectSchema(makeLegacyProject()).project;
+    for (const count of [0, 3, 100]) {
+      project.home.apartmentFloor = count;
+      const result = parseHomeProjectSchema(JSON.parse(JSON.stringify(project)));
+      assert.equal(result.valid, true);
+      assert.equal(result.project.home.apartmentFloor, count);
+      assert.deepEqual(result.project.floors, project.floors);
+    }
+    for (const count of [-1, 1.5, 101, "3", null, Infinity]) {
+      project.home.apartmentFloor = count;
+      assert.equal(parseHomeProjectSchema(project).valid, false);
+    }
+  });
+
   test("normalizes V1 without changing geometry, IDs, or the source", () => {
     const legacy = makeLegacyProject();
     const before = structuredClone(legacy);

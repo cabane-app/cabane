@@ -1,4 +1,10 @@
-import polygonClipping, { type Polygon as ClipPolygon } from "polygon-clipping";
+import { indoorRoomsForFloor } from "./platform-rooms";
+import { type Polygon as ClipPolygon } from "polygon-clipping";
+import {
+  differenceClippingGeometry,
+  intersectClippingGeometry,
+  unionClippingPolygons,
+} from "../architecture-geometry/architecture-clipping";
 import { planPointToWorld } from "../geometry";
 import type { FloorSpec, OutdoorPlatformSpec, PlanPoint } from "../types";
 export interface PlatformSlabPiece {
@@ -15,15 +21,16 @@ export function derivePlatformSlabPieces(
   floor: FloorSpec,
   below?: FloorSpec,
 ): PlatformSlabPiece[] {
-  let uncovered = polygonClipping.union(worldPolygon(platform.polygon, floor));
+  let uncovered = unionClippingPolygons([worldPolygon(platform.polygon, floor)]);
   const pieces: PlatformSlabPiece[] = [];
+  const rooms = below ? indoorRoomsForFloor(below) : [];
   const ceilings =
     below?.ceilings ??
     (below
       ? [
           {
             kind: "flat" as const,
-            roomIds: below.rooms.map((r) => r.id),
+            roomIds: rooms.map((r) => r.id),
             heightMeters: below.defaultCeilingHeightMeters,
           },
         ]
@@ -32,24 +39,19 @@ export function derivePlatformSlabPieces(
     for (const ceiling of ceilings) {
       if (ceiling.kind !== "flat") continue;
       const entire =
-        below.rooms.length &&
-        ceiling.roomIds.length === below.rooms.length &&
-        below.rooms.every((r) => ceiling.roomIds.includes(r.id));
+        rooms.length &&
+        ceiling.roomIds.length === rooms.length &&
+        rooms.every((r) => ceiling.roomIds.includes(r.id));
       const regions = entire
         ? (below.footprintRegions ?? [below.footprint])
-        : below.rooms.filter((r) => ceiling.roomIds.includes(r.id)).map((r) => r.polygon);
+        : rooms.filter((r) => ceiling.roomIds.includes(r.id)).map((r) => r.polygon);
       const coverage = regions.filter((p) => p.length >= 3).map((p) => worldPolygon(p, below));
       if (!coverage.length || !uncovered.length) continue;
-      const covered = polygonClipping.intersection(
-        uncovered,
-        polygonClipping.union(coverage[0], ...coverage.slice(1)),
-      );
+      const ceilingCoverage = unionClippingPolygons(coverage);
+      const covered = intersectClippingGeometry(uncovered, ceilingCoverage);
       const depth = Math.max(0.004, below.floorToFloorHeightMeters - ceiling.heightMeters);
       covered.forEach((polygon) => pieces.push({ polygon, bottom: -depth, depth }));
-      uncovered = polygonClipping.difference(
-        uncovered,
-        polygonClipping.union(coverage[0], ...coverage.slice(1)),
-      );
+      uncovered = differenceClippingGeometry(uncovered, ceilingCoverage);
     }
   uncovered.forEach((polygon) => pieces.push({ polygon, bottom: -0.16, depth: 0.16 }));
   return pieces;

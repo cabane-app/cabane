@@ -20,6 +20,7 @@ import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
 import {
   type ManifestIssue,
   deriveFloorLevels,
+  stairFloorIds,
   StylizedScene,
   ArchitectureScene,
 } from "@cabane/engine";
@@ -27,7 +28,7 @@ import {
 import { Suspense, useMemo } from "react";
 import { RetainedArrangeScene } from "./RetainedArrangeScene";
 
-import { SelectedItemControls } from "../editor-preview/furnish/SelectedItemControls";
+import { FurnishingSelectionControls } from "../editor-preview/furnish/FurnishingSelectionControls";
 
 import {
   ConstructionEditLayer,
@@ -46,7 +47,6 @@ import type { useHomeEditorController } from "./useHomeEditorController";
 
 const NO_INTERACTION = () => undefined;
 type Props = {
-  rightPanelOpen: boolean;
   onStairIssuesChange?: (issues: readonly ManifestIssue[] | null) => void;
   reference: ReferencePlanController;
   onNameFocusHandled?: () => void;
@@ -66,7 +66,7 @@ type Props = {
   | "setStairPlacement"
   | "setStairDialog"
   | "floorReferences"
-  | "commit"
+  | "executeProjectAction"
   | "snapshot"
   | "connectFloor"
   | "mode"
@@ -115,7 +115,6 @@ type Props = {
   | "deleteSceneItem"
 >;
 export function HomeEditorScene({
-  rightPanelOpen,
   reference,
   northOrientation,
   onStairIssuesChange,
@@ -133,7 +132,7 @@ export function HomeEditorScene({
   setStairPlacement,
   setStairDialog,
   floorReferences,
-  commit,
+  executeProjectAction,
   snapshot,
   connectFloor,
   mode,
@@ -263,15 +262,9 @@ export function HomeEditorScene({
                   start={snapshot.project.home.walkStart}
                   placing={placingWalkStart}
                   onPlace={(at) => {
-                    commit({
-                      ...snapshot,
-                      project: {
-                        ...snapshot.project,
-                        home: {
-                          ...snapshot.project.home,
-                          walkStart: { floorId: activeFloorId, at },
-                        },
-                      },
+                    executeProjectAction({
+                      type: "set-walk-start",
+                      walkStart: { floorId: activeFloorId, at },
                     });
                     onWalkStartPlaced();
                   }}
@@ -279,7 +272,6 @@ export function HomeEditorScene({
               )}
               {mode === "construct" && !referenceCanvas.visible && <ConstructionGrid />}
               <PreviewCamera
-                rightPanelOpen={rightPanelOpen}
                 northOrientation={northOrientation.active}
                 planWheelNavigation={mode === "construct" || mode === "furnish"}
                 view={mode === "construct" ? "top" : cameraView}
@@ -327,14 +319,16 @@ export function HomeEditorScene({
                 )}
               {mode === "construct" &&
                 snapshot.project.stairs.map((stair) => {
-                  if (stair.lowerFloorId !== activeFloorId && stair.upperFloorId !== activeFloorId)
-                    return null;
+                  if (!stairFloorIds(stair).includes(activeFloorId)) return null;
                   const selected =
                     stairDialog?.id === stair.id &&
                     constructEditor.tool === "select" &&
                     !stairPlacement;
-                  const destination =
-                    stair.lowerFloorId === activeFloorId ? stair.upperFloorId : stair.lowerFloorId;
+                  const destination = stair.terrain
+                    ? stair.terrain.floorId
+                    : stair.lowerFloorId === activeFloorId
+                      ? stair.upperFloorId
+                      : stair.lowerFloorId;
                   return (
                     <EditableStair
                       key={`${activeFloorId}:${stair.id}`}
@@ -352,26 +346,10 @@ export function HomeEditorScene({
                         setStairDialog(stair);
                       }}
                       onDraggingChange={setDragging}
-                      onCommit={(next) =>
-                        commit({
-                          ...snapshot,
-                          project: {
-                            ...snapshot.project,
-                            stairs: snapshot.project.stairs.map((existing) =>
-                              existing.id === next.id ? next : existing,
-                            ),
-                          },
-                        })
-                      }
+                      onCommit={(stair) => executeProjectAction({ type: "update-stair", stair })}
                       onGoToFloor={() => floorNavigation.selectFloor(destination)}
                       onDelete={() => {
-                        commit({
-                          ...snapshot,
-                          project: {
-                            ...snapshot.project,
-                            stairs: snapshot.project.stairs.filter((s) => s.id !== stair.id),
-                          },
-                        });
+                        executeProjectAction({ type: "delete-stair", stairId: stair.id });
                         setStairDialog(null);
                       }}
                     />
@@ -460,7 +438,7 @@ export function HomeEditorScene({
                       : constructEditor.drawPreview
                   }
                   drawAngleReferenceRadians={
-                    constructEditor.tool === "wall"
+                    constructEditor.tool === "wall" || constructEditor.tool === "virtual-wall"
                       ? constructEditor.drawAngleReferenceRadians
                       : null
                   }
@@ -630,47 +608,43 @@ export function HomeEditorScene({
                   onDraggingChange={setDragging}
                 />
               )}
-              {mode === "furnish" && selectedItem && selectedDefinition && (
-                <SelectedItemControls
-                  key={selectedItem.id}
-                  item={selectedItem}
-                  definition={selectedDefinition}
+              {mode === "furnish" && (
+                <FurnishingSelectionControls
+                  editor={furnishingEditor}
+                  items={visualSceneItems}
+                  selectedItem={selectedItem}
+                  selectedDefinition={selectedDefinition}
+                  furnishingModels={furnishingModels}
+                  deviceModels={deviceModels}
                   floor={placementFloor}
                   busy={dragging || Boolean(furnishingEditor.transaction)}
-                  onRotate={furnishingEditor.rotate}
-                  onResize={furnishingEditor.updateSize}
-                  onMovePlacement={furnishingEditor.updatePlacement}
-                  onSelect={furnishingEditor.select}
-                  onBegin={() => {
-                    furnishingEditor.beginTransaction();
-                    setDragging(true);
-                  }}
-                  onCommit={() => {
-                    furnishingEditor.commitTransaction();
-                    setDragging(false);
-                  }}
-                  onCancel={() => {
-                    furnishingEditor.cancelTransaction();
-                    setDragging(false);
-                  }}
-                  actions={{
-                    onMap:
-                      selectedItem.kind === "device" &&
-                      selectedItem.entitySlots.length > 0 &&
-                      !unsettled
-                        ? () => {
-                            if (connect.selectDevice(selectedItem.id)) selectMode("connect", true);
-                          }
-                        : undefined,
-                    onDuplicate: () => duplicateArrangeItem(selectedItem.id),
-                    onDelete: () => deleteSceneItem(selectedItem.id),
-                  }}
+                  setDragging={setDragging}
+                  onConnect={
+                    selectedItem &&
+                    ((selectedItem.entitySlots?.length ?? 0) > 0 || !!selectedItem.lightSlotId) &&
+                    !unsettled
+                      ? () => {
+                          if (
+                            connect.selectDevice(
+                              selectedItem.kind === "device"
+                                ? selectedItem.id
+                                : (selectedItem.lightSlotId ??
+                                    selectedItem.entitySlots?.[0]?.id ??
+                                    selectedItem.id),
+                            )
+                          )
+                            selectMode("connect", true);
+                        }
+                      : undefined
+                  }
+                  onDuplicate={duplicateArrangeItem}
+                  onDelete={deleteSceneItem}
                 />
               )}
             </StylizedScene>
             {mode === "construct" && stairPlacement && (
               <StairPlacement
-                key={`${activeFloorId}:${stairPlacement.shape ?? "straight"}`}
+                key={`${activeFloorId}:${stairPlacement.id}:${stairPlacement.shape ?? "straight"}`}
                 registries={stairRegistries}
                 onIssuesChange={onStairIssuesChange}
                 building={snapshot.project}
@@ -679,11 +653,7 @@ export function HomeEditorScene({
                 onDraggingChange={setDragging}
                 onCancel={() => setStairPlacement(null)}
                 onComplete={(stair) => {
-                  const project = {
-                    ...snapshot.project,
-                    stairs: [...snapshot.project.stairs, stair],
-                  };
-                  commit({ ...snapshot, project });
+                  executeProjectAction({ type: "add-stair", stair });
                   setStairPlacement(null);
                   setStairDialog(stair);
                 }}

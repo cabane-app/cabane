@@ -1,3 +1,4 @@
+import { isAuxiliaryEntitySlot } from "../entity-slot-roles";
 import { omitUndefinedProperties } from "../defined-properties";
 import { collectBindingSlots } from "../runtime-binding-profile";
 import type {
@@ -93,6 +94,11 @@ export const deriveRoomStatusMap = (
   resolved: ResolvedHomeBindings,
   runtime: HomeAssistantRuntimeSnapshot,
 ): RoomStatusMap => {
+  const auxiliarySlotIds = new Set(
+    manifest.sceneItems.flatMap((item) =>
+      (item.entitySlots ?? []).filter(isAuxiliaryEntitySlot).map((slot) => slot.id),
+    ),
+  );
   const doorIds = new Set(
     manifest.floors
       .flatMap((floor) => floor.openings)
@@ -118,7 +124,9 @@ export const deriveRoomStatusMap = (
           (candidate) => candidate.area_id === profile.roomAreaIds[room.id],
         );
         const entities = roomEntities(resolved.rooms[room.id]);
-        const reliableEntities = entities.filter((binding) => reliableState(binding.state));
+        const reliableEntities = entities.filter(
+          (binding) => !auxiliarySlotIds.has(binding.slotId) && reliableState(binding.state),
+        );
         const climateModes = reliableEntities
           .filter((binding) => binding.domain === "climate")
           .map((binding) => climateMode(binding.state!));

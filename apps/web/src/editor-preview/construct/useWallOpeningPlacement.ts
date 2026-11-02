@@ -62,10 +62,11 @@ export function useWallOpeningPlacement(
       wallId: string,
       offsetPlanUnits: number,
       side?: "left" | "right",
+      configuration = doorConfiguration,
     ) => {
       const { widthPlanUnits, sillHeightMeters, openingHeightMeters } = openingToolDimensions(
         kind,
-        doorConfiguration,
+        configuration,
         draft.coordinates.metersPerPlanUnit,
       );
       const valid = availableOpeningOffsetRanges({
@@ -83,7 +84,7 @@ export function useWallOpeningPlacement(
           (wall?.heightMeters ?? draft.defaultWallHeightMeters) - (kind === "niche" ? 0.002 : 0)
       ) {
         setOpeningError("This opening does not fit on this wall.");
-        return;
+        return false;
       }
       setOpeningError(null);
       // Placement is single-shot: return to Select while preserving the new
@@ -94,9 +95,10 @@ export function useWallOpeningPlacement(
         wallId,
         kind,
         offsetPlanUnits,
-        doorConfiguration,
+        doorConfiguration: configuration,
         ...(side ? { side } : {}),
       });
+      return true;
     },
     [draft, doorConfiguration, dispatch, setOpeningError],
   );

@@ -1,6 +1,7 @@
 import { withBrowserDiagnostics } from "./browser-test-diagnostics.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
+import { testGlb } from "./fixtures/personal-glb.mjs";
 import { createBrowserTestSession, getBrowserTestServer } from "./browser-test-environment.mjs";
 
 const fixture = `<!doctype html><div id="root"></div><script type="module">
@@ -97,6 +98,69 @@ test(
       await saved.context().close();
     } finally {
       await browser?.close();
+    }
+  }),
+);
+
+// A non-loopback HTTP origin exposes actual browser capability restrictions.
+test(
+  "native HTTP supports UUIDs, SHA-256 and IndexedDB model storage",
+  { timeout: 10_000 },
+  withBrowserDiagnostics(async () => {
+    const { server } = await getBrowserTestServer();
+    const browser = await createBrowserTestSession();
+    try {
+      const page = await browser.newPage();
+      await page.route("http://homeassistant.local:8123/**", async (route) => {
+        const url = new URL(route.request().url());
+        if (url.pathname === "/native-first-launch") {
+          await route.fulfill({
+            contentType: "text/html",
+            body: "<!doctype html><title>HTTP capabilities</title>",
+          });
+        } else {
+          const response = await route.fetch({
+            url: new URL(url.pathname + url.search, server.resolvedUrls.local[0]).href,
+          });
+          await route.fulfill({ response });
+        }
+      });
+      await page.goto("http://homeassistant.local:8123/native-first-launch?mode=saved");
+
+      const result = await page.evaluate(async (glb) => {
+        const { sha256Hex } = await import("/packages/engine/src/sha256-digest.ts");
+        const { createBrowserUuid } = await import("/packages/engine/src/browser-uuid.ts");
+        const { borrowedHomeAssistantTransportError } =
+          await import("/packages/engine/src/home-assistant-auth.ts");
+        const { createModelAssetRepository } =
+          await import("/packages/engine/src/imported-models/asset-storage.ts");
+        const bytes = new Uint8Array(glb);
+        const sha256 = await sha256Hex(bytes);
+        const repository = createModelAssetRepository(indexedDB);
+        await repository.restore([{ bytes, sha256, byteLength: bytes.length }]);
+        return {
+          secure: isSecureContext,
+          subtle: typeof crypto.subtle,
+          uuid: typeof crypto.randomUUID,
+          generated: createBrowserUuid(),
+          digest: await sha256Hex(new TextEncoder().encode("abc")),
+          stored: Array.from(await repository.read(sha256)),
+          expected: Array.from(bytes),
+          transportError: borrowedHomeAssistantTransportError(location.href, location.origin),
+        };
+      }, Array.from(testGlb()));
+      assert.equal(result.secure, false);
+      assert.equal(result.subtle, "undefined");
+      assert.equal(result.uuid, "undefined");
+      assert.equal(
+        result.digest,
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+      );
+      assert.match(result.generated, /^[a-f0-9-]{14}4[a-f0-9-]{21}$/);
+      assert.deepEqual(result.stored, result.expected);
+      assert.equal(result.transportError, null);
+    } finally {
+      await browser.close();
     }
   }),
 );

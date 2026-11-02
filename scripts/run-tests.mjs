@@ -49,6 +49,7 @@ try {
           const environment = {
             ...process.env,
             CABANE_TEST_SHARED_MODULES: files.length ? "0" : "1",
+            CABANE_TEST_SHARD: files.length ? "" : file,
           };
           delete environment.NODE_TEST_CONTEXT;
           delete environment.CABANE_TEST_REPORT;
@@ -112,6 +113,7 @@ if (reportDirectory) {
           platform: process.platform,
           arch: process.arch,
           concurrency,
+          ci: process.env.CI === "true",
           suite: process.env.CABANE_TEST_SUITE ?? "all",
           group: process.env.CABANE_VERIFY_GROUP ?? null,
           elapsedMs: performance.now() - startedAt,

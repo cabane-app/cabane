@@ -1,3 +1,4 @@
+import { selectConstructionTool } from "../tests/editor-browser-tools.mjs";
 import assert from "node:assert/strict";
 import { chromium } from "playwright-core";
 import { mkdir } from "node:fs/promises";
@@ -67,7 +68,7 @@ try {
       { selector, count },
     );
   };
-  await page.getByRole("button", { name: "Wall", exact: true }).click();
+  await selectConstructionTool(page, "Wall");
   for (let index = 0; index < 3; index += 1) {
     await draw(corners[index], corners[index + 1]);
     assert.equal(await inspectorIssues.count(), 0);
@@ -86,7 +87,7 @@ try {
   await page.getByRole("button", { name: "Select", exact: true }).click();
   await expectCount(errorSelector, 3);
   assert.equal(await markers.count(), 3);
-  await page.getByRole("button", { name: "Wall", exact: true }).click();
+  await selectConstructionTool(page, "Wall");
   assert.equal(await inspectorIssues.count(), 0);
   assert.equal(await markers.count(), 0);
   await draw(corners[3], corners[0]);
@@ -103,7 +104,7 @@ try {
   assert.equal(await markers.count(), 1);
   await page.screenshot({ path: `${output}/single-room-name-issue.png` });
   // Switch modes after drawing: each mode owns its own camera framing.
-  await page.getByRole("button", { name: "Wall", exact: true }).click();
+  await selectConstructionTool(page, "Wall");
   await page.getByRole("button", { name: "Arrange", exact: true }).click();
   await expectCount(".construction-validation-marker", 1);
   await page.getByRole("button", { name: "Construct", exact: true }).click();

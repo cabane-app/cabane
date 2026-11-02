@@ -2,6 +2,7 @@ import { lazy, Suspense, useMemo, useRef, type ComponentProps } from "react";
 import { useBlocker, useLocation, useNavigate } from "react-router";
 import {
   editorPath,
+  agentPilotRequested,
   editorRequestForPath,
   workspaceHomePath,
   shouldFlushEditorExit,
@@ -23,6 +24,14 @@ export function RoutedHomeEditor({ onClose, ...props }: ComponentProps<typeof Ho
       }) as EditorOpenRequest,
     [location.pathname, location.state],
   );
+  const agentPilotOpen = agentPilotRequested(location.search);
+  const closeAgentPilot = () => {
+    const search = new URLSearchParams(location.search);
+    search.delete("agent-pilot");
+    void navigate(`${location.pathname}${search.size ? `?${search}` : ""}`, {
+      replace: true,
+    });
+  };
   // Browser Back must save the draft just like the editor's Home button.
   const allowExit = useRef(false);
   const blocker = useBlocker(
@@ -40,16 +49,25 @@ export function RoutedHomeEditor({ onClose, ...props }: ComponentProps<typeof Ho
     <Suspense fallback={<main className="direction-project-loading">Opening the editor…</main>}>
       <HomeEditor
         {...props}
+        agentPilotOpen={agentPilotOpen}
+        onAgentPilotClose={closeAgentPilot}
         initialRequest={request}
         onWorkspaces={() => void navigate("/workspaces")}
         onHomeAssistantSettings={() =>
-          void navigate(`${workspaceHomePath(props.initialRecord.homeId)}/home-assistant`)
+          go({ mode: "construct", panel: "settings", settingsSection: "home-assistant" })
         }
         onRecoveryWorkspaces={() => {
           allowExit.current = true;
           void navigate("/workspaces");
         }}
-        navigation={{ request, go, exitRequested: blocker.state === "blocked" }}
+        navigation={{
+          request,
+          go,
+          exitRequested: blocker.state === "blocked",
+          cancelExit: () => {
+            if (blocker.state === "blocked") blocker.reset();
+          },
+        }}
         onClose={(record, reason) => {
           allowExit.current = true;
           onClose(record, reason);

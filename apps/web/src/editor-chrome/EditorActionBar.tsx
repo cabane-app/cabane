@@ -1,27 +1,13 @@
 import { DecorationsTools } from "./DecorationsTools";
 import type { FloorEditorTool } from "@cabane/engine";
 import { EditorActionButton } from "./EditorActionButton";
-import type { EditorMode } from "./EditorModeNav";
-
-const constructionTools = [
-  { tool: "select", label: "Select", key: "V" },
-  { tool: "wall", label: "Wall", key: "W" },
-  { tool: "door", label: "Door", key: "D" },
-  { tool: "window", label: "Window", key: "N" },
-  { tool: "passage", label: "Passage", key: "A" },
-  { tool: "floor", label: "Floor", key: "F" },
-  { tool: "measure", label: "Measure", key: "M" },
-] as const;
+import { EditorToolGroup } from "./EditorToolGroup";
+import { wallTools, openingTools } from "./construction-tool-options";
 
 export interface EditorActionBarProps {
   inert?: boolean | undefined;
-  mode: EditorMode;
   tool: FloorEditorTool;
   onToolChange: (tool: FloorEditorTool) => void;
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
   onStairs?: () => void;
   stairsActive?: boolean;
   stairsDisabledReason?: string | undefined;
@@ -29,77 +15,77 @@ export interface EditorActionBarProps {
 
 export function EditorActionBar({
   inert,
-  mode,
   tool,
   onToolChange,
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
   onStairs,
   stairsActive,
   stairsDisabledReason,
 }: EditorActionBarProps) {
-  const constructing = mode === "construct";
   return (
     <div
       inert={inert}
       className="editor-action-bar"
       role="group"
-      data-mode={mode}
-      aria-label={constructing ? "Construction actions" : "Edit history"}
+      data-mode="construct"
+      aria-label="Construction actions"
     >
-      {constructing && (
-        <>
-          {constructionTools.flatMap((action) => [
-            <EditorActionButton
-              key={action.tool}
-              icon={action.tool}
-              label={action.label}
-              showLabel
-              pressed={
-                !stairsActive &&
-                (tool === action.tool || (tool === "platform" && action.tool === "floor"))
-              }
-              shortcut={action.key}
-              keyShortcuts={action.key}
-              onClick={() => onToolChange(action.tool)}
-            />,
-            ...(action.tool === "wall" && onStairs
-              ? [
-                  <EditorActionButton
-                    key="stairs"
-                    icon="stairs"
-                    label="Stairs"
-                    showLabel
-                    pressed={stairsActive}
-                    disabled={Boolean(stairsDisabledReason)}
-                    disabledReason={stairsDisabledReason}
-                    onClick={onStairs}
-                  />,
-                ]
-              : []),
-          ])}
-          <DecorationsTools tool={tool} onToolChange={onToolChange} disabled={inert} />
-          <span className="editor-action-bar__separator" aria-hidden="true" />
-        </>
+      <EditorActionButton
+        icon="select"
+        label="Select"
+        showLabel
+        pressed={!stairsActive && tool === "select"}
+        shortcut="V"
+        keyShortcuts="V"
+        onClick={() => onToolChange("select")}
+      />
+      <EditorToolGroup
+        label="Wall"
+        panelLabel="Wall tools"
+        icon="wall"
+        tools={wallTools}
+        tool={stairsActive ? null : tool}
+        onToolChange={onToolChange}
+        disabled={inert}
+      />
+      <EditorToolGroup
+        label="Openings"
+        panelLabel="Opening tools"
+        icon="door"
+        tools={openingTools}
+        tool={stairsActive ? null : tool}
+        onToolChange={onToolChange}
+        disabled={inert}
+      />
+      <EditorActionButton
+        icon="floor"
+        label="Floor"
+        showLabel
+        pressed={!stairsActive && tool === "floor"}
+        shortcut="F"
+        keyShortcuts="F"
+        onClick={() => onToolChange("floor")}
+      />
+      {onStairs && (
+        <EditorActionButton
+          icon="stairs"
+          label="Stairs"
+          showLabel
+          pressed={stairsActive}
+          disabled={Boolean(stairsDisabledReason)}
+          disabledReason={stairsDisabledReason}
+          onClick={onStairs}
+        />
       )}
       <EditorActionButton
-        icon="undo"
-        label="Undo"
-        disabled={!canUndo}
-        onClick={onUndo}
-        shortcut="⌘/Ctrl Z"
-        keyShortcuts="Control+Z Meta+Z"
+        icon="measure"
+        label="Measure"
+        showLabel
+        pressed={!stairsActive && tool === "measure"}
+        shortcut="M"
+        keyShortcuts="M"
+        onClick={() => onToolChange("measure")}
       />
-      <EditorActionButton
-        icon="redo"
-        label="Redo"
-        disabled={!canRedo}
-        onClick={onRedo}
-        shortcut="⌘/Ctrl Shift Z · Ctrl Y"
-        keyShortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
-      />
+      <DecorationsTools tool={tool} onToolChange={onToolChange} disabled={inert} />
     </div>
   );
 }

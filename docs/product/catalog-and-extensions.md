@@ -18,7 +18,13 @@ home registers none.
 Scene-item rendering avoids drawing both declarative items and legacy room
 composition for the same declarative project. Missing furnishing and device
 definitions remain warning-level project issues and render editable generic
-placeholders; structural validation errors still block publication. Arrange's
+placeholders in the editor and dashboard, preserving item IDs, placements and binding
+slots. The editor Issues panel gives simple HACS update/restart/reload instructions
+and custom-model reimport guidance. Missing runtime device definitions are warnings,
+including legacy devices, which use a generic placeholder when their size is unknown.
+Structural validation errors still block rendering and publication. Blocking dashboard
+screens retain Workspaces and backup actions, with paths and diagnostics under collapsed
+technical details. Workspace backups include private connections and verified GLB assets. Arrange's
 My models model-pack import resolves those IDs without changing the stable
 catalog registries.
 
@@ -118,12 +124,26 @@ Only descriptors declaring `defaultColor` offer this control.
 
 ## Device activity
 
+Device model props include every attached reading as `{ slot, state? }` in slot
+order, including unmapped readings and readings hidden from the dashboard or map.
+The declaration retains the expected type when state is missing. The existing
+snapshot provides the value, device class, unit, availability and staleness without
+another subscription or binding. The primary `state` and `visualState` keep their
+existing meaning; each model chooses how its readings affect its visuals.
+
 Preset activity is catalog-owned and follows resolved `visualState`; unavailable,
 disconnected and inactive devices never display an active effect. TV artwork yields
 to live camera media. Motion uses the existing scene frames, respects reduced motion,
 and does not allocate lights, textures or external assets. Holograms face the camera
 in Orbit and Walk, retain depth occlusion, and do not intercept pointer interaction.
 Their decorative extent does not change physical placement or collision bounds.
+
+Coffee maker and electric kettle steam additionally requires every attached power
+reading to be available, fresh, finite and strictly positive, with device class
+`power` and unit `W` or `kW`. A slot declared for power still counts when its live
+state is missing or incompatible, keeping steam off. Multiple power readings are
+not summed. Without a power reading, the existing primary-state behavior applies.
+Their connection beacons and controls continue to follow the primary entity.
 
 The complete preset categorization is maintained in [device activity](../device-activity.md).
 
@@ -139,3 +159,10 @@ apartment-specific fitted platforms are excluded. Square cube storage shares one
 frame with two- and four-compartment variants. Wall-mounted awnings and cleaning
 racks use ordinary wall support; folding balcony furniture uses outdoor ground
 support. Existing catalog IDs and default variants remain unchanged.
+
+The integrated roller shutter is a separate Arrange cover device with exterior-recessed
+window fitting and indoor room controls. Its concealed roll requires no architectural
+cut. Full-size slats slide upward behind the exit strip, smoothly retarget from the
+current pose, freeze when readings become unusable, and settle immediately for reduced
+motion. The catalog owns the closed opening clearance metadata; the engine derives
+room membership from the opposite physical wall face. No project fields are added.

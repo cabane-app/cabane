@@ -9,6 +9,7 @@ import {
   type HomeManifestValidationOptions,
 } from "./validation/core";
 import { validateManifestRules } from "./validation/manifest-rules";
+import { recoverModelLighting } from "./validation/recover-model-lighting";
 
 export type { HomeManifestValidationOptions } from "./validation/core";
 
@@ -26,13 +27,17 @@ export const validateHomeManifest = (
     };
   }
 
-  const context = createValidationContext(input, options);
-  const issues = [...validateManifestRules(input, context)].sort(
+  const recovered = recoverModelLighting(input);
+  const context = createValidationContext(recovered.input, options);
+  const issues = [...recovered.issues, ...validateManifestRules(recovered.input, context)].sort(
     (left, right) => left.path.localeCompare(right.path) || left.code.localeCompare(right.code),
   );
-  if (input.schemaVersion === 2 && !issues.some((candidate) => candidate.severity === "fatal")) {
+  if (
+    recovered.input.schemaVersion === 2 &&
+    !issues.some((candidate) => candidate.severity === "fatal")
+  ) {
     try {
-      issues.push(...validateStairs(input as unknown as HomeManifest, options));
+      issues.push(...validateStairs(recovered.input as unknown as HomeManifest, options));
     } catch {
       issues.push(
         issue(
@@ -49,9 +54,9 @@ export const validateHomeManifest = (
   const canRender = !issues.some((candidate) => candidate.severity === "fatal");
   return omitUndefinedProperties({
     manifest: canRender
-      ? input.schemaVersion === 1
-        ? migrateLegacyManifest(input as unknown as LegacyHomeManifest)
-        : (input as unknown as HomeManifest)
+      ? recovered.input.schemaVersion === 1
+        ? migrateLegacyManifest(recovered.input as unknown as LegacyHomeManifest)
+        : (recovered.input as unknown as HomeManifest)
       : undefined,
     issues,
     canRender,

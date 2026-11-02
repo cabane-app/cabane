@@ -21,18 +21,20 @@ Home renders published data; the editor reads the draft. Routes are:
 | `/workspaces`                                                              | Library: New, Import, Open, Rename, Duplicate, Export, Delete                                                                                                        |
 | `/open/:workspaceId?ha=<origin>`                                           | Authenticate, open the exact HA-saved home, and enable sync in this browser; optional `view=dashboard` identifies a dashboard link                                   |
 | `/workspaces/:workspaceId`                                                 | Published Home; unapplied homes open Construct                                                                                                                       |
-| `/workspaces/:workspaceId/home-assistant`                                  | HA connection, cross-device storage, full workspace backups                                                                                                          |
+| `/workspaces/:workspaceId/settings/:section`                               | Settings with sidebar navigation for HA, shortcuts, backups, orbital view, editor and Explore                                                                        |
 | `/workspaces/:workspaceId/construct`                                       | 2D architecture editing                                                                                                                                              |
 | `/workspaces/:workspaceId/arrange`                                         | Furniture and device placement                                                                                                                                       |
-| `/workspaces/:workspaceId/mobile-editor?mode=construct` or `?mode=arrange` | Phone editor guidance before Construct or Arrange                                                                                                                    |
+| `/workspaces/:workspaceId/mobile-editor?mode=construct` or `?mode=arrange` | Compatibility redirect into Construct or Arrange                                                                                                                     |
 | `/workspaces/:workspaceId/connect`                                         | Resolves the initial mapping view                                                                                                                                    |
 | `/workspaces/:workspaceId/connect/rooms`                                   | Room-to-area mapping                                                                                                                                                 |
 | `/workspaces/:workspaceId/connect/devices`                                 | Device and entity-slot mapping                                                                                                                                       |
 
+Legacy workspace `/home-assistant`, `/shortcuts` and `/action-bar` URLs open their matching Settings section. `/settings` opens Home Assistant.
+
 Old unscoped editor paths are not aliases. Missing local workspace IDs offer Open from Home Assistant and the library; absence in this browser is not described as remote deletion. Refresh retains the workspace URL. Mode changes retain edit history within
 a home. Leaving for Home, the library, or another workspace flushes the draft;
 a failed save keeps the editor open. Home offers Workspaces in its three-dot
-scene menu. In Construct, Arrange, Connect, and Shortcuts, the current workspace name beneath
+scene menu. In Construct, Arrange, Connect, and Settings, the current workspace name beneath
 Cabane links back to the library, using the same guarded save-on-exit flow.
 In the library, the whole home card opens its workspace; its three-dot menu keeps
 management actions separate. Each card has separate, non-clickable Connection and Storage rows. The library reports “HA configured” for a stored URL, never a live connection. Storage distinguishes Local only, Saved to HA · sync off, Sync enabled, and Changes pending; the library does not contact HA. Draft and recovery labels remain independent.
@@ -136,17 +138,16 @@ are stored in the optional buildTutorial field of the per-home browser setup
 record, outside project history and exports. Existing homes, imports, and duplicates
 do not automatically enroll. Storage failure retains progress for the session
 and shows a nonblocking warning. Deleting the target room adopts another room or
-returns guidance to drawing walls. The tutorial scrolls with the properties panel
+returns guidance to drawing walls. The tutorial scrolls with the full-screen tools panel
 on phones so the complete catalog and inspector remain accessible.
 
-Every editor mode keeps the workspace sidebar with a consistent mode title and short task description. Contextual headings and form labels sit below that introduction. On narrow screens the sidebar becomes a scrollable bottom panel.
+Desktop editor modes keep the workspace sidebar with a consistent mode title and short task description. Construct and Arrange on phones use a compact dock to open Tools, Properties or Issues full screen on demand. The panel header supplies the mode and floor context, and Done returns to the canvas.
 
-On phone-sized screens, entering Construct or Arrange first opens a full-screen guidance route. It offers the demo, the browser's native share sheet for `cabane.my` (with a copy-link fallback), and a choice to keep editing on mobile. Dismissing the guidance permits editor entry for the current browser session. The guidance route is directly addressable for review.
+Phones enter Construct and Arrange directly. The former `/workspaces/:workspaceId/mobile-editor` guidance route redirects to the requested editor mode, preserving old links.
 
 On desktop, active build tutorial guidance floats at the editor canvas’s top right,
-below the toolbar; on compact screens it stays in the properties panel. The
-2D/3D and Explore controls sit at the canvas’s bottom left, above the properties
-panel on portrait mobile layouts.
+below the toolbar; on phones it stays in the full-screen tools panel. The
+2D/3D and Explore controls sit at the canvas’s bottom left, above the bottom dock on portrait mobile layouts.
 
 Home Assistant settings are linked from each workspace menu, below Edit the home
 in the dashboard menu, and from Connection settings in the Connect footer. Leaving

@@ -2,7 +2,21 @@ import { Canvas } from "@react-three/fiber";
 import { Bounds, OrbitControls } from "@react-three/drei";
 import { useMemo } from "react";
 import type { Object3D } from "three";
-import type { CustomModelNormalization, CustomModel } from "@cabane/engine";
+import {
+  ImportedModelSurface,
+  importedLightSources,
+  type CustomModelNormalization,
+  type CustomModel,
+  type EntityStateSnapshot,
+} from "@cabane/engine";
+
+const previewState: EntityStateSnapshot = {
+  entityId: "light.preview",
+  state: "on",
+  attributes: {},
+  available: true,
+  stale: false,
+};
 
 export function ModelImportPreview({
   root,
@@ -41,22 +55,23 @@ export function ModelImportPreview({
           <group position={center}>
             <group position={normalization.offset}>
               <group rotation={normalization.rotation} scale={normalization.scale}>
-                <primitive object={root} dispose={null} />
+                <ImportedModelSurface root={root} light={light} state={previewState} />
               </group>
             </group>
-            {light && (
-              <group position={light.position}>
-                <mesh>
-                  <sphereGeometry args={[Math.max(0.015, span * 0.025), 12, 8]} />
-                  <meshBasicMaterial color={light.color} />
-                </mesh>
-                <pointLight
-                  color={light.color}
-                  intensity={light.maxIntensity}
-                  distance={light.distance}
-                />
-              </group>
-            )}
+            {light &&
+              importedLightSources(light).map((source, index) => (
+                <group key={index} position={source.position}>
+                  <mesh>
+                    <sphereGeometry args={[Math.max(0.015, span * 0.025), 12, 8]} />
+                    <meshBasicMaterial color={source.color} />
+                  </mesh>
+                  <pointLight
+                    color={source.color}
+                    intensity={source.maxIntensity}
+                    distance={source.distance}
+                  />
+                </group>
+              ))}
           </group>
         </Bounds>
         <OrbitControls makeDefault enablePan={false} />

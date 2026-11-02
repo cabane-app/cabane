@@ -1,3 +1,4 @@
+import { MAX_ORTHOGRAPHIC_ZOOM, MIN_ORBIT_ZOOM } from "./camera-zoom";
 import type { OrbitControls } from "three-stdlib";
 import { useRef, useState, useSyncExternalStore } from "react";
 
@@ -34,8 +35,8 @@ export function readOrbitView(key: string): Preference {
         vector(p.target) &&
         Math.hypot(...p.position.map((n, i) => n - p.target[i])) > 0.01 &&
         Number.isFinite(p.zoom) &&
-        p.zoom >= 1 &&
-        p.zoom <= 190 &&
+        p.zoom >= MIN_ORBIT_ZOOM &&
+        p.zoom <= MAX_ORTHOGRAPHIC_ZOOM &&
         Array.isArray(p.viewport) &&
         p.viewport.length === 2 &&
         p.viewport.every((n) => Number.isFinite(n) && n > 0);
@@ -85,8 +86,11 @@ export function fitSavedOrbitView(
   return {
     ...pose,
     zoom: Math.max(
-      1,
-      Math.min(190, pose.zoom * Math.min(width / pose.viewport[0], height / pose.viewport[1])),
+      MIN_ORBIT_ZOOM,
+      Math.min(
+        MAX_ORTHOGRAPHIC_ZOOM,
+        pose.zoom * Math.min(width / pose.viewport[0], height / pose.viewport[1]),
+      ),
     ),
     viewport: [width, height],
   };

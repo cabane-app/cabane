@@ -4,13 +4,15 @@ import { planPointToWorld, polygonSignedArea } from "../geometry";
 
 import type { FloorSpec, RoomSpec } from "../types";
 import { differenceClippingGeometry, unionClippingPolygons } from "./architecture-clipping";
+import { physicalFloor } from "./physical-floor";
 import { junctionCornerMiterPolygon, orientedWallPolygon } from "./wall-solid-footprints";
 
 /** Interior floor area in m², excluding wall footprints and doorway recesses. */
 export const roomInteriorAreaSquareMeters = (
   room: Pick<RoomSpec, "polygon">,
-  floor: FloorSpec,
+  requestedFloor: FloorSpec,
 ): number => {
+  const floor = physicalFloor(requestedFloor);
   const contour: ClippingPolygon = [
     room.polygon.map(
       (point) => [...planPointToWorld(point, floor.coordinates)] as [number, number],

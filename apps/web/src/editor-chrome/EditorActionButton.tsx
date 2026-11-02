@@ -6,8 +6,8 @@ import { EditorIcon, type EditorIconName } from "./EditorIcon";
 interface EditorActionButtonProps {
   icon: EditorIconName;
   label: string;
-  shortcut?: string;
-  keyShortcuts?: string;
+  shortcut?: string | undefined;
+  keyShortcuts?: string | undefined;
   showLabel?: boolean;
   pressed?: boolean | undefined;
   disabled?: boolean | undefined;
@@ -73,6 +73,7 @@ export function EditorActionButton({
       <button
         type="button"
         className="editor-action-button"
+        data-show-label={showLabel || undefined}
         aria-label={label}
         title={disabled ? disabledReason : undefined}
         aria-description={disabled ? disabledReason : warning}
@@ -92,6 +93,11 @@ export function EditorActionButton({
       >
         <EditorIcon name={icon} />
         {showLabel && <span>{label}</span>}
+        {expanded !== undefined && (
+          <span className="editor-action-button__disclosure">
+            <EditorIcon name="chevron" />
+          </span>
+        )}
         {warning && (
           <span className="editor-action-button__warning">
             <EditorIcon name="warning" />

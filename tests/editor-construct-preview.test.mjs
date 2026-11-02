@@ -393,6 +393,7 @@ await withModules(async (load) => {
     const missing = reconcileSceneItemCeilingDependencies([item], floor);
     assert.equal(missing.items[0], item);
     assert.equal(missing.issues[0].code, "editor.ceiling-support-missing");
+    assert.equal(missing.issues[0].severity, "warning");
     assert.equal(missing.issues[0].path, "sceneItems[0].placement");
 
     const ambiguousFloor = {
@@ -427,6 +428,7 @@ await withModules(async (load) => {
     const ambiguous = reconcileSceneItemCeilingDependencies([ambiguousItem], ambiguousFloor);
     assert.equal(ambiguous.items[0], ambiguousItem);
     assert.equal(ambiguous.issues[0].code, "editor.ceiling-support-ambiguous");
+    assert.equal(ambiguous.issues[0].severity, "warning");
   });
 
   test("moves a selected wall endpoint and every connected topology endpoint", () => {

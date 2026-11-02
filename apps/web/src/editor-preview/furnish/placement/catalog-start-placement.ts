@@ -11,7 +11,6 @@ import {
   type SceneItemSpec,
   type SceneModelEditorDescriptor,
 } from "@cabane/engine";
-import type { CatalogEntry } from "../catalog/catalog";
 import { selectionBoxGeometry } from "../editor-state";
 import {
   placementCandidate as supportCandidate,
@@ -40,7 +39,7 @@ const footprint = (
 // Choose only the starting support. Once added, the item uses the ordinary
 // selection, movement, rotation, properties, and history paths.
 export function catalogStartPlacement(
-  entry: CatalogEntry,
+  entry: { modelId: string; definition: SceneModelEditorDescriptor },
   floor: FloorSpec,
   preferredAt: PlanPoint,
   scene?: {

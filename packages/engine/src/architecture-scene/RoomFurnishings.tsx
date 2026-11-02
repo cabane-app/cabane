@@ -69,6 +69,7 @@ export const statesBySlotIdForRoom = (
   const resolvedRoom = resolvedBindings.rooms[roomId];
   if (!resolvedRoom) return EMPTY_STATES;
   const entities = [
+    ...(resolvedRoom.sceneEntities ?? []),
     ...Object.values(resolvedRoom.sections).flat(),
     ...resolvedRoom.devices.flatMap((device) => device.entities),
   ];

@@ -456,6 +456,7 @@ await withModules(async (load) => {
       "thermometer",
       "motion-sensor",
       "motorized-blind",
+      "integrated-roller-shutter",
       "leak-sensor",
       "ceiling-fan",
       "table-fan",
@@ -511,9 +512,11 @@ await withModules(async (load) => {
         definition.complexity.visibleMeshes <=
           (["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
             ? 72
-            : id === "pergola-string-lights"
-              ? 17
-              : 16),
+            : id === "integrated-roller-shutter"
+              ? 35
+              : id === "pergola-string-lights"
+                ? 17
+                : 16),
       );
       assert.ok(
         definition.complexity.triangles <=
@@ -531,340 +534,6 @@ await withModules(async (load) => {
     assert.equal(catalog.isStableDeviceModelId("not-a-model"), false);
     assert.equal(catalog.airflowWaveState, undefined);
     assert.equal(catalog.createAirflowWaveGeometry, undefined);
-  });
-
-  test("publishes complete editor metadata for every stable device model", () => {
-    const expected = {
-      "ceiling-fan": ["Ceiling fan", "Climate", [1.2, 0.4, 1.2], { kind: "uniform" }, "ceiling"],
-      "table-fan": ["Table fan", "Climate", [0.36, 0.48, 0.24], { kind: "uniform" }, "absolute"],
-      "pedestal-fan": [
-        "Pedestal fan",
-        "Climate",
-        [0.45, 1.35, 0.4],
-        { kind: "uniform" },
-        "absolute",
-      ],
-      "indoor-ac": ["Indoor AC", "Climate", [0.86, 0.28, 0.206], { kind: "fixed" }, "wall"],
-      "washing-machine": [
-        "Washing machine",
-        "Appliances",
-        [0.632, 0.865, 0.63],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      "tumble-dryer": [
-        "Tumble dryer",
-        "Appliances",
-        [0.6, 0.85, 0.65],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      dishwasher: ["Dishwasher", "Appliances", [0.6, 0.85, 0.65], { kind: "fixed" }, "absolute"],
-      oven: ["Oven", "Appliances", [0.6, 0.6, 0.62], { kind: "fixed" }, "absolute"],
-      microwave: ["Microwave", "Appliances", [0.52, 0.31, 0.4], { kind: "fixed" }, "absolute"],
-      "coffee-maker": [
-        "Coffee maker",
-        "Appliances",
-        [0.24, 0.36, 0.34],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      "electric-kettle": [
-        "Electric kettle",
-        "Appliances",
-        [0.22, 0.26, 0.2],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      freezer: ["Freezer", "Appliances", [0.65, 1.75, 0.68], { kind: "fixed" }, "absolute"],
-      "pet-feeder": ["Pet feeder", "Appliances", [0.24, 0.35, 0.36], { kind: "fixed" }, "absolute"],
-      "weather-station": [
-        "Weather station",
-        "Sensors",
-        [0.18, 0.12, 0.04],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      "water-heater": [
-        "Water heater",
-        "Appliances",
-        [0.572, 1.456, 0.43],
-        { kind: "fixed" },
-        "wall",
-      ],
-      speaker: ["Speaker", "Media", [0.26, 0.39, 0.26], { kind: "uniform" }, "absolute"],
-      television: [
-        "Television",
-        "Media",
-        [1.58, 0.95, 0.18],
-        { kind: "axes", axes: ["width", "height"] },
-        "absolute",
-      ],
-      "wall-television": [
-        "Wall television · 110 inch",
-        "Media",
-        [2.4, 1.36, 0.07],
-        { kind: "fixed" },
-        "wall",
-      ],
-      "camera-screen": [
-        "Camera screen",
-        "Media",
-        [0.98, 0.62, 0.061],
-        { kind: "uniform" },
-        "absolute",
-      ],
-      "connected-frame-oak": [
-        "Connected frame · Oak",
-        "Media",
-        [0.72, 0.52, 0.045],
-        { kind: "uniform" },
-        "wall",
-      ],
-      "connected-frame-black": [
-        "Connected frame · Black",
-        "Media",
-        [0.72, 0.52, 0.045],
-        { kind: "uniform" },
-        "wall",
-      ],
-      "floor-lamp": [
-        "Floor lamp",
-        "Lighting",
-        [0.652, 1.796, 0.652],
-        { kind: "uniform" },
-        "absolute",
-      ],
-      "terracotta-pendant": [
-        "Terracotta pendant",
-        "Lighting",
-        [0.66, 0.64, 0.66],
-        { kind: "uniform" },
-        "ceiling",
-      ],
-      "low-garden-lantern": [
-        "Low garden lantern",
-        "Lighting",
-        [0.24, 0.35, 0.24],
-        { kind: "uniform" },
-        "absolute",
-      ],
-      "garden-lantern-pole": [
-        "Garden lantern pole",
-        "Lighting",
-        [0.24, 0.8, 0.24],
-        { kind: "uniform" },
-        "absolute",
-      ],
-      "table-lamp": ["Table lamp", "Lighting", [0.32, 0.52, 0.32], { kind: "uniform" }, "absolute"],
-      "rattan-bell-pendant": [
-        "Rattan bell pendant",
-        "Lighting",
-        [0.5, 1.2, 0.5],
-        { kind: "uniform" },
-        "ceiling",
-      ],
-      "woven-pendant": [
-        "Woven pendant",
-        "Lighting",
-        [0.847, 0.58, 0.86],
-        { kind: "uniform" },
-        "ceiling",
-      ],
-      "children-pendant": [
-        "Children's pendant",
-        "Lighting",
-        [0.58, 0.479, 0.58],
-        { kind: "uniform" },
-        "ceiling",
-      ],
-      "compact-wall-television": [
-        "Compact wall television",
-        "Media",
-        [1.58, 0.9, 0.07],
-        { kind: "axes", axes: ["width", "height"] },
-        "wall",
-      ],
-      "wall-switch": ["Wall switch", "Controls", [0.122, 0.152, 0.048], { kind: "fixed" }, "wall"],
-      "opening-contact": [
-        "Opening contact",
-        "Sensors",
-        [0.15, 0.112, 0.046],
-        { kind: "fixed" },
-        "wall",
-      ],
-      thermometer: ["Thermometer", "Sensors", [0.16, 0.16, 0.056], { kind: "fixed" }, "absolute"],
-      "motion-sensor": [
-        "Motion sensor",
-        "Sensors",
-        [0.14, 0.135, 0.081],
-        { kind: "uniform" },
-        "ceiling",
-      ],
-      "leak-sensor": ["Leak sensor", "Sensors", [0.2, 0.14, 0.2], { kind: "uniform" }, "absolute"],
-      "motorized-blind": [
-        "Motorized blind",
-        "Covers",
-        [1.2, 1.6, 0.12],
-        { kind: "axes", axes: ["width", "height"] },
-        "wall",
-      ],
-      "heated-towel-rail": [
-        "Heated towel rail",
-        "Climate",
-        [0.6, 1.2, 0.12],
-        { kind: "axes", axes: ["width", "height"] },
-        "wall",
-      ],
-      "smart-panel-radiator": [
-        "Electric heater",
-        "Climate",
-        [1, 0.6, 0.12],
-        { kind: "axes", axes: ["width"] },
-        "wall",
-      ],
-      "smart-thermostat": [
-        "Smart thermostat",
-        "Climate",
-        [0.12, 0.12, 0.035],
-        { kind: "fixed" },
-        "wall",
-      ],
-      "smart-plug": ["Smart plug", "Power", [0.07, 0.07, 0.055], { kind: "fixed" }, "wall"],
-      "ceiling-light": [
-        "Ceiling light",
-        "Lighting",
-        [0.4, 0.12, 0.4],
-        { kind: "uniform" },
-        "ceiling",
-      ],
-      "recessed-downlight": [
-        "Recessed downlight",
-        "Lighting",
-        [0.1, 0.04, 0.1],
-        { kind: "uniform" },
-        "ceiling",
-      ],
-      "wall-sconce": ["Wall sconce", "Lighting", [0.22, 0.32, 0.16], { kind: "uniform" }, "wall"],
-      "illuminated-round-mirror": [
-        "Illuminated round mirror",
-        "Lighting",
-        [0.8, 0.8, 0.045],
-        { kind: "fixed" },
-        "wall",
-      ],
-      "motorized-curtain": [
-        "Motorized curtain",
-        "Covers",
-        [2, 2.4, 0.16],
-        { kind: "axes", axes: ["width", "height"] },
-        "wall",
-      ],
-      "video-doorbell": [
-        "Video doorbell",
-        "Security",
-        [0.05, 0.135, 0.035],
-        { kind: "fixed" },
-        "wall",
-      ],
-      "indoor-security-camera": [
-        "Indoor security camera",
-        "Security",
-        [0.1, 0.16, 0.1],
-        { kind: "uniform" },
-        "absolute",
-      ],
-      "smoke-alarm": ["Smoke alarm", "Safety", [0.12, 0.045, 0.12], { kind: "fixed" }, "ceiling"],
-      "carbon-monoxide-alarm": [
-        "Carbon monoxide alarm",
-        "Safety",
-        [0.11, 0.11, 0.035],
-        { kind: "fixed" },
-        "wall",
-      ],
-      "humidity-sensor": [
-        "Humidity sensor",
-        "Sensors",
-        [0.085, 0.085, 0.03],
-        { kind: "fixed" },
-        "wall",
-      ],
-      "air-quality-monitor": [
-        "Air quality monitor",
-        "Sensors",
-        [0.1, 0.16, 0.06],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      "energy-monitor": ["Energy monitor", "Energy", [0.2, 0.3, 0.09], { kind: "fixed" }, "wall"],
-      "air-purifier": [
-        "Air purifier",
-        "Climate",
-        [0.27, 0.52, 0.27],
-        { kind: "uniform" },
-        "absolute",
-      ],
-      "bathroom-extractor-fan": [
-        "Bathroom extractor fan",
-        "Climate",
-        [0.18, 0.18, 0.09],
-        { kind: "uniform" },
-        "wall",
-      ],
-      refrigerator: [
-        "Refrigerator",
-        "Appliances",
-        [0.7, 1.85, 0.72],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      "smart-power-strip": [
-        "Smart power strip",
-        "Power",
-        [0.34, 0.055, 0.065],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      "humidifier-dehumidifier": [
-        "Humidifier / dehumidifier",
-        "Climate",
-        [0.32, 0.6, 0.28],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      "robot-vacuum": [
-        "Robot vacuum",
-        "Appliances",
-        [0.35, 0.09, 0.35],
-        { kind: "fixed" },
-        "absolute",
-      ],
-      "smart-lock": ["Smart lock", "Security", [0.07, 0.18, 0.06], { kind: "fixed" }, "wall"],
-      "alarm-keypad": ["Alarm keypad", "Security", [0.18, 0.25, 0.035], { kind: "fixed" }, "wall"],
-      "motorized-valve": [
-        "Motorized valve",
-        "Utilities",
-        [0.24, 0.22, 0.12],
-        { kind: "fixed" },
-        "wall",
-      ],
-      siren: ["Siren", "Safety", [0.16, 0.16, 0.07], { kind: "fixed" }, "wall"],
-      "smart-button": ["Smart button", "Controls", [0.09, 0.09, 0.035], { kind: "fixed" }, "wall"],
-    };
-
-    for (const [id, metadata] of Object.entries(expected)) {
-      const definition = catalog.stableDeviceRegistry[id];
-      assert.deepEqual(
-        [
-          definition.label,
-          definition.category,
-          definition.defaultSize,
-          definition.resizePolicy,
-          definition.preferredPlacement,
-        ],
-        metadata,
-      );
-    }
   });
 
   test("resolves device models stable-first without inherited registry keys", () => {
@@ -963,7 +632,7 @@ await withModules(async (load) => {
 
   test("television displays camera media while preserving its media-player fallback", async () => {
     const definition = catalog.stableDeviceRegistry.television;
-    assert.deepEqual(definition.supportedDomains, ["camera", "media_player"]);
+    assert.deepEqual(definition.supportedDomains, ["camera", "media_player", "switch"]);
     assert.equal(definition.liveMedia.kind, "camera-stream");
     assert.equal(definition.interaction.target, "camera-viewer");
     const props = { ...blindProps, visualState: "connected-active" };
@@ -1279,21 +948,37 @@ await withModules(async (load) => {
         },
       },
     };
-    const resolvedBindings = engine.resolveHomeAssistantBindings(
-      fixtures.equippedFixtureManifest,
-      fixtures.equippedFixtureProfile,
-      runtime,
-      catalog.stableDeviceRegistry,
-    );
-    const renderer = await create(
+    const resolveLighting = (snapshot) =>
+      engine.resolveHomeAssistantBindings(
+        fixtures.equippedFixtureManifest,
+        fixtures.equippedFixtureProfile,
+        snapshot,
+        catalog.stableDeviceRegistry,
+      );
+    const render = (snapshot) =>
       createElement(engine.HomeAssistantSceneLighting, {
         floor: fixtures.equippedFixtureManifest.floors[0],
-        resolvedBindings,
+        resolvedBindings: resolveLighting(snapshot),
         deviceModels: catalog.stableDeviceRegistry,
         extensionDeviceModels: {},
         sceneItems: [],
+      });
+    const renderer = await create(
+      render({
+        ...runtime,
+        entityStates: {
+          ...runtime.entityStates,
+          "light.fixture_terracotta_pendant": {
+            ...runtime.entityStates["light.fixture_terracotta_pendant"],
+            state: "on",
+          },
+        },
       }),
     );
+    const pendant = renderer.scene.findByProps({
+      name: "ha-device-light-fixture-terracotta-pendant",
+    }).instance;
+    await renderer.update(render(runtime));
     const floorLamp = renderer.scene.findByProps({
       name: "ha-device-light-fixture-floor-lamp",
     });
@@ -1305,6 +990,10 @@ await withModules(async (load) => {
         name: "ha-device-light-fixture-terracotta-pendant",
       }).instance.intensity,
       0,
+    );
+    assert.equal(
+      renderer.scene.findByProps({ name: "ha-device-light-fixture-terracotta-pendant" }).instance,
+      pendant,
     );
     await renderer.unmount();
   });

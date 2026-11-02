@@ -11,7 +11,6 @@ import {
   type WorkspaceLibraryEntry,
 } from "./WorkspaceCard";
 import { WorkspaceNameDialog } from "./WorkspaceNameDialog";
-import { WorkspaceDeleteDialog } from "./WorkspaceDeleteDialog";
 import { WorkspaceTransferDialog } from "./WorkspaceTransferDialog";
 import "./workspaces.css";
 export type { WorkspaceLibraryEntry } from "./WorkspaceCard";
@@ -26,11 +25,16 @@ export interface WorkspaceLibraryProps {
   onCreate: (name: string) => Promise<void>;
   onRename: (id: string, name: string) => Promise<void>;
   onDuplicate: (id: string, name: string) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  renderDelete: (
+    entry: WorkspaceLibraryEntry,
+    onCancel: () => void,
+    onBusyChange: (busy: boolean) => void,
+  ) => ReactNode;
   onImport: (json: string) => Promise<void>;
   onExport: (id: string, privateBackup: boolean) => Promise<void>;
   onRecover: (id: string) => Promise<void>;
   onExportRaw: (id: string) => Promise<void>;
+  onAgentPilot: (id: string) => Promise<void>;
   remoteImport?: ReactNode;
   renderSuggestions?: (busy: boolean, onBusyChange: (busy: boolean) => void) => ReactNode;
   onSettings?: (id: string, intent?: WorkspaceDestination) => Promise<void>;
@@ -142,7 +146,9 @@ export function WorkspaceLibrary(props: WorkspaceLibraryProps) {
                         action === "settings" ? undefined : (action as WorkspaceDestination),
                       ) ?? Promise.resolve(),
                   )
-                : openDialog({ action, entry })
+                : action === "agent-pilot"
+                  ? void run(() => props.onAgentPilot(entry.metadata.id))
+                  : openDialog({ action, entry })
             }
             onRecover={() => void run(() => props.onRecover(entry.metadata.id))}
             onExportRaw={() => void run(() => props.onExportRaw(entry.metadata.id))}
@@ -203,15 +209,7 @@ export function WorkspaceLibrary(props: WorkspaceLibraryProps) {
             }
           />
         )}
-      {dialog?.action === "delete" && (
-        <WorkspaceDeleteDialog
-          name={dialog.entry!.metadata.name}
-          busy={busy}
-          error={error}
-          onCancel={cancel}
-          onDelete={() => void run(() => props.onDelete(dialog.entry!.metadata.id))}
-        />
-      )}
+      {dialog?.action === "delete" && props.renderDelete(dialog.entry!, cancel, setBusy)}
       {(dialog?.action === "import" || dialog?.action === "export") && (
         <WorkspaceTransferDialog
           mode={dialog.action}

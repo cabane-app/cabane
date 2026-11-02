@@ -20,6 +20,7 @@ import {
   WorkspaceConflictError,
 } from "./project-record-contract";
 import { type WorkspaceBindings } from "./workspace-bindings";
+import { itemBindingSlotIds } from "./item-binding-identities";
 
 const removeMissingSceneItems = (
   project: HomeProject,
@@ -30,7 +31,7 @@ const removeMissingSceneItems = (
   const sceneItems = project.sceneItems.filter((item) => {
     const registry = item.kind === "device" ? registries.deviceModels : registries.furnishingModels;
     if (Object.hasOwn(registry, item.modelId)) return true;
-    if (item.kind === "device") removedSlotIds.push(...item.entitySlots.map((slot) => slot.id));
+    removedSlotIds.push(...itemBindingSlotIds(item));
     return false;
   });
   return {

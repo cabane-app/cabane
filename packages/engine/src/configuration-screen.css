@@ -52,13 +52,6 @@
 .configuration-screen section {
   width: min(720px, 100%);
 }
-.configuration-screen__eyebrow {
-  color: #b65b3d;
-  font-size: 0.7rem;
-  font-weight: 780;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
 .configuration-screen h1 {
   max-width: 590px;
   margin: 8px 0 12px;
@@ -66,17 +59,60 @@
   font-size: clamp(2.2rem, 7vw, 4.8rem);
   font-weight: 500;
   line-height: 0.98;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.03em;
 }
-.configuration-screen > section > p:not(.configuration-screen__eyebrow) {
+.configuration-screen > section > p {
   max-width: 580px;
-  color: #65736d;
+  color: #4e5e56;
   line-height: 1.55;
+}
+.configuration-screen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0;
+}
+.configuration-screen__actions button {
+  min-height: 44px;
+  padding: 10px 18px;
+  color: #17231f;
+  background: transparent;
+  border: 1px solid #8b9b90;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+.configuration-screen__actions button:first-child {
+  color: #fff;
+  background: #284f40;
+  border-color: #284f40;
+}
+.configuration-screen__actions button:hover {
+  background: #d3dcd2;
+}
+.configuration-screen__actions button:first-child:hover {
+  background: #1b3e30;
+}
+.configuration-screen__actions button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.configuration-screen :is(button, summary):focus-visible {
+  outline: 2px solid #284f40;
+  outline-offset: 4px;
+}
+.configuration-screen details {
+  margin-top: 28px;
+}
+.configuration-screen summary {
+  width: fit-content;
+  padding: 8px 0;
+  cursor: pointer;
 }
 .configuration-screen ol {
   display: grid;
   gap: 8px;
-  margin: 30px 0 0;
+  margin: 12px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -96,4 +132,14 @@
   color: #3f4d48;
   font-size: 0.82rem;
   line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .configuration-screen {
+    padding: 24px 20px;
+  }
+  .configuration-screen li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
 }

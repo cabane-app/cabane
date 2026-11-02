@@ -1,11 +1,12 @@
-import { modelVariants } from "@cabane/engine";
+import { editSceneItem, type SceneItemPatch } from "./item-edits";
+export { normalizeSizeForPolicy } from "./item-edits";
 import type {
+  EntityBindingSlotSpec,
   FloorSpec,
   FurnishingItemSpec,
   FurnishingModelDefinition,
   ItemPlacement,
   PlanPoint,
-  ResizePolicy,
   SceneItemSpec,
   SceneItemSize,
   SceneModelEditorDescriptor,
@@ -16,8 +17,8 @@ import { placementNearWallsForWorldDrag } from "./placement/wall-drag-placement"
 
 import { duplicateSceneItem } from "./duplicate-item";
 import { createSceneItemId } from "./scene-item-identity";
-
-const MINIMUM_SIZE_METERS = 0.01;
+import { expandItemSelection } from "./item-groups";
+import { editFurnishingSelection, type FurnishingSelectionAction } from "./selection-operations";
 
 export const snapToGrid = (value: number, gridMeters = 0.1) =>
   Math.round(value / gridMeters) * gridMeters;
@@ -86,36 +87,6 @@ export const placementForWorldDrag = ({
   };
 };
 
-const positive = (value: number, fallback: number) =>
-  Number.isFinite(value) && value > 0 ? Math.max(MINIMUM_SIZE_METERS, value) : fallback;
-
-export const normalizeSizeForPolicy = (
-  defaultSize: SceneItemSize,
-  requested: SceneItemSize,
-  policy: ResizePolicy,
-): SceneItemSize => {
-  const safe = requested.map((value, axis) =>
-    positive(value, defaultSize[axis]),
-  ) as unknown as SceneItemSize;
-  if (policy.kind === "fixed") return [...defaultSize];
-  if (policy.kind === "planar") return [safe[0], defaultSize[1], safe[2]];
-  if (policy.kind === "axes") {
-    const allowed = new Set(policy.axes);
-    return [
-      allowed.has("width") ? safe[0] : defaultSize[0],
-      allowed.has("height") ? safe[1] : defaultSize[1],
-      allowed.has("depth") ? safe[2] : defaultSize[2],
-    ];
-  }
-  if (policy.kind === "custom") return policy.normalize(defaultSize, safe);
-
-  const changedAxis = safe.findIndex(
-    (value, axis) => Math.abs(value / defaultSize[axis] - 1) > 1e-9,
-  );
-  const scale = changedAxis < 0 ? 1 : safe[changedAxis] / defaultSize[changedAxis];
-  return defaultSize.map((value) => value * scale) as unknown as SceneItemSize;
-};
-
 export interface SelectionBoxGeometry {
   center: readonly [number, number, number];
   size: SceneItemSize;
@@ -144,15 +115,25 @@ export const selectionBoxGeometry = (
 interface EditorSnapshot {
   items: readonly SceneItemSpec[];
   selectedId: string | null;
+  multipleIds: readonly string[];
 }
 
 export interface FurnishingEditorState extends EditorSnapshot {
+  placementError: string | null;
   past: readonly EditorSnapshot[];
   future: readonly EditorSnapshot[];
   transaction: EditorSnapshot | null;
 }
 
 export type FurnishingEditorAction =
+  | {
+      type: "update-item";
+      id: string;
+      patch: SceneItemPatch;
+      definition: SceneModelEditorDescriptor;
+    }
+  | FurnishingSelectionAction
+  | { type: "select-many"; ids: readonly string[] }
   | {
       type: "update-color";
       id: string;
@@ -164,6 +145,7 @@ export type FurnishingEditorAction =
   | { type: "begin-transaction" }
   | { type: "commit-transaction" }
   | { type: "cancel-transaction" }
+  | { type: "update-entity-slots"; id: string; entitySlots: readonly EntityBindingSlotSpec[] }
   | { type: "update-variant"; id: string; variant: string; definition: SceneModelEditorDescriptor }
   | {
       type: "update-light-state";
@@ -173,6 +155,13 @@ export type FurnishingEditorAction =
   | { type: "update-placements"; placements: Readonly<Record<string, ItemPlacement>> }
   | { type: "update-placement"; id: string; placement: ItemPlacement }
   | { type: "update-size"; id: string; size: SceneItemSize; definition: SceneModelEditorDescriptor }
+  | {
+      type: "update-placement-and-size";
+      id: string;
+      placement: ItemPlacement;
+      size: SceneItemSize;
+      definition: SceneModelEditorDescriptor;
+    }
   | { type: "rotate"; id: string; rotationYRadians: number }
   | { type: "duplicate"; id: string; floor?: FloorSpec; reservedSlotIds?: readonly string[] }
   | { type: "delete"; id: string }
@@ -194,6 +183,8 @@ export const createFurnishingEditorState = (
 ): FurnishingEditorState => ({
   items: [...items],
   selectedId: null,
+  multipleIds: [],
+  placementError: null,
   past: [],
   future: [],
   transaction: null,
@@ -202,13 +193,16 @@ export const createFurnishingEditorState = (
 const snapshot = (state: FurnishingEditorState): EditorSnapshot => ({
   items: state.items,
   selectedId: state.selectedId,
+  multipleIds: state.multipleIds,
 });
 
 const withChange = (
   state: FurnishingEditorState,
-  change: Pick<FurnishingEditorState, "items" | "selectedId">,
+  change: Pick<FurnishingEditorState, "items" | "selectedId"> &
+    Partial<Pick<FurnishingEditorState, "multipleIds">>,
 ): FurnishingEditorState => ({
   ...state,
+  multipleIds: [],
   ...change,
   past: state.transaction ? state.past : [...state.past, snapshot(state)],
   future: state.transaction ? state.future : [],
@@ -221,7 +215,7 @@ const updateItem = (
 ) => {
   let found = false;
   const items = state.items.map((item) => {
-    if (item.id !== id) return item;
+    if (item.id !== id || item.group) return item;
     const next = update(item);
     if (JSON.stringify(next) === JSON.stringify(item)) return item;
     found = true;
@@ -266,14 +260,31 @@ export const furnishingEditorReducer = (
         selectedId: action.selectedId ?? null,
       };
     case "select":
-      return state.selectedId === action.id ? state : { ...state, selectedId: action.id };
+      return state.selectedId === action.id && !state.multipleIds.length
+        ? state
+        : { ...state, selectedId: action.id, multipleIds: [] };
+    case "select-many":
+      return {
+        ...state,
+        selectedId: action.ids.length === 1 ? action.ids[0] : null,
+        multipleIds: action.ids,
+      };
+    case "group-items":
+    case "ungroup-items":
+    case "rename-group":
+    case "transform-group":
+    case "duplicate-items": {
+      const change = editFurnishingSelection(state.items, action);
+      return change ? withChange(state, change) : state;
+    }
     case "begin-transaction":
       return state.transaction ? state : { ...state, transaction: snapshot(state) };
     case "commit-transaction":
       if (!state.transaction) return state;
       if (
         state.transaction.items === state.items &&
-        state.transaction.selectedId === state.selectedId
+        state.transaction.selectedId === state.selectedId &&
+        state.transaction.multipleIds === state.multipleIds
       ) {
         return { ...state, transaction: null };
       }
@@ -285,27 +296,35 @@ export const furnishingEditorReducer = (
       };
     case "cancel-transaction":
       return state.transaction ? { ...state, ...state.transaction, transaction: null } : state;
+    case "update-item":
+      return updateItem(state, action.id, (item) =>
+        editSceneItem(item, action.patch, action.definition),
+      );
     case "update-color":
-      if (
-        !action.definition.defaultColor ||
-        (action.color !== null && !/^#[0-9a-f]{6}$/i.test(action.color))
-      )
-        return state;
-      return updateItem(state, action.id, (item) => {
-        const next = { ...item };
-        if (action.color === null) delete next.color;
-        else next.color = action.color;
-        return next;
+      return furnishingEditorReducer(state, {
+        type: "update-item",
+        id: action.id,
+        patch: { color: action.color },
+        definition: action.definition,
       });
     case "update-variant":
-      if (!modelVariants(action.definition).some((variant) => variant.id === action.variant))
-        return state;
-      return updateItem(state, action.id, (item) => ({ ...item, variant: action.variant }));
+      return furnishingEditorReducer(state, {
+        type: "update-item",
+        id: action.id,
+        patch: { variant: action.variant },
+        definition: action.definition,
+      });
+    case "update-entity-slots":
+      return updateItem(state, action.id, (item) => ({ ...item, entitySlots: action.entitySlots }));
     case "update-light-state":
       return updateItem(state, action.id, (item) =>
-        item.kind === "device" ? { ...item, lightState: action.lightState } : item,
+        item.kind === "device" || item.lightSlotId
+          ? { ...item, lightState: action.lightState }
+          : item,
       );
     case "update-placements": {
+      const ids = new Set(Object.keys(action.placements));
+      if (expandItemSelection(state.items, [...ids]).some((id) => !ids.has(id))) return state;
       const items = state.items.map((item) => {
         const placement = action.placements[item.id];
         return placement && JSON.stringify(placement) !== JSON.stringify(item.placement)
@@ -313,20 +332,22 @@ export const furnishingEditorReducer = (
           : item;
       });
       return items.some((item, index) => item !== state.items[index])
-        ? withChange(state, { items, selectedId: state.selectedId })
+        ? withChange(state, { items, selectedId: state.selectedId, multipleIds: state.multipleIds })
         : state;
     }
     case "update-placement":
       return updateItem(state, action.id, (item) => ({ ...item, placement: action.placement }));
     case "update-size":
-      return updateItem(state, action.id, (item) => ({
-        ...item,
-        size: normalizeSizeForPolicy(
-          action.definition.defaultSize,
-          action.size,
-          action.definition.resizePolicy,
-        ),
-      }));
+    case "update-placement-and-size":
+      return furnishingEditorReducer(state, {
+        type: "update-item",
+        id: action.id,
+        definition: action.definition,
+        patch: {
+          size: action.size,
+          ...(action.type === "update-placement-and-size" ? { placement: action.placement } : {}),
+        },
+      });
     case "rotate":
       return updateItem(state, action.id, (item) => ({
         ...item,
@@ -335,19 +356,31 @@ export const furnishingEditorReducer = (
     case "duplicate": {
       const source = state.items.find((item) => item.id === action.id);
       if (!source) return state;
+      if (source.group)
+        return action.floor
+          ? furnishingEditorReducer(state, {
+              type: "duplicate-items",
+              ids: [source.id],
+              floor: action.floor,
+              reservedIds: action.reservedSlotIds ?? [],
+            })
+          : state;
       const item = duplicateSceneItem(source, state.items, action.floor, action.reservedSlotIds);
       return withChange(state, { items: [...state.items, item], selectedId: item.id });
     }
     case "delete-items": {
-      const ids = new Set(action.ids);
+      const ids = new Set(expandItemSelection(state.items, action.ids));
       const items = state.items.filter((item) => !ids.has(item.id));
       if (items.length === state.items.length) return state;
       return withChange(state, {
         items,
         selectedId: state.selectedId && ids.has(state.selectedId) ? null : state.selectedId,
+        multipleIds: state.multipleIds.filter((id) => !ids.has(id)),
       });
     }
     case "delete": {
+      if (state.items.find((item) => item.id === action.id)?.group)
+        return furnishingEditorReducer(state, { type: "delete-items", ids: [action.id] });
       const index = state.items.findIndex((item) => item.id === action.id);
       if (index < 0) return state;
       const items = state.items.filter((item) => item.id !== action.id);
@@ -358,7 +391,7 @@ export const furnishingEditorReducer = (
       const id = createSceneItemId(
         state.items.flatMap((item) => [
           item.id,
-          ...(item.kind === "device" ? item.entitySlots.map((slot) => slot.id) : []),
+          ...(item.entitySlots ?? []).map((slot) => slot.id),
         ]),
       );
       const item: FurnishingItemSpec = {

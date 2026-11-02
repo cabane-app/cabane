@@ -1,8 +1,17 @@
 /** Call during the entry click so browsers retain transient user activation. */
 export function requestWalkPointerLock(target: HTMLElement): Promise<void> {
   const root = target.getRootNode() as Document | ShadowRoot;
-  if (root.pointerLockElement === target) return Promise.resolve();
-  return new Promise((resolve, reject) => {
+  const focus = () => {
+    // Pointer lock does not move keyboard focus into an embedded panel. Focus
+    // the persistent scene, since the entry button can disappear during Explore.
+    if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+  };
+  if (root.pointerLockElement === target) {
+    focus();
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve, reject) => {
     const cleanup = () => {
       clearTimeout(timeout);
       document.removeEventListener("pointerlockchange", changed);
@@ -31,5 +40,5 @@ export function requestWalkPointerLock(target: HTMLElement): Promise<void> {
     } catch {
       failed();
     }
-  });
+  }).then(focus);
 }

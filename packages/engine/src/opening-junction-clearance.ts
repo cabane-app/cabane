@@ -2,6 +2,7 @@ import type { WallSpec, WallJunctionSpec } from "./types";
 
 type ClearanceWall = Pick<WallSpec, "id" | "from" | "to" | "thicknessMeters"> & {
   heightMeters?: unknown;
+  virtual?: unknown;
 };
 const JUNCTION_EPSILON = 1e-6;
 
@@ -17,11 +18,12 @@ export const junctionOccupiedIntervalsForWall = (
   metersPerPlanUnit: number,
   defaultWallHeightMeters: number,
 ) => {
+  if (wall.virtual === true) return [];
   const wallLength = Math.hypot(wall.to[0] - wall.from[0], wall.to[1] - wall.from[1]);
   const wallDx = (wall.to[0] - wall.from[0]) / wallLength;
   const wallDy = (wall.to[1] - wall.from[1]) / wallLength;
   return incidentWalls
-    .filter((candidate) => candidate.id !== wall.id)
+    .filter((candidate) => candidate.id !== wall.id && candidate.virtual !== true)
     .flatMap((candidate) => {
       const candidateLength = Math.hypot(
         candidate.to[0] - candidate.from[0],

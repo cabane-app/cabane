@@ -1,3 +1,4 @@
+import { selectConstructionTool } from "../tests/editor-browser-tools.mjs";
 import assert from "node:assert/strict";
 import { chromium } from "playwright-core";
 
@@ -83,7 +84,7 @@ try {
       );
     }
   };
-  await page.getByRole("button", { name: "Wall", exact: true }).click();
+  await selectConstructionTool(page, "Wall");
   const corners = [
     [650, 730],
     [850, 730],

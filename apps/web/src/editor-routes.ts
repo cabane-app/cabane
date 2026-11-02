@@ -1,15 +1,29 @@
 import { matchRoutes } from "react-router";
 import type { EditorOpenRequest } from "./editor-connect/connect-navigation";
 
+import { settingsSections } from "./editor-settings/settings-sections";
+
 export const editorRoutes = [
+  {
+    path: "/workspaces/:workspaceId/settings",
+    handle: { mode: "construct", panel: "settings", settingsSection: "home-assistant" },
+  },
+  ...settingsSections.map(({ id }) => ({
+    path: `/workspaces/:workspaceId/settings/${id}`,
+    handle: { mode: "construct" as const, panel: "settings" as const, settingsSection: id },
+  })),
+  {
+    path: "/workspaces/:workspaceId/home-assistant",
+    handle: { mode: "construct", panel: "settings", settingsSection: "home-assistant" },
+  },
   { path: "/build", handle: { mode: "construct" } },
   {
     path: "/workspaces/:workspaceId/shortcuts",
-    handle: { mode: "construct", panel: "action-bar" },
+    handle: { mode: "construct", panel: "settings", settingsSection: "shortcuts" },
   },
   {
     path: "/workspaces/:workspaceId/action-bar",
-    handle: { mode: "construct", panel: "action-bar" },
+    handle: { mode: "construct", panel: "settings", settingsSection: "shortcuts" },
   },
   { path: "/workspaces/:workspaceId/construct", handle: { mode: "construct" } },
   { path: "/workspaces/:workspaceId/arrange", handle: { mode: "furnish" } },
@@ -21,16 +35,20 @@ export const editorRoutes = [
   },
 ] satisfies { path: string; handle: EditorOpenRequest }[];
 
-export function mobileEditorPath(workspaceId: string, mode: "construct" | "furnish"): string {
-  return `${workspaceHomePath(workspaceId)}/mobile-editor?mode=${mode === "furnish" ? "arrange" : "construct"}`;
-}
-
 export function editorRequestForPath(pathname: string): EditorOpenRequest | null {
   return matchRoutes(editorRoutes, pathname)?.[0].route.handle ?? null;
 }
 
 export function workspaceHomePath(workspaceId: string): string {
   return `/workspaces/${encodeURIComponent(workspaceId)}`;
+}
+
+export function agentPilotPath(workspaceId: string): string {
+  return `${workspaceHomePath(workspaceId)}/construct?agent-pilot=1`;
+}
+
+export function agentPilotRequested(search: string): boolean {
+  return new URLSearchParams(search).get("agent-pilot") === "1";
 }
 
 export function workspaceIdForPath(pathname: string): string | null {
@@ -41,8 +59,10 @@ export function workspaceIdForPath(pathname: string): string | null {
 
 export function editorPath(request: EditorOpenRequest, workspaceId: string): string {
   const base = workspaceHomePath(workspaceId);
-  if (request.panel === "home-assistant") return `${base}/home-assistant`;
-  if (request.panel === "action-bar") return `${base}/shortcuts`;
+  if (request.panel === "home-assistant") return `${base}/settings/home-assistant`;
+  if (request.panel === "settings")
+    return `${base}/settings/${request.settingsSection ?? "home-assistant"}`;
+  if (request.panel === "action-bar") return `${base}/settings/shortcuts`;
   if (request.mode === "construct") return `${base}/construct`;
   if (request.mode === "furnish") return `${base}/arrange`;
   return request.relationshipId

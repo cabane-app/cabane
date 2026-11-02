@@ -1,0 +1,483 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T21:26:39.642Z",
+  "title": "Design System: Cabane web editor",
+  "extensions": {
+    "colorMeta": {
+      "preview-paper": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0131 82.40)",
+          "oklch(26% 0.0131 82.40)",
+          "oklch(38% 0.0131 82.40)",
+          "oklch(49% 0.0131 82.40)",
+          "oklch(61% 0.0131 82.40)",
+          "oklch(72% 0.0131 82.40)",
+          "oklch(84% 0.0131 82.40)",
+          "oklch(95% 0.0131 82.40)"
+        ]
+      },
+      "preview-ink": {
+        "role": "neutral",
+        "displayName": "Green Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0144 175.32)",
+          "oklch(26% 0.0144 175.32)",
+          "oklch(38% 0.0144 175.32)",
+          "oklch(49% 0.0144 175.32)",
+          "oklch(61% 0.0144 175.32)",
+          "oklch(72% 0.0144 175.32)",
+          "oklch(84% 0.0144 175.32)",
+          "oklch(95% 0.0144 175.32)"
+        ]
+      },
+      "preview-muted": {
+        "role": "neutral",
+        "displayName": "Muted Editor Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0132 153.47)",
+          "oklch(26% 0.0132 153.47)",
+          "oklch(38% 0.0132 153.47)",
+          "oklch(49% 0.0132 153.47)",
+          "oklch(61% 0.0132 153.47)",
+          "oklch(72% 0.0132 153.47)",
+          "oklch(84% 0.0132 153.47)",
+          "oklch(95% 0.0132 153.47)"
+        ]
+      },
+      "preview-accent": {
+        "role": "primary",
+        "displayName": "Terracotta Action",
+        "tonalRamp": [
+          "oklch(15% 0.1080 46.41)",
+          "oklch(26% 0.1080 46.41)",
+          "oklch(38% 0.1080 46.41)",
+          "oklch(49% 0.1080 46.41)",
+          "oklch(61% 0.1080 46.41)",
+          "oklch(72% 0.1080 46.41)",
+          "oklch(84% 0.1080 46.41)",
+          "oklch(95% 0.1080 46.41)"
+        ]
+      },
+      "connection-blue": {
+        "role": "primary",
+        "displayName": "Connection Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0506 220.37)",
+          "oklch(26% 0.0506 220.37)",
+          "oklch(38% 0.0506 220.37)",
+          "oklch(49% 0.0506 220.37)",
+          "oklch(61% 0.0506 220.37)",
+          "oklch(72% 0.0506 220.37)",
+          "oklch(84% 0.0506 220.37)",
+          "oklch(95% 0.0506 220.37)"
+        ]
+      },
+      "connection-selected": {
+        "role": "neutral",
+        "displayName": "Blue Selection Wash",
+        "tonalRamp": [
+          "oklch(15% 0.0128 196.93)",
+          "oklch(26% 0.0128 196.93)",
+          "oklch(38% 0.0128 196.93)",
+          "oklch(49% 0.0128 196.93)",
+          "oklch(61% 0.0128 196.93)",
+          "oklch(72% 0.0128 196.93)",
+          "oklch(84% 0.0128 196.93)",
+          "oklch(95% 0.0128 196.93)"
+        ]
+      },
+      "connection-surface": {
+        "role": "neutral",
+        "displayName": "Pale Source Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0085 84.57)",
+          "oklch(26% 0.0085 84.57)",
+          "oklch(38% 0.0085 84.57)",
+          "oklch(49% 0.0085 84.57)",
+          "oklch(61% 0.0085 84.57)",
+          "oklch(72% 0.0085 84.57)",
+          "oklch(84% 0.0085 84.57)",
+          "oklch(95% 0.0085 84.57)"
+        ]
+      },
+      "connection-muted": {
+        "role": "neutral",
+        "displayName": "Muted Connection Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0231 159.12)",
+          "oklch(26% 0.0231 159.12)",
+          "oklch(38% 0.0231 159.12)",
+          "oklch(49% 0.0231 159.12)",
+          "oklch(61% 0.0231 159.12)",
+          "oklch(72% 0.0231 159.12)",
+          "oklch(84% 0.0231 159.12)",
+          "oklch(95% 0.0231 159.12)"
+        ]
+      },
+      "connection-green": {
+        "role": "secondary",
+        "displayName": "Connection Green",
+        "tonalRamp": [
+          "oklch(15% 0.0543 161.09)",
+          "oklch(26% 0.0543 161.09)",
+          "oklch(38% 0.0543 161.09)",
+          "oklch(49% 0.0543 161.09)",
+          "oklch(61% 0.0543 161.09)",
+          "oklch(72% 0.0543 161.09)",
+          "oklch(84% 0.0543 161.09)",
+          "oklch(95% 0.0543 161.09)"
+        ]
+      },
+      "sage-rail": {
+        "role": "neutral",
+        "displayName": "Sage Rail",
+        "tonalRamp": [
+          "oklch(15% 0.0137 120.28)",
+          "oklch(26% 0.0137 120.28)",
+          "oklch(38% 0.0137 120.28)",
+          "oklch(49% 0.0137 120.28)",
+          "oklch(61% 0.0137 120.28)",
+          "oklch(72% 0.0137 120.28)",
+          "oklch(84% 0.0137 120.28)",
+          "oklch(95% 0.0137 120.28)"
+        ]
+      },
+      "input-surface": {
+        "role": "neutral",
+        "displayName": "Input Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0093 113.16)",
+          "oklch(26% 0.0093 113.16)",
+          "oklch(38% 0.0093 113.16)",
+          "oklch(49% 0.0093 113.16)",
+          "oklch(61% 0.0093 113.16)",
+          "oklch(72% 0.0093 113.16)",
+          "oklch(84% 0.0093 113.16)",
+          "oklch(95% 0.0093 113.16)"
+        ]
+      },
+      "filter-surface": {
+        "role": "neutral",
+        "displayName": "Filter Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0109 95.17)",
+          "oklch(26% 0.0109 95.17)",
+          "oklch(38% 0.0109 95.17)",
+          "oklch(49% 0.0109 95.17)",
+          "oklch(61% 0.0109 95.17)",
+          "oklch(72% 0.0109 95.17)",
+          "oklch(84% 0.0109 95.17)",
+          "oklch(95% 0.0109 95.17)"
+        ]
+      },
+      "pending": {
+        "role": "secondary",
+        "displayName": "Pending Amber",
+        "tonalRamp": [
+          "oklch(15% 0.0965 74.80)",
+          "oklch(26% 0.0965 74.80)",
+          "oklch(38% 0.0965 74.80)",
+          "oklch(49% 0.0965 74.80)",
+          "oklch(61% 0.0965 74.80)",
+          "oklch(72% 0.0965 74.80)",
+          "oklch(84% 0.0965 74.80)",
+          "oklch(95% 0.0965 74.80)"
+        ]
+      },
+      "unavailable": {
+        "role": "secondary",
+        "displayName": "Unavailable Clay",
+        "tonalRamp": [
+          "oklch(15% 0.0987 37.70)",
+          "oklch(26% 0.0987 37.70)",
+          "oklch(38% 0.0987 37.70)",
+          "oklch(49% 0.0987 37.70)",
+          "oklch(61% 0.0987 37.70)",
+          "oklch(72% 0.0987 37.70)",
+          "oklch(84% 0.0987 37.70)",
+          "oklch(95% 0.0987 37.70)"
+        ]
+      },
+      "light-text": {
+        "role": "neutral",
+        "displayName": "Light Action Text",
+        "tonalRamp": [
+          "oklch(15% 0.0147 80.71)",
+          "oklch(26% 0.0147 80.71)",
+          "oklch(38% 0.0147 80.71)",
+          "oklch(49% 0.0147 80.71)",
+          "oklch(61% 0.0147 80.71)",
+          "oklch(72% 0.0147 80.71)",
+          "oklch(84% 0.0147 80.71)",
+          "oklch(95% 0.0147 80.71)"
+        ]
+      },
+      "editor-button-surface": {
+        "role": "neutral",
+        "displayName": "Button Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0102 81.80)",
+          "oklch(26% 0.0102 81.80)",
+          "oklch(38% 0.0102 81.80)",
+          "oklch(49% 0.0102 81.80)",
+          "oklch(61% 0.0102 81.80)",
+          "oklch(72% 0.0102 81.80)",
+          "oklch(84% 0.0102 81.80)",
+          "oklch(95% 0.0102 81.80)"
+        ]
+      },
+      "editor-button-hover": {
+        "role": "neutral",
+        "displayName": "Button Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0169 88.00)",
+          "oklch(26% 0.0169 88.00)",
+          "oklch(38% 0.0169 88.00)",
+          "oklch(49% 0.0169 88.00)",
+          "oklch(61% 0.0169 88.00)",
+          "oklch(72% 0.0169 88.00)",
+          "oklch(84% 0.0169 88.00)",
+          "oklch(95% 0.0169 88.00)"
+        ]
+      },
+      "editor-line": {
+        "role": "neutral",
+        "displayName": "Editor Line",
+        "tonalRamp": [
+          "oklch(15% 0.0196 107.27)",
+          "oklch(26% 0.0196 107.27)",
+          "oklch(38% 0.0196 107.27)",
+          "oklch(49% 0.0196 107.27)",
+          "oklch(61% 0.0196 107.27)",
+          "oklch(72% 0.0196 107.27)",
+          "oklch(84% 0.0196 107.27)",
+          "oklch(95% 0.0196 107.27)"
+        ]
+      },
+      "settings-ink": {
+        "role": "secondary",
+        "displayName": "Settings Violet Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0724 307.26)",
+          "oklch(26% 0.0724 307.26)",
+          "oklch(38% 0.0724 307.26)",
+          "oklch(49% 0.0724 307.26)",
+          "oklch(61% 0.0724 307.26)",
+          "oklch(72% 0.0724 307.26)",
+          "oklch(84% 0.0724 307.26)",
+          "oklch(95% 0.0724 307.26)"
+        ]
+      },
+      "settings-selected": {
+        "role": "neutral",
+        "displayName": "Settings Violet Selection",
+        "tonalRamp": [
+          "oklch(15% 0.0206 311.08)",
+          "oklch(26% 0.0206 311.08)",
+          "oklch(38% 0.0206 311.08)",
+          "oklch(49% 0.0206 311.08)",
+          "oklch(61% 0.0206 311.08)",
+          "oklch(72% 0.0206 311.08)",
+          "oklch(84% 0.0206 311.08)",
+          "oklch(95% 0.0206 311.08)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Room and panel titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section and dialog titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "General editor reading text."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Buttons, field values and common interface labels."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Short metadata and supporting labels."
+      },
+      "connection-body": {
+        "displayName": "Connection Body",
+        "purpose": "Compact connection and source-picker content."
+      },
+      "connection-heading": {
+        "displayName": "Connection Heading",
+        "purpose": "Shared aligned room, object and source-column titles in Connect."
+      }
+    },
+    "shadows": [
+      {
+        "name": "editor-floating-controls",
+        "value": "0 5px 18px rgba(70, 60, 43, 0.05)",
+        "purpose": "Faint ambient separation for existing floating editor controls."
+      },
+      {
+        "name": "connect-working-surfaces",
+        "value": "-12px 8px 28px -24px rgb(35 60 49 / 42%)",
+        "purpose": "Shared by the warm-paper connection panel and brighter source/reading surface. Wide-screen layers overlap by 12px; tablets retain only the outer overlap; mobile removes overlap and shadows."
+      }
+    ],
+    "motion": [
+      {
+        "name": "connection-background",
+        "value": "background 160ms ease-out",
+        "purpose": "Source rows, connection rows and type filters; enabled only with prefers-reduced-motion: no-preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "760px"
+      },
+      {
+        "name": "compact-connect",
+        "value": "1100px"
+      },
+      {
+        "name": "tablet-editor",
+        "value": "1240px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Editor Button",
+      "kind": "button",
+      "description": "Paper button for ordinary editor actions.",
+      "html": "<button type=\"button\" class=\"ds-editor-default\">Add reading</button>",
+      "css": ".ds-editor-default { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 37px; padding: 7px 12px; border: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14)); border-radius: 7px; color: var(--preview-ink, #2e3835); background: #faf6ef; font: 500 0.875rem/1.4 \"Roboto\", sans-serif; cursor: pointer; } .ds-editor-default:hover:not(:disabled) { background: #eae5d9; } .ds-editor-default:focus-visible { outline: 2px solid #985637; outline-offset: 3px; } .ds-editor-default:disabled { opacity: 0.45; cursor: not-allowed; } @media (pointer: coarse) { .ds-editor-default { min-height: 44px; } }",
+      "refersTo": "button-default"
+    },
+    {
+      "name": "Primary Editor Button",
+      "kind": "button",
+      "description": "Terracotta variant of the established editor button.",
+      "html": "<button type=\"button\" class=\"ds-editor-primary\">Save changes</button>",
+      "css": ".ds-editor-primary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 37px; padding: 7px 12px; border: 1px solid transparent; border-radius: 7px; color: #fff9ef; background: var(--preview-accent, #bd724d); font: 600 0.875rem/1.4 \"Roboto\", sans-serif; cursor: pointer; } .ds-editor-primary:hover:not(:disabled) { background: #a7603d; } .ds-editor-primary:active:not(:disabled) { background: #925235; } .ds-editor-primary:focus-visible { outline: 2px solid #985637; outline-offset: 3px; } .ds-editor-primary:disabled { opacity: 0.45; cursor: not-allowed; } @media (pointer: coarse) { .ds-editor-primary { min-height: 44px; } }",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Text Editor Button",
+      "kind": "button",
+      "description": "The existing terracotta text variant for subordinate editor actions.",
+      "html": "<button type=\"button\" class=\"ds-editor-text\">Cancel</button>",
+      "css": ".ds-editor-text { display: inline-flex; align-items: center; justify-content: center; min-height: 37px; padding: 7px 12px; border: 1px solid transparent; border-radius: 7px; color: #85492f; background: transparent; font: 500 0.875rem/1.4 \"Roboto\", sans-serif; cursor: pointer; } .ds-editor-text:hover:not(:disabled) { background: #eae5d9; } .ds-editor-text:focus-visible { outline: 2px solid #985637; outline-offset: 3px; } .ds-editor-text:disabled { opacity: 0.45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Connection Action",
+      "kind": "button",
+      "description": "Blue inline action with an incumbent Tabler SVG icon.",
+      "html": "<button type=\"button\" class=\"ds-connection-add\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5l0 14\"/><path d=\"M5 12l14 0\"/></svg>Add reading</button>",
+      "css": ".ds-connection-add { display: flex; gap: 7px; align-items: center; border: 0; background: transparent; color: #365f6c; font: 500 13px/1.5 \"Roboto\", sans-serif; padding: 10px 0; cursor: pointer; } .ds-connection-add:focus-visible { outline: 2px solid #365f6c; outline-offset: 3px; } .ds-connection-add:disabled { opacity: 0.55; cursor: default; }",
+      "refersTo": "connection-action"
+    },
+    {
+      "name": "Source Search",
+      "kind": "input",
+      "description": "Search field that outlines the containing surface on focus.",
+      "html": "<label class=\"ds-source-search\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0\"/><path d=\"M21 21l-6 -6\"/></svg><input type=\"search\" aria-label=\"Search all compatible sources\" placeholder=\"Search sensors, devices, names or IDs…\"/></label>",
+      "css": ".ds-source-search { display: flex; gap: 10px; align-items: center; padding: 0 13px; background: #eeefe8; border-radius: 8px; font: 14px/1.5 \"Roboto\", sans-serif; } .ds-source-search:focus-within { outline: 2px solid #365f6c; outline-offset: 2px; } .ds-source-search svg { color: #58675e; flex-shrink: 0; } .ds-source-search input { flex: 1; width: 100%; min-width: 0; border: 0; background: transparent; color: #2e3835; padding: 12px 0; caret-color: #365f6c; outline: none; font: inherit; } .ds-source-search input::placeholder { color: #58675e; opacity: 1; }",
+      "refersTo": "search-field"
+    },
+    {
+      "name": "Mode Navigation",
+      "kind": "nav",
+      "description": "Labeled mode navigation with the existing Connect chrome treatment.",
+      "html": "<nav class=\"ds-mode-navigation\" aria-label=\"Editor mode\"><button type=\"button\" aria-pressed=\"false\">Construct</button><button type=\"button\" aria-pressed=\"false\">Arrange</button><button type=\"button\" aria-pressed=\"true\">Connect</button></nav>",
+      "css": ".ds-mode-navigation { display: flex; align-items: center; gap: 3px; padding: 4px; border: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14)); border-radius: 11px; background: rgba(247, 242, 233, 0.94); box-shadow: 0 5px 18px rgba(70, 60, 43, 0.05); } .ds-mode-navigation button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 37px; padding: 0 12px; border: 0; border-radius: 7px; color: var(--preview-muted, #6f7771); background: transparent; font: 600 0.875rem \"Roboto\", sans-serif; white-space: nowrap; cursor: pointer; } .ds-mode-navigation button:hover { background: #eae5d9; color: var(--preview-ink, #2e3835); } .ds-mode-navigation button[aria-pressed=\"true\"] { color: #426b7a; background: #dfe8e7; } .ds-mode-navigation button:focus-visible { outline: 2px solid #426b7a; outline-offset: 3px; }"
+    },
+    {
+      "name": "Source Type Filters",
+      "kind": "chip",
+      "description": "Wrapping source filters with an explicit pressed state.",
+      "html": "<div class=\"ds-type-filters\" role=\"group\" aria-label=\"Filter by type\"><button type=\"button\" aria-pressed=\"true\">All types</button><button type=\"button\" aria-pressed=\"false\">Temperature</button><button type=\"button\" aria-pressed=\"false\">Water</button></div>",
+      "css": ".ds-type-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 12px; } .ds-type-filters button { border: 0; border-radius: 6px; background: #efede5; color: #58675e; padding: 7px 10px; font: 12px/1.5 \"Roboto\", sans-serif; cursor: pointer; } .ds-type-filters button:hover { background: #e3e8de; } .ds-type-filters button[aria-pressed=\"true\"] { color: white; background: #365f6c; } .ds-type-filters button:focus-visible { outline: 2px solid #365f6c; outline-offset: 3px; } @media (prefers-reduced-motion: no-preference) { .ds-type-filters button { transition: background 160ms ease-out; } }",
+      "refersTo": "type-filter"
+    },
+    {
+      "name": "Source Surface",
+      "kind": "card",
+      "description": "Brighter Connect source layer with desktop overlap, scoped Connect corners and a shared directional shadow.",
+      "html": "<section class=\"ds-source-surface\" aria-label=\"Temperature sources\"><header class=\"ds-connection-column-heading\"><h2>Temperature</h2><p>Choose a Home Assistant source for Temperature.</p></header></section>",
+      "css": ".ds-source-surface { position: relative; z-index: 2; display: flex; flex: 1; flex-direction: column; min-width: 0; margin-left: -12px; padding: 20px 24px 16px; background: #fffcf6; border-radius: 16px; box-shadow: -12px 8px 28px -24px rgb(35 60 49 / 42%); color: #2e3835; font: 14px/1.5 \"Roboto\", sans-serif; } .ds-connection-column-heading { min-height: 96px; margin: 0; } .ds-connection-column-heading h2 { margin: 0; color: #2e3835; font: 600 20px/1.3 \"Roboto\", sans-serif; letter-spacing: 0; overflow-wrap: anywhere; } .ds-connection-column-heading p { margin: 6px 0 0; color: #58675e; font: 13px/1.5 \"Roboto\", sans-serif; } @media (max-width: 1100px) { .ds-source-surface { padding: 20px 18px 14px; } } @media (min-width: 761px) and (max-width: 1240px) { .ds-source-surface { margin-left: 0; } } @media (max-width: 760px) { .ds-source-surface { padding: 22px 16px 16px; margin-left: 0; box-shadow: none; } .ds-connection-column-heading { min-height: 0; margin-bottom: 14px; } .ds-connection-column-heading p { display: none; } }",
+      "refersTo": "connect-source-surface"
+    },
+    {
+      "name": "Selected Source Row",
+      "kind": "custom",
+      "description": "Named source, context, reading and selection mark in one flat row; synthetic example data.",
+      "html": "<button type=\"button\" class=\"ds-source-row\" aria-pressed=\"true\"><span class=\"ds-source-identity\"><strong>Room temperature</strong><span>Room sensor · Living room</span></span><span class=\"ds-source-value\">21 °C<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12l5 5l10 -10\"/></svg></span></button>",
+      "css": ".ds-source-row { display: flex; gap: 13px; align-items: center; width: 100%; min-height: 76px; padding: 13px 10px; margin-bottom: 4px; border: 0; border-radius: 9px; background: transparent; text-align: left; color: #2e3835; font: 14px/1.5 \"Roboto\", sans-serif; cursor: pointer; } .ds-source-row:hover:not(:disabled) { background: #f0f1e9; } .ds-source-row[aria-pressed=\"true\"] { background: #e8eee2; } .ds-source-row:focus-visible { outline: 2px solid #365f6c; outline-offset: 3px; } .ds-source-identity { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 4px; } .ds-source-identity strong { font-size: 14px; font-weight: 500; overflow-wrap: anywhere; } .ds-source-identity > span { color: #58675e; font-size: 12px; overflow-wrap: anywhere; } .ds-source-value { display: flex; gap: 8px; align-items: center; font-size: 12px; color: #365f6c; font-variant-numeric: tabular-nums; } .ds-source-value svg { width: 17px; height: 17px; } @media (prefers-reduced-motion: no-preference) { .ds-source-row { transition: background 160ms ease-out; } }",
+      "refersTo": "source-row"
+    },
+    {
+      "name": "Model Display Switch",
+      "kind": "custom",
+      "description": "Explicit labeled model-display state, separate from a source connection.",
+      "html": "<div class=\"ds-model-visibility\"><span>Show on model</span><button type=\"button\" role=\"switch\" aria-label=\"Show Temperature on model\" aria-checked=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0\"/><path d=\"M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6\"/></svg>On</button></div>",
+      "css": ".ds-model-visibility { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #58675e; font: 12px/1.5 \"Roboto\", sans-serif; } .ds-model-visibility button { display: flex; align-items: center; gap: 5px; border: 0; border-radius: 5px; background: #e5e9df; color: #365f6c; padding: 5px 7px; font: inherit; cursor: pointer; } .ds-model-visibility button[aria-checked=\"false\"] { background: #e8e5dd; color: #58675e; } .ds-model-visibility button:focus-visible { outline: 2px solid #365f6c; outline-offset: 3px; } .ds-model-visibility svg { width: 15px; height: 15px; }"
+    },
+    {
+      "name": "Mobile Panel Navigation",
+      "kind": "nav",
+      "description": "Underlined Tools, Properties and Issues controls inside the shared full-screen Construct and Arrange dialog. Arrange labels Tools as Catalog.",
+      "html": "<div class=\"ds-panel-tabs\" role=\"group\" aria-label=\"Editor panels\"><button type=\"button\" aria-pressed=\"false\">Tools</button><button type=\"button\" aria-pressed=\"true\">Properties</button><button type=\"button\" aria-pressed=\"false\">Issues</button></div>",
+      "css": ".ds-panel-tabs { display: flex; gap: 24px; min-height: 44px; margin: 0 0 4px; padding: 0; border-bottom: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14)); background: var(--preview-paper, #f5f0e7); } .ds-panel-tabs button { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 8px 0 10px; margin: 0 0 -1px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--preview-muted, #6f7771); font: 500 0.875rem/1.4 \"Roboto\", sans-serif; cursor: pointer; } .ds-panel-tabs button[aria-pressed=\"true\"] { border-bottom-color: var(--editor-panel-accent, #934c2e); color: var(--editor-panel-accent, #934c2e); } .ds-panel-tabs button:focus-visible { outline: 2px solid var(--editor-panel-accent, #934c2e); outline-offset: 3px; } .ds-panel-tabs button:disabled { opacity: 0.45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Settings Section Navigation",
+      "kind": "nav",
+      "description": "The selected Settings mode and sidebar section share a distinct violet accent.",
+      "html": "<nav class=\"ds-settings-navigation\" aria-label=\"Settings sections\"><button type=\"button\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/></svg><span>Shortcuts</span><svg class=\"ds-settings-chevron\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"m9 5 7 7-7 7\"/></svg></button><button type=\"button\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 15V3m-5 5 5-5 5 5M4 16v5h16v-5\"/></svg><span>Backups</span><svg class=\"ds-settings-chevron\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"m9 5 7 7-7 7\"/></svg></button></nav>",
+      "css": ".ds-settings-navigation { display: grid; gap: 4px; font: 400 var(--editor-text-control, 0.875rem)/1.5 \"Roboto\", sans-serif; } .ds-settings-navigation button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 10px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--preview-ink, #2e3835); font: inherit; text-align: left; cursor: pointer; } .ds-settings-navigation button:hover:not(:disabled) { background: #eae5d9; } .ds-settings-navigation button[aria-current=\"page\"], .ds-settings-navigation button[aria-current=\"page\"]:hover { background: var(--editor-settings-selected, #e9e1ef); color: var(--editor-settings-ink, #67517c); font-weight: 600; } .ds-settings-navigation button:focus-visible { outline: 2px solid #985637; outline-offset: 3px; } .ds-settings-navigation button:disabled { cursor: not-allowed; opacity: 0.38; } .ds-settings-navigation button > span { flex: 1; } .ds-settings-navigation svg { flex: none; width: 19px; height: 19px; } .ds-settings-navigation .ds-settings-chevron { width: 14px; height: 14px; } @media (max-width: 760px) { .ds-settings-navigation { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; } .ds-settings-navigation button { flex: none; width: auto; min-height: 44px; gap: 8px; white-space: nowrap; } .ds-settings-navigation .ds-settings-chevron { display: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Cabane workspace",
+    "overview": "Cabane's editor uses warm paper, green-toned ink and quiet surfaces around the home. Roboto keeps tools and object information practical and compact. The home, catalog thumbnails and plan provide the imagery; the controls supply a readable working frame.\n\nConnect extends this existing world with a sage device rail, blue connection selection and a pale source surface. Color and spacing separate working areas while labels explain the state of each object. This document records the implemented editor and its Connect and Properties patterns; it does not establish a new brand identity.",
+    "keyCharacteristics": [
+      "Warm paper surfaces and dark green-toned text.",
+      "Compact English controls with clear object and connection names.",
+      "Tonal grouping, restrained borders and soft corners.",
+      "Model thumbnails and the existing SVG icon family.",
+      "Independent visual treatment for selection, connection availability and model display."
+    ],
+    "rules": [
+      {
+        "name": "The Separate States Rule",
+        "body": "Selection, source availability and display on the model have separate visual cues. Pair status color with a label or icon.",
+        "section": "colors"
+      },
+      {
+        "name": "The Stable Context Rule",
+        "body": "Preserve the selected object and named connection while searching or filtering sources. Keep search and type filters immediately above the flat source list.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "**Do** reuse the editor palette, Roboto and the existing model-thumbnail and SVG-icon systems.",
+      "**Do** give connection, availability, selection and model display their own labeled cues.",
+      "**Do** keep source search and type filters adjacent to the source list.",
+      "**Do** align Connect column headings with the shared connection-heading role.",
+      "**Do** keep mobile navigation sequential with clear return actions.",
+      "**Do** reveal reading configuration after the corresponding action."
+    ],
+    "donts": [
+      "**Don't** use status color as the only explanation of a connection's state.",
+      "**Don't** expose entity IDs as the default source label.",
+      "**Don't** turn every source row into an elevated card.",
+      "**Don't** compress all three Connect columns into the mobile viewport.",
+      "**Don't** replace the incumbent Cabane typography, palette or icon family when extending these surfaces."
+    ]
+  }
+}

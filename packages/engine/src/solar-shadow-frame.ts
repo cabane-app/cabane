@@ -1,4 +1,5 @@
 import { deriveFloorLevels, legacyFloorHeight } from "./building/floor-levels";
+import { physicalFloor } from "./architecture-geometry/physical-floor";
 import { planPointToWorld } from "./geometry";
 import { worldBoundsForFloorScene } from "./pools/pool-footprint";
 import type { RenderableFloorSpec } from "./types";
@@ -21,7 +22,7 @@ export const solarShadowFrame = (floors: readonly RenderableFloorSpec[]) => {
     maxX = Math.max(maxX, bounds.centerX + halfGround);
     minZ = Math.min(minZ, bounds.centerZ - halfGround);
     maxZ = Math.max(maxZ, bounds.centerZ + halfGround);
-    for (const wall of floor.walls)
+    for (const wall of physicalFloor(floor).walls)
       for (const point of [wall.from, wall.to]) {
         const [x, z] = planPointToWorld(point, floor.coordinates);
         minX = Math.min(minX, x - wall.thicknessMeters);

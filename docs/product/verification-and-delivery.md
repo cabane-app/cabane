@@ -8,8 +8,10 @@ with release revisions in `docs/ha-contract.json`, and checked by
 changes require a revision and upgrade notes. Rendering/UI and catalog model
 additions/deletions do not trigger automatic releases. Behavioral validation and
 migration changes require an explicit semantic revision. The GitHub `Home Assistant contract release` workflow checks
-PRs and publishes a verified matching integration patch release after a push to
-main, using its scoped deploy key. See [contract releases](../ha-contract-releases.md)
+PRs and pushes, then publishes a verified matching integration patch release once
+daily at 23:00 Europe/Paris when contract changes are pending, using its scoped
+deploy key. An explicit manual dispatch on main can publish an urgent release.
+See [contract releases](../ha-contract-releases.md)
 for the source coverage, Codex reminder hook, credential and retry behavior.
 
 The root package defines the executable checks. Run `npm run verify:fast` for
@@ -78,6 +80,10 @@ its minor/patch version independently of the local pins. Install with `npm ci`, 
 use modern headless Chromium rather than an independently updated system browser.
 Linux environments without browser libraries can use
 `npm run browser:install -- --with-deps`. Reinstall the browser after Playwright upgrades.
+The Verification job pins GitHub's Ubuntu 24.04 image, which already includes
+Chrome's system libraries, and installs only the matching Playwright browser.
+It avoids per-job apt/font downloads. Missing libraries still fail the browser
+preflight before any shard starts.
 
 Dependency changes also require a clean `npm ci` with the managed host's npm version.
 Keep required peer dependencies of optional platform packages in the portable
@@ -105,13 +111,17 @@ Keep those entry points explicit when adding runtime-loaded modules. The engine'
 Roboto font dependency is retained because CSS imports are outside this analysis.
 
 The test command runs four cost-balanced shards with shared harness modules and a
-compact agent reporter per worker. The launcher keeps four independent worker
+compact agent reporter per worker. Under `CI=true`, one shard owns all Chromium
+cases and Node/DOM files use the other three. Unit-only selections use all four.
+Local runs keep parallel browser shards for hardware-accelerated graphics.
+The launcher keeps four independent worker
 processes so Node cannot buffer a later shard's failures behind an earlier shard.
 Set `CABANE_TEST_CONCURRENCY` to an integer from 1 to 4 to limit simultaneous
 workers on constrained local machines. All four
 shards still run, with identical tests and assertions. `npm test` always includes both Node and Chromium coverage.
-Hosted CI runs one shard at a time to prevent software-rendered scenes from
-starving each other's input and shader warmup. It retains the test report and
+Hosted CI runs one shard at a time. Browser files still share one worker and its
+Vite/Chromium processes; concurrent cold Node/DOM setup can starve browser startup
+on software graphics. It retains the test report and
 any browser failure screenshots, traces and errors as `verification-diagnostics`
 artifacts for seven days.
 Set `CABANE_TEST_PROGRESS=1` to print each starting test when diagnosing slow work.
@@ -123,7 +133,8 @@ runner does. Set `TEST_PROFILE=1` to report slow tests. For repeatable measureme
 `npm run test:profile -- --runs 3 --output test-results/baseline.json`, then repeat
 with a different output path and `--baseline test-results/baseline.json`. Reports
 include median wall time, per-file mean cost, every original test name/status,
-worker durations, concurrency and Node/platform metadata. Comparison refuses
+worker durations, concurrency and Node/platform metadata. Set `CI=true` to profile
+the hosted browser-isolation schedule locally. Comparison refuses
 failed runs or changed test inventories/statuses; intentional test migrations need
 an explicit coverage review rather than a like-for-like speed claim. Run benchmarks
 without other verification or development work competing for CPU. The profiler
@@ -171,8 +182,11 @@ viewport. Gun input waits for pointer lock and the Walk toolbar before equipping
 shader checks wait for rendered pulse/impact completion rather than 45 frames.
 Gun fixtures keep a 240-by-180 scene canvas inside the desktop UI so software
 graphics exercise the same shaders and normal input without a full-window pixel
-workload. The complete HA storage journey seeds a one-room demo through the real
-repository; bundled-villa furnishing is outside that test's storage risk.
+workload. HA settings boundaries and receiving-link routing run in Node/DOM with
+the real components and isolated IndexedDB. The browser keeps backup file/download
+wiring and native first-launch persistence. The floor-menu browser smoke checks
+the actual component's CSS overflow and native focus in a narrow viewport; floor
+editing, deletion constraints, persistence and undo remain in Node/DOM.
 
 The optional portal gun has exactly one Chromium smoke: enter Walk, equip the
 installed gun and create a visible portal. Placement, targeting, traversal at
@@ -283,6 +297,13 @@ reference checks, and delayed cleanup. These checks use synthetic data and do no
 contact household devices. Cabane and the integration must be delivered together;
 publishing and deployment remain separate actions.
 
+The wall-normalized GLB regression checks the reported negative surface gap
+through composition and legacy manifest validation. Placement bounds, refused
+edits, and Issues repair/removal run in Node/DOM tests with real project
+validation and workspace history. Removal checks draft mapping cleanup and
+preservation of published mappings. These fixtures do not establish acceptance
+of the reporter's original GLB or live HA workspace.
+
 Browser coverage omits journeys for model-pack
 replacement, reference-plan tracing, six weather previews, standalone navigation and
 OAuth, north/solar preview, rug dimensions, room-control reordering, and imported
@@ -290,7 +311,7 @@ basement viewing/walking. GLB import no longer includes publication, reload, ges
 or archive transfer. Existing Node/DOM suites retain schema, repository, model-pack,
 archive, reference-plan, weather and startup behavior; they do not establish equivalent
 end-to-end UI coverage. No replacement browser journeys or duplicate unit matrices
-are added. Basement editing and the representative-scale GLB scene remain.
+are added. The floor-menu smoke and representative-scale GLB scene remain.
 
 Wall face editing uses Node/DOM tests for labels, preview targeting, color edits,
 reset and history, renderer tests for face colors, and isolated IndexedDB tests for

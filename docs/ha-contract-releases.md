@@ -28,7 +28,12 @@ and bumps the release revision in `docs/ha-contract.json`. Review both files and
 the cumulative compatibility notes.
 Run the affected checks and the full product verification gate locally. Commit both
 manifests with the implementation. A PR validates the fingerprint and notes;
-publication only runs after a push to `main` or a manual workflow dispatch.
+publication runs once daily at 23:00 Europe/Paris from `main`, or through an
+explicit manual workflow dispatch on `main` for an urgent release. The schedule
+follows daylight saving time; GitHub Actions may start it later when runners are
+busy. Pushes and PRs validate the contract without publishing. The daily run
+combines all pending contract revisions into one patch release and skips
+publication when the integration already has the current contract.
 Keep incompatible imports blocked. Never strip unknown data to make them load.
 
 Full producer, panel and integration tests run locally before pushing a contract

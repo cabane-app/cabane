@@ -178,7 +178,7 @@ await withModules(async (load) => {
     assert.equal(progress.steps.find((step) => step.id === "modeling").status, "deferred");
   });
 
-  test("counts a compatible cross-area entity for a single-slot modeled device", () => {
+  test("counts a compatible cross-area entity with or without optional diagnostic slots", () => {
     const singleDeviceManifest = structuredClone(manifest);
     singleDeviceManifest.floors[0].rooms[0].devices = [
       singleDeviceManifest.floors[0].rooms[0].devices[0],
@@ -213,7 +213,7 @@ await withModules(async (load) => {
         profile: connectedProfileFixture(),
         record,
       }).deviceResolvedNow,
-      false,
+      true,
     );
   });
 

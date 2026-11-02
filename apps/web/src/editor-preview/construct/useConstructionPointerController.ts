@@ -44,6 +44,7 @@ import { beginSelectDrag } from "./select-drag-activation";
 import { ConstructionEditLayerProps } from "./construction-edit-contract";
 
 import {
+  isConstructionDrawingTool,
   CapturedSelectDrag,
   groundPlane,
   MarqueeDrag,
@@ -203,12 +204,7 @@ export function useConstructionPointerController({
     tool === "door" || tool === "window" || tool === "passage" || tool === "niche" ? tool : null;
   useEffect(() => setOpeningPreview(null), [tool]);
   const drawingFloorZone = tool === "floor" && floorPaintTarget === "custom-area";
-  const drawing =
-    tool === "wall" ||
-    tool === "hedge" ||
-    tool === "pool" ||
-    tool === "platform" ||
-    drawingFloorZone;
+  const drawing = isConstructionDrawingTool(tool) || drawingFloorZone;
   const outlinePoints =
     tool === "pool" || tool === "platform" ? poolPoints : drawingFloorZone ? floorZonePoints : [];
   const segmentStart = drawingFloorZone ? (floorZonePoints.at(-1) ?? null) : drawStart;

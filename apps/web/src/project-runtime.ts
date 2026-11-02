@@ -37,8 +37,13 @@ export const ownerProjectRegistries: ProjectModelRegistries = {
   deviceModels: ownerDeviceModels,
 };
 
+export const ownerProjectExtensions = {
+  ...ownerProjectManifest.extensions,
+  ...ownerProjectRegistries,
+};
+
 export const composeOwnerProjectManifest = (project: HomeProject) =>
-  composeHomeManifest(project, ownerProjectManifest.extensions);
+  composeHomeManifest(project, ownerProjectExtensions);
 
 /** Editing uses typed slots only; it never resolves or contacts Home Assistant. */
 export const editorBindingsForManifest = (manifest: HomeManifest): ResolvedHomeBindings => ({

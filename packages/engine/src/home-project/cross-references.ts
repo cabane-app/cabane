@@ -1,9 +1,10 @@
+import { outdoorPlatformRoomId } from "../outdoor-platforms/platform-rooms";
 import type { HomeProject } from "./types";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
 
 interface RegisteredId {
   path: string;
-  kind: "architecture" | "slot" | "shortcut" | "item";
+  kind: "architecture" | "slot" | "shortcut" | "item" | "group";
 }
 
 const visitProjectIds = (
@@ -17,6 +18,12 @@ const visitProjectIds = (
     );
     floor.outdoorPlatforms?.forEach((platform, index) => {
       register(platform.id, `floors[${floorIndex}].outdoorPlatforms[${index}].id`, "architecture");
+      if (platform.useAsRoom)
+        register(
+          outdoorPlatformRoomId(platform.id),
+          `floors[${floorIndex}].outdoorPlatforms[${index}].useAsRoom`,
+          "architecture",
+        );
       platform.edges.forEach((edge, i) =>
         register(
           edge.id,
@@ -64,8 +71,11 @@ const visitProjectIds = (
     );
   }
   project.sceneItems.forEach((item, itemIndex) => {
-    if (item.kind !== "device") return;
-    item.entitySlots.forEach((slot, slotIndex) =>
+    if (item.lightSlotId) {
+      register(item.lightSlotId, `sceneItems[${itemIndex}].lightSlotId`, "slot");
+      register(`${item.lightSlotId}-entity`, `sceneItems[${itemIndex}].lightSlotId.entity`, "slot");
+    }
+    (item.entitySlots ?? []).forEach((slot, slotIndex) =>
       register(slot.id, `sceneItems[${itemIndex}].entitySlots[${slotIndex}].id`, "slot"),
     );
   });
@@ -100,7 +110,14 @@ const visitProjectIds = (
     register(shortcut.id, `shortcuts[${index}].id`, "shortcut"),
   );
 
-  project.sceneItems.forEach((item, index) => register(item.id, `sceneItems[${index}].id`, "item"));
+  const groups = new Set<string>();
+  project.sceneItems.forEach((item, index) => {
+    register(item.id, `sceneItems[${index}].id`, "item");
+    if (item.group && !groups.has(item.group.id)) {
+      register(item.group.id, `sceneItems[${index}].group.id`, "group");
+      groups.add(item.group.id);
+    }
+  });
 };
 
 /** The same identity namespace used by validation, including implicit opening slots. */

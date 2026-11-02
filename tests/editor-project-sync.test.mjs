@@ -16,6 +16,9 @@ await withModules(async (load) => {
   );
   const { ownerHomeProject } = await load("/tests/fixtures/bundled-home.ts");
   const { collectBindingSlots, validateHomeProject } = await load("/packages/engine/src/index.ts");
+  const { createFurnishingEditorState, furnishingEditorReducer: reduce } = await load(
+    "/apps/web/src/editor-preview/furnish/editor-state.ts",
+  );
 
   const project = {
     schemaVersion: 2,
@@ -198,6 +201,75 @@ await withModules(async (load) => {
     );
     assert.deepEqual(failedTopology.bindings["https://fixture.invalid"].manualSlotIds, []);
     assert.deepEqual(failedTopology.bindings["https://fixture.invalid"].published, profile);
+  });
+
+  test("grouping preserves bindings, duplication leaves new slots unbound, and group deletion cleans only draft mappings", () => {
+    const project = ownerHomeProject;
+    const manifest = composeOwnerProjectManifest(project);
+    const device = project.sceneItems.find((item) => item.kind === "device");
+    const furniture = project.sceneItems.find(
+      (item) => item.kind === "furnishing" && item.floorId === device.floorId,
+    );
+    const floor = manifest.floors.find((floor) => floor.id === device.floorId);
+    const slot = collectBindingSlots(manifest).find((slot) => slot.deviceSlotId === device.id);
+    const profile = {
+      schemaVersion: 1,
+      homeId: project.home.id,
+      roomAreaIds: {},
+      entityIdsBySlotId: { [slot.slotId]: "light.fixture" },
+    };
+    const origin = "https://fixture.invalid";
+    const bindings = {
+      [origin]: {
+        draft: profile,
+        published: profile,
+        manualRoomIds: [],
+        manualSlotIds: [slot.slotId],
+      },
+    };
+    const grouped = reduce(
+      createFurnishingEditorState(
+        project.sceneItems.filter((item) => item.floorId === device.floorId),
+      ),
+      { type: "group-items", ids: [device.id, furniture.id], reservedIds: [] },
+    );
+    const saved = workspaceSnapshotFromEditorState(
+      { project, bindings },
+      floor,
+      grouped.items,
+      ownerProjectRegistries,
+    );
+    assert.deepEqual(saved.bindings, bindings);
+    const duplicated = reduce(grouped, {
+      type: "duplicate-items",
+      ids: [device.id],
+      floor,
+      reservedIds: [],
+    });
+    const copied = workspaceSnapshotFromEditorState(
+      saved,
+      floor,
+      duplicated.items,
+      ownerProjectRegistries,
+    );
+    assert.deepEqual(copied.bindings[origin].draft.entityIdsBySlotId, profile.entityIdsBySlotId);
+    const copies = duplicated.items.slice(grouped.items.length);
+    assert.equal(copies.length, 2);
+    for (const copy of copies)
+      for (const slot of copy.entitySlots ?? [])
+        assert.equal(copied.bindings[origin].draft.entityIdsBySlotId[slot.id], undefined);
+    const deleted = reduce(duplicated, { type: "delete-items", ids: [furniture.id] });
+    const removed = workspaceSnapshotFromEditorState(
+      copied,
+      floor,
+      deleted.items,
+      ownerProjectRegistries,
+    );
+    assert.deepEqual(removed.bindings[origin].draft.entityIdsBySlotId, {});
+    assert.deepEqual(removed.bindings[origin].published, profile);
+    assert.ok(
+      copies.every((copy) => removed.project.sceneItems.some((item) => item.id === copy.id)),
+    );
   });
 
   test("item history restores selection without rebuilding shared ceilings or architecture", () => {

@@ -23,4 +23,4 @@ branding, no UI mockup, no watermark, no extra decorative objects.
 ## Installation guidance sources
 
 - [Skills CLI installation](https://github.com/vercel-labs/skills)
-- [Cabane skill repository](https://github.com/cabane-app/agent-skills)
+- [Cabane model skill](https://github.com/cabane-app/cabane/tree/main/.agents/skills/create-cabane-model)

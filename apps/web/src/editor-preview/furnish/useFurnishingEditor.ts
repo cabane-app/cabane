@@ -1,6 +1,11 @@
-import { useCallback, useMemo, useReducer, useState } from "react";
+import type { SceneItemPatch } from "./item-edits";
+import { useCallback, useMemo, useReducer } from "react";
+import { collectProjectIds } from "@cabane/engine";
 import type {
+  EntityBindingSlotSpec,
   FloorSpec,
+  HomeProject,
+  ProjectModelRegistries,
   FurnishingModelDefinition,
   ItemPlacement,
   PlanPoint,
@@ -8,41 +13,105 @@ import type {
   SceneItemSize,
   SceneModelEditorDescriptor,
 } from "@cabane/engine";
-import { createFurnishingEditorState, furnishingEditorReducer } from "./editor-state";
+import {
+  createFurnishingEditorState,
+  type FurnishingEditorState,
+  type FurnishingEditorAction,
+} from "./editor-state";
+import { guardedFurnishingEditorReducer } from "./placement/guarded-editor-state";
+import { expandItemSelection, selectedItemGroup } from "./item-groups";
 
-export const useFurnishingEditor = (initialItems: readonly SceneItemSpec[]) => {
+export const useFurnishingEditor = (
+  initialItems: readonly SceneItemSpec[],
+  context?: {
+    project: HomeProject;
+    floor: FloorSpec;
+    registries: ProjectModelRegistries;
+  },
+) => {
+  const floors = context?.project.floors;
+  const floor = context?.floor;
+  const registries = context?.registries;
+  const validation = useMemo(
+    () =>
+      floors && floor && registries
+        ? {
+            project: {
+              floors: floors.map((candidate) => (candidate.id === floor.id ? floor : candidate)),
+            },
+            registries,
+          }
+        : undefined,
+    [floors, floor, registries],
+  );
   const [state, dispatch] = useReducer(
-    furnishingEditorReducer,
+    (state: FurnishingEditorState, action: FurnishingEditorAction) =>
+      guardedFurnishingEditorReducer(state, action, validation),
     initialItems,
     createFurnishingEditorState,
   );
-  const [multipleIds, setMultipleIds] = useState<string[]>([]);
-  const selectedIds = state.selectedId
-    ? [state.selectedId]
-    : multipleIds.filter((id) => state.items.some((item) => item.id === id));
-  const selectedItem = useMemo(
-    () => state.items.find((item) => item.id === state.selectedId) ?? null,
-    [state.items, state.selectedId],
+  const selectedIds = useMemo(
+    () =>
+      expandItemSelection(state.items, state.selectedId ? [state.selectedId] : state.multipleIds),
+    [state.items, state.selectedId, state.multipleIds],
   );
+  const selectedGroup = selectedItemGroup(state.items, selectedIds);
+  const selectedItem =
+    !selectedGroup && selectedIds.length === 1
+      ? (state.items.find((item) => item.id === selectedIds[0]) ?? null)
+      : null;
 
   return {
     ...state,
+    selectedId: selectedGroup ? selectedIds[0] : state.selectedId,
+    selectedGroup,
     selectedIds,
     selectMany: useCallback((ids: string[]) => {
-      setMultipleIds(ids);
-      dispatch({ type: "select", id: ids.length === 1 ? ids[0] : null });
+      dispatch({ type: "select-many", ids });
     }, []),
+    groupItems: (ids: readonly string[]) =>
+      dispatch({
+        type: "group-items",
+        ids,
+        reservedIds: context ? collectProjectIds(context.project) : [],
+      }),
+    ungroupItems: (ids: readonly string[]) => dispatch({ type: "ungroup-items", ids }),
+    duplicateItems: (ids: readonly string[], floor: FloorSpec) =>
+      dispatch({
+        type: "duplicate-items",
+        ids,
+        floor,
+        reservedIds: context ? collectProjectIds(context.project) : [],
+      }),
+    groupSelection: () =>
+      dispatch({
+        type: "group-items",
+        ids: selectedIds,
+        reservedIds: context ? collectProjectIds(context.project) : [],
+      }),
+    ungroupSelection: () => dispatch({ type: "ungroup-items", ids: selectedIds }),
+    renameGroup: (id: string, name: string) => dispatch({ type: "rename-group", id, name }),
+    transformGroup: (
+      id: string,
+      placement: Extract<ItemPlacement, { kind: "absolute" }>,
+      floor: FloorSpec,
+    ) => dispatch({ type: "transform-group", id, placement, floor }),
+    duplicateSelection: (
+      floor: FloorSpec,
+      reservedIds: readonly string[] = context ? collectProjectIds(context.project) : [],
+    ) => dispatch({ type: "duplicate-items", ids: selectedIds, floor, reservedIds }),
     addItem: useCallback((item: SceneItemSpec) => dispatch({ type: "add-item", item }), []),
     selectedItem,
     canUndo: state.past.length > 0,
     canRedo: state.future.length > 0,
     select: useCallback((id: string | null) => {
-      setMultipleIds([]);
       dispatch({ type: "select", id });
     }, []),
     beginTransaction: useCallback(() => dispatch({ type: "begin-transaction" }), []),
     commitTransaction: useCallback(() => dispatch({ type: "commit-transaction" }), []),
     cancelTransaction: useCallback(() => dispatch({ type: "cancel-transaction" }), []),
+    updateItem: (id: string, patch: SceneItemPatch, definition: SceneModelEditorDescriptor) =>
+      dispatch({ type: "update-item", id, patch, definition }),
     updateColor: useCallback(
       (id: string, color: string | null, definition: SceneModelEditorDescriptor) =>
         dispatch({ type: "update-color", id, color, definition }),
@@ -51,6 +120,11 @@ export const useFurnishingEditor = (initialItems: readonly SceneItemSpec[]) => {
     updateVariant: useCallback(
       (id: string, variant: string, definition: SceneModelEditorDescriptor) =>
         dispatch({ type: "update-variant", id, variant, definition }),
+      [],
+    ),
+    updateEntitySlots: useCallback(
+      (id: string, entitySlots: readonly EntityBindingSlotSpec[]) =>
+        dispatch({ type: "update-entity-slots", id, entitySlots }),
       [],
     ),
     updateLightState: useCallback(
@@ -71,6 +145,15 @@ export const useFurnishingEditor = (initialItems: readonly SceneItemSpec[]) => {
     updateSize: useCallback(
       (id: string, size: SceneItemSize, definition: SceneModelEditorDescriptor) =>
         dispatch({ type: "update-size", id, size, definition }),
+      [],
+    ),
+    updatePlacementAndSize: useCallback(
+      (
+        id: string,
+        placement: ItemPlacement,
+        size: SceneItemSize,
+        definition: SceneModelEditorDescriptor,
+      ) => dispatch({ type: "update-placement-and-size", id, placement, size, definition }),
       [],
     ),
     rotate: useCallback(
@@ -113,7 +196,6 @@ export const useFurnishingEditor = (initialItems: readonly SceneItemSpec[]) => {
     undo: useCallback(() => dispatch({ type: "undo" }), []),
     redo: useCallback(() => dispatch({ type: "redo" }), []),
     replaceItems: useCallback((items: readonly SceneItemSpec[], selectedId?: string | null) => {
-      setMultipleIds([]);
       dispatch({
         type: "replace-items",
         items,

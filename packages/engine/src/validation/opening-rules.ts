@@ -74,6 +74,15 @@ export const validateOpenings = (
       (candidate): candidate is RawObject =>
         isObject(candidate) && candidate.id === rawOpening.wallId,
     );
+    if (wall?.virtual === true) {
+      issues.push(
+        issue(
+          "opening.virtual-wall",
+          `${openingPath}.wallId`,
+          "A virtual wall cannot host an opening.",
+        ),
+      );
+    }
     if (
       wall &&
       isPlanPoint(wall.from) &&

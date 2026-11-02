@@ -1,3 +1,4 @@
+import { isPlatformRoomRecord } from "./platform-room";
 import {
   isOutdoorPlatformOutline,
   platformPolygonsOverlap,
@@ -28,6 +29,14 @@ export function validateOutdoorPlatforms(
       ...registerId(context, platform.id, `${p}.id`),
       ...validateFloorFinish(platform.finish, `${p}.finish`),
     ];
+    if (platform.useAsRoom !== undefined && typeof platform.useAsRoom !== "boolean")
+      issues.push(
+        issue("platform.room-option", `${p}.useAsRoom`, "Use as room must be a boolean."),
+      );
+    if (platform.useAsRoom && (typeof platform.roomName !== "string" || !platform.roomName.trim()))
+      issues.push(
+        issue("platform.room-name", `${p}.roomName`, "Name the outdoor room before saving."),
+      );
     if (!validPlatformEdgeConfiguration(platform.defaultEdge))
       issues.push(
         issue(
@@ -75,6 +84,7 @@ export function validateOutdoorPlatforms(
         floor.rooms.some(
           (room) =>
             isObject(room) &&
+            !isPlatformRoomRecord(floor, room) &&
             isOutdoorPlatformOutline(room.polygon) &&
             platformPolygonsOverlap(polygon, room.polygon),
         )

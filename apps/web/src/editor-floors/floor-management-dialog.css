@@ -96,3 +96,21 @@
     min-height: 44px;
   }
 }
+
+.floor-management-dialog label.floor-management-dialog__choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+.floor-management-dialog__choice input[type="checkbox"] {
+  width: 18px;
+  min-height: 18px;
+  height: 18px;
+  padding: 0;
+  flex: none;
+  accent-color: var(--preview-accent);
+}
+.floor-management-dialog__fields p {
+  margin: 0;
+}

@@ -7,6 +7,8 @@ import {
   planPointToWorld,
   worldPointToPlan,
   deriveStairFlight,
+  stairFloorIds,
+  connectStairToTerrain,
   StairPlan,
   type ManifestIssue,
   type FloorCoordinates,
@@ -100,7 +102,7 @@ export function StairPlacement({
       const hit = raycaster.ray.intersectPlane(plane, new Vector3());
       if (!hit) return null;
       const walls = building.floors
-        .filter((f) => f.id === stair.lowerFloorId || f.id === stair.upperFloorId)
+        .filter((f) => stairFloorIds(stair).includes(f.id))
         .flatMap((f) => f.walls);
       const point = worldDragToSnappedConstructPlan(
         omitUndefinedProperties({
@@ -121,10 +123,11 @@ export function StairPlacement({
     const preview = (point: StairPlacementPoint) => {
       if (!anchor) return null;
       const source = latest.current.stair;
-      const next =
+      const drawn =
         corner && (source.shape === "l-shaped" || source.shape === "u-shaped")
           ? stairFromCorner(source, latest.current.coordinates, anchor, corner, point)
           : stairFromEndpoints(source, latest.current.coordinates, anchor, point);
+      const next = drawn ? connectStairToTerrain(latest.current.building, drawn) : null;
       setCandidate(next);
       return next;
     };

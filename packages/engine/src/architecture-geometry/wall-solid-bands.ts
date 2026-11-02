@@ -3,10 +3,12 @@ import { differenceClippingGeometry, unionClippingPolygons } from "./architectur
 import { EPSILON } from "./architecture-geometry-contract";
 import { uniqueSorted } from "./architecture-mesh-buckets";
 import { openingCutPolygon, wallSolidFootprintPolygons } from "./wall-solid-footprints";
+import { physicalFloor } from "./physical-floor";
 import type { FloorSpec } from "../types";
 
 /** Shared physical wall slices; door open/closed runtime state does not fill apertures. */
-export function wallSolidBands(floor: FloorSpec) {
+export function wallSolidBands(requestedFloor: FloorSpec) {
+  const floor = physicalFloor(requestedFloor);
   const heights = uniqueSorted([
     0,
     ...floor.walls.map((wall) => wall.heightMeters ?? floor.defaultWallHeightMeters),

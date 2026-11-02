@@ -1,3 +1,4 @@
+import { indoorRoomsForFloor } from "../outdoor-platforms/platform-rooms";
 import { cutSurfaceShapes, useStairSurfaceApertures } from "../stairs/surface-apertures";
 import { BufferGeometry, DoubleSide, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
 
@@ -33,15 +34,17 @@ function FlatCeilingSlab({
 }
 
 export function CeilingSurfaces({ floor }: { floor: FloorSpec }) {
+  const rooms = indoorRoomsForFloor(floor);
+  if (!rooms.length && floor.outdoorPlatforms?.length) return null;
   const ceilings = floor.ceilings ?? [
     {
       id: "default-ceiling",
       kind: "flat" as const,
-      roomIds: floor.rooms.map((room) => room.id),
+      roomIds: rooms.map((room) => room.id),
       heightMeters: floor.defaultCeilingHeightMeters,
     },
   ];
-  const allRoomIds = new Set(floor.rooms.map((room) => room.id));
+  const allRoomIds = new Set(rooms.map((room) => room.id));
   return (
     <group>
       {ceilings.flatMap((ceiling) => {
@@ -64,7 +67,7 @@ export function CeilingSurfaces({ floor }: { floor: FloorSpec }) {
           ));
         }
         return ceiling.roomIds.flatMap((roomId) => {
-          const room = floor.rooms.find((candidate) => candidate.id === roomId);
+          const room = rooms.find((candidate) => candidate.id === roomId);
           if (!room) return [];
           return [
             <FlatCeilingSlab

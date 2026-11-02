@@ -5,8 +5,8 @@ import { JSDOM } from "jsdom";
 import { act } from "react";
 import { IDBFactory } from "fake-indexeddb";
 
-export async function withStorageDom(run) {
-  const dom = new JSDOM("<!doctype html>", { url: "https://cabane.test/" });
+export async function withStorageDom(run, url = "https://cabane.test/") {
+  const dom = new JSDOM("<!doctype html>", { url });
   const indexedDB = new IDBFactory();
   dom.window.indexedDB = indexedDB;
   dom.window.confirm = () => true;

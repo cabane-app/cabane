@@ -21,7 +21,13 @@ const entriesFor = (workspace) =>
     .filter((path) => !/^src\/(?:index|(?:architecture|furnishing|device)\/index)\.ts$/.test(path));
 export default {
   ignoreBinaries: ["ioreg", "pmset"], // Optional macOS hardware benchmark metadata.
-  ignoreUnresolved: [/^\/src\//, /^\/tests\//, /^\/apps\//], // Vite browser-root URLs, exercised by browser tests.
+  ignoreUnresolved: [
+    /^\/src\//,
+    /^\/tests\//,
+    /^\/apps\//,
+    // Existing Vite module URLs, verified above and exercised by their harnesses.
+    ...[...runtimeEntries].map((path) => `/${path}`),
+  ],
   workspaces: {
     ".": {
       entry: [

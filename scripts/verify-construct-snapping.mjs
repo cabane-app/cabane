@@ -1,3 +1,4 @@
+import { selectConstructionTool } from "../tests/editor-browser-tools.mjs";
 import assert from "node:assert/strict";
 import { chromium } from "playwright-core";
 
@@ -76,7 +77,7 @@ try {
   };
   const label = page.getByLabel("Wall length", { exact: true });
   const originalNames = await page.evaluate(() => window.constructWallTargetNames());
-  await page.getByRole("button", { name: "Wall", exact: true }).click();
+  await selectConstructionTool(page, "Wall");
   await page.mouse.move(700, 760);
   await page.mouse.down();
   await move(850, 906);

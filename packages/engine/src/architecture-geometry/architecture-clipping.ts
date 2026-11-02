@@ -79,3 +79,18 @@ export const differenceClippingGeometry = (
       : clippingMultiPolygon(normalizedSubject),
   );
 };
+
+export const intersectClippingGeometry = (
+  subject: ClippingGeometry,
+  ...clips: ClippingGeometry[]
+): MultiPolygon => {
+  const normalizedSubject = normalizeClippingGeometry(subject);
+  if (!normalizedSubject[0]) return [];
+  const normalizedClips = clips.map(normalizeClippingGeometry);
+  if (normalizedClips.some((geometry) => !geometry[0])) return [];
+  return normalizeClippingMultiPolygon(
+    normalizedClips.length
+      ? polygonClipping.intersection(normalizedSubject, ...normalizedClips)
+      : clippingMultiPolygon(normalizedSubject),
+  );
+};

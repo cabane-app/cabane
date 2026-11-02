@@ -159,6 +159,7 @@ await withModules(async (load) => {
       const definition = stableDeviceRegistry[modelId];
       const item = {
         id: "outdoor-lantern",
+        floorId: floor.id,
         kind: "device",
         modelId,
         lightState: "always-on",
@@ -668,6 +669,7 @@ await withModules(async (load) => {
       sceneItems: [
         {
           id: deviceSlot.id,
+          floorId: floor.id,
           kind: "device",
           modelId: deviceSlot.model,
           placement: {

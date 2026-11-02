@@ -7,8 +7,15 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const target = join(root, "test-results/ha-dev/custom_components/cabane");
-const integrationCommit = "e97c18a9bff966ccbad21ff54187abe949f723e3";
+const integrationCommit = "1a050ae19260f4f82995544c56029ffb419decf9";
 const action = process.argv[2];
+const sourceIndex = process.argv.indexOf("--integration-source");
+const localSource = sourceIndex === -1 ? null : process.argv[sourceIndex + 1];
+if (
+  sourceIndex !== -1 &&
+  (!localSource || !existsSync(join(localSource, "custom_components/cabane/__init__.py")))
+)
+  throw new Error("--integration-source must name a Cabane integration checkout.");
 if (!["up", "refresh"].includes(action)) throw new Error("Expected up or refresh");
 const run = (command, args, options = {}) =>
   execFileSync(command, args, { cwd: root, stdio: "inherit", ...options });
@@ -21,17 +28,23 @@ if (action === "refresh" || !existsSync(join(target, "frontend/manifest.json")))
   const staging = await mkdtemp(join(tmpdir(), "cabane-ha-dev-"));
   try {
     const source = join(staging, "integration");
-    run("git", ["init", source]);
-    run("git", [
-      "-C",
-      source,
-      "fetch",
-      "--depth",
-      "1",
-      "https://github.com/cabane-app/cabane-home-assistant.git",
-      integrationCommit,
-    ]);
-    run("git", ["-C", source, "checkout", "--detach", "FETCH_HEAD"]);
+    if (localSource) {
+      await cp(join(localSource, "custom_components"), join(source, "custom_components"), {
+        recursive: true,
+      });
+    } else {
+      run("git", ["init", source]);
+      run("git", [
+        "-C",
+        source,
+        "fetch",
+        "--depth",
+        "1",
+        "https://github.com/cabane-app/cabane-home-assistant.git",
+        integrationCommit,
+      ]);
+      run("git", ["-C", source, "checkout", "--detach", "FETCH_HEAD"]);
+    }
     run(process.execPath, ["scripts/build-panel.mjs"], {
       env: { ...process.env, CABANE_PANEL_ALLOW_DIRTY: "1" },
     });
@@ -60,7 +73,7 @@ if (action === "refresh" || !existsSync(join(target, "frontend/manifest.json")))
     await cp(component, target, { recursive: true });
     await writeFile(
       join(root, "test-results/ha-dev/integration-revision.txt"),
-      integrationCommit + "\n",
+      (localSource ? "local-source" : integrationCommit) + "\n",
     );
   } finally {
     await rm(staging, { recursive: true, force: true });

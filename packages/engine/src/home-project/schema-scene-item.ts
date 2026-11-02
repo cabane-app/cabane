@@ -80,11 +80,44 @@ export const sceneItem = (
           "entitySlots",
           "lightState",
           "color",
+          "lightSlotId",
+          "group",
         ]
-      : ["id", "floorId", "kind", "modelId", "variant", "placement", "size", "color"],
+      : [
+          "id",
+          "floorId",
+          "kind",
+          "modelId",
+          "variant",
+          "placement",
+          "size",
+          "color",
+          "entitySlots",
+          "lightSlotId",
+          "lightState",
+          "group",
+        ],
     path,
     issues,
   );
+  if (candidate.group !== undefined) {
+    const group = record(candidate.group, `${path}.group`, issues);
+    if (group) {
+      keys(group, ["id", "name"], `${path}.group`, issues);
+      for (const key of ["id", "name"]) {
+        string(group[key], `${path}.group.${key}`, issues);
+        if (typeof group[key] === "string" && !group[key].trim())
+          addProjectIssue(
+            issues,
+            "project.item-group",
+            `${path}.group.${key}`,
+            "Groups need an ID and a name.",
+          );
+      }
+    }
+  }
+  if (candidate.lightSlotId !== undefined)
+    string(candidate.lightSlotId, `${path}.lightSlotId`, issues);
   string(candidate.id, `${path}.id`, issues);
   string(candidate.modelId, `${path}.modelId`, issues);
   if (candidate.variant !== undefined) string(candidate.variant, `${path}.variant`, issues);
@@ -112,7 +145,6 @@ export const sceneItem = (
     );
   size?.forEach((entry, index) => finite(entry, `${path}.size[${index}]`, issues));
   if (
-    device &&
     candidate.lightState !== undefined &&
     (typeof candidate.lightState !== "string" ||
       !["always-off", "always-on", "night-only", "connected"].includes(candidate.lightState))
@@ -124,7 +156,7 @@ export const sceneItem = (
       "Choose always-off, always-on, night-only, or connected.",
     );
   }
-  if (device)
+  if (device || candidate.entitySlots !== undefined)
     array(candidate.entitySlots, `${path}.entitySlots`, issues)?.forEach((entry, index) =>
       entitySlot(entry, `${path}.entitySlots[${index}]`, issues),
     );

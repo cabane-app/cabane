@@ -28,6 +28,7 @@ export function doorFromConfiguration(
 export function doorConfiguration(door: DoorSpec, metersPerPlanUnit: number): DoorConfiguration {
   const {
     id: _id,
+    name: _name,
     wallId: _wall,
     offsetFromWallStartPlanUnits: _offset,
     widthPlanUnits,

@@ -1,3 +1,4 @@
+import { isPlatformRoomRecord } from "./platform-room";
 import { validateOutdoorPlatforms } from "./platform-rules";
 import { validateHedges } from "./hedge-rules";
 import { pointInsidePolygon, polygonSelfIntersects, polygonSignedArea } from "../geometry";
@@ -226,7 +227,12 @@ const validateFloor = (
     Array.isArray(rawFloor.rooms)
   ) {
     rawFloor.rooms.forEach((rawRoom, roomIndex) => {
-      if (!isObject(rawRoom) || !isPolygon(rawRoom.polygon)) return;
+      if (
+        !isObject(rawRoom) ||
+        !isPolygon(rawRoom.polygon) ||
+        isPlatformRoomRecord(rawFloor, rawRoom)
+      )
+        return;
       rawRoom.polygon.forEach((candidate, pointIndex) => {
         const insideRegion = footprintRegions.some(
           (region) =>

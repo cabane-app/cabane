@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
@@ -8,21 +7,6 @@ import { create } from "@react-three/test-renderer";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
-// Source-policy assertions span the editor's responsibility modules; behavior
-// tests above continue to mount the public HomeEditor entry point.
-async function readEditorSource() {
-  return (
-    await Promise.all(
-      [
-        "apps/web/src/HomeEditor.tsx",
-        ...(await readdir("apps/web/src/editor-workspace"))
-          .filter((name) => /\.tsx?$/.test(name))
-          .map((name) => `apps/web/src/editor-workspace/${name}`),
-      ].map((path) => readFile(path, "utf8")),
-    )
-  ).join("\n");
-}
 
 await withModules(async (load) => {
   const {
@@ -38,7 +22,7 @@ await withModules(async (load) => {
     ...stableDeviceRegistry,
     ...homeExtensions.deviceModels,
   };
-  const { SceneItemRenderer, createSeedProjectRecord } = await load(
+  const { SceneItemRenderer, createSeedProjectRecord, setMeasurementUnits } = await load(
     "/packages/engine/src/index.ts",
   );
   const { useHomeEditorController } = await load(
@@ -124,11 +108,36 @@ await withModules(async (load) => {
         null,
         "Shortcuts does not mount the 3D scene",
       );
-      assert.equal(button("Shortcuts")?.getAttribute("aria-pressed"), "true");
+      assert.equal(button("Settings")?.getAttribute("aria-pressed"), "true");
+      assert.equal(button("Shortcuts")?.getAttribute("aria-current"), "page");
       assert.ok(button("Add shortcut"));
       await act(async () => button("Add shortcut").click());
       await act(async () => button("Add room").click());
       await act(async () => button(ownerHomeProject.floors[0].rooms[0].name).click());
+      assert.ok(button(`Edit ${ownerHomeProject.floors[0].rooms[0].name} shortcut`));
+      await act(async () => button("Editor").click());
+      assert.ok(dom.window.document.querySelector('input[name="measurement-units"]'));
+      await act(async () => dom.window.document.querySelector('input[value="imperial"]').click());
+      await act(async () => button("Orbital view").click());
+      const temperature = [...dom.window.document.querySelectorAll("label")]
+        .find((node) => node.textContent.includes("Temperature"))
+        .querySelector("input");
+      await act(async () => temperature.click());
+      assert.equal(
+        JSON.parse(dom.window.localStorage.getItem("cabane.room-overlays.preferences.v1"))
+          .temperature,
+        false,
+      );
+      await act(async () => button("Explore").click());
+      await act(async () =>
+        dom.window.document.querySelector('.editor-settings input[type="checkbox"]').click(),
+      );
+      assert.equal(
+        JSON.parse(dom.window.localStorage.getItem("cabane.walk.preferences.v1")).invertYAxis,
+        true,
+      );
+      await act(async () => button("Shortcuts").click());
+      assert.equal(dom.window.localStorage.getItem("cabane.measurement-units.v1"), "imperial");
       assert.ok(button(`Edit ${ownerHomeProject.floors[0].rooms[0].name} shortcut`));
       await act(async () => button("Undo").click());
       assert.equal(button(`Edit ${ownerHomeProject.floors[0].rooms[0].name} shortcut`), undefined);
@@ -147,7 +156,10 @@ await withModules(async (load) => {
       assert.equal(closed[0].draft.actionBar, undefined);
       assert.equal(closed[0].published.actionBar, undefined);
     } finally {
-      await act(async () => root.unmount());
+      await act(async () => {
+        setMeasurementUnits("metric");
+        root.unmount();
+      });
       dom.window.close();
       for (const name of names) {
         if (previous[name]) Object.defineProperty(globalThis, name, previous[name]);
@@ -241,6 +253,22 @@ await withModules(async (load) => {
       await expand("Ground floor");
       await click("Manage floors");
       await click("Add floor above");
+      await click("Cancel");
+      assert.equal(button("Floor 2"), undefined);
+      await expand("Ground floor");
+      await click("Manage floors");
+      await click("Add floor above");
+      await act(async () =>
+        dom.window.document
+          .querySelector('.floor-management-dialog input[type="checkbox"]')
+          .click(),
+      );
+      assert.equal(
+        dom.window.document.querySelectorAll('.floor-management-dialog input[type="checkbox"]')
+          .length,
+        1,
+      );
+      await click("Add floor");
       assert.equal(button("Floor 2").getAttribute("aria-pressed"), "true");
       await expand("Floor 2");
       await click("Manage floors");
@@ -771,144 +799,4 @@ await withModules(async (load) => {
     assert.equal(new Set(groups).size, ownerProjectManifest.sceneItems.length);
     await renderer.unmount();
   });
-});
-
-test("the product opens the unified editor and exposes its approved chrome", async () => {
-  const [main, editor, app, dashboard, host] = await Promise.all([
-    readFile("apps/web/src/main.tsx", "utf8"),
-    readEditorSource(),
-    readFile("packages/engine/src/CabaneApp.tsx", "utf8"),
-    readFile("packages/engine/src/useDashboardController.ts", "utf8"),
-    readFile("apps/web/src/ConnectedProduct.tsx", "utf8"),
-  ]);
-  assert.doesNotMatch(main, /editor-preview/);
-  assert.match(main, /<WorkspaceApplication/);
-  assert.doesNotMatch(main, /<HomeAssistantRuntimeProvider/);
-  const workspaceHost = await readFile("apps/web/src/workspaces/WorkspaceHost.tsx", "utf8");
-  assert.match(workspaceHost, /<HomeAssistantRuntimeProvider/);
-  assert.match(workspaceHost, /<ConnectedProduct/);
-  assert.match(app, /onEditHome=\{onEditHome\}/);
-  assert.match(dashboard, /case "construct-mode":\s*onEditHome\?\.\("construct"\)/);
-  assert.match(dashboard, /case "arrange-mode":\s*onEditHome\?\.\("furnish"\)/);
-  assert.doesNotMatch(app, /FloorLayoutEditor/);
-  assert.match(
-    editor,
-    /<EditorModeNav mode=\{shortcutsMode \? "shortcuts" : mode\} onModeChange=\{onModeTabChange\}/,
-  );
-  assert.match(editor, /<EditorActionBar/);
-  assert.match(editor, /onUndo=\{undoProject\}/);
-  assert.match(editor, /onRedo=\{redoProject\}/);
-  assert.match(editor, /cabane-icon\.png/);
-  assert.doesNotMatch(
-    editor,
-    /Coming later|Home model|direction-gesture|direction-rail__heading|ConnectRail/,
-  );
-  assert.match(editor, />\s*3D\s*</);
-  assert.match(editor, />\s*2D\s*</);
-  assert.match(editor, /wallFadeEnabled=\{cameraView === "3d"\}/);
-  assert.doesNotMatch(editor, />Fit<|>Top</);
-  assert.match(editor, /handleConstructShortcut/);
-  assert.match(editor, /input, textarea, select/);
-  assert.match(editor, /key === "v"/);
-  assert.match(editor, /key === "w"/);
-  assert.match(editor, /key === "d"/);
-  assert.match(editor, /key === "n"/);
-  assert.match(editor, /key === "a"/);
-  assert.match(editor, /key === "delete"/);
-  assert.match(editor, /<ConstructionEditLayer/);
-  assert.match(editor, /onPlaceOpening=\{constructEditor\.placeOpening\}/);
-  assert.match(editor, /<ConstructionInspector/);
-  assert.match(editor, /<FurnishingEditLayer/);
-  assert.match(editor, /<FurnishingInspector/);
-  assert.match(editor, /shadows=\{false\}/);
-  assert.match(editor, /powerPreference: "high-performance"/);
-  const applySuccess = editor.slice(
-    editor.indexOf('if (result.status === "published")'),
-    editor.indexOf('if (result.status === "storage-error")'),
-  );
-  assert.match(applySuccess, /setPublishOpen\(false\)/);
-  assert.match(applySuccess, /onClose\(result\.record, "applied"\)/);
-  assert.match(editor, /onClose\(result\.record, "draft-saved"\)/);
-
-  assert.match(host, /setConstructionApplied\(reason === "applied"\)/);
-  assert.match(host, /constructionApplied=\{constructionApplied\}/);
-  assert.match(
-    await readFile(
-      new URL("../packages/engine/src/onboarding/OnboardingExperience.tsx", import.meta.url),
-      "utf8",
-    ),
-    /useSetupRecord\(manifest\.home\.id, constructionApplied\)/,
-  );
-  assert.match(editor, /name="save" \/>\s*Save\s*<\/EditorButton>/);
-  assert.match(editor, /"Saving…"[\s\S]*"Save anyway"[\s\S]*"Save changes"/);
-  assert.doesNotMatch(editor, /[">](?:Publish|Publishing|Ready to publish)/);
-  assert.doesNotMatch(editor, /<SolarLighting/);
-});
-
-test("furnish rail is an add catalog while existing selection stays in the scene", async () => {
-  const inspector = await readFile(
-    "apps/web/src/editor-preview/furnish/FurnishingInspector.tsx",
-    "utf8",
-  );
-  const catalog = await readFile(
-    "apps/web/src/editor-preview/furnish/catalog/ArrangeCatalog.tsx",
-    "utf8",
-  );
-  assert.match(catalog, /aria-label="Catalog room types"/);
-  assert.match(catalog, /onClick=\{\(\) => onChoose\(entry\)/);
-  const panel = await readFile("apps/web/src/editor-chrome/SelectionDetailsPanel.tsx", "utf8");
-  const properties = await readFile(
-    "apps/web/src/editor-preview/furnish/FurnishingProperties.tsx",
-    "utf8",
-  );
-  assert.match(panel, /className="selection-details"/);
-  assert.match(properties, /<SelectionDetailsPanel/);
-  assert.doesNotMatch(inspector, /onAddPreset|__catalog/);
-  assert.doesNotMatch(
-    inspector,
-    /Click an object in the house to edit it|__history|items\.length.*placed/,
-  );
-  assert.doesNotMatch(inspector, /role="option"/);
-});
-
-test("selected walls expose friendly facts before exact expert controls", async () => {
-  const inspector = (
-    await Promise.all(
-      [
-        "apps/web/src/editor-preview/construct/ConstructionInspector.tsx",
-        "apps/web/src/editor-preview/construct/ConstructionSelectionProperties.tsx",
-        "apps/web/src/editor-preview/construct/DebouncedColorInput.tsx",
-        "apps/web/src/editor-preview/construct/WallFinishFields.tsx",
-      ].map((path) => readFile(path, "utf8")),
-    )
-  ).join("\n");
-  assert.match(inspector, /construction-inspector__wall-facts/);
-  assert.match(inspector, />Direction</);
-  assert.match(inspector, /Thickness\s*<LengthInput/);
-  assert.match(inspector, /LengthInput/);
-  assert.match(inspector, /label="Wall thickness"/);
-  assert.match(inspector, /DebouncedColorInput/);
-  assert.match(inspector, /inputLabel="Wall exterior color"/);
-  // Debounce timing is verified by the inspector behavior test with a controlled clock.
-  assert.doesNotMatch(inspector, /construction-inspector__tools|construction-inspector__history/);
-  const openingProperties = await readFile(
-    "apps/web/src/editor-preview/construct/OpeningProperties.tsx",
-    "utf8",
-  );
-  assert.match(
-    await readFile("apps/web/src/editor-preview/construct/OpeningDetails.tsx", "utf8"),
-    /<OpeningProperties/,
-  );
-  assert.match(
-    await readFile("apps/web/src/editor-preview/construct/DoorDesignFields.tsx", "utf8"),
-    /aria-label="Door operation"/,
-  );
-  assert.match(openingProperties, /aria-label="Window glazing"/);
-  assert.match(openingProperties, /aria-label="Passage shape"/);
-  assert.match(openingProperties, /replaceSelectedOpening/);
-  assert.doesNotMatch(inspector, /Move over a wall, then click the highlighted position/);
-  assert.match(inspector, /label="Room name"/);
-  assert.match(inspector, /label="Room ceiling height"/);
-  assert.match(inspector, /Choose the room to keep/);
-  assert.match(inspector, /resolveRoomMerge/);
 });

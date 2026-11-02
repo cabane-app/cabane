@@ -6,6 +6,7 @@ export interface ConstructionInspectorProps {
   referencePlanControls?: import("react").ReactNode;
   planImportControls?: import("react").ReactNode;
   northControls?: import("react").ReactNode;
+  terrainControls?: import("react").ReactNode;
   tutorialControls?: import("react").ReactNode;
   walkStartControls?: import("react").ReactNode;
   roof?: RoofSettings | undefined;

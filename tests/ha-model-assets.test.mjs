@@ -120,6 +120,23 @@ await withModules(async (load) => {
       }),
   });
 
+  test("GLB synchronization verifies and uploads assets without SubtleCrypto", async (context) => {
+    const descriptor = Object.getOwnPropertyDescriptor(crypto, "subtle");
+    context.after(() => {
+      if (descriptor) Object.defineProperty(crypto, "subtle", descriptor);
+      else delete crypto.subtle;
+    });
+    Object.defineProperty(crypto, "subtle", { configurable: true, value: undefined });
+    const remote = server();
+    const client = createAssetAwareHaWorkspaceClient(
+      remote.send,
+      source(new Map([[asset.sha256, bytes]])),
+    );
+    await client.put("http-home", JSON.stringify({ customModels: [model] }), null);
+    assert.deepEqual(remote.files.get(asset.sha256), bytes);
+    assert.equal(remote.documents.get("http-home").version, 1);
+  });
+
   test("only absent GLB files upload, in bounded chunks, before the lightweight document", async () => {
     const remote = server(),
       client = createAssetAwareHaWorkspaceClient(

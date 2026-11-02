@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
 import {
-  homeAssistantTransportError,
+  borrowedHomeAssistantTransportError,
   type HomeAssistantHostSession,
   type WorkspaceRepository,
 } from "@cabane/engine";
@@ -42,7 +42,10 @@ export function NativeWorkspaceWelcome({
       });
     }, 10000);
     const load = async () => {
-      const transportError = homeAssistantTransportError(window.location.href, session.origin);
+      const transportError = borrowedHomeAssistantTransportError(
+        window.location.href,
+        session.origin,
+      );
       if (transportError) throw new Error(transportError);
       if (session.connection.connected === false)
         throw new Error("Home Assistant is disconnected. Reconnect and try again.");

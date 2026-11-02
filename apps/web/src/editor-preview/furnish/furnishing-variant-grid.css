@@ -1,0 +1,17 @@
+.furnishing-variant-grid {
+  margin: 0;
+  padding: 3px;
+  overflow: visible;
+}
+.furnishing-variant-grid .catalog-card[aria-pressed="true"] .catalog-card__preview {
+  outline: 2px solid var(--preview-accent, #b67550);
+  outline-offset: 1px;
+}
+.furnishing-variant-grid .catalog-card[aria-pressed="true"] strong {
+  color: #934c2e;
+  font-weight: 600;
+}
+.furnishing-variant-grid .catalog-card:focus-visible {
+  outline: 2px solid var(--preview-accent, #b67550);
+  outline-offset: 3px;
+}

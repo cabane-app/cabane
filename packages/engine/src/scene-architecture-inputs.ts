@@ -1,7 +1,11 @@
 import { useMemo } from "react";
+import { physicalFloor } from "./architecture-geometry/physical-floor";
 import type { FloorSpec } from "./types";
 
-/** Runtime device/profile changes do not invalidate architectural mesh inputs. */
+/**
+ * Runtime device/profile changes do not invalidate architectural mesh inputs.
+ * The returned floor is the floor as built, without virtual room dividers.
+ */
 export function useSceneArchitectureFloor<T extends FloorSpec>(floor: T): T {
   // Composition can rebuild opening/room profile arrays without changing their
   // geometry. This small structural key is much cheaper than polygon union and
@@ -21,5 +25,5 @@ export function useSceneArchitectureFloor<T extends FloorSpec>(floor: T): T {
   // the new opening model rendered inside it.
   // Structural key excludes runtime bindings; including floor would rebuild architectural meshes on entity updates.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => ({ ...floor }), [key]);
+  return useMemo(() => physicalFloor({ ...floor }) as T, [key]);
 }

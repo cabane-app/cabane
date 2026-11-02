@@ -12,6 +12,7 @@ const cross = (a: Point, b: Point) => a[0] * b[1] - a[1] * b[0];
 function jointTriangles(draft: FloorEditorDraft): number[] {
   const scale = draft.coordinates.metersPerPlanUnit;
   const walls = draft.walls.flatMap((wall) => {
+    if (wall.virtual) return [];
     const from = planPointToWorld(wall.from, draft.coordinates);
     const to = planPointToWorld(wall.to, draft.coordinates);
     const length = Math.hypot(to[0] - from[0], to[1] - from[1]);

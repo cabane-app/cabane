@@ -1,6 +1,38 @@
 import { EditorModeIcon, type EditorMode } from "@cabane/engine";
 
 const paths = {
+  group: (
+    <>
+      <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5" />
+      <rect x="7" y="7" width="10" height="10" rx="1" />
+    </>
+  ),
+  ungroup: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+      <path d="m14 4 6 6m-6 0 6-6M4 14l6 6m-6 0 6-6" />
+    </>
+  ),
+  "virtual-wall": <path d="M3 4h18v16H3Z M3 12h18 M9 4v8 M15 12v8" strokeDasharray="3 3" />,
+  "outdoor-space": (
+    <>
+      <path d="m3 14 9-5 9 5-9 6Z M3 14v3l9 6 9-6v-3 M6 11V5m6 4V2m6 9V5M6 6l6-4 6 4" />
+    </>
+  ),
+  lighting: (
+    <>
+      <path d="M9 18h6m-5 3h4M8 14a6 6 0 1 1 8 0c-1 1-1 2-1 4H9c0-2 0-3-1-4Z" />
+    </>
+  ),
+  floorAbove: <path d="M3 14h12v7H3zM3 17.5h12M19 13V3m-3 3 3-3 3 3" />,
+  floorBelow: <path d="M3 3h12v7H3zM3 6.5h12M19 11v10m-3-3 3 3 3-3" />,
+  apartmentFloor: (
+    <>
+      <rect x="4" y="3" width="16" height="18" rx="1" />
+      <path d="M4 9h16M4 15h16M9 5.5v1M15 5.5v1M9 11.5v1M15 11.5v1M10 21v-3h4v3" />
+    </>
+  ),
   niche: (
     <>
       <path d="M3 21V3h18v18M6 18V6h12v12Z" />
@@ -172,9 +204,12 @@ const paths = {
   devices: <path d="M9 3v6m6-6v6M6 9h12v3a6 6 0 0 1-12 0Zm6 9v3" />,
   refresh: <path d="M20 4v6h-6M4 20v-6h6M19 8a7 7 0 0 0-12-3L4 8m1 8a7 7 0 0 0 12 3l3-3" />,
   warning: <path d="M12 3 2 21h20ZM12 9v5m0 3v.1" />,
+  minus: <path d="M5 12h14" />,
   plus: <path d="M12 5v14M5 12h14" />,
   chevronLeft: <path d="m15 5-7 7 7 7" />,
   chevron: <path d="m9 5 7 7-7 7" />,
+  arrowUp: <path d="M12 20V4m-6 6 6-6 6 6" />,
+  arrowDown: <path d="M12 4v16m-6-6 6 6 6-6" />,
 } as const;
 
 export type EditorIconName = keyof typeof paths | EditorMode;

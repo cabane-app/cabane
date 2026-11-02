@@ -10,6 +10,7 @@ import {
   type PlanPoint,
 } from "@cabane/engine";
 
+import { PlatformRoomFields } from "./PlatformRoomFields";
 import { FloorFinishPalette } from "./FloorFinishPalette";
 import { PlatformEdgeFields } from "./PlatformEdgeFields";
 import type { ConstructEditorController } from "./useConstructEditor";
@@ -68,6 +69,10 @@ export function PlatformProperties({
       <p className="construction-inspector__tool-hint">
         Drag the platform to move it, or a corner to reshape it. Select an edge to change its style.
       </p>
+      <PlatformRoomFields
+        platform={platform}
+        onChange={(changes) => editor.updatePlatform(platform.id, changes)}
+      />
       <fieldset>
         <legend>Edges</legend>
         <label>
@@ -157,9 +162,14 @@ export function PlatformProperties({
           </div>
         ))}
       </fieldset>
-      <EditorButton variant="text" type="button" onClick={editor.deleteSelected}>
-        Delete platform
-      </EditorButton>
+      <fieldset>
+        <legend>Actions</legend>
+        <div className="construction-inspector__room-actions">
+          <EditorButton variant="text" type="button" onClick={editor.deleteSelected}>
+            Delete platform
+          </EditorButton>
+        </div>
+      </fieldset>
     </div>
   );
 }

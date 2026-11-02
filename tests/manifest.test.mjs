@@ -14,12 +14,79 @@ await withModules(async (load) => {
     "/packages/engine/src/architecture-geometry.ts",
   );
   const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
+  const { isDeviceModelDefinition } = await load("/packages/engine/src/validation/core.ts");
 
   test("accepts the disconnected neutral demo", () => {
     const result = validateHomeManifest(neutralDemoManifest);
     assert.equal(result.canRender, true);
     assert.deepEqual(result.issues, []);
     assert.equal(assertValidHomeManifest(neutralDemoManifest), neutralDemoManifest);
+  });
+
+  test("device light metadata has no physical-count cap and isolates malformed emitters", () => {
+    const source = { position: [0, 0.5, 0], color: "#ffe3b4", maxIntensity: 1, distance: 5 };
+    const manifest = {
+      ...neutralDemoManifest,
+      extensions: {
+        ...neutralDemoManifest.extensions,
+        deviceModels: {
+          test: { ...stableDeviceRegistry["floor-lamp"], sceneLight: source, sceneLights: [] },
+        },
+      },
+    };
+    const definition = manifest.extensions.deviceModels.test;
+    for (const count of [0, 8, 16, 64, 129]) {
+      definition.sceneLights = Array.from({ length: count }, () => source);
+      assert.equal(validateHomeManifest(manifest).canRender, true);
+    }
+    for (const field of ["sceneLight", "sceneLights"]) {
+      for (const invalid of [
+        { position: [0, NaN, 0] },
+        { position: [0, 0] },
+        { color: "" },
+        { maxIntensity: -1 },
+        { maxIntensity: Infinity },
+        { distance: -1 },
+        { distance: NaN },
+      ]) {
+        const light = { ...source, ...invalid };
+        Object.assign(
+          definition,
+          { sceneLight: source, sceneLights: [source] },
+          {
+            [field]: field === "sceneLight" ? light : [light],
+          },
+        );
+        assert.equal(isDeviceModelDefinition(definition), false);
+        const original = definition[field];
+        const result = validateHomeManifest(manifest);
+        assert.equal(result.canRender, true);
+        assert.deepEqual(
+          result.issues.map(({ code, severity }) => ({ code, severity })),
+          [{ code: "model.lighting-disabled", severity: "warning" }],
+        );
+        assert.match(
+          result.issues[0].message,
+          /Floor lamp.*disabled.*saved settings are unchanged/i,
+        );
+        const recovered = result.manifest.extensions.deviceModels.test;
+        assert.equal(recovered.component, definition.component);
+        assert.equal(recovered.sceneLight, undefined);
+        assert.equal(recovered.sceneLights, undefined);
+        assert.equal(recovered.lightingDisabled, true);
+        assert.equal(
+          definition[field],
+          original,
+          "recovery never rewrites the source emitter metadata",
+        );
+      }
+    }
+    definition.label = "";
+    assert.equal(
+      validateHomeManifest(manifest).canRender,
+      false,
+      "structural faults are not hidden by lighting recovery",
+    );
   });
 
   test("requires scene items and code-native furnishing model registries", () => {
@@ -232,8 +299,8 @@ await withModules(async (load) => {
       {
         code: "device.model-registry",
         path: "floors[0].rooms[0].devices[0].model",
-        message: 'Stable device model "wall-switch" is not available in the supplied catalog.',
-        severity: "fatal",
+        message: "Model “wall-switch” is unavailable. A placeholder will be shown.",
+        severity: "warning",
       },
       {
         code: "home.locale",

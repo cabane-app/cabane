@@ -1,9 +1,4 @@
-import {
-  createModelAssetRepository,
-  createCabaneArchive,
-  documentModelReferences,
-  downloadCabaneBytes,
-} from "@cabane/engine";
+import { downloadWorkspaceArchive } from "./download-workspace-archive";
 import { NativeWorkspaceWelcome } from "./NativeWorkspaceWelcome";
 import { WorkspaceOpenPage } from "./WorkspaceOpenPage";
 import { deleteReferenceHome } from "../editor-reference-plan/reference-storage";
@@ -23,6 +18,7 @@ import {
   type WorkspaceRepository,
 } from "@cabane/engine";
 import { WorkspaceLibrary } from "./WorkspaceLibrary";
+import { WorkspaceDeletion } from "./WorkspaceDeletion";
 import { WorkspaceHost } from "./WorkspaceHost";
 import { BuildWorkspaceEntry } from "./BuildWorkspaceEntry";
 import { WorkspaceHaLibrary, WorkspaceHaSuggestions } from "./WorkspaceHaLibrary";
@@ -30,7 +26,7 @@ import { initializeWorkspaces } from "./initialize-workspaces";
 import { exportWorkspaceBackup, parseWorkspaceImport } from "./workspace-transfer";
 import { downloadConnectData } from "../editor-connect/profile-transfer";
 import { readEditorReturn } from "../editor-connect/connect-navigation";
-import { workspaceHomePath, workspaceIdForPath } from "../editor-routes";
+import { agentPilotPath, workspaceHomePath, workspaceIdForPath } from "../editor-routes";
 import { ownerProjectRegistries } from "../project-runtime";
 
 export function WorkspaceApplication() {
@@ -222,17 +218,7 @@ export function WorkspaceApplication() {
           </div>
         )}
         {onboarding.loaded ? (
-          <WorkspaceHost
-            key={id}
-            id={id}
-            repository={repository}
-            onboarding={onboarding}
-            demoWorkspaceId={
-              entries.some((entry) => entry.metadata.id === onboarding.state?.demoWorkspaceId)
-                ? (onboarding.state?.demoWorkspaceId ?? null)
-                : null
-            }
-          />
+          <WorkspaceHost key={id} id={id} repository={repository} onboarding={onboarding} />
         ) : (
           <main className="direction-project-loading">Loading your home…</main>
         )}
@@ -252,6 +238,24 @@ export function WorkspaceApplication() {
   const open = async (id: string) => {
     await navigate(workspaceHomePath(id));
   };
+  const deleteLocal = async (id: string) => {
+    const entry = selected(id);
+    const raw = await repository.readRaw(id);
+    if (entry.record) {
+      const fresh = await repository.read(id);
+      if (fresh?.record?.revision !== entry.record.revision)
+        throw new Error("This workspace changed. Refresh before deleting it.");
+    }
+    await repository.delete(id, raw);
+    await deleteReferenceHome(id);
+    forgetWorkspacePresentation(id);
+    forgetBuildTutorial(id);
+    try {
+      window.localStorage.removeItem(setupStorageKey(id));
+    } catch {
+      /* Non-authoritative onboarding only. */
+    }
+  };
   return (
     <>
       {migrationError && (
@@ -265,6 +269,9 @@ export function WorkspaceApplication() {
           await navigate(
             `${workspaceHomePath(id)}/home-assistant${intent ? `?action=${intent}` : ""}`,
           );
+        }}
+        onAgentPilot={async (id) => {
+          await navigate(agentPilotPath(id));
         }}
         entries={entries}
         onOpen={open}
@@ -283,25 +290,19 @@ export function WorkspaceApplication() {
           await repository.duplicate(id, record(id).revision, name);
           await refresh();
         }}
-        onDelete={async (id) => {
-          const entry = selected(id);
-          const raw = await repository.readRaw(id);
-          if (entry.record) {
-            const fresh = await repository.read(id);
-            if (fresh?.record?.revision !== entry.record.revision)
-              throw new Error("This workspace changed. Refresh before deleting it.");
-          }
-          await repository.delete(id, raw);
-          await deleteReferenceHome(id);
-          forgetWorkspacePresentation(id);
-          forgetBuildTutorial(id);
-          try {
-            window.localStorage.removeItem(setupStorageKey(id));
-          } catch {
-            /* Non-authoritative onboarding only. */
-          }
-          await refresh();
-        }}
+        renderDelete={(entry, onCancel, onBusyChange) => (
+          <WorkspaceDeletion
+            repository={repository}
+            target={{ entry }}
+            onDeleteLocal={() => deleteLocal(entry.metadata.id)}
+            onDeleted={async () => {
+              await refresh();
+              onCancel();
+            }}
+            onCancel={onCancel}
+            onBusyChange={onBusyChange}
+          />
+        )}
         onImport={async (json) => {
           const imported = parseWorkspaceImport(json, ownerProjectRegistries);
           const entry = await repository.create(imported.record, imported);
@@ -314,13 +315,9 @@ export function WorkspaceApplication() {
           const json = privateBackup
             ? exportWorkspaceBackup(entry.metadata, saved)
             : serializeCanonicalJson(saved.draft);
-          const assets = await createModelAssetRepository(window.indexedDB).verify(
-            documentModelReferences(json),
-          );
-          downloadCabaneBytes(
-            createCabaneArchive(json, assets),
+          await downloadWorkspaceArchive(
+            json,
             `${id}-${privateBackup ? "backup" : "project"}.cabane`,
-            "application/zip",
           );
         }}
         onExportRaw={async (id) => {

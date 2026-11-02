@@ -29,6 +29,7 @@ export function CabaneDashboard({
   mappingRequest,
   focusRoomId,
   onEditHome,
+  onOpenSettings,
   onCustomizeActionBar,
   onExportBrowserData,
   onWorkspaces,
@@ -45,11 +46,12 @@ export function CabaneDashboard({
     () => validateArchitectureModelRegistry(architectureModels),
     [architectureModels],
   );
+  const recoveryActions = { onWorkspaces, onDownloadBackup: onExportBrowserData };
   if (architectureIssues.length > 0) {
-    return <ConfigurationScreen issues={architectureIssues} />;
+    return <ConfigurationScreen issues={architectureIssues} {...recoveryActions} />;
   }
   if (!validation.canRender || !validation.manifest) {
-    return <ConfigurationScreen issues={validation.issues} />;
+    return <ConfigurationScreen issues={validation.issues} {...recoveryActions} />;
   }
   if (bindingManager)
     return (
@@ -67,6 +69,7 @@ export function CabaneDashboard({
         mappingRequest={mappingRequest}
         focusRoomId={focusRoomId}
         onEditHome={onEditHome}
+        onOpenSettings={onOpenSettings}
         onCustomizeActionBar={onCustomizeActionBar}
         onExportBrowserData={onExportBrowserData}
         onWorkspaces={onWorkspaces}
@@ -89,6 +92,7 @@ export function CabaneDashboard({
       mappingRequest={mappingRequest}
       focusRoomId={focusRoomId}
       onEditHome={onEditHome}
+      onOpenSettings={onOpenSettings}
       onCustomizeActionBar={onCustomizeActionBar}
       onExportBrowserData={onExportBrowserData}
       onWorkspaces={onWorkspaces}

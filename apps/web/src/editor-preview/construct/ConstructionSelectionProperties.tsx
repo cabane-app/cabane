@@ -1,5 +1,5 @@
-import { EditorSwitch } from "../../editor-chrome/EditorSwitch";
 import { formatLength, formatArea, useMeasurementUnits } from "@cabane/engine";
+import { CommittedTextInput } from "./CommittedTextInput";
 import { LengthInput } from "../../editor-chrome/LengthInput";
 import { useMemo } from "react";
 import {
@@ -11,7 +11,7 @@ import type { ConstructionInspectorProps } from "./construction-inspector-contra
 import { SelectionDetailsPanel } from "../../editor-chrome/SelectionDetailsPanel";
 import { EditorButton } from "../../editor-chrome/EditorButton";
 
-import { CommittedTextInput } from "./CommittedTextInput";
+import { RoomMembershipFields } from "./RoomMembershipFields";
 import { DebouncedColorInput } from "./DebouncedColorInput";
 import { FloorFinishPalette } from "./FloorFinishPalette";
 import { WallFinishFields } from "./WallFinishFields";
@@ -101,7 +101,7 @@ export function ConstructionSelectionProperties({
   const deletionCount = Object.values(deletionCounts).reduce((sum, count) => sum + count, 0);
   const kind = editor.selection?.kind;
   const names = {
-    wall: "Wall",
+    wall: selectedWall?.virtual ? "Invisible wall" : "Wall",
     room: selectedRoom?.name || "Unnamed room",
     hedge: "Boundary",
     pool: "Pool",
@@ -110,11 +110,14 @@ export function ConstructionSelectionProperties({
     multiple: `${deletionCount} elements selected`,
     opening: "Opening",
   };
-  const title = kind ? names[kind] : "Properties";
+  const typeLabel = kind ? names[kind] : "Properties";
+  const title = selectedWall?.name || typeLabel;
   return (
     <SelectionDetailsPanel
       title={title}
-      subtitle={editor.previewFloor.name}
+      subtitle={
+        selectedWall?.name ? `${typeLabel} · ${editor.previewFloor.name}` : editor.previewFloor.name
+      }
       label="Construction properties"
       mode="construct"
       onClose={onClose}
@@ -199,39 +202,62 @@ export function ConstructionSelectionProperties({
               </div>
               <div>
                 <dt>Type</dt>
-                <dd>{resolvedWall?.classification ?? "Pending"}</dd>
+                <dd>
+                  {selectedWall.virtual ? "Invisible" : (resolvedWall?.classification ?? "Pending")}
+                </dd>
               </div>
             </dl>
+            {selectedWall.virtual && (
+              <p className="construction-inspector__tool-hint">
+                This boundary separates rooms without blocking the view or walking.
+              </p>
+            )}
             <fieldset>
-              <legend>Dimensions</legend>
-              <label>
-                Thickness
-                <LengthInput
-                  label="Wall thickness"
-                  min={0.04}
-                  step={0.01}
-                  value={wallThickness}
-                  onCommit={(value) =>
-                    editor.updateSelectedWallMetadata({ thicknessMeters: value })
-                  }
-                />
-              </label>
-              <label>
-                Height
-                <LengthInput
-                  label="Wall height"
-                  min={0.3}
-                  step={0.05}
-                  value={wallHeight}
-                  onCommit={(value) => editor.updateSelectedWallMetadata({ heightMeters: value })}
-                />
-              </label>
+              <legend>Name</legend>
+              <CommittedTextInput
+                key={selectedWall.id}
+                label="Wall name"
+                value={selectedWall.name ?? ""}
+                placeholder={selectedWall.id}
+                onCommit={(name) => editor.updateSelectedWallMetadata({ name: name || undefined })}
+              />
             </fieldset>
-            <WallFinishFields
-              editor={editor}
-              wall={selectedWall}
-              isExterior={!!selectedWallIsExterior}
-            />
+            {!selectedWall.virtual && (
+              <>
+                <fieldset>
+                  <legend>Dimensions</legend>
+                  <label>
+                    Thickness
+                    <LengthInput
+                      label="Wall thickness"
+                      min={0.04}
+                      step={0.01}
+                      value={wallThickness}
+                      onCommit={(value) =>
+                        editor.updateSelectedWallMetadata({ thicknessMeters: value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Height
+                    <LengthInput
+                      label="Wall height"
+                      min={0.3}
+                      step={0.05}
+                      value={wallHeight}
+                      onCommit={(value) =>
+                        editor.updateSelectedWallMetadata({ heightMeters: value })
+                      }
+                    />
+                  </label>
+                </fieldset>
+                <WallFinishFields
+                  editor={editor}
+                  wall={selectedWall}
+                  isExterior={!!selectedWallIsExterior}
+                />
+              </>
+            )}
             <EditorButton variant="text" type="button" onClick={editor.deleteSelected}>
               Delete wall
             </EditorButton>
@@ -266,17 +292,14 @@ export function ConstructionSelectionProperties({
                 </div>
               </div>
             )}
-            <fieldset>
-              <legend>Room</legend>
-              <label>
-                Name
-                <CommittedTextInput
-                  label="Room name"
-                  value={selectedRoomIdentity?.name ?? selectedRoom.name}
-                  placeholder="e.g. Living room"
-                  onCommit={(name) => editor.updateSelectedRoom({ name })}
-                />
-              </label>
+            <RoomMembershipFields
+              enabled={!selectedRoom.isSolid}
+              name={selectedRoomIdentity?.name ?? selectedRoom.name}
+              placeholder="e.g. Living room"
+              description="Turn off to fill a cupboard, shaft or pillar as a structural block, without room navigation or area mapping."
+              onEnabledChange={(useAsRoom) => editor.updateSelectedRoom({ isSolid: !useAsRoom })}
+              onNameCommit={(name) => editor.updateSelectedRoom({ name })}
+            >
               <label>
                 Accent
                 <DebouncedColorInput
@@ -285,56 +308,36 @@ export function ConstructionSelectionProperties({
                   onCommit={(accent) => editor.updateSelectedRoom({ accent })}
                 />
               </label>
-            </fieldset>
-            <fieldset>
-              <legend>Floor finish</legend>
-              <FloorFinishPalette
-                value={resolveRoomFloorFinish(selectedRoom)}
-                onChange={(finish) => editor.paintRoomFloor(selectedRoom.id, finish, false)}
-              />
-            </fieldset>
-            <fieldset>
-              <legend>Ceiling</legend>
-              <label>
-                Ceiling
-                <LengthInput
-                  label="Room ceiling height"
-                  min={0.3}
-                  step={0.05}
-                  value={roomCeilingHeight}
-                  onCommit={(ceilingHeightMeters) =>
-                    editor.updateSelectedRoom({ ceilingHeightMeters })
-                  }
-                />
-              </label>
-            </fieldset>
-            <fieldset>
-              <legend>Room actions</legend>
-              <div className="construction-inspector__room-actions">
-                <div className="construction-inspector__room-toggle">
-                  <div className="construction-inspector__room-toggle-copy">
-                    <label
-                      id="room-solid-label"
-                      htmlFor="room-solid"
-                      title="Render as a solid block, excluded from room navigation and area mapping."
-                    >
-                      Solid structure
-                    </label>
-                    <p
-                      id="room-solid-description"
-                      className="construction-inspector__room-action-note"
-                    >
-                      Fill this space for a chimney, shaft or pillar.
-                    </p>
-                  </div>
-                  <EditorSwitch
-                    id="room-solid"
-                    labelledBy="room-solid-label"
-                    describedBy="room-solid-description"
-                    checked={selectedRoom.isSolid ?? false}
-                    onChange={(isSolid) => editor.updateSelectedRoom({ isSolid })}
+            </RoomMembershipFields>
+            {!selectedRoom.isSolid && (
+              <>
+                <fieldset>
+                  <legend>Floor finish</legend>
+                  <FloorFinishPalette
+                    value={resolveRoomFloorFinish(selectedRoom)}
+                    onChange={(finish) => editor.paintRoomFloor(selectedRoom.id, finish, false)}
                   />
-                </div>
+                </fieldset>
+                <fieldset>
+                  <legend>Ceiling</legend>
+                  <label>
+                    Ceiling
+                    <LengthInput
+                      label="Room ceiling height"
+                      min={0.3}
+                      step={0.05}
+                      value={roomCeilingHeight}
+                      onCommit={(ceilingHeightMeters) =>
+                        editor.updateSelectedRoom({ ceilingHeightMeters })
+                      }
+                    />
+                  </label>
+                </fieldset>
+              </>
+            )}
+            <fieldset>
+              <legend>Actions</legend>
+              <div className="construction-inspector__room-actions">
                 <EditorButton
                   variant="text"
                   type="button"
@@ -345,7 +348,7 @@ export function ConstructionSelectionProperties({
                   }
                   onClick={editor.deleteSelected}
                 >
-                  Delete room
+                  {selectedRoom.isSolid ? "Delete space" : "Delete room"}
                 </EditorButton>
               </div>
               {editor.deletionTargets?.some(

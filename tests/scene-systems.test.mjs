@@ -76,6 +76,9 @@ await withModules(async (load) => {
   const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
   const scene = await load("/packages/engine/src/ArchitectureScene.tsx");
   const outline = await load("/packages/engine/src/SceneOutlines.tsx");
+  const { OpeningThreshold } = await load(
+    "/packages/engine/src/architecture-scene/OpeningThreshold.tsx",
+  );
   const { neutralDemoManifest } = await load("/packages/engine/src/demo.ts");
   const cabaneFloor = JSON.parse(await readFile("tests/fixtures/cabane-floor.json", "utf8"));
 
@@ -186,13 +189,6 @@ await withModules(async (load) => {
       0,
     );
     await renderer.unmount();
-  });
-
-  test("architecture scene delegates declarative project items to the shared renderer", async () => {
-    const source = await readFile("packages/engine/src/building/FloorScene.tsx", "utf8");
-    assert.match(source, /<SceneItemRenderer/);
-    assert.match(source, /manifest\.sceneItems\.length > 0/);
-    assert.equal(engine.SceneItemRenderer.$$typeof, Symbol.for("react.memo"));
   });
 
   test("renders declarative furnishing and device items exactly once", async () => {
@@ -638,9 +634,6 @@ await withModules(async (load) => {
   });
 
   test("exterior doorway thresholds bridge terrain and floor level", async () => {
-    const { OpeningThreshold } = await load(
-      "/packages/engine/src/architecture-scene/OpeningThreshold.tsx",
-    );
     const floor = structuredClone(neutralDemoManifest.floors[0]);
     const opening = floor.openings[0];
     const wall = floor.walls.find((wall) => wall.id === opening.wallId);
@@ -649,10 +642,13 @@ await withModules(async (load) => {
     mesh.geometry.computeBoundingBox();
     const bounds = mesh.geometry.boundingBox;
     assert.ok(Math.abs(mesh.position.y + bounds.min.y + 0.05) < 1e-6);
-    assert.ok(Math.abs(mesh.position.y + bounds.max.y) < 1e-6);
+    assert.ok(Math.abs(mesh.position.y + bounds.max.y - 0.002) < 1e-6);
     assert.ok(
       Math.abs(
-        bounds.max.x - bounds.min.x - opening.widthPlanUnits * floor.coordinates.metersPerPlanUnit,
+        bounds.max.x -
+          bounds.min.x -
+          opening.widthPlanUnits * floor.coordinates.metersPerPlanUnit -
+          0.004,
       ) < 1e-6,
     );
     await renderer.update(

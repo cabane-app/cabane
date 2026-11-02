@@ -1,13 +1,14 @@
 .selection-details {
   position: absolute;
   z-index: 7;
-  top: var(--editor-panel-top, 139px);
+  top: 0;
   right: 0;
   bottom: 0;
   display: flex;
   flex-direction: column;
-  width: 320px;
+  width: var(--editor-properties-width, 320px);
   min-height: 0;
+  padding-top: 72px;
   background: var(--preview-paper);
   border-left: 1px solid var(--editor-line);
 }

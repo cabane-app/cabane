@@ -1,3 +1,4 @@
+import { editProject } from "./editor-project-actions";
 import { useEffect, useState } from "react";
 import type { EditorWorkspaceSnapshot } from "@cabane/engine";
 
@@ -28,13 +29,12 @@ export function useNorthOrientation({
     cancel: () => setSession(null),
     confirm: () => {
       if (active && angle !== (snapshot.project.home.northAngleDegrees ?? 0))
-        commit({
-          ...snapshot,
-          project: {
-            ...snapshot.project,
-            home: { ...snapshot.project.home, northAngleDegrees: angle },
-          },
-        });
+        commit(
+          editProject(snapshot, {
+            type: "update-home-settings",
+            changes: { northAngleDegrees: angle },
+          }),
+        );
       setSession(null);
     },
   };

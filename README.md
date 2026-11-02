@@ -13,8 +13,8 @@
 </p>
 
 <p align="center">
-  <a href="https://buymeacoffee.com/cabane">
-    <img src="https://img.shields.io/badge/Buy_me_a_coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy me a coffee to support Cabane" />
+  <a href="https://paypal.me/hilliaapp">
+    <img src="https://img.shields.io/badge/Buy_me_a_coffee-FFDD00?style=for-the-badge&logo=paypal&logoColor=000000" alt="Buy me a coffee to support Cabane via PayPal" />
   </a>
 </p>
 
@@ -22,11 +22,11 @@ Draw your floor plan, furnish it, and connect it to Home Assistant. Explore your
 home in 3D, see live device states, and control supported devices from the scene.
 Use Cabane in your browser or directly in the Home Assistant sidebar.
 
-|                                                   3D dashboard                                                   |                                            Arrange editor                                            |                                                          Walk mode                                                           |
+|                                                   3D dashboard                                                   |                                         Built-in Home Editor                                         |                                                      First person mode                                                       |
 | :--------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------: |
 | [![Cabane demo home with simulated room states](docs/images/demo-dashboard.jpg)](docs/images/demo-dashboard.jpg) | [![Furnishing the demo home in Arrange](docs/images/demo-arrange.jpg)](docs/images/demo-arrange.jpg) | [![First-person view of the kitchen and dining room in Casa Solstice](docs/images/walk-view.jpg)](docs/images/walk-view.jpg) |
 
-Dashboard and Arrange show the bundled demo with simulated devices. Walk mode
+The dashboard and Built-in Home Editor show the bundled demo with simulated devices. First person mode
 shows Casa Solstice from inside. Click any screenshot to enlarge.
 
 ## What you can do
@@ -53,7 +53,9 @@ shows Casa Solstice from inside. Click any screenshot to enlarge.
 
 ### HACS
 
-Requires **Home Assistant 2024.7 or newer**, **HACS**, and **HTTPS**.
+Requires **Home Assistant 2024.7 or newer** and **HACS**. HTTPS is recommended.
+The native sidebar panel also works over HTTP at the same origin as Home Assistant;
+HTTP does not encrypt your traffic.
 
 [![Open your Home Assistant instance and add the Cabane repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=cabane-app&repository=cabane-home-assistant&category=integration)
 
@@ -99,6 +101,63 @@ other device. The website and native panel have separate browser storage; use
 Home Assistant sync or a workspace export to move between them.
 See [workspace setup and backups](docs/ha-workspace-storage-setup.md).
 
+### Build with AI
+
+Give your coding agent a floor plan or a description and let it build the home
+in the open editor. You can watch the changes, adjust them yourself and use Undo.
+The agent uses the same editing actions as Construct and Arrange.
+
+1. Open Cabane **inside Home Assistant**, then create or choose a workspace.
+2. In **Workspaces**, open that home's **••• → Connect LLM agent → Generate
+   pairing code**.
+3. Give your agent a checkout of this repository with Node.js and npm available
+   (see [Run locally](#run-locally)). Run the pairing command shown by the panel
+   from that checkout, then keep the editor open.
+4. Give the agent your plan and dimensions, for example:
+   “Use build-floor-layout to draw this unfurnished floor in my paired Cabane
+   workspace. Check the layout and stop for my review.”
+
+The agent can discover the available commands and inspect the draft with:
+
+```sh
+npm run agent:request -- --method get_capabilities --pretty
+npm run agent:inspect -- --pretty
+```
+
+Pairing requires a matching agent-enabled frontend and HA integration (protocol
+3). The browser and agent can run on different devices that can reach the same
+HA instance. The one-use code grants temporary access to that workspace, without
+giving the agent your HA access token. Edits autosave to the browser draft;
+**Save** publishes them. See [agent pairing and commands](docs/product/agent-pilot.md)
+for session lifetime and command details.
+
+Cabane's agent skills live in this repository so they can evolve with the product.
+Install a skill with the [Skills CLI](https://github.com/vercel-labs/skills), then
+select your agent in the installer:
+
+```sh
+npx skills add cabane-app/cabane --skill create-cabane-model
+```
+
+| Skill                                                                  | Purpose                                                                                                                             |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [create-cabane-model](.agents/skills/create-cabane-model/SKILL.md)     | Create a standalone GLB from a description or reference photo for import through Arrange → My models. No Cabane checkout is needed. |
+| [build-floor-layout](.agents/skills/build-floor-layout/SKILL.md)       | Build an unfurnished floor in a paired HA workspace, or author floor JSON in a Cabane checkout.                                     |
+| [equip-room](.agents/skills/equip-room/SKILL.md)                       | Furnish one accepted room from photos and descriptions in a Cabane checkout.                                                        |
+| [build-catalog-presets](.agents/skills/build-catalog-presets/SKILL.md) | Author reusable built-in catalog presets in a Cabane checkout.                                                                      |
+| [bootstrap-cabane](.agents/skills/bootstrap-cabane/SKILL.md)           | Install dependencies and start a local Cabane checkout.                                                                             |
+
+Replace `create-cabane-model` in the command with the skill you want. Node.js and
+npm are required for installation. Add `--global` to make the skill available
+across projects. See the [home-generation workflow](docs/agent-home-generation.md)
+for layout and room authoring.
+
+The model skill includes [export guidance](.agents/skills/create-cabane-model/references/export.md),
+Blender and Three.js examples, a [sample desk GLB](.agents/skills/create-cabane-model/examples/desk.glb),
+and a Python validator. It and its bundled resources retain their
+[MIT license](.agents/skills/create-cabane-model/LICENSE). Reference photos remain
+inputs and may be processed by your chosen AI provider.
+
 ## Data and privacy
 
 Homes and drafts are stored in your browser. Optional sync stores workspaces and
@@ -128,7 +187,7 @@ npm run dev
 ```
 
 Open the URL printed by Vite, normally `http://127.0.0.1:4173`. The demo and
-editors work locally without Home Assistant. A real Home Assistant connection
+editors work locally without Home Assistant. A standalone Home Assistant connection
 requires HTTPS for both endpoints; paired HTTP loopback origins are supported
 for local development.
 
@@ -189,15 +248,14 @@ homes use the same portable project schema. See the [bundled home guide](home/RE
 ## Documentation
 
 - [Product specification](PRODUCT_SPEC.md) — implemented features and focused contracts.
-- [Engineering map](docs/engineering-map.md) — module owners, interfaces and relevant checks.
-- [Architecture](docs/product/architecture.md) — package boundaries and ownership.
+- [Architecture](docs/product/architecture.md) — main code areas, package boundaries and associated documentation.
 - [Catalog](packages/catalog/README.md) and [personal models](docs/product/personal-models.md) — built-in models and GLB imports.
 - [Home generation workflow](docs/agent-home-generation.md) — authoring layouts and rooms with an agent.
-- [Agent skills](https://github.com/cabane-app/agent-skills) — standalone custom-model authoring tools.
+- [Agent skills](#build-with-ai) — floor layouts, room furnishing and standalone custom models.
 
 ## Easter egg: shoot the lights
 
-The optional laser gun lets you toggle supported devices in Walk mode.
+The optional laser gun lets you toggle supported devices in first person mode.
 
 <a href="docs/images/walk-laser.jpg">
   <img src="docs/images/walk-laser.jpg" alt="Laser gun toggling a light in Casa Solstice" width="480" />

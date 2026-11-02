@@ -23,6 +23,10 @@ export function cutPoolOpenings(ground: Shape, floor: FloorSpec): Shape[] {
     .filter((pool) => isPoolOutline(pool.polygon))
     .map((pool) => poolExcavationFootprint(pool.polygon, floor.coordinates));
   if (!cuts.length) return [ground];
-  const boundary: [number, number][] = ground.getPoints(12).map((point) => [point.x, -point.y]);
-  return poolShapes(polygonClipping.difference([boundary], ...cuts));
+  const outline: MultiPolygon = [
+    [ground, ...ground.holes].map((path) =>
+      path.getPoints(12).map((point): [number, number] => [point.x, -point.y]),
+    ),
+  ];
+  return poolShapes(polygonClipping.difference(outline, ...cuts));
 }

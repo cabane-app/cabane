@@ -17,11 +17,11 @@ concurrency:
 jobs:
   verify:
     name: Verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      # Hosted Chromium uses software graphics; competing scene workers can
-      # starve input and shader warmup even when individual tests are healthy.
+      # Browser files share one shard, but cold Vite/SSR setup in competing Node
+      # workers can still starve software graphics on the hosted runner.
       CABANE_TEST_CONCURRENCY: 1
       CABANE_TEST_REPORT: test-results/ci-report.json
     steps:
@@ -34,7 +34,10 @@ jobs:
           cache: npm
       - run: npm install --global npm@11.6.2
       - run: npm ci
-      - run: npm run browser:install -- --with-deps
+      # This image includes Chrome's system libraries. Keep Playwright's matching
+      # browser, but avoid repeated apt/font downloads and slow Ubuntu mirrors.
+      # The suite's browser preflight fails visibly if a library is missing.
+      - run: npm run browser:install
       - run: npm run verify
       - uses: actions/upload-artifact@v4
         if: always()

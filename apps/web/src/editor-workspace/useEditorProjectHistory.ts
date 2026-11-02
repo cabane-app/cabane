@@ -144,15 +144,16 @@ export function useEditorProjectHistory({
   const undoProject = useCallback(() => {
     if (!editingLocked && !dragging && floorZoneDrawingActive) {
       floorZoneDrawingUndo();
-      return;
+      return null;
     }
     if (!editingLocked && !dragging && poolDrawing.active) {
       poolDrawing.undo();
-      return;
+      return null;
     }
-    if (unsettled || editingLocked) return;
+    if (unsettled || editingLocked) return null;
     const next = undo();
     if (next) replaceEditorsFromProject(next.project);
+    return next;
   }, [
     editingLocked,
     dragging,
@@ -167,15 +168,16 @@ export function useEditorProjectHistory({
   const redoProject = useCallback(() => {
     if (!editingLocked && !dragging && floorZoneDrawingActive) {
       floorZoneDrawingRedo();
-      return;
+      return null;
     }
     if (!editingLocked && !dragging && poolDrawing.active) {
       poolDrawing.redo();
-      return;
+      return null;
     }
-    if (unsettled || editingLocked) return;
+    if (unsettled || editingLocked) return null;
     const next = redo();
     if (next) replaceEditorsFromProject(next.project);
+    return next;
   }, [
     editingLocked,
     dragging,

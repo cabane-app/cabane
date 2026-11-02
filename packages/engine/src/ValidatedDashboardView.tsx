@@ -1,12 +1,10 @@
+import { useCabaneDom } from "./CabaneDom";
+import { SceneOverlayLayout } from "./room-status/SceneOverlayLayout";
 import { useDashboardOrbitView } from "./navigation/orbit-view";
 import { useWeatherController } from "./weather/useWeatherController";
 import { WeatherScene } from "./weather/WeatherScene";
 import { deriveSolarLighting } from "./lighting";
-import {
-  filterOverlayStatuses,
-  loadOverlayPreferences,
-  saveOverlayPreferences,
-} from "./room-status/overlay-preferences";
+import { filterOverlayStatuses, loadOverlayPreferences } from "./room-status/overlay-preferences";
 import { resolveDashboardActionTargets } from "./action-bar/dashboard-action-targets";
 import type { WalkToolNavigation } from "./walk-tools";
 import { activateWalkTarget, canActivateWalkTarget } from "./walk-tools/activate-walk-target";
@@ -22,15 +20,7 @@ import { PerformanceMonitor } from "@react-three/drei";
 
 import { Canvas } from "@react-three/fiber";
 
-import {
-  Suspense,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { Suspense, useMemo, useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { ArchitectureScene } from "./ArchitectureScene";
 
@@ -60,22 +50,16 @@ import { CustomizeActionBarMenuItem } from "./CustomizeActionBarMenuItem";
 
 import { SceneMenuIcon } from "./SceneMenuIcon";
 import { ProjectSupportMenuItems } from "./ProjectSupportMenuItems";
-import {
-  WalkPreferences,
-  WalkPreferencesMenuItem,
-  loadInvertYAxis,
-  saveInvertYAxis,
-} from "./WalkPreferences";
+import { loadInvertYAxis } from "./walk-preferences";
 
 import { useDashboardController } from "./useDashboardController";
 
 export function ValidatedDashboardView(props: Parameters<typeof useDashboardController>[0]) {
+  const dom = useCabaneDom();
   const toolNavigationRef = useRef<WalkToolNavigation | null>(null);
   const roomFocus = useRoomFocusFrame();
-  const [overlayPreferences, setOverlayPreferences] = useState(loadOverlayPreferences);
-  const [preferencesOpen, setPreferencesOpen] = useState(false);
-  const [invertYAxis, setInvertYAxis] = useState(loadInvertYAxis);
-  const closePreferences = useCallback(() => setPreferencesOpen(false), []);
+  const [overlayPreferences] = useState(loadOverlayPreferences);
+  const [invertYAxis] = useState(loadInvertYAxis);
   const dashboard = useDashboardController(props);
   const weather = useWeatherController(
     dashboard.runtime,
@@ -99,8 +83,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
     canvasDpr,
     walkMode,
     quality,
-    lightingMode,
-    chooseLightingMode,
     sunState,
     solarLighting,
     nightLighting,
@@ -170,18 +152,25 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
       ? props.walkTools?.find((tool) => tool.id === equippedToolId)
       : undefined;
   const toolInputEnabled =
-    documentVisible &&
-    !setupOpen &&
-    !mappingOpen &&
-    !deviceOverlay &&
-    !selectedCamera &&
-    !preferencesOpen;
+    documentVisible && !setupOpen && !mappingOpen && !deviceOverlay && !selectedCamera;
   const actionBarItems = resolvePublishedActionBarItems(manifest.actionBar, props.walkTools);
   const overlayStatuses = useMemo(
     () => filterOverlayStatuses(roomStatuses, overlayPreferences),
     [roomStatuses, overlayPreferences],
   );
-  const preferencesMenuItem = <WalkPreferencesMenuItem onOpen={() => setPreferencesOpen(true)} />;
+  const settingsMenuItem = props.onOpenSettings && (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.currentTarget.closest("details")?.removeAttribute("open");
+        if (dom.root.pointerLockElement) document.exitPointerLock();
+        props.onOpenSettings?.();
+      }}
+    >
+      <SceneMenuIcon name="preferences" />
+      <span>Settings</span>
+    </button>
+  );
   const actionBarTargets = resolveDashboardActionTargets(
     actionBarItems,
     manifest,
@@ -271,147 +260,149 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                 frameloop={!documentVisible ? "never" : walkMode ? "always" : "demand"}
                 gl={{ antialias: quality.antialias }}
               >
-                <RoomHoverProvider scope={`${floor.id}-${mode}`}>
-                  <StylizedScene antialias={quality.antialias}>
-                    <ScenePreview enabled={!walkMode && !selectedRoomId} />
-                    <SolarLighting
-                      weather={weather.appearance}
-                      reducedMotion={reducedMotion}
-                      walkMode={walkMode}
-                      mode={solarLighting.mode}
-                      northAngleDegrees={manifest.home.northAngleDegrees ?? 0}
-                      floors={manifest.floors}
-                      shadowMapSize={quality.shadowMapSize}
-                      sunState={sunState}
-                    />
-                    {!walkthrough && (
-                      <WeatherScene
-                        appearance={weather.appearance}
+                <SceneOverlayLayout>
+                  <RoomHoverProvider scope={`${floor.id}-${mode}`}>
+                    <StylizedScene antialias={quality.antialias}>
+                      <ScenePreview enabled={!walkMode && !selectedRoomId} />
+                      <SolarLighting
+                        weather={weather.appearance}
+                        reducedMotion={reducedMotion}
+                        walkMode={walkMode}
+                        mode={solarLighting.mode}
+                        northAngleDegrees={manifest.home.northAngleDegrees ?? 0}
                         floors={manifest.floors}
-                        roof={manifest.home.roof}
-                        walkMode={walkMode}
-                        reducedMotion={reducedMotion}
-                        daylight={deriveSolarLighting(sunState, solarLighting.mode).daylight}
-                        quality={quality.dpr[1]}
+                        shadowMapSize={quality.shadowMapSize}
+                        sunState={sunState}
                       />
-                    )}
-                    {walkMode ? (
-                      <WalkCameraController
-                        building={manifest}
-                        registries={manifest.extensions}
-                        elevation={elevation}
-                        onFloorChange={(id) => floorNavigation.selectFloor(id, "walk")}
-
-                        floor={floor}
-                        poseRef={poseRef}
-                        toolNavigationRef={toolNavigationRef}
-                        movementInputRef={movementInputRef}
-                        sprintInputRef={sprintInputRef}
-                        jumpRequestRef={jumpRequestRef}
-                        lookInputRef={lookInputRef}
-                        lookDeltaRef={lookDeltaRef}
-                        invertYAxis={invertYAxis}
-                        reducedMotion={reducedMotion}
-                        openingPositions={openingPositions}
-                        onOpeningsChange={handleAutomaticOpeningsChange}
-                        onRoomChange={setWalkRoomId}
-                      />
-                    ) : (
-                      <OrbitCamera
-                        {...orbitView.cameraProps}
-                        showRoof={wholeBuilding}
-                        elevation={elevation}
-                        buildingFloors={cameraFloors}
-
-                        floor={floor}
-                        resetKey={cameraResetKey}
-                        {...(mode === "room" && selectedRoom ? { room: selectedRoom } : {})}
-                        roomFrame={roomFocus.frame}
-                        roomRequestKey={roomFocusKey}
-                        reducedMotion={reducedMotion}
-                      />
-                    )}
-                    <SceneNightContext.Provider value={nightLighting}>
-                      <ArchitectureScene
-                        activeFloorId={floor.id}
-                        floorView={wholeBuilding ? "whole" : "cutaway"}
-
-                        manifest={manifest}
-                        architectureModels={architectureModels}
-                        selectedRoomId={selectedRoomId}
-                        walkMode={walkMode}
-                        wallFadeEnabled={wallFadeEnabled && !wholeBuilding}
-                        reducedMotion={reducedMotion}
-                        resolvedBindings={resolvedBindings}
-                        deviceModels={deviceModels}
-                        openingPositions={openingPositions}
-                        interactionMode={!walkMode && wholeBuilding ? "editor" : "runtime"}
-                        onSelectRoom={wholeBuilding ? undefined : selectRoom}
-                        onInteract={handleExtensionInteraction}
-                        onWalkDeviceTargetChange={
-                          walkthrough || equippedTool ? undefined : setWalkDeviceTarget
-                        }
-                        liveMediaByEntityId={liveMediaByEntityId}
-                      />
-                    </SceneNightContext.Provider>
-                    {equippedTool && (
-                      <Suspense fallback={null}>
-                        <equippedTool.Scene
-                          enabled={toolInputEnabled}
-                          pointerLocked={walkPointerLocked}
-                          coarsePointer={coarsePointer}
+                      {!walkthrough && (
+                        <WeatherScene
+                          appearance={weather.appearance}
+                          floors={manifest.floors}
+                          roof={manifest.home.roof}
+                          walkMode={walkMode}
                           reducedMotion={reducedMotion}
-                          navigation={{
-                            resolveLanding: (position) =>
-                              toolNavigationRef.current?.resolveLanding(position) ?? null,
-                            teleport: (landing, facing) =>
-                              toolInputEnabled &&
-                              (coarsePointer || walkPointerLocked) &&
-                              (toolNavigationRef.current?.teleport(landing, facing) ?? false),
-                          }}
-                          canActivateTarget={(target) =>
-                            toolInputEnabled &&
-                            canActivateWalkTarget(target, resolvedBindings, runtime.canMutate)
-                          }
-                          activateTarget={(target) =>
-                            toolInputEnabled
-                              ? activateWalkTarget(target, resolvedBindings, runtime)
-                              : Promise.resolve({
-                                  status: "unavailable",
-                                  message: "Resume walking to use this tool.",
-                                })
-                          }
+                          daylight={deriveSolarLighting(sunState, solarLighting.mode).daylight}
+                          quality={quality.dpr[1]}
                         />
-                      </Suspense>
-                    )}
-                    {!walkthrough && !wholeBuilding && shouldShowRoomStatusOverlays(mode) && (
-                      <group position={[0, elevation, 0]}>
-                        <RoomStatusOverlays
+                      )}
+                      {walkMode ? (
+                        <WalkCameraController
+                          building={manifest}
+                          registries={manifest.extensions}
+                          elevation={elevation}
+                          onFloorChange={(id) => floorNavigation.selectFloor(id, "walk")}
+
                           floor={floor}
-                          summaries={overlayStatuses}
-                          roomNames={roomDisplayNames}
-                          onSelectRoom={selectRoom}
+                          poseRef={poseRef}
+                          toolNavigationRef={toolNavigationRef}
+                          movementInputRef={movementInputRef}
+                          sprintInputRef={sprintInputRef}
+                          jumpRequestRef={jumpRequestRef}
+                          lookInputRef={lookInputRef}
+                          lookDeltaRef={lookDeltaRef}
+                          invertYAxis={invertYAxis}
+                          reducedMotion={reducedMotion}
+                          openingPositions={openingPositions}
+                          onOpeningsChange={handleAutomaticOpeningsChange}
+                          onRoomChange={setWalkRoomId}
                         />
-                      </group>
-                    )}
-                    {walkMode && coarsePointer && (
-                      <PerformanceMonitor
-                        iterations={10}
-                        ms={250}
-                        bounds={() => [50, 58]}
-                        onDecline={() => adjustQuality("down")}
-                        onIncline={() => adjustQuality("up")}
-                      />
-                    )}
-                  </StylizedScene>
-                </RoomHoverProvider>
+                      ) : (
+                        <OrbitCamera
+                          {...orbitView.cameraProps}
+                          showRoof={wholeBuilding}
+                          elevation={elevation}
+                          buildingFloors={cameraFloors}
+
+                          floor={floor}
+                          resetKey={cameraResetKey}
+                          {...(mode === "room" && selectedRoom ? { room: selectedRoom } : {})}
+                          roomFrame={roomFocus.frame}
+                          roomRequestKey={roomFocusKey}
+                          reducedMotion={reducedMotion}
+                        />
+                      )}
+                      <SceneNightContext.Provider value={nightLighting}>
+                        <ArchitectureScene
+                          activeFloorId={floor.id}
+                          floorView={wholeBuilding ? "whole" : "cutaway"}
+
+                          manifest={manifest}
+                          architectureModels={architectureModels}
+                          selectedRoomId={selectedRoomId}
+                          walkMode={walkMode}
+                          wallFadeEnabled={wallFadeEnabled && !wholeBuilding}
+                          reducedMotion={reducedMotion}
+                          resolvedBindings={resolvedBindings}
+                          deviceModels={deviceModels}
+                          openingPositions={openingPositions}
+                          interactionMode={!walkMode && wholeBuilding ? "editor" : "runtime"}
+                          onSelectRoom={wholeBuilding ? undefined : selectRoom}
+                          onInteract={handleExtensionInteraction}
+                          onWalkDeviceTargetChange={
+                            walkthrough || equippedTool ? undefined : setWalkDeviceTarget
+                          }
+                          liveMediaByEntityId={liveMediaByEntityId}
+                        />
+                      </SceneNightContext.Provider>
+                      {equippedTool && (
+                        <Suspense fallback={null}>
+                          <equippedTool.Scene
+                            enabled={toolInputEnabled}
+                            pointerLocked={walkPointerLocked}
+                            coarsePointer={coarsePointer}
+                            reducedMotion={reducedMotion}
+                            navigation={{
+                              resolveLanding: (position) =>
+                                toolNavigationRef.current?.resolveLanding(position) ?? null,
+                              teleport: (landing, facing) =>
+                                toolInputEnabled &&
+                                (coarsePointer || walkPointerLocked) &&
+                                (toolNavigationRef.current?.teleport(landing, facing) ?? false),
+                            }}
+                            canActivateTarget={(target) =>
+                              toolInputEnabled &&
+                              canActivateWalkTarget(target, resolvedBindings, runtime.canMutate)
+                            }
+                            activateTarget={(target) =>
+                              toolInputEnabled
+                                ? activateWalkTarget(target, resolvedBindings, runtime)
+                                : Promise.resolve({
+                                    status: "unavailable",
+                                    message: "Resume walking to use this tool.",
+                                  })
+                            }
+                          />
+                        </Suspense>
+                      )}
+                      {!walkthrough && !wholeBuilding && shouldShowRoomStatusOverlays(mode) && (
+                        <group position={[0, elevation, 0]}>
+                          <RoomStatusOverlays
+                            floor={floor}
+                            summaries={overlayStatuses}
+                            roomNames={roomDisplayNames}
+                            onSelectRoom={selectRoom}
+                          />
+                        </group>
+                      )}
+                      {walkMode && coarsePointer && (
+                        <PerformanceMonitor
+                          iterations={10}
+                          ms={250}
+                          bounds={() => [50, 58]}
+                          onDecline={() => adjustQuality("down")}
+                          onIncline={() => adjustQuality("up")}
+                        />
+                      )}
+                    </StylizedScene>
+                  </RoomHoverProvider>
+                </SceneOverlayLayout>
               </Canvas>
             </Suspense>
           </div>
 
           <header className="scene-hud">
             <DashboardLocation dashboard={dashboard} />
-            <details className="scene-menu">
+            <details className="scene-menu" hidden={Boolean(walkthrough)}>
               <summary aria-label="More options">
                 <span aria-hidden="true">•••</span>
                 {setupAction?.attention && (
@@ -419,7 +410,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                 )}
               </summary>
               <div>
-                {walkthrough && preferencesMenuItem}
                 {!walkthrough && (
                   <>
                     <p>
@@ -507,7 +497,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                         <span>Retry connection</span>
                       </button>
                     )}
-                    {preferencesMenuItem}
+                    {settingsMenuItem}
                     <ProjectSupportMenuItems />
                     {!demoSession &&
                       ["connected", "connecting", "reconnecting", "error"].includes(
@@ -530,25 +520,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
               </div>
             </details>
           </header>
-          {preferencesOpen && (
-            <WalkPreferences
-              weather={weather}
-              overlayPreferences={overlayPreferences}
-              onOverlayPreferencesChange={(value) => {
-                setOverlayPreferences(value);
-                saveOverlayPreferences(value);
-              }}
-              inverted={invertYAxis}
-              lightingSource={solarLighting.source}
-              lightingMode={lightingMode}
-              onLightingModeChange={chooseLightingMode}
-              onChange={(value) => {
-                setInvertYAxis(value);
-                saveInvertYAxis(value);
-              }}
-              onClose={closePreferences}
-            />
-          )}
 
           {controlRoom && resolvedBindings.rooms[controlRoom.id] && (
             <RoomDashboardPanel

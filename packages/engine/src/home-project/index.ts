@@ -7,6 +7,7 @@ export * from "./runtime";
 export * from "./serialization";
 export * from "./repository";
 export * from "./workspace-bindings";
+export { itemBindingSlotIds } from "./item-binding-identities";
 export * from "./lifecycle";
 export * from "./floor-operations";
 export * from "./workspace-contract";
@@ -17,6 +18,6 @@ export * from "./empty-project";
 
 export * from "./workspace-onboarding-state";
 
-export { resolvedRoomIdForItem } from "./scene-items";
+export { resolvedRoomIdForItem, sceneItemPlacementIssues } from "./scene-items";
 
 export { collectProjectIds } from "./cross-references";

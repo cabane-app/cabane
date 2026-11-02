@@ -56,6 +56,67 @@ offers Open/Stop/Close and a position slider according to advertised features,
 and disables commands when offline. It uses the existing command scheduler and
 exact runtime binding. No household bindings are included in the preset.
 
+## Standalone kitchen countertops
+
+**Arrange → Kitchen → Worktops** offers **Countertop** (`countertop`) and
+**Corner countertop** (`corner-countertop`). Search for countertop or worktop.
+Both are independent slabs, with no cabinet, legs, plinth, or appliance baked in.
+They share six Details → Variant finishes: **Light oak**, **Dark oak**,
+**White marble**, **Black granite**, **White quartz**, and **Concrete**.
+Beveled edges, fine directional oak grain, marble veins, and mineral flecks
+are procedural, with no external textures.
+
+Width, depth, and height resize independently; height is the slab's thickness.
+The inferred default straight slab is **180 × 63 × 4 cm (width × depth × thickness)**.
+The continuous L-shaped slab is **126 × 126 × 4 cm**, with two **63 cm** deep arms
+and a clear inner corner. Resizing the corner scales each arm with its corresponding
+overall dimension: its arm depths stay half the overall width and depth.
+Rotate it to suit any kitchen corner, and use the same finish on adjacent straight runs.
+These are generic dimensions, not manufacturer measurements.
+
+The origin is centered on X/Z at the slab's underside (Y=0). Set **Elevation**
+to the desired underside height in Arrange Details. For a 91 cm finished worktop
+with a 4 cm slab, use **87 cm elevation**, leaving clear space above an 86.5 cm
+washing machine. Elevation and thickness are independent, so changing thickness
+does not move the underside. The L's opening is toward +X/−Z before rotation.
+Both components and size constants are exported from `@cabane/catalog/furnishing`:
+`Countertop` / `COUNTERTOP_SIZE`, `CornerCountertop` / `CORNER_COUNTERTOP_SIZE`.
+
+## Integrated roller shutter
+
+`integrated-roller-shutter` exports `IntegratedRollerShutterModel` and
+`INTEGRATED_ROLLER_SHUTTER_SIZE` from `@cabane/catalog/device`. Find **Integrated
+roller shutter** in **Arrange → Living room → Covers**, or search All items.
+The generic off-white assembly has side guides, 31 translating horizontal slats,
+a bottom rail and a narrow exit strip. The roll is concealed above the aperture
+and is not separately modeled. The inferred nominal envelope is **120 × 160 × 4 cm
+[width, height, depth]**. Width and height resize independently; depth stays fixed.
+No manufacturer dimensions are claimed. The origin is centered horizontally at
+the closed assembly's bottom/back plane, Y=0 and Z=0, facing exterior +Z.
+
+Adding, Fit to window and normal drag snapping use exterior windows and full-glass
+sliding doors with one unambiguous adjoining indoor room. The whole assembly fits
+the aperture, leaving 15 mm above a conventional window's projecting sill.
+`windowFit.mounting: "exterior-recessed"` recesses it behind the exterior finish
+where possible; shallow walls or outward-facing closed handles move it forward
+enough to retain 3 mm solid clearance plus 4 mm outline allowance. Catalog-owned
+`closedOpeningCoverClearance` describes the supported closed opening envelopes.
+It does not simulate collisions with moving casement leaves.
+
+The physical exterior placement keeps its controls in the indoor room across
+the support wall, even beside an outdoor platform. Bounded wall-face probes omit
+solid rooms and never guess a nearest room. Arrange, Connect, dashboard state and
+device shortcuts share this assignment; there is no saved room override.
+Ambiguous or missing rooms remain unassigned. Alt/free placement uses its actual
+position like other devices. Fit stores an ordinary wall placement with a signed
+depth offset; architecture edits require fitting again.
+
+Each copy has a fresh manual primary `cover` slot with the existing cover controls
+and position semantics. Full-size slats slide behind the exit strip without
+stretching; geometry is reused throughout animation. Mid-travel targets continue
+from the current pose, unusable readings freeze it, and reduced motion settles
+immediately. No household mappings or new project fields are included.
+
 ## Warm contemporary furniture
 
 Dimensions below are **width × depth × height in centimetres**. In code,
@@ -325,33 +386,34 @@ presets. Dimensions are **width × depth × height in centimetres**; code uses
 `[width, height, depth]` in metres. All dimensions and finishes are inferred
 standard proportions rather than verified manufacturer specifications.
 
-| Model ID                   | Public component              | Dimensions     | Domain / device class                      | Default room and placement |
-| -------------------------- | ----------------------------- | -------------- | ------------------------------------------ | -------------------------- |
-| `heated-towel-rail`        | `HeatedTowelRailModel`        | 60 × 12 × 120  | `climate` or `switch`                      | Bathroom, wall             |
-| `smart-panel-radiator`     | `SmartPanelRadiatorModel`     | 100 × 12 × 60  | `climate` or `switch`                      | Living room, wall          |
-| `smart-thermostat`         | `SmartThermostatModel`        | 12 × 3.5 × 12  | `climate`                                  | Hallway, wall              |
-| `smart-plug`               | `SmartPlugModel`              | 7 × 5.5 × 7    | `switch` / `outlet`                        | Living room, wall          |
-| `table-lamp`               | `TableLampModel`              | 32 × 32 × 52   | `light`                                    | Bedroom, surface           |
-| `woven-pendant`            | `WovenPendantModel`           | 84.7 × 86 × 58 | `light`                                    | Dining room, ceiling       |
-| `children-pendant`         | `ChildrenPendantModel`        | 58 × 58 × 47.9 | `light`                                    | Bedroom, ceiling           |
-| `ceiling-light`            | `CeilingLightModel`           | 40 × 40 × 12   | `light`                                    | Living room, ceiling       |
-| `recessed-downlight`       | `RecessedDownlightModel`      | 10 × 10 × 4    | `light`                                    | Hallway, ceiling           |
-| `wall-sconce`              | `WallSconceModel`             | 22 × 16 × 32   | `light`                                    | Bedroom, wall              |
-| `illuminated-round-mirror` | `IlluminatedRoundMirrorModel` | 80 × 4.5 × 80  | `light`                                    | Bathroom, wall             |
-| `motorized-curtain`        | `MotorizedCurtainModel`       | 200 × 16 × 240 | `cover` / `curtain`                        | Living room, wall          |
-| `connected-frame-oak`      | `ConnectedFrameOakModel`      | 72 × 4.5 × 52  | `camera`                                   | Living room, wall          |
-| `connected-frame-black`    | `ConnectedFrameBlackModel`    | 72 × 4.5 × 52  | `camera`                                   | Living room, wall          |
-| `video-doorbell`           | `VideoDoorbellModel`          | 5 × 3.5 × 13.5 | `camera`                                   | Entryway, wall             |
-| `indoor-security-camera`   | `IndoorSecurityCameraModel`   | 10 × 10 × 16   | `camera`                                   | Living room, surface       |
-| `smoke-alarm`              | `SmokeAlarmModel`             | 12 × 12 × 4.5  | `binary_sensor` / `smoke`                  | Hallway, ceiling           |
-| `carbon-monoxide-alarm`    | `CarbonMonoxideAlarmModel`    | 11 × 3.5 × 11  | `binary_sensor` / `carbon_monoxide`        | Hallway, wall              |
-| `humidity-sensor`          | `HumiditySensorModel`         | 8.5 × 3 × 8.5  | `sensor` / `humidity`                      | Bathroom, wall             |
-| `air-quality-monitor`      | `AirQualityMonitorModel`      | 10 × 6 × 16    | `sensor` / AQI, CO₂, PM2.5, VOC            | Bedroom, surface           |
-| `energy-monitor`           | `EnergyMonitorModel`          | 20 × 9 × 30    | `sensor` / power, energy, current, voltage | Laundry, wall              |
-| `air-purifier`             | `AirPurifierModel`            | 27 × 27 × 52   | `fan` or `switch`                          | Bedroom, surface           |
-| `bathroom-extractor-fan`   | `BathroomExtractorFanModel`   | 18 × 9 × 18    | `fan` or `switch`                          | Bathroom, wall             |
-| `refrigerator`             | `RefrigeratorModel`           | 70 × 72 × 185  | `sensor` / `temperature`                   | Kitchen, surface           |
-| `smart-power-strip`        | `SmartPowerStripModel`        | 34 × 6.5 × 5.5 | `switch` / `outlet`                        | Office, surface            |
+| Model ID                    | Public component               | Dimensions     | Domain / device class                      | Default room and placement   |
+| --------------------------- | ------------------------------ | -------------- | ------------------------------------------ | ---------------------------- |
+| `heated-towel-rail`         | `HeatedTowelRailModel`         | 60 × 12 × 120  | `climate` or `switch`                      | Bathroom, wall               |
+| `smart-panel-radiator`      | `SmartPanelRadiatorModel`      | 100 × 12 × 60  | `climate` or `switch`                      | Living room, wall            |
+| `smart-thermostat`          | `SmartThermostatModel`         | 12 × 3.5 × 12  | `climate`                                  | Hallway, wall                |
+| `smart-plug`                | `SmartPlugModel`               | 7 × 5.5 × 7    | `switch` / `outlet`                        | Living room, wall            |
+| `table-lamp`                | `TableLampModel`               | 32 × 32 × 52   | `light`                                    | Bedroom, surface             |
+| `woven-pendant`             | `WovenPendantModel`            | 84.7 × 86 × 58 | `light`                                    | Dining room, ceiling         |
+| `children-pendant`          | `ChildrenPendantModel`         | 58 × 58 × 47.9 | `light`                                    | Bedroom, ceiling             |
+| `ceiling-light`             | `CeilingLightModel`            | 40 × 40 × 12   | `light`                                    | Living room, ceiling         |
+| `recessed-downlight`        | `RecessedDownlightModel`       | 10 × 10 × 4    | `light`                                    | Hallway, ceiling             |
+| `wall-sconce`               | `WallSconceModel`              | 22 × 16 × 32   | `light`                                    | Bedroom, wall                |
+| `illuminated-round-mirror`  | `IlluminatedRoundMirrorModel`  | 80 × 4.5 × 80  | `light`                                    | Bathroom, wall               |
+| `integrated-roller-shutter` | `IntegratedRollerShutterModel` | 120 × 4 × 160  | `cover`                                    | Living room, exterior window |
+| `motorized-curtain`         | `MotorizedCurtainModel`        | 200 × 16 × 240 | `cover` / `curtain`                        | Living room, wall            |
+| `connected-frame-oak`       | `ConnectedFrameOakModel`       | 72 × 4.5 × 52  | `camera`                                   | Living room, wall            |
+| `connected-frame-black`     | `ConnectedFrameBlackModel`     | 72 × 4.5 × 52  | `camera`                                   | Living room, wall            |
+| `video-doorbell`            | `VideoDoorbellModel`           | 5 × 3.5 × 13.5 | `camera`                                   | Entryway, wall               |
+| `indoor-security-camera`    | `IndoorSecurityCameraModel`    | 10 × 10 × 16   | `camera`                                   | Living room, surface         |
+| `smoke-alarm`               | `SmokeAlarmModel`              | 12 × 12 × 4.5  | `binary_sensor` / `smoke`                  | Hallway, ceiling             |
+| `carbon-monoxide-alarm`     | `CarbonMonoxideAlarmModel`     | 11 × 3.5 × 11  | `binary_sensor` / `carbon_monoxide`        | Hallway, wall                |
+| `humidity-sensor`           | `HumiditySensorModel`          | 8.5 × 3 × 8.5  | `sensor` / `humidity`                      | Bathroom, wall               |
+| `air-quality-monitor`       | `AirQualityMonitorModel`       | 10 × 6 × 16    | `sensor` / AQI, CO₂, PM2.5, VOC            | Bedroom, surface             |
+| `energy-monitor`            | `EnergyMonitorModel`           | 20 × 9 × 30    | `sensor` / power, energy, current, voltage | Laundry, wall                |
+| `air-purifier`              | `AirPurifierModel`             | 27 × 27 × 52   | `fan` or `switch`                          | Bedroom, surface             |
+| `bathroom-extractor-fan`    | `BathroomExtractorFanModel`    | 18 × 9 × 18    | `fan` or `switch`                          | Bathroom, wall               |
+| `refrigerator`              | `RefrigeratorModel`            | 70 × 72 × 185  | `sensor` / `temperature`                   | Kitchen, surface             |
+| `smart-power-strip`         | `SmartPowerStripModel`         | 34 × 6.5 × 5.5 | `switch` / `outlet`                        | Office, surface              |
 
 All instances receive a fresh manual primary slot. Lights, including the
 illuminated mirror's perimeter ring, contribute an engine-owned scene light,
@@ -805,6 +867,9 @@ not stored in Git.
 Reusable bedroom, dining, balcony, bathroom and kitchen models extend the shared
 catalog without importing apartment placements or private assets. Square cube
 storage offers two- and four-compartment variants behind one frame and descriptor.
+The wood bunk bed (`wood-bunk-bed`, 101.5 × 160 × 208 cm) offers right-side,
+left-side, front-end and back-end ladder variants. All four share the same
+placement envelope and independent axis resizing.
 The existing potted plant gains a white-pot variant without changing its default.
 
 Bathroom definitions are grouped by fixtures, storage and lighting. They retain

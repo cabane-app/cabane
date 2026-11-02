@@ -1,4 +1,5 @@
 import {
+  physicalFloor,
   planPointToWorld,
   pointInsidePolygon,
   resolveItemTransform,
@@ -304,7 +305,7 @@ export const placementNearWallsForWorldDrag = ({
   rawAt,
   item,
   definition,
-  floor,
+  floor: sourceFloor,
   wallSnapDistanceMeters = 0.55,
   cornerSnapDistanceMeters = 0.2,
 }: {
@@ -315,6 +316,7 @@ export const placementNearWallsForWorldDrag = ({
   wallSnapDistanceMeters?: number;
   cornerSnapDistanceMeters?: number;
 }): WallPlacement | null => {
+  const floor = physicalFloor(sourceFloor);
   const candidates = floor.walls
     .flatMap((wall) => {
       const candidate = wallDragCandidate(rawAt, wall, floor.coordinates.metersPerPlanUnit);

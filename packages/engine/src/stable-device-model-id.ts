@@ -45,6 +45,7 @@ export type StableDeviceModelId =
   | "weather-station"
   | "motion-sensor"
   | "motorized-blind"
+  | "integrated-roller-shutter"
   | "leak-sensor"
   | "ceiling-fan"
   | "table-fan"

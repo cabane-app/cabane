@@ -1,4 +1,4 @@
-import { useFloorNavigation } from "@cabane/engine";
+import { roomsForFloor, useFloorNavigation } from "@cabane/engine";
 import { useEffectEvent } from "react";
 import type { ConnectWorkspaceProps } from "./editor-workspace-contract";
 
@@ -24,7 +24,9 @@ export function useEditorEntryRequest(
       project.sceneItems.find(
         (item) => item.id === request.relationshipId || item.id === request.arrange?.selectedItemId,
       )?.floorId ??
-      project.floors.find((floor) => floor.rooms.some((room) => room.id === request.roomId))?.id;
+      project.floors.find((floor) =>
+        roomsForFloor(floor).some((room) => room.id === request.roomId),
+      )?.id;
     if (target && project.floors.some((floor) => floor.id === target))
       floorNavigationSelectFloor(target, "target");
   });

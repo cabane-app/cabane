@@ -123,6 +123,19 @@
   color: #53604e;
   margin: 12px 0 0;
 }
+.model-import-dialog .model-light-material {
+  flex-direction: row;
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+.model-import-dialog .model-light-material input {
+  width: 20px;
+  min-height: 36px;
+  flex: none;
+}
+.model-import-dialog .model-import-vectors {
+  margin-block: 10px;
+}
 @media (max-width: 500px) {
   .model-import-dialog {
     padding: 16px;

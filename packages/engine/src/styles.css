@@ -51,4 +51,5 @@
 @import "./home-assistant-mapping/device-mapping-option-group.css";
 @import "./home-assistant-dashboard/room-module-reorder.css";
 @import "./weather/weather-preferences.css";
+@import "./item-entity-readings.css";
 @import "./home-assistant-dashboard/room-control-sheet-actions.css";

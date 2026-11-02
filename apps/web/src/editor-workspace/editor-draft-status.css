@@ -1,0 +1,26 @@
+.direction-preview .editor-draft-error {
+  z-index: 12;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #fff7ed;
+  box-shadow: 0 4px 18px rgba(45, 35, 25, 0.14);
+  font-size: var(--editor-text-control);
+  line-height: 1.45;
+}
+.editor-draft-error p {
+  margin: 6px 0 12px;
+  overflow-wrap: anywhere;
+}
+.editor-draft-error__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+@media (max-width: 760px) {
+  .direction-preview .editor-draft-error {
+    left: 16px;
+    right: auto;
+  }
+}

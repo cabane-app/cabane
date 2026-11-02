@@ -11,7 +11,17 @@ function failure(data, lastStarted) {
   const command = file
     ? `node --no-experimental-global-navigator --test --test-reporter=./scripts/agent-test-reporter.mjs --test-name-pattern=${quote(escapePattern(data.name))} ${quote(file)}`
     : null;
-  return `\nFAIL ${data.name}\n  ${file ?? "unknown file"}:${data.line ?? "?"}:${data.column ?? "?"}\n${inspect(error, { colors: false, depth: 8, customInspect: false, maxArrayLength: 20, maxStringLength: 8000 })}\n${lastStarted && lastStarted.name !== data.name ? `Last started: ${lastStarted.name} (${lastStarted.file ? relative(process.cwd(), lastStarted.file) : "unknown file"}:${lastStarted.line ?? "?"})\n` : ""}${command ? `Rerun: ${command}\n` : ""}`;
+  const sharedEnvironment = ["CABANE_TEST_SUITE", "CABANE_VERIFY_GROUP"]
+    .filter((name) => process.env[name])
+    .map((name) => `${name}=${quote(process.env[name])}`);
+  const shard = process.env.CABANE_TEST_SHARD;
+  // An isolated pass cannot rule out state leaked by earlier files. Preserve
+  // the full shard and selection without filtering out its setup tests.
+  const sharedCommand =
+    process.env.CABANE_TEST_SHARED_MODULES === "1" && shard
+      ? `CABANE_TEST_SHARED_MODULES=1 ${sharedEnvironment.length ? `${sharedEnvironment.join(" ")} ` : ""}node --no-experimental-global-navigator --test --test-reporter=./scripts/agent-test-reporter.mjs ${quote(shard)}`
+      : null;
+  return `\nFAIL ${data.name}\n  ${file ?? "unknown file"}:${data.line ?? "?"}:${data.column ?? "?"}\n${inspect(error, { colors: false, depth: 8, customInspect: false, maxArrayLength: 20, maxStringLength: 8000 })}\n${lastStarted && lastStarted.name !== data.name ? `Last started: ${lastStarted.name} (${lastStarted.file ? relative(process.cwd(), lastStarted.file) : "unknown file"}:${lastStarted.line ?? "?"})\n` : ""}${command ? `Rerun: ${command}\n` : ""}${sharedCommand ? `Shared-shard rerun: ${sharedCommand}\n` : ""}`;
 }
 
 export default async function* agentTestReporter(source) {

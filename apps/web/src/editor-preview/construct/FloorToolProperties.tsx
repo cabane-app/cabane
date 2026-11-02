@@ -8,11 +8,6 @@ import "./floor-tool-properties.css";
 const targets = [
   { id: "room", label: "Whole room", description: "Change an existing room’s finish." },
   { id: "custom-area", label: "Custom area", description: "Draw a finish area or a ground path." },
-  {
-    id: "outdoor-platform",
-    label: "Outdoor platform",
-    description: "Add a balcony or terrace on this floor.",
-  },
 ] as const;
 const instructions: Record<FloorPaintTarget, string> = {
   room: "Choose a finish, then click a room.",
@@ -34,31 +29,27 @@ export function FloorToolProperties({
   const target = isPlatform ? "outdoor-platform" : painting.target;
   const settings = editor.platformSettings;
   const error = isPlatform ? editor.poolDrawing.error : painting.drawingError;
-  const changeTarget = (next: FloorPaintTarget) => {
-    if (next === "outdoor-platform") {
-      editor.setPlatformSettings({ ...settings, finish: painting.finish });
-    }
-    painting.onTargetChange(next);
-  };
   return (
     <div className="construction-inspector__selection floor-tool-properties">
       <header>
-        <h3>Floor tool</h3>
+        <h3>{isPlatform ? "Outdoor space" : "Floor tool"}</h3>
       </header>
-      <div className="floor-tool-targets" role="group" aria-label="Paint target">
-        {targets.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            aria-label={option.label}
-            aria-pressed={target === option.id}
-            onClick={() => changeTarget(option.id)}
-          >
-            <strong>{option.label}</strong>
-            <span>{option.description}</span>
-          </button>
-        ))}
-      </div>
+      {!isPlatform && (
+        <div className="floor-tool-targets" role="group" aria-label="Paint target">
+          {targets.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              aria-label={option.label}
+              aria-pressed={target === option.id}
+              onClick={() => painting.onTargetChange(option.id)}
+            >
+              <strong>{option.label}</strong>
+              <span>{option.description}</span>
+            </button>
+          ))}
+        </div>
+      )}
       <p className="construction-inspector__tool-hint">{instructions[target]}</p>
       <fieldset>
         <legend>Floor finish</legend>
@@ -83,7 +74,7 @@ export function FloorToolProperties({
       {error && <p role="alert">{error}</p>}
       {isPlatform ? (
         <EditorButton variant="secondary" type="button" onClick={() => editor.setTool("select")}>
-          Cancel platform
+          Cancel outdoor space
         </EditorButton>
       ) : (
         painting.drawingActive && (
