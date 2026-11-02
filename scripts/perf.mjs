@@ -189,7 +189,8 @@ async function measure(options) {
         window.__cabanePerf?.ready() === true ||
         [...document.querySelectorAll("button")].some(
           (button) =>
-            button.textContent?.trim() === "Explore the demo" && button.getClientRects().length,
+            button.textContent?.trim().startsWith("Explore the demo") &&
+            button.getClientRects().length,
         ),
     );
     const demo = page.getByRole("button", { name: "Explore the demo", exact: true });
