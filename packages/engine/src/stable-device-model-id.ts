@@ -30,6 +30,7 @@ export type StableDeviceModelId =
   | "woven-pendant"
   | "children-pendant"
   | "round-globe-wall-lamp"
+  | "smoked-globe-wall-light"
   | "wall-reading-spot"
   | "oak-wall-uplight"
   | "six-globe-ceiling-lamp"
