@@ -129,10 +129,14 @@ function LightDimmerWithEntity({
   const action = power.value ? "off" : "on";
   const style = { "--light-level": `${Math.min(100, Math.max(0, level.value))}%` } as CSSProperties;
   const updateLevel = (requestedValue: number) => {
-    const boundedValue = Math.min(100, Math.max(1, Math.round(requestedValue)));
+    const boundedValue = Math.min(100, Math.max(0, Math.round(requestedValue)));
     if (!Number.isFinite(boundedValue) || requestedLevel.current.requested === boundedValue) return;
     requestedLevel.current.requested = boundedValue;
-    void level.run(lightBrightnessCall(entity, boundedValue), boundedValue).then((succeeded) => {
+    const call =
+      boundedValue === 0
+        ? toggleCallForPressed(entity, false)
+        : lightBrightnessCall(entity, boundedValue);
+    void level.run(call, boundedValue).then((succeeded) => {
       if (!succeeded && requestedLevel.current.requested === boundedValue) {
         requestedLevel.current.requested = requestedLevel.current.confirmed;
       }
@@ -141,7 +145,7 @@ function LightDimmerWithEntity({
   const updateLevelFromPosition = (input: HTMLInputElement, clientY: number) => {
     const bounds = input.getBoundingClientRect();
     const position = Math.min(1, Math.max(0, (clientY - bounds.top) / bounds.height));
-    updateLevel(100 - position * 99);
+    updateLevel(100 - position * 100);
   };
   const updateLevelFromPointer = (event: ReactPointerEvent<HTMLInputElement>) => {
     updateLevelFromPosition(event.currentTarget, event.clientY);
@@ -200,7 +204,7 @@ function LightDimmerWithEntity({
                 case "PageDown":
                   return level.value - 10;
                 case "Home":
-                  return 1;
+                  return 0;
                 case "End":
                   return 100;
                 default:
