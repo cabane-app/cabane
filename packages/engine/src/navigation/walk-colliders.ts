@@ -10,7 +10,7 @@ import { physicalFloor } from "../architecture-geometry/physical-floor";
 
 import {
   isPoolOutline,
-  POOL_DEPTH_METERS,
+  poolVerticalLayout,
   POOL_RIM_WIDTH_METERS,
   poolWorldRing,
 } from "../pools/pool-footprint";
@@ -167,8 +167,8 @@ const deriveBuiltWalkColliders = (
       from: { x, z },
       to: { x: ring[(index + 1) % ring.length][0], z: ring[(index + 1) % ring.length][1] },
       halfThickness: POOL_RIM_WIDTH_METERS,
-      minY: elevation - POOL_DEPTH_METERS,
-      maxY: elevation + floor.defaultWallHeightMeters,
+      minY: elevation - (pool.type === "above-ground-wood" ? 0 : poolVerticalLayout(pool).height),
+      maxY: elevation + Math.max(floor.defaultWallHeightMeters, poolVerticalLayout(pool).rim + 0.1),
     }));
   }),
   ...floor.walls.flatMap((wall) => wallColliderRuns(wall, floor, openOpeningIds, elevation)),

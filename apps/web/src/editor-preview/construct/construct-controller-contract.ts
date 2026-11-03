@@ -14,6 +14,7 @@ import {
   type FloorSpec,
   type PlanPoint,
   type Polygon,
+  type PoolSpec,
 } from "@cabane/engine";
 
 import { usePoolDrawing } from "./usePoolDrawing";
@@ -49,6 +50,8 @@ export interface ConstructEditorController extends ConstructEditorState {
   doorConfiguration: import("@cabane/engine").DoorConfiguration;
   setDoorConfiguration: (configuration: import("@cabane/engine").DoorConfiguration) => void;
   openingError: string | null;
+  poolSettings: Required<Pick<PoolSpec, "type" | "heightMeters">>;
+  setPoolSettings: (settings: ConstructEditorController["poolSettings"]) => void;
   hedgeSettings: Pick<import("@cabane/engine").HedgeSpec, "style" | "heightMeters" | "widthMeters">;
   setHedgeSettings: (settings: ConstructEditorController["hedgeSettings"]) => void;
   platformSettings: {
@@ -71,6 +74,11 @@ export interface ConstructEditorController extends ConstructEditorState {
   poolDrawing: ReturnType<typeof usePoolDrawing>;
   selectPool: (id: string) => void;
   selectFloorZone: (id: string) => void;
+  configurePool: (
+    poolId: string,
+    poolType: NonNullable<PoolSpec["type"]>,
+    heightMeters: number,
+  ) => void;
   updatePool: (poolId: string, polygon: Polygon) => void;
   addPool: (polygon: Polygon) => void;
   addHedge: (hedge: Omit<import("@cabane/engine").HedgeSpec, "id">) => void;

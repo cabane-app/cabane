@@ -596,6 +596,10 @@
 }
 .construction-inspector button,
 .furnishing-editor-inspector button,
+.construction-inspector label.pool-type-field,
+.selection-details label.pool-type-field {
+  grid-template-columns: minmax(0, 1fr);
+}
 .construction-inspector input,
 .furnishing-editor-inspector input {
   font-family: inherit;

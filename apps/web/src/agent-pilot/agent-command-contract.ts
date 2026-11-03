@@ -122,6 +122,11 @@ export const AGENT_ACTIONS = [
     "Update an existing hedge.",
     'id: string; changes: Partial<Omit<HedgeSpec, "id">>',
   ),
+  constructAction(
+    "configure-pool",
+    "Set pool type and height or depth.",
+    "poolId: string; poolType: in-ground | above-ground-wood; heightMeters: number (0.3–5)",
+  ),
   constructAction("add-pool", "Add a pool polygon.", "polygon: Polygon"),
   constructAction(
     "update-pool",

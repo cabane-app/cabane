@@ -1,3 +1,4 @@
+import { PoolSettingsFields } from "./PoolSettingsFields";
 import { formatLength, formatArea, useMeasurementUnits } from "@cabane/engine";
 import { LengthInput } from "../../editor-chrome/LengthInput";
 import { EditorButton } from "../../editor-chrome/EditorButton";
@@ -26,6 +27,10 @@ export function PoolProperties({
           <strong>Pool outline</strong>
         </div>
       </header>
+      <PoolSettingsFields
+        settings={{ type: pool.type ?? "in-ground", heightMeters: pool.heightMeters ?? 1.5 }}
+        onChange={(settings) => editor.configurePool(pool.id, settings.type, settings.heightMeters)}
+      />
       <dl className="construction-inspector__wall-facts construction-inspector__pool-facts">
         <div>
           <dt>Area</dt>

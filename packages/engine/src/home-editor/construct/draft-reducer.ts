@@ -15,7 +15,7 @@ import type { FloorFinishZoneSpec, PlanPoint } from "../../types";
 
 import { isFloorZoneOutline } from "../../floor-finishes/finish-geometry";
 
-import { isPoolOutline } from "../../pools/pool-footprint";
+import { reducePoolEdit } from "./pool-edits";
 
 import { changeOpeningOrientation } from "../../opening-orientation";
 
@@ -226,19 +226,8 @@ const reduceDraftAction = (
         ),
       };
     }
-    case "add-pool": {
-      if (!isPoolOutline(action.polygon)) return draft;
-      const serial = unusedElementSerial(draft, "pool");
-      return {
-        ...draft,
-        pools: [
-          ...(draft.pools ?? []),
-          { id: `${draft.floorId}:pool-${serial}`, polygon: action.polygon },
-        ],
-        selection: null,
-        nextSerial: serial + 1,
-      };
-    }
+    case "add-pool":
+      return reducePoolEdit(draft, action);
     case "add-floor-zone": {
       if (!isFloorZoneOutline(action.polygon)) return draft;
       const serial = unusedElementSerial(draft, "floor-zone");
@@ -306,23 +295,9 @@ const reduceDraftAction = (
         rooms: draft.rooms.map((room) => (room.id === owner.id ? { ...room, floorZones } : room)),
       };
     }
-    case "update-pool": {
-      const current = draft.pools?.find((pool) => pool.id === action.poolId);
-      // Finite but invalid outlines remain editable/recoverable; publication validates them.
-      if (
-        !current ||
-        action.polygon.length !== current.polygon.length ||
-        !action.polygon.every((point) => point.length === 2 && point.every(Number.isFinite)) ||
-        current.polygon.every((point, index) => samePoint(point, action.polygon[index]))
-      )
-        return draft;
-      return {
-        ...draft,
-        pools: draft.pools!.map((pool) =>
-          pool.id === action.poolId ? { ...pool, polygon: action.polygon } : pool,
-        ),
-      };
-    }
+    case "configure-pool":
+    case "update-pool":
+      return reducePoolEdit(draft, action);
     case "add-wall":
       return addEditorWall(draft, action);
     case "move-endpoint":

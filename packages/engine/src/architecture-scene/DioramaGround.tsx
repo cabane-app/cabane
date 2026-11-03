@@ -6,7 +6,7 @@ import { memo, useEffect, useMemo } from "react";
 import { useTerrainSurface } from "../terrain/TerrainSurface";
 import { conformToTerrain } from "../terrain/terrain-geometry";
 
-import { cutPoolOpenings, POOL_DEPTH_METERS } from "../pools";
+import { cutPoolOpenings, poolVerticalLayout } from "../pools";
 
 import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 
@@ -74,7 +74,9 @@ export const DioramaGround = memo(function DioramaGround({
   const grassThickness = 0.1;
   const baseThickness = Math.max(
     terrain?.soilDepth ?? 0.28,
-    floor.pools?.length ? POOL_DEPTH_METERS + 0.06 : 0.28,
+    ...(floor.pools ?? [])
+      .filter((pool) => pool.type !== "above-ground-wood")
+      .map((pool) => poolVerticalLayout(pool).height + 0.06),
   );
   const baseGeometry = useMemo(
     () =>

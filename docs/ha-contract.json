@@ -1,9 +1,9 @@
 {
-  "revision": 33,
-  "fingerprint": "380926c2e6b4c889a7f82bc6fc982f88e2d98e541fcef0df391c4c7a752f88cf",
-  "summary": "Add per-face wall tiles, wallpaper and custom images",
+  "revision": 34,
+  "fingerprint": "c855a515e6618114e5c89dcc7d088c10bb8823941e125517a39dd609a7487c39",
+  "summary": "Add in-ground and wooden above-ground pool types with adjustable basin height or depth.",
   "breakingChanges": [
-    "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
+    "Older clients need an update to import projects containing pool type or height settings."
   ],
   "history": [
     {
@@ -228,6 +228,13 @@
       "summary": "Adapt linear model lighting to transformed instance length",
       "breakingChanges": [
         "Adaptive maxSpacingMeters on strip sources requires the matching frontend and Home Assistant panel. Existing fixed-sample strips remain supported without migration."
+      ]
+    },
+    {
+      "revision": 33,
+      "summary": "Add per-face wall tiles, wallpaper and custom images",
+      "breakingChanges": [
+        "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
       ]
     }
   ],

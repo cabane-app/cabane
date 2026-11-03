@@ -124,6 +124,24 @@ export function validatePools(
       return;
     }
     issues.push(...registerId(context, pool.id, `${poolPath}.id`));
+    if (pool.type !== undefined && pool.type !== "in-ground" && pool.type !== "above-ground-wood")
+      issues.push(
+        issue("pool.kind", `${poolPath}.type`, "Choose an in-ground or above-ground wooden pool."),
+      );
+    if (
+      pool.heightMeters !== undefined &&
+      (typeof pool.heightMeters !== "number" ||
+        !Number.isFinite(pool.heightMeters) ||
+        pool.heightMeters < 0.3 ||
+        pool.heightMeters > 5)
+    )
+      issues.push(
+        issue(
+          "pool.height",
+          `${poolPath}.heightMeters`,
+          "Pool height or depth must be between 0.3 and 5 metres.",
+        ),
+      );
     if (!isPoolOutline(pool.polygon)) {
       issues.push(
         issue(

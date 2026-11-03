@@ -509,6 +509,49 @@ await withModules(async (load) => {
     }
   });
 
+  test("wooden pools preserve settings, stand above intact ground, and align water with their height", async () => {
+    const next = floor();
+    next.pools[0] = { ...pool, type: "above-ground-wood", heightMeters: 1.2 };
+    const draft = engine.createFloorEditorDraft(next);
+    assert.deepEqual(engine.deriveFloorTopology(draft).floor.pools, next.pools);
+    assert.equal(engine.validateHomeProject(project(next), registries).valid, true);
+    assert.equal(
+      engine.validateLayoutFloorSpec(next).issues.filter((i) => i.code.startsWith("pool.")).length,
+      0,
+    );
+    const ground = new Shape();
+    ground.moveTo(-50, -50);
+    ground.lineTo(50, -50);
+    ground.lineTo(50, 50);
+    ground.lineTo(-50, 50);
+    ground.closePath();
+    assert.equal(cutPoolOpenings(ground, next)[0], ground);
+    const renderer = await create(
+      createElement(ArchitecturalPools, { floor: next, reducedMotion: true }),
+    );
+    try {
+      assert.equal(
+        renderer.scene.findByProps({ name: `pool-bottom-${pool.id}` }).props.position[1],
+        engine.POOL_GROUND_Y,
+      );
+      assert.equal(
+        renderer.scene.findByProps({ name: `pool-water-${pool.id}` }).props.position[1],
+        engine.POOL_WATER_Y + 1.2,
+      );
+      assert.equal(
+        renderer.scene.findByProps({ name: `pool-rim-${pool.id}` }).props.position[1],
+        engine.POOL_RIM_BASE_Y + 1.2,
+      );
+      assert.ok(renderer.scene.findByProps({ name: `pool-timber-${pool.id}` }));
+    } finally {
+      await renderer.unmount();
+    }
+    for (const height of [0, -1, NaN, Infinity, 6]) {
+      next.pools[0].heightMeters = height;
+      assert.ok(engine.validateLayoutFloorSpec(next).issues.some((i) => i.code === "pool.height"));
+    }
+  });
+
   test("pool validation paths focus and highlight the affected pool", () => {
     const target = constructValidationTargetForPath("floor.pools[0].polygon", { floor: floor() });
     assert.deepEqual(target, { kind: "pool", id: pool.id });

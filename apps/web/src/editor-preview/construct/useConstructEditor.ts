@@ -74,6 +74,10 @@ export const useConstructEditor = (
     DEFAULT_DOOR_CONFIGURATION,
   );
   const [openingError, setOpeningError] = useState<string | null>(null);
+  const [poolSettings, setPoolSettings] = useState<ConstructEditorController["poolSettings"]>({
+    type: "in-ground",
+    heightMeters: 1.5,
+  });
   const [hedgeSettings, setHedgeSettings] = useState<
     Pick<import("@cabane/engine").HedgeSpec, "style" | "heightMeters" | "widthMeters">
   >({ style: "clipped", heightMeters: 1.4, widthMeters: 0.65 });
@@ -95,7 +99,7 @@ export const useConstructEditor = (
       dispatch(
         drawingTool.current === "platform"
           ? { type: "add-outdoor-platform", polygon, ...platformSettings }
-          : { type: "add-pool", polygon },
+          : { type: "add-pool", polygon, settings: poolSettings },
       ),
     history.present.tool === "platform" ? "platform" : "pool",
   );
@@ -336,6 +340,8 @@ export const useConstructEditor = (
     doorConfiguration,
     setDoorConfiguration,
     openingError,
+    poolSettings,
+    setPoolSettings,
     hedgeSettings,
     setHedgeSettings,
     platformSettings,
@@ -355,8 +361,10 @@ export const useConstructEditor = (
     poolDrawing,
     selectPool: (id) => select({ kind: "pool", id }),
     selectFloorZone: (id) => select({ kind: "floor-zone", id }),
+    configurePool: (poolId, poolType, heightMeters) =>
+      dispatch({ type: "configure-pool", poolId, poolType, heightMeters }),
     updatePool: (poolId, polygon) => dispatch({ type: "update-pool", poolId, polygon }),
-    addPool: (polygon) => dispatch({ type: "add-pool", polygon }),
+    addPool: (polygon) => dispatch({ type: "add-pool", polygon, settings: poolSettings }),
     addHedge: (hedge) => dispatch({ type: "add-hedge", hedge }),
     updateHedge: (id, changes) => dispatch({ type: "update-hedge", id, changes }),
     paintRoomFloor,

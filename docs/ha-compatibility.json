@@ -2265,6 +2265,12 @@
                   "schema": {
                     "items": {
                       "properties": {
+                        "heightMeters": {
+                          "optional": true,
+                          "schema": {
+                            "type": "number"
+                          }
+                        },
                         "id": {
                           "optional": false,
                           "schema": {
@@ -2321,6 +2327,19 @@
                               }
                             ],
                             "elementFlags": [1, 1, 1, 4]
+                          }
+                        },
+                        "type": {
+                          "optional": true,
+                          "schema": {
+                            "anyOf": [
+                              {
+                                "const": "above-ground-wood"
+                              },
+                              {
+                                "const": "in-ground"
+                              }
+                            ]
                           }
                         }
                       }
@@ -7443,6 +7462,12 @@
                 "schema": {
                   "items": {
                     "properties": {
+                      "heightMeters": {
+                        "optional": true,
+                        "schema": {
+                          "type": "number"
+                        }
+                      },
                       "id": {
                         "optional": false,
                         "schema": {
@@ -7499,6 +7524,19 @@
                             }
                           ],
                           "elementFlags": [1, 1, 1, 4]
+                        }
+                      },
+                      "type": {
+                        "optional": true,
+                        "schema": {
+                          "anyOf": [
+                            {
+                              "const": "above-ground-wood"
+                            },
+                            {
+                              "const": "in-ground"
+                            }
+                          ]
                         }
                       }
                     }

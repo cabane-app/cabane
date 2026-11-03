@@ -9,7 +9,7 @@ import {
   polygonSignedArea,
   worldBoundsForPolygon,
 } from "../geometry";
-import type { FloorCoordinates, FloorSpec, PlanPoint, Polygon } from "../types";
+import type { FloorCoordinates, FloorSpec, PlanPoint, PoolSpec, Polygon } from "../types";
 
 import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 
@@ -163,3 +163,19 @@ export const worldBoundsForFloorScene = (floor: FloorSpec) => {
     centerZ: (bounds.minZ + bounds.maxZ) / 2,
   };
 };
+
+/** Shared vertical layout keeps lining, coping and water aligned. */
+export function poolVerticalLayout(pool: PoolSpec) {
+  const height =
+    Number.isFinite(pool.heightMeters) && pool.heightMeters! >= 0.3 && pool.heightMeters! <= 5
+      ? pool.heightMeters!
+      : POOL_DEPTH_METERS;
+  const raised = pool.type === "above-ground-wood";
+  const lift = raised ? height : 0;
+  return {
+    height,
+    bottom: raised ? POOL_GROUND_Y : POOL_GROUND_Y - height,
+    rim: POOL_RIM_BASE_Y + lift,
+    water: POOL_WATER_Y + lift,
+  };
+}

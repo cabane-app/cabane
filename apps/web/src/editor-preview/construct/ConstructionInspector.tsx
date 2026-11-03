@@ -1,3 +1,4 @@
+import { PoolSettingsFields } from "./PoolSettingsFields";
 import { MeasurementText } from "@cabane/engine";
 import type { ConstructionInspectorProps } from "./construction-inspector-contract";
 export type { ConstructionInspectorProps } from "./construction-inspector-contract";
@@ -119,13 +120,14 @@ export function ConstructionInspector({
           <div className="construction-inspector__selection" role="status">
             <header>
               <div>
-                <strong>Close the outline</strong>
+                <strong>Pool</strong>
               </div>
             </header>
             <p className="construction-inspector__tool-hint">
               Click to add corners, then return to the first corner to close the pool. Undo removes
               the last corner. Escape cancels.
             </p>
+            <PoolSettingsFields settings={editor.poolSettings} onChange={editor.setPoolSettings} />
             {editor.poolDrawing?.error && (
               <p role="alert">
                 <MeasurementText>{editor.poolDrawing.error}</MeasurementText>
