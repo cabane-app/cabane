@@ -1,5 +1,7 @@
-import { Box3, Group, Vector3, type Object3D } from "three";
+import { Box3, Group, Vector3, type AnimationClip, type Object3D } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
+import { applyModelPose } from "./poses";
+import { disposeGlbSkeletons } from "./glb-resources";
 import type { CustomModelNormalization, CustomModelPlacement, ModelVector } from "./contracts";
 
 export function normalizeGlb(
@@ -7,6 +9,7 @@ export function normalizeGlb(
   placement: CustomModelPlacement,
   rotation: ModelVector = [0, 0, 0],
   scale = 1,
+  poses: readonly AnimationClip[] = [],
 ): CustomModelNormalization {
   if (!Number.isFinite(scale) || scale <= 0 || rotation.some((n) => !Number.isFinite(n)))
     throw new Error("Orientation and scale must be finite; scale must be positive.");
@@ -17,6 +20,12 @@ export function normalizeGlb(
   measured.scale.setScalar(scale);
   measured.add(clone(root));
   const bounds = new Box3().setFromObject(measured, true);
+  poses.forEach((_, index) => {
+    const reset = applyModelPose(measured.children[0]!, poses, String(index));
+    bounds.union(new Box3().setFromObject(measured, true));
+    reset();
+  });
+  disposeGlbSkeletons(measured);
   const center = bounds.getCenter(new Vector3());
   const offset: [number, number, number] = [
     -center.x,

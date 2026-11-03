@@ -62,6 +62,7 @@ export interface CustomModel {
   normalization: CustomModelNormalization;
   complexity: DeviceModelComplexity;
   light?: CustomModelLight;
+  poses?: CustomModelPoses;
 }
 
 export type CustomModelLightSource =
@@ -109,3 +110,8 @@ export const modelAssetReferences = (
 };
 
 export const modelAssetHash = sha256Hex;
+
+export interface CustomModelPoses {
+  defaultPose?: string;
+  states: Record<string, string>;
+}

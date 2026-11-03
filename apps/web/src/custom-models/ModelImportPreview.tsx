@@ -1,9 +1,10 @@
 import { Canvas } from "@react-three/fiber";
 import { Bounds, OrbitControls } from "@react-three/drei";
 import { useMemo } from "react";
-import type { Object3D } from "three";
+import type { AnimationClip, Object3D } from "three";
 import {
   ImportedModelSurface,
+  ModelPose,
   importedLightSources,
   type CustomModelNormalization,
   type CustomModel,
@@ -22,8 +23,12 @@ export function ModelImportPreview({
   root,
   normalization,
   light,
+  poses,
+  pose,
 }: {
   root: Object3D;
+  poses: readonly AnimationClip[];
+  pose: string | undefined;
   normalization: CustomModelNormalization;
   light: CustomModel["light"];
 }) {
@@ -55,6 +60,7 @@ export function ModelImportPreview({
           <group position={center}>
             <group position={normalization.offset}>
               <group rotation={normalization.rotation} scale={normalization.scale}>
+                <ModelPose root={root} poses={poses} pose={pose} />
                 <ImportedModelSurface root={root} light={light} state={previewState} />
               </group>
             </group>

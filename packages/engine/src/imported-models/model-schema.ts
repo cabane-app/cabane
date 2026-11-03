@@ -23,7 +23,17 @@ export function validateCustomModels(
     if (!model) return;
     keys(
       model,
-      ["id", "name", "placement", "profile", "asset", "normalization", "complexity", "light"],
+      [
+        "id",
+        "name",
+        "placement",
+        "profile",
+        "asset",
+        "normalization",
+        "complexity",
+        "light",
+        "poses",
+      ],
       path,
       issues,
     );
@@ -103,6 +113,35 @@ export function validateCustomModels(
           Number(complexity[key]) > limit
         )
           error(`complexity.${key}`, `Model exceeds the ${limit} ${key} limit.`);
+    }
+    if (model.poses !== undefined) {
+      const poses = record(model.poses, `${path}.poses`, issues);
+      if (poses) {
+        keys(poses, ["defaultPose", "states"], `${path}.poses`, issues);
+        const validPose = (value: unknown) =>
+          typeof value === "string" && /^(0|[1-9][0-9]*)$/.test(value) && Number(value) < 32;
+        if (poses.defaultPose !== undefined && !validPose(poses.defaultPose))
+          error("poses.defaultPose", "Choose a valid pose.");
+        const states = record(poses.states, `${path}.poses.states`, issues);
+        if (
+          states &&
+          (Object.keys(states).length > 16 ||
+            Object.entries(states).some(
+              ([key, value]) =>
+                ![
+                  "on",
+                  "off",
+                  "open",
+                  "closed",
+                  "opening",
+                  "closing",
+                  "locked",
+                  "unlocked",
+                ].includes(key) || !validPose(value),
+            ))
+        )
+          error("poses.states", "Invalid state-to-pose mapping.");
+      }
     }
     if (model.light !== undefined) validateModelLighting(model.light, `${path}.light`, issues);
   });

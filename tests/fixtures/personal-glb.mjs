@@ -54,6 +54,7 @@ function packGlb(json, binary) {
 }
 
 export function testGlb({
+  poses = false,
   textured = false,
   unlit = false,
   embedded = false,
@@ -104,6 +105,22 @@ export function testGlb({
     scenes: [{ nodes: [0] }],
     scene: 0,
   };
+  if (poses) {
+    const accessor = (values, type, count) => {
+      const data = Buffer.from(new Float32Array(values).buffer);
+      pieces.push(data);
+      views.push({ buffer: 0, byteOffset: offset, byteLength: data.length });
+      offset += data.length;
+      accessors.push({ bufferView: views.length - 1, componentType: 5126, count, type });
+      return accessors.length - 1;
+    };
+    const time = accessor([0], "SCALAR", 1);
+    json.animations = [0, 1].map((y) => ({
+      name: y ? "Raised" : "Resting",
+      samplers: [{ input: time, output: accessor([0, y, 0], "VEC3", 1) }],
+      channels: [{ sampler: 0, target: { node: 0, path: "translation" } }],
+    }));
+  }
   if (unlit) json.extensionsRequired = ["KHR_materials_unlit"];
   if (textured) {
     const image = testTexture();

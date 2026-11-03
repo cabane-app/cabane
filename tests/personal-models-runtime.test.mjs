@@ -4,15 +4,93 @@ import { createElement, act } from "react";
 import { create } from "@react-three/test-renderer";
 import { Box3 } from "three";
 import { IDBFactory } from "fake-indexeddb";
+import { testGlb } from "./fixtures/personal-glb.mjs";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 await withModules(async (load) => {
   const api = await load("/packages/engine/src/index.ts");
+  const { observeSceneWalkColliders } = await load(
+    "/packages/engine/src/navigation/scene-walk-colliders.ts",
+  );
   const { personalScaleFixture, personalFixtureAssets } = await load(
     "/tests/fixtures/personal-models-scale.ts",
   );
+  test("imported pose instances follow primary state independently and restore the fallback", async () => {
+    const bytes = testGlb({ poses: true });
+    const asset = { bytes, byteLength: bytes.length, sha256: await api.modelAssetHash(bytes) };
+    const decoded = await api.loadGlb(bytes, true);
+    const model = {
+      id: "custom:11111111-2222-4333-8444-555555555555",
+      name: "Pose fixture",
+      placement: "floor",
+      profile: "input_boolean",
+      asset,
+      normalization: api.normalizeGlb(decoded.root, "floor", [0, 0, 0], 1, decoded.poses),
+      complexity: decoded.complexity,
+      poses: { defaultPose: "0", states: { on: "1", off: "0" } },
+    };
+    const oldWindow = globalThis.window;
+    globalThis.window = Object.assign(new EventTarget(), { indexedDB: new IDBFactory() });
+    let renderer;
+    const state = (value, available = true) => ({
+      entityId: "input_boolean.fixture",
+      state: value,
+      attributes: {},
+      available,
+      stale: false,
+    });
+    const render = (first, second) =>
+      createElement(
+        "group",
+        null,
+        createElement(api.ImportedModelGeometry, { model, state: first }),
+        createElement(api.ImportedModelGeometry, { model, state: second }),
+      );
+    try {
+      await api.createModelAssetRepository(window.indexedDB).restore([asset]);
+      renderer = await create(render(state("off"), state("on")));
+      const meshes = () => {
+        const result = [];
+        renderer.scene.instance.traverse((object) => {
+          if (object.userData.importedModel) result.push(object);
+        });
+        return result;
+      };
+      for (let attempt = 0; attempt < 40 && meshes().length !== 2; attempt++)
+        await act(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        });
+      assert.deepEqual(
+        meshes().map((mesh) => mesh.position.y),
+        [0, 1],
+      );
+      const collisionUpdates = [];
+      const stop = observeSceneWalkColliders(renderer.scene.instance, () =>
+        collisionUpdates.push(meshes().map((mesh) => mesh.position.y)),
+      );
+      try {
+        await renderer.update(render(state("on"), state("on", false)));
+        assert.deepEqual(
+          collisionUpdates,
+          [[1, 0]],
+          "Walk observes the updated poses after their transforms settle",
+        );
+      } finally {
+        stop();
+      }
+      assert.deepEqual(
+        meshes().map((mesh) => mesh.position.y),
+        [1, 0],
+      );
+      assert.equal(meshes()[0].geometry, meshes()[1].geometry);
+    } finally {
+      await renderer?.unmount();
+      api.disposeGlb(decoded.root);
+      globalThis.window = oldWindow;
+    }
+  });
   test("personal models retain 20 rooms and 100 bindings with Light, Sensor, Camera and static Cover profiles", async () => {
     const fixture = personalScaleFixture();
     assert.equal(fixture.manifest.floors[0].rooms.length, 20);
