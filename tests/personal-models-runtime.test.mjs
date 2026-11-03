@@ -11,6 +11,9 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 await withModules(async (load) => {
   const api = await load("/packages/engine/src/index.ts");
+  const { observeSceneWalkColliders } = await load(
+    "/packages/engine/src/navigation/scene-walk-colliders.ts",
+  );
   const { personalScaleFixture, personalFixtureAssets } = await load(
     "/tests/fixtures/personal-models-scale.ts",
   );
@@ -63,7 +66,20 @@ await withModules(async (load) => {
         meshes().map((mesh) => mesh.position.y),
         [0, 1],
       );
-      await renderer.update(render(state("on"), state("on", false)));
+      const collisionUpdates = [];
+      const stop = observeSceneWalkColliders(renderer.scene.instance, () =>
+        collisionUpdates.push(meshes().map((mesh) => mesh.position.y)),
+      );
+      try {
+        await renderer.update(render(state("on"), state("on", false)));
+        assert.deepEqual(
+          collisionUpdates,
+          [[1, 0]],
+          "Walk observes the updated poses after their transforms settle",
+        );
+      } finally {
+        stop();
+      }
       assert.deepEqual(
         meshes().map((mesh) => mesh.position.y),
         [1, 0],

@@ -8,6 +8,8 @@ import { EditorIcon } from "../editor-chrome/EditorIcon";
 
 import { EditorModeNav, type EditorMode } from "../editor-chrome/EditorModeNav";
 
+import { useEditorSaveShortcut } from "./useHomeEditorShortcuts";
+
 import type { useHomeEditorController } from "./useHomeEditorController";
 
 type Props = Pick<
@@ -79,6 +81,12 @@ export function HomeEditorHeader({
   onModeTabChange,
   replaceEditorsFromProject,
 }: Props) {
+  const requestSave = () => {
+    setPublishMessage(null);
+    if (publishErrors.length > 0) setPublishOpen(true);
+    else void publishProject();
+  };
+  useEditorSaveShortcut(editingLocked || unsettled || previewOpen || publishOpen, requestSave);
   const [walkError, setWalkError] = useState<string | null>(null);
   const hasSaved = workspace.record.publishedAt !== 0;
   const hasChanges = useMemo(
@@ -234,11 +242,9 @@ export function HomeEditorHeader({
         <EditorButton
           variant="primary"
           disabled={editingLocked || unsettled}
-          onClick={() => {
-            setPublishMessage(null);
-            if (publishErrors.length > 0) setPublishOpen(true);
-            else void publishProject();
-          }}
+          onClick={requestSave}
+          title="Save (⌘/Ctrl S)"
+          aria-keyshortcuts="Control+S Meta+S"
         >
           <EditorIcon name="save" />
           Save
