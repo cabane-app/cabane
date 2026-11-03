@@ -139,8 +139,10 @@ function FinishSurface({
     ? {
         onPointerOver: (event: ThreeEvent<PointerEvent>) => {
           event.stopPropagation();
-          setHovered(true);
-          if (roomId) setRoomHover(roomId);
+          if (event.pointerType !== "touch") {
+            setHovered(true);
+            if (roomId) setRoomHover(roomId);
+          }
         },
         onPointerOut: (event: ThreeEvent<PointerEvent>) => {
           event.stopPropagation();

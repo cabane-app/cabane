@@ -63,7 +63,13 @@ export function RoomStatusOverlayButton({
       className="room-status-overlay"
       data-visible={visible}
       data-hovered={hovered}
-      onPointerEnter={visible ? () => onHover?.(true) : undefined}
+      onPointerEnter={
+        visible
+          ? (event) => {
+              if (event.pointerType !== "touch") onHover?.(true);
+            }
+          : undefined
+      }
       onPointerLeave={() => onHover?.(false)}
       aria-hidden={!visible || undefined}
       aria-label={`Open ${roomName}${summary.connected === false ? ". Room not connected to Home Assistant" : ""}${statusText ? `. ${statusText}` : ""}`}

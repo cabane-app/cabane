@@ -9,7 +9,7 @@ Read [the measurement guide](performance.md) before comparing results. Lower p95
 and fewer frames over 33.3 ms are the primary signals. A laptop mobile profile is
 a regression proxy; a real phone validates mobile improvements.
 
-## Current baseline and target
+## Original baseline and target
 
 Use **Solstice + live dev HA + night + cloudy + 10 lights on** for subsequent
 iterations. The old disconnected demo runs below are historical references.
@@ -58,6 +58,39 @@ The private, temporary HA session and preparation scripts remain only under
 ignored `test-results/performance/`. Refresh the session if it expires. The
 loopback harness is left running at
 `http://127.0.0.1:4180/tests/performance-harness.html` for the next phase.
+
+## First local rendering improvements
+
+The [committed rendering comparison](performance-baselines/2026-11-03-incremental-lod-ios-simulator.json)
+uses source `843663b`, the same iPhone simulator, configuration and live HA workload
+as the original `db5a7ea` baseline. Three ten-second captures, without profiling:
+
+| Metric                    | Before        | After         |
+| ------------------------- | ------------- | ------------- |
+| Callback FPS              | 44.6          | 59.6          |
+| Frame interval p95        | 26 ms         | 19 ms         |
+| Frame interval p99        | 29 ms         | 21 ms         |
+| Intervals above 33.3 ms   | 0.22%         | 0.17%         |
+| CPU render submission p95 | 5 ms          | 3 ms          |
+| Calls / triangles, median | 299 / 418,022 | 268 / 212,915 |
+
+The changes remove redundant grouping work, recognize the engine's fragment-only
+lighting hook when reusing shadows, and preserve existing LOD families while new
+meshes prepare. A regression test reproduced the whole-scene full-detail fallback
+and family replacement before the fix. No multi-million-triangle bursts occurred
+in the three new Safari captures. There was one isolated 71 ms interval in run 2;
+the other run maxima were 40 and 24 ms. The aggregate passes the working targets,
+but this does not establish zero hitches or physical-phone acceptance.
+
+Native, continuous panning establishes a separate
+[interaction baseline](performance-baselines/2026-11-03-native-pan-before.json),
+source `692360d`: **57.3 FPS, p95 25 ms, p99 31 ms, 0.52% above 33.3 ms**.
+The camera moved in all 574 measured frames; the longest interval was 38 ms.
+Device Hub sent 60 repeated horizontal drags through the normal iOS touch path.
+This exposes a remaining interaction shortfall even though the direct camera
+path meets its target. The earlier 23%-movement capture is retained only in
+ignored files and is not acceptance evidence. Raw reports/charts are in
+`test-results/performance/2026-11-03-{incremental-lod-ios-simulator,native-pan-before}.{json,html}`.
 
 ## Camera gesture investigation, November 3
 

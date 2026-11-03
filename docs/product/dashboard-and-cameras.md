@@ -325,6 +325,8 @@ Orbit controls retain their pointer listeners across dashboard updates, includin
 updates during a gesture. One-finger panning, two-finger rotation/pinch zoom, and
 desktop drags must continue through re-renders and release cleanly for the next
 gesture. Manual input still interrupts a room-camera transition.
+Hover highlighting follows mouse and pen pointers. Touch navigation retains tap
+and press feedback without recoloring hovered devices, floors or room labels.
 
 Room overlay preferences are available from More options in overview, room view,
 Walk, and draft Explore. Temperature, humidity, heating, cooling, lights, presence,

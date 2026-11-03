@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-03T16:32:24.839Z",
+  "label": "native-pan-before",
+  "source": {
+    "commit": "692360dc9f93b95f5aed19d66e35001aa6c63ddf",
+    "dirty": false,
+    "homeHash": "69fd427fbaf102e41c1ff7d8833d2712482f66952c7eabaacab4a0f605f3dafb"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "manual-gestures-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "Europe/Paris",
+    "seconds": 10,
+    "runs": 1,
+    "viewport": {
+      "width": 402,
+      "height": 714
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 502,
+      "height": 892,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [39.09400000000001, 45.57200000000002, 45.76400000000001],
+      "quaternion": [-0.358292317380367, 0.32880300089291614, 0.136498903900185, 0.86306619163542],
+      "target": [9, 0.2, 12],
+      "zoom": 9.41011235955056
+    },
+    "workload": {
+      "scenario": "solstice-ha-night-cloudy-v1",
+      "home": "home/showcase/furnished.project.json",
+      "sceneItems": 239,
+      "lighting": "night",
+      "weather": "cloudy",
+      "weatherSource": "Home Assistant",
+      "mappedLights": 27,
+      "lightsOn": 10,
+      "fixtureHash": "fef844bd1dad6405e8b649d0c69fa267903bc1cebace5001ed97f762a791146e"
+    },
+    "profile": "ios-simulator",
+    "simulatorRuntime": "iOS 26.1 (23B86)",
+    "gesture": "Device Hub native pan: 60 repetitions, (1250,975) to (1380,975) and back, continuously through capture"
+  },
+  "scene": {
+    "activePointLights": 10,
+    "objects": 2878,
+    "meshes": 1938,
+    "materials": 1938,
+    "geometries": 1922
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Mobile/15E148 Safari/604.1",
+    "platform": "iPhone",
+    "hardwareConcurrency": 8,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Apple Inc.",
+      "renderer": "Apple GPU",
+      "multiDraw": true
+    },
+    "execution": "ios-simulator",
+    "simulatorDevice": "iPhone 17 Pro",
+    "cpu": "Apple M5 Pro",
+    "hostPlatform": "darwin 25.6.0",
+    "headless": false
+  },
+  "summary": {
+    "fps": 57.348386452193026,
+    "frameMsP50": 16,
+    "frameMsP95": 24.999999999992724,
+    "frameMsP99": 31,
+    "over33MsPercent": 0.5226480836236934,
+    "over50MsPercent": 0,
+    "cpuSubmitMsP95": 3,
+    "callsMedian": 268,
+    "callsMax": 299,
+    "trianglesMedian": 230763,
+    "trianglesMax": 436524
+  },
+  "rawReport": "test-results/performance/2026-11-03-native-pan-before.json",
+  "runSummaries": [
+    {
+      "frames": 574,
+      "movingFrames": 574,
+      "durationMs": 10009,
+      "frameMsMax": 38,
+      "summary": {
+        "fps": 57.348386452193026,
+        "frameMsP50": 16,
+        "frameMsP95": 24.999999999992724,
+        "frameMsP99": 31,
+        "over33MsPercent": 0.5226480836236934,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 3,
+        "callsMedian": 268,
+        "callsMax": 299,
+        "trianglesMedian": 230763,
+        "trianglesMax": 436524
+      }
+    }
+  ]
+}
