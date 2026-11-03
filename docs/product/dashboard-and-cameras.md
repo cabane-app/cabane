@@ -16,8 +16,8 @@ floor's remembered view, or default framing on its first visit.
 
 The last floor explicitly chosen in either floor picker is remembered locally in
 this browser for each workspace. Reopening or reloading the workspace restores it
-if that floor still exists, otherwise the usual starting floor is used. Walk,
-Locate, shortcuts, initialization and temporary draft previews do not change this
+if that floor still exists, otherwise the usual starting floor is used. Automatic Walk
+transitions, Locate, room and device shortcuts, initialization and temporary draft previews do not change this
 preference. It is not part of the project or synchronized between devices; blocked
 browser storage leaves floor navigation available without remembering the choice.
 
