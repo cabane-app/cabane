@@ -27,6 +27,7 @@ type Batch = {
 /** Render-only substitution. Original objects/materials remain intact between frames. */
 export class SceneToonBatcher {
   private batches = new Map<string, Batch>();
+  private hidden = new MeshToonMaterial({ visible: false });
   private inverse = new Matrix4();
   private matrix = new Matrix4();
 
@@ -156,7 +157,7 @@ export class SceneToonBatcher {
         this.batches.delete(key);
       }
     }
-    const originals: Array<[Mesh, number]> = [];
+    const originals: Array<[Mesh, Mesh["material"], number]> = [];
     const attached: BatchedMesh[] = [];
     this.inverse.copy(scene.matrixWorld).invert();
     try {
@@ -202,7 +203,10 @@ export class SceneToonBatcher {
           }
           // Layer rejection precedes frustum tests, geometry uploads and depth
           // sorting in Three. Unlike visible=false, it keeps children drawable.
-          originals.push([source, source.layers.mask]);
+          // Retain material masking so downstream lighting preparation also
+          // skips the authored materials of these render-only substitutes.
+          originals.push([source, source.material, source.layers.mask]);
+          source.material = this.hidden;
           source.layers.mask = 0;
         }
         scene.add(batch.mesh);
@@ -211,7 +215,10 @@ export class SceneToonBatcher {
       }
       render();
     } finally {
-      for (const [source, layers] of originals) source.layers.mask = layers;
+      for (const [source, material, layers] of originals) {
+        source.material = material;
+        source.layers.mask = layers;
+      }
       for (const mesh of attached) scene.remove(mesh);
     }
   }
@@ -219,5 +226,6 @@ export class SceneToonBatcher {
   dispose() {
     for (const batch of this.batches.values()) this.disposeBatch(batch);
     this.batches.clear();
+    this.hidden.dispose();
   }
 }
