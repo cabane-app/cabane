@@ -18,6 +18,9 @@ await withModules(async (load) => {
   const { splitWallSurfaceGeometry } = await load(
     "/packages/engine/src/architecture-geometry/wall-surface-geometry.ts",
   );
+  const { wallFrame } = await load(
+    "/packages/engine/src/architecture-geometry/wall-coordinate-frame.ts",
+  );
   const { ArchitecturalWall, ArchitecturalWalls } = await load(
     "/packages/engine/src/architecture-scene/ArchitecturalWalls.tsx",
   );
@@ -209,7 +212,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("standalone patterns retain the original junction-trimmed geometry", async () => {
+  test("standalone wall images retain junction-trimmed geometry and read outward on both faces", async () => {
     const { Float32BufferAttribute } = await import("three");
     const floor = structuredClone(e.neutralDemoManifest.floors[0]);
     const wall = floor.walls[0];
@@ -219,7 +222,7 @@ await withModules(async (load) => {
       new Float32BufferAttribute(new Array(source.getAttribute("position").count * 3).fill(0.5), 3),
     );
     const original = Array.from(source.getAttribute("position").array);
-    wall.faceFinishes = { left: custom, right: wallpaper };
+    wall.faceFinishes = { left: custom, right: custom };
     const surfaces = splitWallSurfaceGeometry(source, wall, floor);
     const triples = (array) =>
       Array.from({ length: array.length / 9 }, (_, i) =>
@@ -230,85 +233,109 @@ await withModules(async (load) => {
       triples(original),
     );
     assert.ok(surfaces.some((s) => s.finish));
+    const frame = wallFrame(wall, floor);
     for (const surface of surfaces.filter((s) => s.finish)) {
       const positions = surface.geometry.getAttribute("position");
+      const normals = surface.geometry.getAttribute("normal");
       const uv = surface.geometry.getAttribute("uv");
-      for (let i = 0; i < positions.count; i++)
+      for (let i = 0; i < positions.count; i++) {
+        const side = normals.getX(i) * frame.normal[0] + normals.getZ(i) * frame.normal[1];
+        const distance =
+          (positions.getX(i) - frame.from[0]) * frame.direction[0] +
+          (positions.getZ(i) - frame.from[1]) * frame.direction[1];
+        assert.ok(
+          Math.abs(uv.getX(i) - (side < 0 ? -distance : distance) / custom.repeatMeters) < 1e-5,
+          "asymmetric images read left to right from either room",
+        );
         assert.ok(
           Math.abs(uv.getY(i) - positions.getY(i) / e.wallSurfaceRepeatHeight(surface.finish)) <
             1e-5,
         );
+      }
     }
     surfaces.forEach((s) => s.geometry.dispose());
   });
 
   test("pattern UVs keep physical scale across openings on rotated walls without changing geometry", () => {
-    for (const angle of [0, Math.PI / 4, Math.PI / 2]) {
-      const floor = structuredClone(e.neutralDemoManifest.floors[0]);
-      floor.coordinates = { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" };
-      const dx = Math.cos(angle),
-        dz = Math.sin(angle);
-      const wall = {
-        id: "surface-wall",
-        from: [1, 1],
-        to: [1 + dx * 4, 1 + dz * 4],
-        classification: "interior",
-        thicknessMeters: 0.2,
-        heightMeters: 2.5,
-      };
-      floor.walls = [wall];
-      floor.wallJunctions = [];
-      floor.openings = [
-        {
-          id: "surface-window",
-          kind: "window",
-          wallId: wall.id,
-          offsetFromWallStartPlanUnits: 1,
-          widthPlanUnits: 1,
-          openingHeightMeters: 1,
-          sillHeightMeters: 0.8,
-          operation: "fixed",
-          variant: "plain",
-          panelCount: 1,
-          glazing: "clear",
-        },
-      ];
-      const plain = e.buildArchitecturalWallGeometries(floor);
-      wall.faceFinishes = { left: custom, right: wallpaper };
-      const groups = e.buildArchitecturalWallGeometries(floor);
-      assert.equal(
-        groups.reduce((n, g) => n + g.geometry.index.count, 0),
-        plain.reduce((n, g) => n + g.geometry.index.count, 0),
-        "same triangles and cutouts",
-      );
-      const patterned = groups.filter((g) => g.finish);
-      assert.equal(patterned.length, 2);
-      for (const { geometry, finish: surface } of patterned) {
-        const p = geometry.getAttribute("position"),
-          n = geometry.getAttribute("normal"),
-          uv = geometry.getAttribute("uv");
-        for (let i = 0; i < p.count; i++) {
-          assert.ok(Math.abs(n.getY(i)) < 1e-6, "no patterns on caps");
-          assert.ok(
-            Math.abs(Math.abs(n.getX(i) * -dz + n.getZ(i) * dx) - 1) < 1e-5,
-            "no patterns on reveals",
-          );
-          assert.ok(
-            Math.abs(
-              uv.getX(i) - ((p.getX(i) - 1) * dx + (p.getZ(i) - 1) * dz) / surface.repeatMeters,
-            ) < 1e-5,
-          );
-          assert.ok(Math.abs(uv.getY(i) - p.getY(i) / e.wallSurfaceRepeatHeight(surface)) < 1e-5);
+    for (const imageSide of ["left", "right"])
+      for (const angle of [0, Math.PI / 4, Math.PI / 2]) {
+        const floor = structuredClone(e.neutralDemoManifest.floors[0]);
+        floor.coordinates = { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" };
+        const dx = Math.cos(angle),
+          dz = Math.sin(angle);
+        const wall = {
+          id: "surface-wall",
+          from: [1, 1],
+          to: [1 + dx * 4, 1 + dz * 4],
+          classification: "interior",
+          thicknessMeters: 0.2,
+          heightMeters: 2.5,
+        };
+        floor.walls = [wall];
+        floor.wallJunctions = [];
+        floor.openings = [
+          {
+            id: "surface-window",
+            kind: "window",
+            wallId: wall.id,
+            offsetFromWallStartPlanUnits: 1,
+            widthPlanUnits: 1,
+            openingHeightMeters: 1,
+            sillHeightMeters: 0.8,
+            operation: "fixed",
+            variant: "plain",
+            panelCount: 1,
+            glazing: "clear",
+          },
+        ];
+        const plain = e.buildArchitecturalWallGeometries(floor);
+        wall.faceFinishes =
+          imageSide === "left"
+            ? { left: custom, right: wallpaper }
+            : { left: wallpaper, right: custom };
+        const groups = e.buildArchitecturalWallGeometries(floor);
+        assert.equal(
+          groups.reduce((n, g) => n + g.geometry.index.count, 0),
+          plain.reduce((n, g) => n + g.geometry.index.count, 0),
+          "same triangles and cutouts",
+        );
+        const patterned = groups.filter((g) => g.finish);
+        assert.equal(patterned.length, 2);
+        for (const { geometry, finish: surface } of patterned) {
+          const p = geometry.getAttribute("position"),
+            n = geometry.getAttribute("normal"),
+            uv = geometry.getAttribute("uv");
+          for (let i = 0; i < p.count; i++) {
+            assert.ok(Math.abs(n.getY(i)) < 1e-6, "no patterns on caps");
+            assert.ok(
+              Math.abs(Math.abs(n.getX(i) * -dz + n.getZ(i) * dx) - 1) < 1e-5,
+              "no patterns on reveals",
+            );
+            assert.ok(
+              Math.abs(
+                uv.getX(i) -
+                  (((p.getX(i) - 1) * dx + (p.getZ(i) - 1) * dz) / surface.repeatMeters) *
+                    (surface.pattern === "custom-image" && n.getX(i) * -dz + n.getZ(i) * dx < 0
+                      ? -1
+                      : 1),
+              ) < 1e-5,
+              "custom images face the viewer on either side of a rotated wall",
+            );
+            assert.ok(Math.abs(uv.getY(i) - p.getY(i) / e.wallSurfaceRepeatHeight(surface)) < 1e-5);
+          }
         }
+        const meshes = groups.map((g) => new Mesh(g.geometry, new MeshBasicMaterial()));
+        const ray = new Raycaster(
+          new Vector3(1 + 1.5 * dx - dz, 1.2, 1 + 1.5 * dz + dx),
+          new Vector3(dz, 0, -dx),
+        );
+        assert.equal(
+          ray.intersectObjects(meshes).length,
+          0,
+          "window stays open through both faces",
+        );
+        for (const g of [...plain, ...groups]) g.geometry.dispose();
+        meshes.forEach((m) => m.material.dispose());
       }
-      const meshes = groups.map((g) => new Mesh(g.geometry, new MeshBasicMaterial()));
-      const ray = new Raycaster(
-        new Vector3(1 + 1.5 * dx - dz, 1.2, 1 + 1.5 * dz + dx),
-        new Vector3(dz, 0, -dx),
-      );
-      assert.equal(ray.intersectObjects(meshes).length, 0, "window stays open through both faces");
-      for (const g of [...plain, ...groups]) g.geometry.dispose();
-      meshes.forEach((m) => m.material.dispose());
-    }
   });
 });

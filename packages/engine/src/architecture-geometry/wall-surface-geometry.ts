@@ -1,5 +1,5 @@
 import { BufferGeometry, Float32BufferAttribute } from "three";
-import { wallFrame } from "./wall-coordinate-frame";
+import { wallFrame, wallSurfaceU } from "./wall-coordinate-frame";
 import type { FloorSpec, WallSpec, WallSurfaceFinish } from "../types";
 import { wallSurfaceRepeatHeight } from "../wall-types";
 
@@ -38,8 +38,7 @@ export function splitWallSurfaceGeometry(source: BufferGeometry, wall: WallSpec,
       group.positions.push(x, y, z);
       group.colors.push(...(finish ? [1, 1, 1] : [colors.getX(i), colors.getY(i), colors.getZ(i)]));
       group.uvs.push(
-        ((x - frame.from[0]) * frame.direction[0] + (z - frame.from[1]) * frame.direction[1]) /
-          (finish?.repeatMeters ?? 1),
+        wallSurfaceU([x, z], frame, finish, alignment >= 0 ? "left" : "right"),
         y / wallSurfaceRepeatHeight(finish),
       );
     }

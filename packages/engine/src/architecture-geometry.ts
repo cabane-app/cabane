@@ -21,6 +21,7 @@ import {
   pointInsideFloorFootprint,
   wallExteriorNormal,
   wallFrame,
+  wallSurfaceU,
 } from "./architecture-geometry/wall-coordinate-frame";
 import {
   ArchitecturalWallGeometryGroup,
@@ -124,6 +125,7 @@ export function buildArchitecturalWallGeometries(
     c: readonly [number, number, number],
     color: Color,
     frame?: ReturnType<typeof wallFrame>,
+    side: "left" | "right" = "left",
   ) => {
     const offset = buffers.positions.length / 3;
     // Extend only floor-level vertices to terrain; preserve opening heads,
@@ -131,13 +133,8 @@ export function buildArchitecturalWallGeometries(
     for (const point of [a, b, c]) {
       const y = point[1] === 0 ? baseElevationMeters : point[1];
       buffers.positions.push(point[0], y, point[2]);
-      const repeat = buffers.finish?.repeatMeters ?? 1;
       buffers.uvs.push(
-        frame
-          ? ((point[0] - frame.from[0]) * frame.direction[0] +
-              (point[2] - frame.from[1]) * frame.direction[1]) /
-              repeat
-          : 0,
+        frame ? wallSurfaceU([point[0], point[2]], frame, buffers.finish, side) : 0,
         y / wallSurfaceRepeatHeight(buffers.finish),
       );
     }
@@ -214,7 +211,7 @@ export function buildArchitecturalWallGeometries(
     if (owner.alignment < 0.999)
       return { color: customColor(wallEdgeFinish(owner.wall, interiorColor)) };
     const normal = wallData.get(owner.wall)!.frame.normal;
-    const side =
+    const side: "left" | "right" =
       visibleNormal[0] * normal[0] + visibleNormal[1] * normal[1] >= 0 ? "left" : "right";
     const finish = owner.wall.faceFinishes?.[side];
     return {
@@ -224,6 +221,7 @@ export function buildArchitecturalWallGeometries(
             wallFaceFinish(owner.wall, side, outside, outside ? exteriorColor : interiorColor),
           ),
       finish,
+      side,
       frame: wallData.get(owner.wall)!.frame,
     };
   };
@@ -314,8 +312,8 @@ export function buildArchitecturalWallGeometries(
             const bBottom = [b[0], band.bottom, b[1]] as const;
             const aTop = [a[0], band.top, a[1]] as const;
             const bTop = [b[0], band.top, b[1]] as const;
-            addTriangle(buffers, aBottom, bTop, bBottom, face.color, face.frame);
-            addTriangle(buffers, aBottom, aTop, bTop, face.color, face.frame);
+            addTriangle(buffers, aBottom, bTop, bBottom, face.color, face.frame, face.side);
+            addTriangle(buffers, aBottom, aTop, bTop, face.color, face.frame, face.side);
           }
         }
       }),
