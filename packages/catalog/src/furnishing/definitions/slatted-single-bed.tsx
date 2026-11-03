@@ -1,6 +1,7 @@
 import { defineFurnishingModel } from "@cabane/engine";
 import { SlattedSingleBed } from "../presets/children-bedroom/slatted-single-bed";
 export const slattedSingleBedDefinition = defineFurnishingModel({
+  defaultColor: "#e2c9ce",
   component: SlattedSingleBed,
   label: "Slatted single bed",
   category: "Children",

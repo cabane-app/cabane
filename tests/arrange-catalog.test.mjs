@@ -490,6 +490,7 @@ await withModules(async (load) => {
         "compact-car",
         "deciduous-tree",
         "electric-sedan",
+        "external-ac-unit",
         "flower-pot",
         "garden-bench",
         "garden-birdbath",
@@ -523,6 +524,7 @@ await withModules(async (load) => {
         "teak-lounge-chair",
         "teak-lounge-sofa",
         "terracotta-planter",
+        "us-mailbox",
         "wallbox",
         "watering-can",
         "wheelie-bin",
@@ -985,11 +987,32 @@ await withModules(async (load) => {
     assert.equal(filterCatalog(entries, "all", "camera screen").length, 1);
   });
 
-  test("appliances added in Arrange resolve exact switch or sensor bindings through the runtime", () => {
-    for (const modelId of ["washing-machine", "tumble-dryer", "dishwasher", "oven"]) {
+  test("devices added in Arrange resolve exact alternative primary bindings through the runtime", () => {
+    const cases = [
+      ...["washing-machine", "tumble-dryer", "dishwasher", "oven"].map((modelId) => [
+        modelId,
+        ["switch.demo_coffee", "sensor.demo_temperature"],
+      ]),
+      ...[
+        "french-wall-mailbox",
+        "us-mailbox",
+        "electrical-panel",
+        "kitchen-hood",
+        "external-ac-unit",
+      ].map((modelId) => [modelId, ["switch.demo_coffee", "binary_sensor.demo_window"]]),
+    ];
+    for (const [modelId, entityIds] of cases) {
       const entry = get(modelId);
-      const { placement } = placementCandidate(entry, floor, { at: [2, 2] });
+      assert.equal(entries.filter((candidate) => candidate.modelId === modelId).length, 1);
+      const placement = {
+        kind: "absolute",
+        at: [2, 2],
+        elevationMeters: 0,
+        rotationYRadians: 0,
+      };
       const item = createCatalogItem(entry, placement, []);
+      assert.equal(item.kind, "device");
+      assert.equal(item.entitySlots[0].autoMap, "manual");
       const room = floor.rooms[0];
       const device = engine.deviceSlotForItem(item, floor);
       const manifest = {
@@ -1003,7 +1026,7 @@ await withModules(async (load) => {
         entityIdsBySlotId: {},
       };
       const runtime = connectedRuntimeFixture();
-      for (const entityId of ["switch.demo_coffee", "sensor.demo_temperature"]) {
+      for (const entityId of entityIds) {
         profile.entityIdsBySlotId[item.entitySlots[0].id] = entityId;
         const resolved = engine.resolveHomeAssistantBindings(
           manifest,

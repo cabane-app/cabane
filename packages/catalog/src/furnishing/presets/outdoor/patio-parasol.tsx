@@ -2,7 +2,13 @@ import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
 
 export const PATIO_PARASOL_SIZE = [2.4, 2.5, 2.4] as const;
 
-export function PatioParasol({ size = PATIO_PARASOL_SIZE }: { size?: SceneItemSize }) {
+export function PatioParasol({
+  size = PATIO_PARASOL_SIZE,
+  color,
+}: {
+  size?: SceneItemSize;
+  color?: string | undefined;
+}) {
   return (
     <group name="patio-parasol" scale={[size[0] / 2.4, size[1] / 2.5, size[2] / 2.4]}>
       <mesh
@@ -27,7 +33,7 @@ export function PatioParasol({ size = PATIO_PARASOL_SIZE }: { size?: SceneItemSi
       </mesh>
       <mesh name="canopy" position={[0, 2.27, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.04, 1.2, 0.34, 24]} />
-        <ToonMaterial color="#e4d8ba" />
+        <ToonMaterial color={color ?? "#e4d8ba"} />
       </mesh>
       <mesh name="finial" position={[0, 2.47, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.035, 0.035, 0.06, 24]} />

@@ -26,11 +26,16 @@ const even = mergeGeometries([core, ...wraps.filter((_, i) => i % 2 === 0)]);
 core.dispose();
 const odd = mergeGeometries(wraps.filter((_, i) => i % 2 === 1));
 wraps.forEach((g) => g.dispose());
-export function WovenDiningSeat() {
+export function WovenDiningSeat({ color }: { color?: string | undefined }) {
   return (
     <group name="envelope-woven-rush-seat">
-      <DiningOakMesh name="rush-natural" geometry={even} color="#b58e56" outline={false} />
-      <DiningOakMesh name="rush-light" geometry={odd} color="#c5a36d" outline={false} />
+      <DiningOakMesh
+        name="rush-natural"
+        geometry={even}
+        color={color ?? "#b58e56"}
+        outline={false}
+      />
+      <DiningOakMesh name="rush-light" geometry={odd} color={color ?? "#c5a36d"} outline={false} />
     </group>
   );
 }

@@ -4,6 +4,7 @@ import {
   CURVED_THREE_SEAT_SOFA_SIZE,
 } from "../presets/living-room/curved-three-seat-sofa";
 export const curvedThreeSeatSofaDefinition = defineFurnishingModel({
+  defaultColor: "#b4b5b0",
   component: CurvedThreeSeatSofa,
   label: "Curved three seat sofa",
   category: "Seating",

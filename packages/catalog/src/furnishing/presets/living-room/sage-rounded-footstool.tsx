@@ -4,8 +4,10 @@ export const SAGE_ROUNDED_FOOTSTOOL_SIZE = [0.48, 0.45, 0.46] as const;
 /** Generic proportions inferred from reference appearance, not manufacturer measurements. */
 export function SageRoundedFootstool({
   size = SAGE_ROUNDED_FOOTSTOOL_SIZE,
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
   variant?: string;
 }) {
   return (
@@ -25,7 +27,7 @@ export function SageRoundedFootstool({
       <RoundedFurniturePanel
         size={[0.48, 0.34, 0.46]}
         position={[0, 0.28, 0]}
-        color="#819b8d"
+        color={color ?? "#819b8d"}
         radius={0.085}
         outlineColor="#617d6e"
       />

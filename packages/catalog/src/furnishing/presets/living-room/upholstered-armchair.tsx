@@ -6,8 +6,10 @@ export const UPHOLSTERED_ARMCHAIR_SIZE = [0.85, 0.9, 0.88] as const;
 /** Neutral upholstered armchair with a separate seat, back, arms, and oak feet. */
 export function UpholsteredArmchair({
   size = UPHOLSTERED_ARMCHAIR_SIZE,
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
 }) {
   return (
     <group
@@ -26,14 +28,14 @@ export function UpholsteredArmchair({
       <RoundedFurniturePanel
         size={[0.77, 0.19, 0.76]}
         position={[0, 0.245, 0.03]}
-        color="#c8b9a2"
+        color={color ?? "#c8b9a2"}
         radius={0.045}
       />
       <RoundedFurniturePanel
         name="armchair-seat"
         size={[0.56, 0.15, 0.58]}
         position={[0, 0.405, 0.09]}
-        color="#dfd2bc"
+        color={color ?? "#dfd2bc"}
         radius={0.055}
       />
       {[-0.335, 0.335].map((x) => (
@@ -42,7 +44,7 @@ export function UpholsteredArmchair({
           name="armchair-arm"
           size={[0.18, 0.58, 0.88]}
           position={[x, 0.36, 0]}
-          color="#d2c4ad"
+          color={color ?? "#d2c4ad"}
           radius={0.07}
         />
       ))}
@@ -50,14 +52,14 @@ export function UpholsteredArmchair({
         name="armchair-back"
         size={[0.67, 0.63, 0.16]}
         position={[0, 0.585, -0.36]}
-        color="#d9ccb6"
+        color={color ?? "#d9ccb6"}
         radius={0.06}
       />
       <RoundedFurniturePanel
         name="armchair-back-cushion"
         size={[0.54, 0.48, 0.12]}
         position={[0, 0.61, -0.265]}
-        color="#e4d8c5"
+        color={color ?? "#e4d8c5"}
         radius={0.055}
       />
     </group>

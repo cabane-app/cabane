@@ -653,7 +653,7 @@ export interface SceneModelEditorDescriptor {
   lighting?: import("./imported-models/contracts").CustomModelLight;
   lightingCustomized?: boolean;
   lightingDisabled?: boolean;
-  /** Enables the fabric color picker; omission keeps a model's original palette. */
+  /** Enables the item color picker; omission keeps a model's original palette. */
   defaultColor?: string;
   /** Ordered choices sharing size, placement, and bindings. First is the default. */
   variants?: readonly SceneModelVariant[];

@@ -1,6 +1,6 @@
 import { Outlines, ToonMaterial } from "@cabane/engine";
 
-export function TowelRail() {
+export function TowelRail({ color }: { color?: string | undefined } = {}) {
   return (
     <group name="towel-rail">
       {[-0.29, 0.29].map((z) => (
@@ -15,7 +15,7 @@ export function TowelRail() {
       </mesh>
       <mesh position={[0.08, -0.25, 0]} castShadow>
         <boxGeometry args={[0.035, 0.48, 0.52]} />
-        <ToonMaterial color="#e6dfd2" />
+        <ToonMaterial color={color ?? "#e6dfd2"} />
         <Outlines color="#938d82" thickness={0.003} />
       </mesh>
     </group>

@@ -4,6 +4,7 @@ import {
   TUFTED_DIAMOND_RUG_SIZE,
 } from "../presets/living-room/tufted-diamond-rug";
 export const tuftedDiamondRugDefinition = defineFurnishingModel({
+  defaultColor: "#ddd7c8",
   component: TuftedDiamondRug,
   label: "Tufted diamond rug",
   category: "Decor",

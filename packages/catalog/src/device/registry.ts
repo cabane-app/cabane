@@ -13,6 +13,7 @@ import { paperPrinterDefinition } from "./paper-printer";
 import { adjustableDeskLampDefinition } from "./presets/lighting/adjustable-desk-lamp";
 import { IntegratedRollerShutterModel, INTEGRATED_ROLLER_SHUTTER_SIZE } from "./presets/covers";
 import { heatedTowelRailDefinition } from "./definitions/heated-towel-rail";
+import { utilityDeviceDefinitions } from "./definitions/utility";
 import { underCabinetLedStripDefinition } from "./definitions/under-cabinet-led-strip";
 import { builtInMicrowaveDefinition, microwaveDefinition } from "./definitions/microwaves";
 import { terracottaPendantDefinition, whiteDomePendantDefinition } from "./definitions/pendants";
@@ -486,6 +487,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     complexity: { visibleMeshes: 6, triangles: 900 },
   }),
   "motorized-blind": defineDeviceModel({
+    defaultColor: "#d9d4c6",
     defaultRoomType: "living-room",
     component: MotorizedBlindModel,
     label: "Motorized blind",
@@ -1164,6 +1166,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
   fireplace: fireplaceDefinition,
   "tripod-television": tripodTelevisionDefinition,
   "clothes-iron": clothesIronDefinition,
+  ...utilityDeviceDefinitions,
 } satisfies StableDeviceRegistry);
 
 export const getStableDeviceModel = (id: StableDeviceModelId) => stableDeviceRegistry[id];

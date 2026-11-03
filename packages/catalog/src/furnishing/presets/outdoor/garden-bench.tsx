@@ -6,8 +6,10 @@ export const GARDEN_BENCH_SIZE = [1.5, 0.9, 0.6] as const;
 export function GardenBench({
   size = GARDEN_BENCH_SIZE,
   variant = "default",
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
   variant?: string;
 }) {
   return (
@@ -22,7 +24,7 @@ export function GardenBench({
           glowKey="bench.seat-pad"
           size={[1.32, 0.07, 0.48]}
           position={[0, 0.515, 0]}
-          color={variant === "sage" ? "#95a184" : "#ddccb0"}
+          color={color ?? (variant === "sage" ? "#95a184" : "#ddccb0")}
           radius={0.03}
         />
       )}

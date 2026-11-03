@@ -190,6 +190,12 @@ export const STABLE_MODELS = new Set([
   "fireplace",
   "tripod-television",
   "clothes-iron",
+
+  "french-wall-mailbox",
+  "us-mailbox",
+  "electrical-panel",
+  "kitchen-hood",
+  "external-ac-unit",
 ]);
 
 export const extensionHas = (

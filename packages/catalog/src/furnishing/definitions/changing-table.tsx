@@ -2,10 +2,11 @@ import { defineFurnishingModel } from "@cabane/engine";
 import { ChangingTable } from "../presets/children-bedroom/changing-table";
 
 export const changingTableDefinition = defineFurnishingModel({
+  defaultColor: "#dfbbb7",
   defaultRoomType: "bedroom",
-  component: ({ size }) => (
+  component: ({ size, color }) => (
     <group scale={[size[0] / 0.81, size[1] / 0.947, size[2] / 0.497]}>
-      <ChangingTable />
+      <ChangingTable color={color} />
     </group>
   ),
   label: "Changing table",

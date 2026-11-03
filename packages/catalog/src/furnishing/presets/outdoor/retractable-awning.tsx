@@ -8,7 +8,8 @@ export const RETRACTABLE_AWNING_SIZE = [3.6, 0.45, 1] as const;
 /** Static extended canopy, front +Z; the cassette mounts to the wall at -Z. */
 export function RetractableAwning({
   size = RETRACTABLE_AWNING_SIZE,
-}: Pick<SceneModelProps, "size">) {
+  color,
+}: Pick<SceneModelProps, "size" | "color">) {
   const valance = useMemo(() => {
     const s = new Shape();
     s.moveTo(-1.8, 0.205);
@@ -39,12 +40,12 @@ export function RetractableAwning({
         size={[3.6, 0.016, Math.hypot(0.97, 0.22)]}
         position={[0, 0.315, -0.005]}
         rotation={[Math.atan2(0.22, 0.97), 0, 0]}
-        color="#293e60"
+        color={color ?? "#293e60"}
         radius={0.002}
       />
       <mesh name="awning-valance" position={[0, 0, 0.49]} castShadow receiveShadow>
         <extrudeGeometry args={[valance, { depth: 0.01, bevelEnabled: false, curveSegments: 5 }]} />
-        <ToonMaterial color="#293e60" />
+        <ToonMaterial color={color ?? "#293e60"} />
       </mesh>
       {[-1.45, 1.45].map((x) => (
         <group key={x}>

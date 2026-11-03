@@ -89,4 +89,9 @@ export type StableDeviceModelId =
   | "wallbox"
   | "fireplace"
   | "tripod-television"
-  | "clothes-iron";
+  | "clothes-iron"
+  | "french-wall-mailbox"
+  | "us-mailbox"
+  | "electrical-panel"
+  | "kitchen-hood"
+  | "external-ac-unit";

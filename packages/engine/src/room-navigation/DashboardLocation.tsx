@@ -89,7 +89,7 @@ export function DashboardLocation({
       onSelect={selectRoom}
       onOverview={goHome}
       onSelectFloor={(id) => {
-        floorNavigation.selectFloor(id);
+        floorNavigation.selectFloor(id, "picker");
         goHome();
       }}
       reducedMotion={reducedMotion}

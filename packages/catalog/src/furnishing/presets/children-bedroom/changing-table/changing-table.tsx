@@ -3,7 +3,7 @@ import { TaperedChangingLeg } from "./tapered-changing-leg";
 import { WickerFront } from "./wicker-front";
 import { CREAM, CREAM_LIGHT, OUTLINE } from "./changing-table-finish";
 
-export function ChangingTable() {
+export function ChangingTable({ color }: { color?: string | undefined } = {}) {
   const legs = [
     [-0.31, -0.15],
     [0.31, -0.15],
@@ -39,19 +39,19 @@ export function ChangingTable() {
       </mesh>
       <mesh position={[0, 0.852, 0.005]} castShadow>
         <boxGeometry args={[0.67, 0.055, 0.385]} />
-        <ToonMaterial color="#dfbbb7" />
+        <ToonMaterial color={color ?? "#dfbbb7"} />
       </mesh>
       {[-0.325, 0.325].map((x) => (
         <mesh key={x} position={[x, 0.91, 0.005]} rotation={[Math.PI / 2, 0, 0]} castShadow>
           <capsuleGeometry args={[0.034, 0.31, 6, 12]} />
-          <ToonMaterial color="#efd7d1" />
+          <ToonMaterial color={color ?? "#efd7d1"} />
           <Outlines color="#9d7773" thickness={0.004} screenspace={false} />
         </mesh>
       ))}
       {[-0.17, 0.17].map((z) => (
         <mesh key={z} position={[0, 0.895, z]} rotation={[0, 0, Math.PI / 2]} castShadow>
           <capsuleGeometry args={[0.025, 0.58, 5, 12]} />
-          <ToonMaterial color="#efd7d1" />
+          <ToonMaterial color={color ?? "#efd7d1"} />
         </mesh>
       ))}
     </group>

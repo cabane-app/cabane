@@ -7,7 +7,8 @@ export const POOL_CHAISE_LONGUE_SIZE = [0.8, 0.85, 2.1] as const;
 export function PoolChaiseLongue({
   size = POOL_CHAISE_LONGUE_SIZE,
   variant = "default",
-}: Partial<Pick<SceneModelProps, "size" | "variant">>) {
+  color,
+}: Partial<Pick<SceneModelProps, "size" | "variant" | "color">>) {
   return (
     <group
       name="pool-chaise-longue"
@@ -19,7 +20,7 @@ export function PoolChaiseLongue({
       ]}
     >
       <PoolChaiseFrame />
-      <PoolChaiseUpholstery cozy={variant === "cozy"} />
+      <PoolChaiseUpholstery cozy={variant === "cozy"} color={color} />
     </group>
   );
 }

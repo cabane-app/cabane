@@ -35,25 +35,61 @@ await withModules(async (load) => {
   const floor = neutralDemoManifest.floors[0];
   const { stableFurnishingRegistry } = await load("/packages/catalog/src/furnishing/index.ts");
 
-  test("color overrides reach mounted furniture and devices without changing default palettes", async () => {
+  test("color overrides reach catalog surfaces without changing original palettes or hardware", async () => {
     const colors = ["#325a84", "#c03f68"];
-    for (const modelId of [
-      "single-window-curtain",
-      "children-curtains",
-      "motorized-curtain",
-      "three-seat-sofa",
-      "sectional-sofa",
-      "mini-van",
+    const cases = [
+      ...Object.entries(stableFurnishingRegistry).map(([modelId, definition]) => ({
+        modelId,
+        definition,
+        kind: "furnishing",
+      })),
+      ...Object.entries(stableDeviceRegistry).map(([modelId, definition]) => ({
+        modelId,
+        definition,
+        kind: "device",
+      })),
+    ].filter(({ definition }) => definition.defaultColor);
+    const hardwareNames = new Set([
+      "wheel",
+      "rear-handle",
+      "blind-headbox",
+      "blind-bottom-rail",
+      "dining-chair-leg",
+      "armchair-foot",
+      "ottoman-foot",
+      "pole",
+      "finial",
+      "wishbone-chair-joined-frame",
+      "continuous-bentwood-back-and-arms",
+      "swing-frame-leg",
+      "office-chair-arm-bracket",
+      "office-chair-height-lever",
+      "office-chair-back-shell",
+    ]);
+    for (const [modelId, variant] of [
+      ["single-bed", "rose"],
+      ["double-bed", "cozy-sage"],
+      ["neutral-area-rug", "persian"],
+      ["neutral-area-rug", "fluffy"],
     ]) {
-      const isDevice = Object.hasOwn(stableDeviceRegistry, modelId);
-      const definition = (isDevice ? stableDeviceRegistry : stableFurnishingRegistry)[modelId];
+      cases.push({ ...cases.find((entry) => entry.modelId === modelId), variant });
+    }
+    for (const { modelId, definition, kind, variant: selectedVariant } of cases) {
+      const variant =
+        selectedVariant ??
+        (modelId === "garden-bench"
+          ? "sage"
+          : modelId === "wooden-garden-swing"
+            ? "cozy"
+            : undefined);
       const item = {
         id: modelId,
         floorId: floor.id,
         modelId,
         size: definition.defaultSize,
+        ...(variant ? { variant } : {}),
         placement: { kind: "absolute", at: [2, 2], elevationMeters: 0, rotationYRadians: 0 },
-        ...(isDevice
+        ...(kind === "device"
           ? {
               kind: "device",
               entitySlots: [
@@ -88,7 +124,39 @@ await withModules(async (load) => {
         });
         return found.sort();
       };
+      const surfaces = () => {
+        const found = [];
+        renderer.scene.instance.updateMatrixWorld(true);
+        renderer.scene.instance.traverse((object) => {
+          if (object.isMesh && object.material?.type === "MeshToonMaterial") {
+            let hardware = hardwareNames.has(object.name);
+            for (let parent = object.parent; parent; parent = parent.parent)
+              hardware ||= hardwareNames.has(parent.name);
+            found.push({
+              name: object.name,
+              hardware,
+              color: object.material.color.getHexString(),
+              vertices: object.geometry.getAttribute("position").count,
+              transform: [...object.matrixWorld.elements],
+            });
+          }
+        });
+        return found;
+      };
+      const originalSurfaces = surfaces();
       const original = meshColors();
+      if (modelId === "two-seat-loveseat") {
+        assert.deepEqual(
+          original,
+          [
+            ...Array(2).fill("64796b"),
+            ...Array(2).fill("718775"),
+            ...Array(4).fill("91a18b"),
+            ...Array(4).fill("bd9367"),
+          ].sort(),
+          "loveseat without an override retains its original fabric and wood palette",
+        );
+      }
       const vanMeshes = () =>
         renderer.scene.findAll((node) => node.type === "Mesh").map((node) => node.instance);
       const vanGeometry = modelId === "mini-van" ? vanMeshes().map((mesh) => mesh.geometry) : [];
@@ -102,14 +170,49 @@ await withModules(async (load) => {
         );
         assert.ok(meshColors().includes(color.slice(1)), modelId);
         if (modelId === "mini-van") {
-          assert.deepEqual(
-            vanMeshes().map((mesh) => mesh.geometry),
-            vanGeometry,
-            "recolor reuses geometry",
+          vanMeshes().forEach((mesh, index) =>
+            assert.equal(mesh.geometry, vanGeometry[index], "recolor reuses geometry"),
           );
-          const changed = meshColors();
-          changed.splice(changed.indexOf(color.slice(1)), 1);
-          assert.deepEqual(changed, fixedVanColors, "glass, trim and wheels keep their finish");
+          const changedColors = meshColors();
+          changedColors.splice(changedColors.indexOf(color.slice(1)), 1);
+          assert.deepEqual(
+            changedColors,
+            fixedVanColors,
+            "glass, trim and wheels keep their finish",
+          );
+        }
+        const changed = surfaces();
+        assert.deepEqual(
+          changed.map(({ color: _color, ...surface }) => surface),
+          originalSurfaces.map(({ color: _color, ...surface }) => surface),
+          `${modelId}: recoloring preserves geometry and transforms`,
+        );
+        assert.deepEqual(
+          changed.filter((surface) => surface.hardware),
+          originalSurfaces.filter((surface) => surface.hardware),
+          `${modelId}: hardware keeps its original finish`,
+        );
+        if (modelId === "headboard-free-double-bed") {
+          for (const finish of ["dfddd5", "e6e3da"])
+            assert.equal(
+              meshColors().filter((value) => value === finish).length,
+              original.filter((value) => value === finish).length,
+              "the bed's painted frame and feet are independent of its linen",
+            );
+        }
+        if (modelId === "wheelie-bin") {
+          assert.deepEqual(
+            meshColors(),
+            [...Array(3).fill(color.slice(1)), ...Array(3).fill("414e49")].sort(),
+            "bin body, lid and molded foot recolor; wheels and handle stay dark",
+          );
+        }
+        if (modelId === "two-seat-loveseat") {
+          assert.deepEqual(
+            meshColors(),
+            [...Array(8).fill(color.slice(1)), ...Array(4).fill("bd9367")].sort(),
+            "all loveseat fabric changes while the four oak feet keep their finish",
+          );
         }
       }
       await renderer.update(createElement(SceneItemRenderer, props));

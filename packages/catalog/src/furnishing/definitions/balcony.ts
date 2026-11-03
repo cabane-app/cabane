@@ -35,6 +35,7 @@ export const balconyFurnishingDefinitions = {
     complexity: { visibleMeshes: 19, triangles: 5000 },
   }),
   "retractable-awning": defineFurnishingModel({
+    defaultColor: "#293e60",
     component: RetractableAwning,
     label: "Retractable awning",
     category: "Garden structures",
