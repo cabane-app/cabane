@@ -39,24 +39,28 @@ export class SceneGeometryLod {
   private async drain() {
     if (this.running) return;
     this.running = true;
-
+    const prepared: Array<{ source: BufferGeometry; entry: Entry; levels: GeometryLod[] }> = [];
     while (this.queue.length && !this.disposed) {
       const { source, entry } = this.queue.shift()!;
       if (this.entries.get(source) !== entry) continue;
       const levels = await this.prepare(source);
       if (this.disposed || this.entries.get(source) !== entry)
         levels.forEach((level) => level.geometry.dispose());
-      else entry.levels = levels;
+      else prepared.push({ source, entry, levels });
     }
     // Publish complete families together; partial worker replies must not cause
     // repeated GPU repacking while the remaining geometry is still preparing.
-    if (!this.disposed)
-      for (const [source, entry] of this.entries) {
+    for (const { source, entry, levels } of prepared) {
+      if (this.disposed || this.entries.get(source) !== entry) {
+        levels.forEach((level) => level.geometry.dispose());
+      } else {
+        entry.levels = levels;
         registerGeometryLods(
           source,
           entry.levels.map((level) => level.geometry),
         );
       }
+    }
     this.running = false;
     if (!this.disposed) this.invalidate();
   }
@@ -91,7 +95,7 @@ export class SceneGeometryLod {
           this.entries.set(source, entry);
           this.queue.push({ source, entry });
         }
-        if (this.running || !entry.levels.length) return;
+        if (!entry.levels.length) return;
         if (!source.boundingSphere) source.computeBoundingSphere();
         const sphere = source.boundingSphere!;
         const projectedScale = (matrix: Matrix4) => {

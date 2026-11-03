@@ -10,6 +10,7 @@ import {
   type Texture,
   type WebGLRenderer,
 } from "three";
+import { sceneLightMaterialHooks } from "./scene-light-wall-mask";
 
 /** Compare render inputs without allocating a scene-sized signature every frame. */
 class ShadowInputs {
@@ -166,7 +167,10 @@ export class ShadowMapCache {
         };
         s.add(m.wireframe);
         s.add(m.wireframeLinewidth);
-        if (!m.isMeshToonMaterial || m.onBeforeCompile !== Material.prototype.onBeforeCompile)
+        if (
+          !m.isMeshToonMaterial ||
+          sceneLightMaterialHooks(m).onBeforeCompile !== Material.prototype.onBeforeCompile
+        )
           untracked = true;
         if (material.alphaTest > 0 || material.alphaHash || material.alphaToCoverage) {
           texture(m.map);

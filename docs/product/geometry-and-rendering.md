@@ -249,8 +249,13 @@ into persistent batch buffers; camera LOD and fading changes retain those buffer
 Moving/recolored and incompatible meshes retain ordinary draws. Source meshes
 remain the picking surface, and existing InstancedMesh objects retain all instances.
 LOD simplification runs in a worker; unavailable workers keep full detail.
+Preparing newly added or changed geometry retains previously prepared detail
+levels and batch families. Only completed new families are published together,
+so unrelated updates do not restore the whole scene to full detail or repack it.
 Shadow invalidation inspects authored geometry before LOD substitution, avoiding
-camera-only LOD redraws. Devices without native multi-draw keep ordinary draws.
+camera-only LOD redraws. The engine's fragment-only wall-light mask preserves
+shadow reuse; unknown authored shaders and render hooks remain conservative.
+Devices without native multi-draw keep ordinary draws.
 The reusable performance script includes camera-motion timings and batch-buffer
 churn checks. Real-device verification remains necessary for mobile fluidity.
 
