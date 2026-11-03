@@ -160,8 +160,12 @@ for (const motion of [false, true])
     },
   );
 
-for (const interrupted of [false, true])
-  test(`runtime capture accumulates passes and restores state (hidden=${interrupted})`, async (t) => {
+for (const [interrupted, touch] of [
+  [false, false],
+  [true, false],
+  [false, true],
+])
+  test(`runtime capture accumulates passes and restores state (hidden=${interrupted}, touch=${touch})`, async (t) => {
     const after = new Set(),
       subscribers = new Map();
     const document = Object.assign(new EventTarget(), { visibilityState: "visible" });
@@ -202,7 +206,7 @@ for (const interrupted of [false, true])
     const state = {
       gl,
       camera,
-      controls: { target: new Vector3(), enabled: true },
+      controls: { target: new Vector3(), enabled: true, enableDamping: true, update() {} },
       internal: {
         priority: 1,
         subscribe(ref, priority) {
@@ -236,6 +240,15 @@ for (const interrupted of [false, true])
       },
       seconds: 0.08,
       warmupSeconds: 0,
+      ...(touch
+        ? {
+            driveInput: async () => {
+              assert.equal(state.controls.enabled, true);
+              state.controls.target.x += 3;
+              state.camera.position.x += 3;
+            },
+          }
+        : {}),
     });
     if (interrupted) await assert.rejects(measurement, /Tab was hidden/);
     else {
@@ -259,6 +272,8 @@ for (const interrupted of [false, true])
     assert.equal(gl.render, originalRender);
     assert.equal(gl.info.autoReset, true);
     assert.equal(state.controls.enabled, true);
+    assert.deepEqual(state.controls.target, new Vector3());
+    assert.equal(state.controls.enableDamping, true);
     assert.deepEqual(camera.position, pose.position);
     assert.ok(camera.quaternion.equals(pose.quaternion));
     assert.equal(camera.zoom, pose.zoom);

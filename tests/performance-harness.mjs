@@ -93,7 +93,7 @@ const download = (name, type, content) => {
   downloads.append(link);
 };
 
-async function run({ seconds = 10, runs = 3, label = "manual" } = {}) {
+async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1" } = {}) {
   if (running) throw new Error("A benchmark is already running.");
   if (
     !Number.isFinite(seconds) ||
@@ -105,6 +105,9 @@ async function run({ seconds = 10, runs = 3, label = "manual" } = {}) {
   )
     throw new Error("Use 1–60 seconds and 1–10 runs.");
   if (!ready()) throw new Error("Open the benchmark home in Orbit view.");
+  if (!["orbit-v1", "touch-orbit-v1"].includes(path)) throw new Error("Unknown camera path.");
+  if (path === "touch-orbit-v1" && !window.__cabanePerfTouch)
+    throw new Error("Touch replay requires the Chromium CLI driver.");
   const root = mainRoot();
   const state = root.store.getState();
   const camera = state.camera;
@@ -147,7 +150,7 @@ async function run({ seconds = 10, runs = 3, label = "manual" } = {}) {
     const workload = devHome ? (await devHome.readDevelopmentHome()).workload : null;
     const configuration = {
       build: "production",
-      path: "orbit-v1",
+      path,
       fixedTime,
       warmupSeconds: 3,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -168,7 +171,15 @@ async function run({ seconds = 10, runs = 3, label = "manual" } = {}) {
     for (let index = 0; index < runs; index++) {
       if (!ready()) throw new Error("Return to the benchmark home's Orbit view and retry.");
       status.textContent = `Run ${index + 1}/${runs} · 3s warmup + ${seconds}s capture`;
-      results.push(await captureRuntime({ root, addAfterEffect, seconds, isValid: ready }));
+      results.push(
+        await captureRuntime({
+          root,
+          addAfterEffect,
+          seconds,
+          isValid: ready,
+          ...(path === "touch-orbit-v1" ? { driveInput: window.__cabanePerfTouch } : {}),
+        }),
+      );
     }
     if (
       devHome &&

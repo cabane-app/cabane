@@ -10,6 +10,7 @@ import { chromium } from "playwright-core";
 import { build, preview } from "vite";
 import { compareRuntimeReports, renderRuntimeReport } from "./scene-performance/runtime-report.mjs";
 import { loadDevelopmentHome } from "./scene-performance/development-home.mjs";
+import { replayTouchOrbit } from "./scene-performance/touch-replay.mjs";
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const buildDirectory = resolve(repository, "test-results/performance/build");
@@ -34,10 +35,13 @@ const help = `Usage: npm run perf -- [options]
   --baseline PATH     Compare with a report from the same machine and configuration
   --profile NAME      mobile (390x844, DPR 3, touch) or desktop (1440x960, DPR 1)
   --scenario NAME     dev-home (default, live local HA) or demo (old disconnected fixture)
+  --path NAME         orbit-v1 (direct camera) or touch-orbit-v1 (native touch drag)
   --cpu-rate N        Chromium CPU slowdown multiplier (default: 1, unthrottled)
   --seconds N         Measured motion per run, excluding warmup (default: 10)
   --runs N            Repetitions (default: 3)
   --headed            Show Chrome while measuring (default: headless)
+  --check             Fail unless p95 ≤20ms, p99 ≤33.3ms and <1% over 33.3ms
+  --cpu-profile       Save a diagnostic Chrome .cpuprofile beside the report
   --help              Print this help
 
 Usage: npm run perf:serve -- [--host HOST] [--port PORT] [--scenario NAME]
@@ -58,6 +62,7 @@ function parseOptions(args) {
     label: "baseline",
     profile: "mobile",
     scenario: "dev-home",
+    path: "orbit-v1",
     cpuRate: 1,
     seconds: 10,
     runs: 3,
@@ -70,6 +75,7 @@ function parseOptions(args) {
     "--baseline": "baseline",
     "--profile": "profile",
     "--scenario": "scenario",
+    "--path": "path",
     "--cpu-rate": "cpuRate",
     "--seconds": "seconds",
     "--runs": "runs",
@@ -81,6 +87,14 @@ function parseOptions(args) {
     if (flag === "--help") return null;
     if (flag === "--headed" && options.command === "measure") {
       options.headed = true;
+      continue;
+    }
+    if (flag === "--check" && options.command === "measure") {
+      options.check = true;
+      continue;
+    }
+    if (flag === "--cpu-profile" && options.command === "measure") {
+      options.cpuProfile = true;
       continue;
     }
     const key = names[flag];
@@ -97,6 +111,10 @@ function parseOptions(args) {
     throw new Error("--profile must be mobile or desktop.");
   if (!["dev-home", "demo"].includes(options.scenario))
     throw new Error("--scenario must be dev-home or demo.");
+  if (!["orbit-v1", "touch-orbit-v1"].includes(options.path))
+    throw new Error("--path must be orbit-v1 or touch-orbit-v1.");
+  if (options.path === "touch-orbit-v1" && options.profile !== "mobile")
+    throw new Error("Touch replay requires --profile mobile.");
   if (options.scenario === "dev-home" && !["127.0.0.1", "localhost", "::1"].includes(options.host))
     throw new Error(
       "The live dev HA benchmark must stay on loopback. Use --scenario demo for LAN sharing.",
@@ -140,6 +158,7 @@ async function buildHarness(source, scenario = "dev-home") {
       outDir: buildDirectory,
       emptyOutDir: true,
       chunkSizeWarningLimit: Infinity,
+      sourcemap: true,
       rollupOptions: { input: resolve(repository, `.${harnessPath}`) },
     },
   });
@@ -227,10 +246,13 @@ async function measure(options) {
     page.setDefaultTimeout(120_000);
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    const cdp = await context.newCDPSession(page);
     if (options.cpuRate !== 1) {
-      const cdp = await context.newCDPSession(page);
       await cdp.send("Emulation.setCPUThrottlingRate", { rate: options.cpuRate });
     }
+    await page.exposeFunction("__cabanePerfTouch", ({ seconds }) =>
+      replayTouchOrbit(cdp, profiles[options.profile].viewport, seconds),
+    );
     await page.goto(`http://127.0.0.1:${options.port}${harnessPath}`);
     await page.waitForFunction(
       () =>
@@ -245,13 +267,19 @@ async function measure(options) {
     if (await demo.isVisible()) await demo.click();
     await page.waitForFunction(() => window.__cabanePerf?.ready() === true);
     console.log(
-      `Measuring ${options.runs} × ${options.seconds}s of orbit motion (${options.profile}, CPU ×${options.cpuRate})…`,
+      `Measuring ${options.runs} × ${options.seconds}s of ${options.path} (${options.profile}, CPU ×${options.cpuRate})…`,
     );
+    if (options.cpuProfile) {
+      await cdp.send("Profiler.enable");
+      await cdp.send("Profiler.start");
+    }
     const report = await page.evaluate((configuration) => window.__cabanePerf.run(configuration), {
       seconds: options.seconds,
       runs: options.runs,
       label: options.label,
+      path: options.path,
     });
+    const cpuProfile = options.cpuProfile ? (await cdp.send("Profiler.stop")).profile : null;
     if (errors.length) throw new Error(`Browser errors during measurement:\n${errors.join("\n")}`);
     report.label = options.label;
     report.measuredAt = new Date().toISOString();
@@ -285,11 +313,22 @@ async function measure(options) {
     await mkdir(dirname(output), { recursive: true });
     await writeFile(output, `${JSON.stringify(report, null, 2)}\n`);
     await writeFile(htmlOutput, renderRuntimeReport(report));
+    if (cpuProfile)
+      await writeFile(output.replace(/\.json$/i, "") + ".cpuprofile", JSON.stringify(cpuProfile));
     console.log(
       `FPS ${report.summary.fps.toFixed(1)} · frame p95 ${report.summary.frameMsP95.toFixed(1)}ms · >33ms ${report.summary.over33MsPercent.toFixed(1)}%`,
     );
     console.log(`JSON: ${output}\nHTML: ${htmlOutput}`);
     if (comparisonError) throw comparisonError;
+    if (
+      options.check &&
+      (report.summary.frameMsP95 > 20 ||
+        report.summary.frameMsP99 > 1000 / 30 ||
+        report.summary.over33MsPercent >= 1)
+    )
+      throw new Error(
+        "Smoothness target missed: p95 ≤20ms, p99 ≤33.3ms, <1% over 33.3ms. Report saved.",
+      );
   } finally {
     await browser?.close();
     await server?.close();

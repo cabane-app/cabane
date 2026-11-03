@@ -36,6 +36,13 @@ not resolve reports of jank during real camera dragging. The next investigation
 must reproduce that interaction and measure its pacing/latency before claiming
 mobile acceptance. Simulator timings use the host GPU and may hide phone limits.
 
+Use `--path touch-orbit-v1` for input-inclusive Chromium measurements. CDP sends
+trusted touch input at up to 60 Hz, alternating one-finger pan and two-finger
+rotation/pinch. Normal pointer capture, picking and camera listeners run; the
+harness verifies camera movement and restores the camera and target between runs.
+Keep these reports separate from `orbit-v1`: the paths cover different views.
+The browser button retains the direct camera path for Safari/device comparisons.
+
 ## Current development scenario
 
 The default `--scenario dev-home` opens
@@ -84,9 +91,17 @@ npm run perf -- --label desktop-baseline --profile desktop
 npm run perf -- --label mobile-cpu4 --cpu-rate 4
 npm run perf -- --label longer --seconds 20 --runs 3
 npm run perf -- --label visible --headed
+npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label touch-baseline
+npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label touch-candidate --check
+npm run perf -- --path touch-orbit-v1 --runs 1 --label diagnostic --cpu-profile
 npm run perf -- --label candidate --output test-results/performance/candidate.json
 npm run perf -- --scenario demo --label old-demo
 ```
+
+`--check` is an opt-in check against the working 60 Hz targets above. It saves the
+report even when the target is missed. `--cpu-profile` saves a Chrome `.cpuprofile`
+beside the JSON for DevTools; harness source maps retain original source locations.
+Use profiling to locate work, then measure without profiling for comparisons.
 
 Reports contain raw frame samples and source, scene, browser, OS, GPU, viewport,
 and drawing-buffer metadata. A companion HTML report visualizes frame intervals
