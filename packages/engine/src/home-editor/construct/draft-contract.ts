@@ -112,7 +112,7 @@ export type FloorEditorAction =
   | { type: "add-wall"; from: PlanPoint; to: PlanPoint; exteriorColor?: string; virtual?: boolean }
   | { type: "add-hedge"; hedge: Omit<HedgeSpec, "id"> }
   | { type: "update-hedge"; id: string; changes: Partial<Omit<HedgeSpec, "id">> }
-  | { type: "add-pool"; polygon: Polygon }
+  | { type: "add-pool"; polygon: Polygon; settings?: Pick<PoolSpec, "type" | "heightMeters"> }
   | {
       type: "add-outdoor-platform";
       polygon: Polygon;
@@ -139,6 +139,12 @@ export type FloorEditorAction =
       type: "update-floor-zone";
       zoneId: string;
       changes: Partial<Pick<FloorFinishZoneSpec, "polygon" | "finish">>;
+    }
+  | {
+      type: "configure-pool";
+      poolId: string;
+      poolType: NonNullable<PoolSpec["type"]>;
+      heightMeters: number;
     }
   | { type: "update-pool"; poolId: string; polygon: Polygon }
   | { type: "move-endpoint"; from: PlanPoint; to: PlanPoint }

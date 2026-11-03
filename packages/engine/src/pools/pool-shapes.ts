@@ -20,7 +20,7 @@ export const poolShapes = (polygons: MultiPolygon): Shape[] =>
 /** Excavate every ground layer with hidden clearance behind the visible basin lining. */
 export function cutPoolOpenings(ground: Shape, floor: FloorSpec): Shape[] {
   const cuts = (floor.pools ?? [])
-    .filter((pool) => isPoolOutline(pool.polygon))
+    .filter((pool) => pool.type !== "above-ground-wood" && isPoolOutline(pool.polygon))
     .map((pool) => poolExcavationFootprint(pool.polygon, floor.coordinates));
   if (!cuts.length) return [ground];
   const outline: MultiPolygon = [

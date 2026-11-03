@@ -117,7 +117,11 @@ const floor = (value: unknown, path: string, issues: HomeProjectIssue[], legacy:
       const poolPath = `${path}.pools[${index}]`;
       const pool = record(entry, poolPath, issues);
       if (!pool) return;
-      keys(pool, ["id", "polygon"], poolPath, issues);
+      keys(pool, ["id", "polygon", "type", "heightMeters"], poolPath, issues);
+      if (pool.type !== undefined && pool.type !== "in-ground" && pool.type !== "above-ground-wood")
+        addProjectIssue(issues, "project.pool-type", `${poolPath}.type`, "Pool type is invalid.");
+      if (pool.heightMeters !== undefined)
+        finite(pool.heightMeters, `${poolPath}.heightMeters`, issues);
       string(pool.id, `${poolPath}.id`, issues);
       polygon(pool.polygon, `${poolPath}.polygon`, issues);
     });

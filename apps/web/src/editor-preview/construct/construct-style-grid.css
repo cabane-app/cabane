@@ -1,21 +1,21 @@
-.hedge-style-grid {
+.construct-style-grid {
   margin: 0 0 18px;
   padding: 3px;
   overflow: visible;
 }
-.hedge-style-grid .catalog-card {
+.construct-style-grid .catalog-card {
   padding: 0;
   border: 0;
   background: transparent;
 }
-.hedge-style-grid .catalog-card[aria-pressed="true"] .catalog-card__preview {
+.construct-style-grid .catalog-card[aria-pressed="true"] .catalog-card__preview {
   outline: 2px solid var(--preview-accent, #b67550);
   outline-offset: 1px;
 }
-.hedge-style-grid .catalog-card[aria-pressed="true"] strong {
+.construct-style-grid .catalog-card[aria-pressed="true"] strong {
   color: #934c2e;
   font-weight: 600;
 }
-.hedge-style-grid .catalog-card small {
+.construct-style-grid .catalog-card small {
   line-height: 1.4;
 }

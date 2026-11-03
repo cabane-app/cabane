@@ -128,6 +128,13 @@ export function executeConstructAction(
     case "add-pool":
       editor.addPool(polygon(action.polygon, "polygon"));
       return;
+    case "configure-pool":
+      editor.configurePool(
+        id("poolId"),
+        oneOf(action.poolType, "poolType", ["in-ground", "above-ground-wood"] as const),
+        number(action.heightMeters, "heightMeters", 0.3),
+      );
+      return;
     case "update-pool":
       editor.updatePool(id("poolId"), polygon(action.polygon, "polygon"));
       return;

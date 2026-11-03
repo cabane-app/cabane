@@ -335,9 +335,12 @@ export interface HedgeSpec {
   widthMeters: number;
 }
 
-/** An outdoor in-ground basin opening; its fixed rim extends outward. */
+/** An outdoor basin; its rim extends outward from the outline. */
 export interface PoolSpec {
   id: string;
+  type?: "in-ground" | "above-ground-wood";
+  /** Basin depth, or above-ground wall height, in metres. Defaults to 1.5. */
+  heightMeters?: number;
   /** Simple, implicitly closed outline in this floor's plan coordinates. */
   polygon: Polygon;
 }

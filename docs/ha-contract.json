@@ -1,9 +1,9 @@
 {
-  "revision": 34,
-  "fingerprint": "2f9d82b8dccda241d22e7016d2077507f0e2820bf5416e259a8cf2c0dc048765",
-  "summary": "Support optional named poses for imported GLB models",
+  "revision": 35,
+  "fingerprint": "44dfc7efa62df9d22d6e59f14e3d949f95763834e98b8169909eef840ed4799f",
+  "summary": "Add pool types and adjustable basin height or depth",
   "breakingChanges": [
-    "Existing imported models stay static without migration. Projects with custom-model pose mappings require the matching frontend and HA panel. GLB bytes and the asset protocol are unchanged."
+    "Existing pools keep their in-ground geometry and 1.5 m depth without migration. Projects storing pool type or height settings require the matching frontend and Home Assistant panel."
   ],
   "history": [
     {
@@ -235,6 +235,13 @@
       "summary": "Add per-face wall tiles, wallpaper and custom images",
       "breakingChanges": [
         "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
+      ]
+    },
+    {
+      "revision": 34,
+      "summary": "Support optional named poses for imported GLB models",
+      "breakingChanges": [
+        "Existing imported models stay static without migration. Projects with custom-model pose mappings require the matching frontend and HA panel. GLB bytes and the asset protocol are unchanged."
       ]
     }
   ],

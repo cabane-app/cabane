@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import { Shape, ShapeGeometry } from "three";
+import { Shape, ShapeGeometry, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -506,6 +506,107 @@ await withModules(async (load) => {
       assert.equal(renderer.scene.findAllByProps({ name: `pool-water-${pool.id}` }).length, 0);
     } finally {
       await renderer.unmount();
+    }
+  });
+
+  test("wooden pool lining stays clear of timber and ground and its coping overhangs the shell", async () => {
+    const next = floor();
+    next.coordinates = { ...next.coordinates, origin: [0, 0], metersPerPlanUnit: 1 };
+    next.pools[0] = {
+      id: pool.id,
+      polygon: [
+        [0, 0],
+        [4, 0],
+        [4, 3],
+        [0, 3],
+      ],
+      type: "above-ground-wood",
+      heightMeters: 1.2,
+    };
+    const renderer = await create(
+      createElement(ArchitecturalPools, { floor: next, reducedMotion: true }),
+    );
+    try {
+      const root = renderer.scene.instance;
+      root.updateMatrixWorld(true);
+      const hits = new Raycaster(
+        new Vector3(2.1, 0.55, 1.5),
+        new Vector3(0, 0, -1),
+      ).intersectObject(root, true);
+      const conflicts = hits.filter((hit, index) =>
+        hits
+          .slice(index + 1)
+          .some(
+            (other) =>
+              other.object !== hit.object && Math.abs(other.distance - hit.distance) < 1e-5,
+          ),
+      );
+      assert.equal(
+        conflicts.length,
+        0,
+        "liner and timber must not share the same rendered wall plane",
+      );
+      const bottomY = renderer.scene.findByProps({ name: `pool-bottom-${pool.id}` }).props
+        .position[1];
+      assert.ok(
+        bottomY > engine.POOL_GROUND_Y + 0.01,
+        "opaque liner floor must sit above the uncut terrain",
+      );
+      const wall = new Raycaster(new Vector3(2.1, 0.55, -1), new Vector3(0, 0, 1)).intersectObject(
+        root,
+        true,
+      )[0];
+      const copingY = engine.poolVerticalLayout(next.pools[0]).rim + 0.04;
+      const coping = new Raycaster(
+        new Vector3(2.1, copingY, -1),
+        new Vector3(0, 0, 1),
+      ).intersectObject(root, true)[0];
+      assert.ok(coping.point.z < wall.point.z - 0.04, "coping must project beyond the timber wall");
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
+  test("wooden pools preserve settings, stand above intact ground, and align water with their height", async () => {
+    const next = floor();
+    next.pools[0] = { ...pool, type: "above-ground-wood", heightMeters: 1.2 };
+    const draft = engine.createFloorEditorDraft(next);
+    assert.deepEqual(engine.deriveFloorTopology(draft).floor.pools, next.pools);
+    assert.equal(engine.validateHomeProject(project(next), registries).valid, true);
+    assert.equal(
+      engine.validateLayoutFloorSpec(next).issues.filter((i) => i.code.startsWith("pool.")).length,
+      0,
+    );
+    const ground = new Shape();
+    ground.moveTo(-50, -50);
+    ground.lineTo(50, -50);
+    ground.lineTo(50, 50);
+    ground.lineTo(-50, 50);
+    ground.closePath();
+    assert.equal(cutPoolOpenings(ground, next)[0], ground);
+    const renderer = await create(
+      createElement(ArchitecturalPools, { floor: next, reducedMotion: true }),
+    );
+    try {
+      assert.equal(
+        renderer.scene.findByProps({ name: `pool-bottom-${pool.id}` }).props.position[1],
+        engine.POOL_GROUND_Y + 0.025,
+      );
+      assert.equal(
+        renderer.scene.findByProps({ name: `pool-water-${pool.id}` }).props.position[1],
+        engine.POOL_WATER_Y + 1.2,
+      );
+      assert.equal(
+        renderer.scene.findByProps({ name: `pool-rim-${pool.id}` }).props.position[1],
+        engine.POOL_RIM_BASE_Y + 1.2,
+      );
+      assert.ok(renderer.scene.findByProps({ name: `pool-timber-${pool.id}` }));
+    } finally {
+      await renderer.unmount();
+    }
+    for (const height of [0, -1, NaN, Infinity, 6]) {
+      next.pools[0].heightMeters = height;
+      assert.ok(engine.validateLayoutFloorSpec(next).issues.some((i) => i.code === "pool.height"));
     }
   });
 
