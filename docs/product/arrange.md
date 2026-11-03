@@ -54,8 +54,9 @@ count and expandable, descriptive member names. Search also matches group and
 member names. Groups are listed by their shared placement center. The list
 includes items outside rooms.
 
-Selected items have crisp forest-green bounds with an ivory contrast stroke and
-emphasized corners. Stroke widths stay constant on screen as the camera zooms.
+Selected items have continuous cyan bounds with a soft glow and a faint upward
+scan. Stroke widths stay constant on screen as the camera zooms. The scan pauses
+when the page is hidden and is disabled when reduced motion is requested.
 Multi-selection frames each selected item or saved group, with a light tint on
 its members; saved groups share one frame. The overlay remains visible through
 scene geometry and never intercepts picking or dragging.
