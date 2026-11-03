@@ -175,7 +175,7 @@ export function EditorSidebar({
               floors={snapshot.project.floors}
               selectedId={activeFloorId}
               disabled={floorControlsDisabled}
-              onSelect={(id) => floorNavigation.selectFloor(id)}
+              onSelect={(id) => floorNavigation.selectFloor(id, "picker")}
               onAdd={addFloorAbove}
               onAddBelow={addFloorBelow}
               onSettings={() => setFloorDialog("rename")}
