@@ -30,6 +30,10 @@ export async function captureRuntime({
   });
   const resolution = canvas();
   const result = { frameIntervalsMs: [], cpuSubmitMs: [], calls: [], triangles: [] };
+  const lastPosition = camera.position.clone(),
+    lastQuaternion = camera.quaternion.clone();
+  let lastZoom = camera.zoom,
+    movingFrames = 0;
   let cameraTravel = 0;
   let removeBefore, removeMove, removeAfter, timer;
   let frameStart = 0,
@@ -115,6 +119,12 @@ export async function captureRuntime({
           return fail("Canvas size/DPR changed. Keep the same orientation and retry.");
         if (sampling) {
           if (lastFrame) {
+            if (
+              camera.position.distanceToSquared(lastPosition) > 1e-12 ||
+              1 - Math.abs(camera.quaternion.dot(lastQuaternion)) > 1e-12 ||
+              Math.abs(camera.zoom - lastZoom) > 1e-9
+            )
+              movingFrames++;
             result.frameIntervalsMs.push(frameStart - lastFrame);
             result.cpuSubmitMs.push(submitMs);
             result.calls.push(gl.info.render.calls);
@@ -127,15 +137,19 @@ export async function captureRuntime({
             return;
           }
         }
+        lastPosition.copy(camera.position);
+        lastQuaternion.copy(camera.quaternion);
+        lastZoom = camera.zoom;
         // Demand invalidation must run after R3F decides whether to stop its loop.
         queueMicrotask(() => state.invalidate());
       });
       state.invalidate();
     });
     await Promise.all([capture, driveInput?.({ seconds: warmupSeconds + seconds })]);
-    if (driveInput && cameraTravel < 0.1)
-      throw new Error("Touch replay did not move the camera. Discard this run.");
+    if (driveInput && !movingFrames)
+      throw new Error("No camera movement recorded. Keep dragging/pinching during capture.");
     result.cameraTravel = cameraTravel;
+    result.movingFrames = movingFrames;
     return result;
   } finally {
     clearTimeout(timer);

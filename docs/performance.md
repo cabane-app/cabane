@@ -43,6 +43,15 @@ harness verifies camera movement and restores the camera and target between runs
 Keep these reports separate from `orbit-v1`: the paths cover different views.
 The browser button retains the direct camera path for Safari/device comparisons.
 
+**Record my gestures** records one ten-second capture after a three-second warmup,
+leaving the normal camera controls enabled. Start dragging, rotating or pinching
+when the status says to, and keep moving until the controls return. The report
+shows the fraction of sampled frames with camera movement and rejects captures
+without any movement. This is an interaction check, with its own
+`manual-gestures-v1` series; human gestures are not an identical replay and idle
+frames can make the aggregate look better. Use the movement fraction when judging
+the result. Native touch checks complement the repeatable CLI comparison.
+
 ## Current development scenario
 
 The default `--scenario dev-home` opens

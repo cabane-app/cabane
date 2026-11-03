@@ -57,10 +57,12 @@ panel.innerHTML = `<strong>Performance benchmark</strong>
   <p>${devHome ? "Repo home · live dev HA · night · cloudy · 10 lights on." : "Open <b>Explore the demo</b>."} Keep Orbit view and this tab visible.</p>
   <label>Device / experiment <input id="perf-label" value="manual" maxlength="100"></label>
   <button id="perf-run">Run benchmark · 3 × 10s</button>
+  <button id="perf-gestures">Record my gestures · 10s</button>
   <p id="perf-status" role="status">Production build · steady camera motion</p>
   <span id="perf-downloads"></span>`;
 document.body.append(panel);
 const button = panel.querySelector("#perf-run");
+const gestureButton = panel.querySelector("#perf-gestures");
 const status = panel.querySelector("#perf-status");
 const downloads = panel.querySelector("#perf-downloads");
 const mainRoot = () => {
@@ -105,7 +107,8 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
   )
     throw new Error("Use 1–60 seconds and 1–10 runs.");
   if (!ready()) throw new Error("Open the benchmark home in Orbit view.");
-  if (!["orbit-v1", "touch-orbit-v1"].includes(path)) throw new Error("Unknown camera path.");
+  if (!["orbit-v1", "touch-orbit-v1", "manual-gestures-v1"].includes(path))
+    throw new Error("Unknown camera path.");
   if (path === "touch-orbit-v1" && !window.__cabanePerfTouch)
     throw new Error("Touch replay requires the Chromium CLI driver.");
   const root = mainRoot();
@@ -114,6 +117,7 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
   const canvas = state.gl.domElement;
   running = true;
   button.disabled = true;
+  gestureButton.disabled = true;
   panel.classList.add("perf-running");
   try {
     status.textContent = "Preparing scene geometry…";
@@ -171,6 +175,7 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
     for (let index = 0; index < runs; index++) {
       if (!ready()) throw new Error("Return to the benchmark home's Orbit view and retry.");
       status.textContent = `Run ${index + 1}/${runs} · 3s warmup + ${seconds}s capture`;
+      if (path === "manual-gestures-v1") status.textContent += " · keep dragging/pinching";
       results.push(
         await captureRuntime({
           root,
@@ -178,6 +183,12 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
           seconds,
           isValid: ready,
           ...(path === "touch-orbit-v1" ? { driveInput: window.__cabanePerfTouch } : {}),
+          ...(path === "manual-gestures-v1"
+            ? {
+                driveInput: ({ seconds }) =>
+                  new Promise((resolve) => setTimeout(resolve, seconds * 1000)),
+              }
+            : {}),
         }),
       );
     }
@@ -240,10 +251,18 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
   } finally {
     running = false;
     button.disabled = false;
+    gestureButton.disabled = false;
     panel.classList.remove("perf-running");
   }
 }
 button.addEventListener("click", () =>
   run({ label: panel.querySelector("#perf-label").value }).catch(() => {}),
+);
+gestureButton.addEventListener("click", () =>
+  run({
+    label: panel.querySelector("#perf-label").value,
+    runs: 1,
+    path: "manual-gestures-v1",
+  }).catch(() => {}),
 );
 window.__cabanePerf = { ready, run };

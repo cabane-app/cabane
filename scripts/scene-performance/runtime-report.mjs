@@ -189,11 +189,19 @@ export function renderRuntimeReport(report) {
   const runs = report.runs
     .map((run, index) => {
       const summary = run.summary || summarizeRun(run);
-      return `<article><h3>Run ${index + 1}</h3><p>${run.frameIntervalsMs.length} intervals · ${escape(metricValue("fps", summary.fps))} · p95 ${escape(metricValue("frameMsP95", summary.frameMsP95))} · ${escape(metricValue("over33MsPercent", summary.over33MsPercent))} over 33.3 ms</p>${frameChart(run, index, ceiling)}</article>`;
+      const motion = Number.isFinite(run.movingFrames)
+        ? ` · camera moved in ${number((100 * run.movingFrames) / run.frameIntervalsMs.length)}% of sampled frames`
+        : "";
+      return `<article><h3>Run ${index + 1}</h3><p>${run.frameIntervalsMs.length} intervals · ${escape(metricValue("fps", summary.fps))} · p95 ${escape(metricValue("frameMsP95", summary.frameMsP95))} · ${escape(metricValue("over33MsPercent", summary.over33MsPercent))} over 33.3 ms${motion}</p>${frameChart(run, index, ceiling)}</article>`;
     })
     .join("");
   const context = JSON.stringify(
-    { configuration: report.configuration, environment: report.environment, source: report.source },
+    {
+      configuration: report.configuration,
+      environment: report.environment,
+      source: report.source,
+      scene: report.scene,
+    },
     null,
     2,
   );

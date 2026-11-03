@@ -221,6 +221,7 @@ for (const [interrupted, touch] of [
           pending = false;
           if (!subscribers.size) return;
           for (const [ref] of [...subscribers].sort((a, b) => a[1] - b[1])) ref.current();
+          if (touch) camera.zoom += 0.01;
           gl.render(120); // beauty (including submitted shadow triangles)
           gl.render(2); // contour postprocessing
           frames++;
@@ -253,6 +254,7 @@ for (const [interrupted, touch] of [
     if (interrupted) await assert.rejects(measurement, /Tab was hidden/);
     else {
       const result = await measurement;
+      if (touch) assert.ok(result.movingFrames > 0, "zoom-only input counts as camera movement");
       assert.ok(result.frameIntervalsMs.length >= 2);
       assert.deepEqual(
         result.calls,
