@@ -3,7 +3,6 @@ import test from "node:test";
 import { act, createElement, useState } from "react";
 import { create } from "@react-three/test-renderer";
 import { JSDOM } from "jsdom";
-import { Color } from "three";
 import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
@@ -182,27 +181,6 @@ await withModules(async (load) => {
       await fire("pointerDown", { button: 2 });
       await fire("pointerUp", { button: 2 });
       assert.equal(calls.length, 2);
-    });
-  });
-  test("touch navigation avoids device hover recoloring while mouse hover still highlights", async () => {
-    await withLightScene({}, async ({ renderer, fire }) => {
-      const colors = () => {
-        const result = [];
-        renderer.scene
-          .findByProps({ name: `scene-item-${deviceId}` })
-          .instance.traverse((object) => {
-            if (object.isMesh && object.material.color)
-              result.push(new Color(object.material.color).getHex());
-          });
-        return JSON.stringify(result);
-      };
-      const before = colors();
-      await fire("pointerOver", { pointerType: "touch" });
-      assert.ok(colors() === before, "touch must not recolor/rebatch the device");
-      await fire("pointerOver", { pointerType: "mouse" });
-      assert.ok(colors() !== before, "mouse hover retains its visual affordance");
-      await fire("pointerOut", { pointerType: "mouse" });
-      assert.equal(colors(), before);
     });
   });
 

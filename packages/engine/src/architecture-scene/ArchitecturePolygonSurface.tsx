@@ -97,7 +97,7 @@ export const PolygonSurface = memo(function PolygonSurface({
           onPointerOver: onSelect
             ? (event: import("@react-three/fiber").ThreeEvent<PointerEvent>) => {
                 event.stopPropagation();
-                if (event.pointerType !== "touch") setHovered(true);
+                setHovered(true);
               }
             : undefined,
         })}

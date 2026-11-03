@@ -9,6 +9,7 @@ import {
   MeshStandardMaterial,
   Group,
   PointLight,
+  Raycaster,
   Vector3,
   Vector4,
   PerspectiveCamera,
@@ -137,6 +138,30 @@ await withModules(async (load) => {
     };
     f.batcher.render(f.renderer, f.scene, f.camera);
     f.batcher.dispose();
+  });
+  test("source picking rejects missed bounds before visiting triangles and retains real hits", () => {
+    const f = fixture();
+    f.batcher.render(f.renderer, f.scene, f.camera);
+    const index = f.a.geometry.index;
+    const original = index.getX;
+    let visited = 0;
+    index.getX = function (i) {
+      visited++;
+      return original.call(this, i);
+    };
+    try {
+      const ray = new Raycaster(new Vector3(0.6, 0, 5), new Vector3(0, 0, -1));
+      assert.equal(ray.intersectObject(f.a, false).length, 0);
+      assert.equal(visited, 0, "a missed box must not scan its triangles");
+      ray.ray.origin.x = 0;
+      assert.ok(
+        ray.intersectObject(f.a, false).length > 0,
+        "picking keeps the original visible surface",
+      );
+    } finally {
+      index.getX = original;
+      f.batcher.dispose();
+    }
   });
   test("reflections, shear and fade depth/shadow overrides retain their original draw", () => {
     const mutations = [

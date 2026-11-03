@@ -20,7 +20,6 @@ export function useWallRoomSelection(floor: FloorSpec, onSelectRoom?: (id: strin
     press.current = null;
   };
   const hoverFace = (event: ThreeEvent<PointerEvent>) => {
-    if (event.pointerType === "touch") return;
     const roomId = roomAtFace(event);
     if (roomId) event.stopPropagation();
     setRoomHover(roomId ?? null);

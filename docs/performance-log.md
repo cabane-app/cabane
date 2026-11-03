@@ -92,6 +92,10 @@ path meets its target. The earlier 23%-movement capture is retained only in
 ignored files and is not acceptance evidence. Raw reports/charts are in
 `test-results/performance/2026-11-03-{incremental-lod-ios-simulator,native-pan-before}.{json,html}`.
 
+The touch-hover experiment `a94bb46` recorded p95 26 ms versus 25 ms before,
+with 100% movement coverage in both cases. It did not improve the timing and was
+reverted. Its raw report is `test-results/performance/2026-11-03-native-pan-hover.json`.
+
 ## Camera gesture investigation, November 3
 
 The input-inclusive `touch-orbit-v1` baseline uses trusted Chromium touch events:
