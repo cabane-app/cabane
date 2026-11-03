@@ -12,7 +12,6 @@ areas:
       [
         packages/engine/src/HomeAssistantRuntime.tsx,
         packages/engine/src/StandaloneHomeAssistantRuntime.tsx,
-        packages/engine/src/home-assistant-activity.ts,
         packages/engine/src/command-scheduler.ts,
       ]
     docs: [docs/product/runtime-and-privacy.md]
@@ -22,6 +21,7 @@ areas:
         packages/engine/src/CabaneDashboard.tsx,
         packages/engine/src/home-assistant-dashboard/,
         packages/engine/src/navigation/,
+        packages/engine/src/building/,
       ]
     docs: [docs/product/dashboard-and-cameras.md]
   rendering:
@@ -29,7 +29,6 @@ areas:
       [
         packages/engine/src/architecture-scene/,
         packages/engine/src/rendering.tsx,
-        packages/engine/src/comic-pew/,
         packages/engine/src/styles.css,
       ]
     docs: [docs/product/geometry-and-rendering.md]

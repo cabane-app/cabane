@@ -4,7 +4,13 @@ import { RoundedFurniturePanel } from "../construction";
 export const UPHOLSTERED_OTTOMAN_SIZE = [0.7, 0.42, 0.55] as const;
 
 /** Compact upholstered footstool and occasional seat. */
-export function UpholsteredOttoman({ size = UPHOLSTERED_OTTOMAN_SIZE }: { size?: SceneItemSize }) {
+export function UpholsteredOttoman({
+  size = UPHOLSTERED_OTTOMAN_SIZE,
+  color,
+}: {
+  size?: SceneItemSize;
+  color?: string | undefined;
+}) {
   return (
     <group
       name="upholstered-ottoman"
@@ -22,19 +28,19 @@ export function UpholsteredOttoman({ size = UPHOLSTERED_OTTOMAN_SIZE }: { size?:
       <RoundedFurniturePanel
         size={[0.64, 0.23, 0.49]}
         position={[0, 0.205, 0]}
-        color="#c9b9a1"
+        color={color ?? "#c9b9a1"}
         radius={0.045}
       />
       <RoundedFurniturePanel
         name="ottoman-cushion"
         size={[0.7, 0.17, 0.55]}
         position={[0, 0.335, 0]}
-        color="#ded1ba"
+        color={color ?? "#ded1ba"}
         radius={0.065}
       />
       <mesh name="ottoman-seam" position={[0, 0.405, 0.273]}>
         <boxGeometry args={[0.58, 0.008, 0.004]} />
-        <ToonMaterial color="#aa9c85" />
+        <ToonMaterial color={color ?? "#aa9c85"} />
       </mesh>
     </group>
   );

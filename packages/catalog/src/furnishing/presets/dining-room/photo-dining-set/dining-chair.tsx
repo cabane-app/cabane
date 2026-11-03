@@ -39,15 +39,17 @@ const rail = bentwood();
 export function CustomDiningChair({
   position,
   rotationY,
+  color,
 }: {
   readonly position: readonly [number, number, number];
   readonly rotationY: number;
+  readonly color?: string | undefined;
 }) {
   return (
     <group name="chaise-repas-cannee-custom" position={position} rotation={[0, rotationY, 0]}>
       <DiningOakMesh name="wishbone-chair-joined-frame" geometry={frame} />
       <DiningOakMesh name="continuous-bentwood-back-and-arms" geometry={rail} color="#cba16b" />
-      <WovenDiningSeat />
+      <WovenDiningSeat color={color} />
     </group>
   );
 }

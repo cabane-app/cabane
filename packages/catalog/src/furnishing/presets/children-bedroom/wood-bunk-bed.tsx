@@ -1,6 +1,6 @@
 import type { SceneModelProps } from "@cabane/engine";
 import { RoundedFurniturePanel as Panel } from "../construction/rounded-furniture-panel";
-export function WoodBunkBed({ size, variant = "default" }: SceneModelProps) {
+export function WoodBunkBed({ size, variant = "default", color }: SceneModelProps) {
   const endLadder = variant === "ladder-front" || variant === "ladder-back";
   const ladderSide = variant === "ladder-left" ? -1 : 1;
   const ladderEnd = variant === "ladder-back" ? -1 : 1;
@@ -31,13 +31,13 @@ export function WoodBunkBed({ size, variant = "default" }: SceneModelProps) {
             <Panel
               size={[0.9, 0.14, 1.98]}
               position={[0, y + 0.1, 0]}
-              color={i === 0 ? "#647f90" : "#eee1c8"}
+              color={color ?? (i === 0 ? "#647f90" : "#eee1c8")}
               radius={0.02}
             />
             <Panel
               size={[0.68, 0.1, 0.38]}
               position={[0, y + 0.22, -0.72]}
-              color={i === 0 ? "#c4c1b7" : "#e4dbc4"}
+              color={color ?? (i === 0 ? "#c4c1b7" : "#e4dbc4")}
             />
             {[-framePostX, framePostX].map((x) => (
               <Panel key={x} size={[0.04, 0.14, 2]} position={[x, y + 0.11, 0]} color="#d4bf98" />

@@ -1,6 +1,7 @@
 import { defineFurnishingModel } from "@cabane/engine";
 import { PianoBench } from "../presets/children-bedroom/piano-bench";
 export const pianoBenchDefinition = defineFurnishingModel({
+  defaultColor: "#292b2c",
   component: PianoBench,
   label: "Piano bench",
   category: "Children",

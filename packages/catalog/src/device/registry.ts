@@ -1,5 +1,6 @@
 import { IntegratedRollerShutterModel, INTEGRATED_ROLLER_SHUTTER_SIZE } from "./presets/covers";
 import { heatedTowelRailDefinition } from "./definitions/heated-towel-rail";
+import { utilityDeviceDefinitions } from "./definitions/utility";
 import { underCabinetLedStripDefinition } from "./definitions/under-cabinet-led-strip";
 import { builtInMicrowaveDefinition, microwaveDefinition } from "./definitions/microwaves";
 import { terracottaPendantDefinition, whiteDomePendantDefinition } from "./definitions/pendants";
@@ -8,6 +9,7 @@ import { astroParallelWallLightDeviceDefinition } from "./definitions/astro-para
 import { clipReadingLampDeviceDefinition } from "./definitions/clip-reading-lamp";
 import { oakWallUplightDeviceDefinition } from "./definitions/oak-wall-uplight";
 import { roundGlobeWallLampDeviceDefinition } from "./definitions/round-globe-wall-lamp";
+import { smokedGlobeWallLightDeviceDefinition } from "./definitions/smoked-globe-wall-light";
 import { sixGlobeCeilingLampDeviceDefinition } from "./definitions/six-globe-ceiling-lamp";
 import { tubularWallLampDeviceDefinition } from "./definitions/tubular-wall-lamp";
 import { wallReadingSpotDeviceDefinition } from "./definitions/wall-reading-spot";
@@ -300,6 +302,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
   }),
   "rattan-bell-pendant": rattanBellPendantDeviceDefinition,
   "round-globe-wall-lamp": roundGlobeWallLampDeviceDefinition,
+  "smoked-globe-wall-light": smokedGlobeWallLightDeviceDefinition,
   "wall-reading-spot": wallReadingSpotDeviceDefinition,
   "oak-wall-uplight": oakWallUplightDeviceDefinition,
   "six-globe-ceiling-lamp": sixGlobeCeilingLampDeviceDefinition,
@@ -479,6 +482,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     complexity: { visibleMeshes: 6, triangles: 900 },
   }),
   "motorized-blind": defineDeviceModel({
+    defaultColor: "#d9d4c6",
     defaultRoomType: "living-room",
     component: MotorizedBlindModel,
     label: "Motorized blind",
@@ -1194,6 +1198,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     interaction,
     complexity: { visibleMeshes: 16, triangles: 34_000 },
   }),
+  ...utilityDeviceDefinitions,
 } satisfies StableDeviceRegistry);
 
 export const getStableDeviceModel = (id: StableDeviceModelId) => stableDeviceRegistry[id];

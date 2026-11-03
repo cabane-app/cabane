@@ -12,7 +12,7 @@ const extrusion = {
 };
 
 /** One continuous shallow crescent plinth, with softened connected edges. */
-export function CurvedSofaBase() {
+export function CurvedSofaBase({ color }: { color?: string | undefined }) {
   const shape = useMemo(() => {
     const result = new Shape();
     result.moveTo(-1.28, -0.3);
@@ -42,7 +42,7 @@ export function CurvedSofaBase() {
         receiveShadow
       >
         <extrudeGeometry args={[shape, extrusion]} />
-        <ToonMaterial color="#a9aca5" />
+        <ToonMaterial color={color ?? "#a9aca5"} />
       </mesh>
     </group>
   );

@@ -8,17 +8,22 @@ import type {
 /** Measured shader/resource budget, shared by previews and each mounted floor. */
 export const SCENE_LIGHT_BUDGET = 64;
 
+/** Default physical spacing used by the lighting editor and adaptive catalog strips. */
+export const DEFAULT_STRIP_MAX_SPACING_METERS = 0.6;
+
 /** Compact emission: intensity belongs to the whole strip, not each requested sample. */
 export interface SceneLightEmission {
   name: string;
   position: ModelVector;
-  strip?: { end: ModelVector; samples: number };
+  strip?: { end: ModelVector; samples: number; maxSpacingMeters?: number };
   color: string;
   intensity: number;
   distance: number;
   /** Engine-owned native/dashboard sources prewarm spare slots before first activation. */
   prewarm?: boolean;
 }
+
+type ModelScale = readonly [number, number, number];
 
 export type ExecutedSceneLight = Pick<
   SceneLightEmission,
@@ -35,13 +40,32 @@ export function modelLightSources(light: CustomModelLight): readonly CustomModel
   );
 }
 
-export function modelLightEmissions(light: CustomModelLight, name = "model"): SceneLightEmission[] {
+const scaleModelVector = (point: ModelVector, scale: ModelScale | undefined): ModelVector =>
+  scale
+    ? (point.map((coordinate, axis) => coordinate * scale[axis]) as [number, number, number])
+    : point;
+
+export function modelLightEmissions(
+  light: CustomModelLight,
+  name = "model",
+  scale?: ModelScale,
+): SceneLightEmission[] {
   if (light.illuminate === false || !(light.maxIntensity > 0)) return [];
   const sources = modelLightSources(light);
   return sources.map((source, index) => ({
     name: name + (index ? "-" + index : ""),
-    position: source.kind === "point" ? source.position : source.start,
-    ...(source.kind === "strip" ? { strip: { end: source.end, samples: source.samples } } : {}),
+    position: scaleModelVector(source.kind === "point" ? source.position : source.start, scale),
+    ...(source.kind === "strip"
+      ? {
+          strip: {
+            end: scaleModelVector(source.end, scale),
+            samples: source.samples,
+            ...(source.maxSpacingMeters !== undefined
+              ? { maxSpacingMeters: source.maxSpacingMeters }
+              : {}),
+          },
+        }
+      : {}),
     color: light.color,
     intensity: light.maxIntensity / sources.length,
     distance: light.distance,
@@ -50,11 +74,22 @@ export function modelLightEmissions(light: CustomModelLight, name = "model"): Sc
 
 // Invalid in-progress numeric input must also remain allocation-safe in import previews.
 const requestedSamples = (source: SceneLightEmission) =>
-  source.strip
-    ? Number.isSafeInteger(source.strip.samples) && source.strip.samples >= 2
-      ? source.strip.samples
-      : 2
-    : 1;
+  source.strip ? Math.max(2, explicitStripSamples(source), adaptiveStripSamples(source)) : 1;
+
+const explicitStripSamples = (source: SceneLightEmission) =>
+  source.strip && Number.isSafeInteger(source.strip.samples) && source.strip.samples >= 2
+    ? source.strip.samples
+    : 2;
+
+const adaptiveStripSamples = (source: SceneLightEmission) => {
+  const spacing = source.strip?.maxSpacingMeters;
+  if (!source.strip || typeof spacing !== "number" || !Number.isFinite(spacing) || spacing <= 0)
+    return 0;
+  const length = Math.hypot(
+    ...source.position.map((coordinate, axis) => coordinate - source.strip!.end[axis]),
+  );
+  return Math.min(Number.MAX_SAFE_INTEGER, Math.ceil(length / spacing) + 1);
+};
 
 const midpoint = (source: SceneLightEmission): ModelVector =>
   source.strip
@@ -192,5 +227,5 @@ export function planSceneLights(input: readonly SceneLightEmission[]) {
   return { lights, requested, approximated };
 }
 
-export const modelLightingExecution = (light: CustomModelLight) =>
-  planSceneLights(modelLightEmissions(light));
+export const modelLightingExecution = (light: CustomModelLight, scale?: ModelScale) =>
+  planSceneLights(modelLightEmissions(light, "model", scale));

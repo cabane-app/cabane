@@ -6,7 +6,8 @@ export const INDOOR_CHAISE_LONGUE_SIZE = [0.8, 0.8, 1.65] as const;
 /** Terracotta day chaise with a full-length cushion and raised headrest. */
 export function IndoorChaiseLongue({
   size = INDOOR_CHAISE_LONGUE_SIZE,
-}: { size?: SceneItemSize } = {}) {
+  color,
+}: { size?: SceneItemSize; color?: string | undefined } = {}) {
   return (
     <group
       name="indoor-chaise-longue"
@@ -56,14 +57,14 @@ export function IndoorChaiseLongue({
         name="chaise-cushion"
         size={[0.8, 0.17, 1.65]}
         position={[0, 0.385, 0]}
-        color="#ba7960"
+        color={color ?? "#ba7960"}
         radius={0.06}
       />
       <RoundedFurniturePanel
         name="headrest"
         size={[0.8, 0.33, 0.3]}
         position={[0, 0.635, -0.675]}
-        color="#c68b70"
+        color={color ?? "#c68b70"}
         radius={0.07}
       />
     </group>

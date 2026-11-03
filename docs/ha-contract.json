@@ -1,9 +1,9 @@
 {
-  "revision": 31,
-  "fingerprint": "67ec1c4859217d78d06197c27b947a51b732ac0ee711bae186c460f0908db70e",
-  "summary": "Support read-only event readings and live device feedback",
+  "revision": 33,
+  "fingerprint": "380926c2e6b4c889a7f82bc6fc982f88e2d98e541fcef0df391c4c7a752f88cf",
+  "summary": "Add per-face wall tiles, wallpaper and custom images",
   "breakingChanges": [
-    "Event slots, Event personal-model profiles and optional event readings require the matching frontend and Home Assistant panel. Existing homes, lighting, terrain and apartment floors remain supported without migration. Runtime activity is transient and changes no saved fields."
+    "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
   ],
   "history": [
     {
@@ -214,6 +214,20 @@
       "summary": "Connect stairs to terrain and add masonry stair styles",
       "breakingChanges": [
         "Existing floor-to-floor stairs and omitted styles remain compatible. Terrain connections and Concrete or Stone styles require the matching frontend and Home Assistant panel. Terrain rise, landing validation and Walk follow the current grade without adding a storey. No migration is required."
+      ]
+    },
+    {
+      "revision": 31,
+      "summary": "Support read-only event readings and live device feedback",
+      "breakingChanges": [
+        "Event slots, Event personal-model profiles and optional event readings require the matching frontend and Home Assistant panel. Existing homes, lighting, terrain and apartment floors remain supported without migration. Runtime activity is transient and changes no saved fields."
+      ]
+    },
+    {
+      "revision": 32,
+      "summary": "Adapt linear model lighting to transformed instance length",
+      "breakingChanges": [
+        "Adaptive maxSpacingMeters on strip sources requires the matching frontend and Home Assistant panel. Existing fixed-sample strips remain supported without migration."
       ]
     }
   ],

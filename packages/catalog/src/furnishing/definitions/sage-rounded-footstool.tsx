@@ -4,6 +4,7 @@ import {
   SAGE_ROUNDED_FOOTSTOOL_SIZE,
 } from "../presets/living-room/sage-rounded-footstool";
 export const sageRoundedFootstoolDefinition = defineFurnishingModel({
+  defaultColor: "#819b8d",
   component: SageRoundedFootstool,
   label: "Sage rounded footstool",
   category: "Seating",

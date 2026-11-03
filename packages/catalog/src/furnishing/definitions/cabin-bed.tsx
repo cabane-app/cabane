@@ -2,10 +2,11 @@ import { defineFurnishingModel } from "@cabane/engine";
 import { CabinBed } from "../presets/children-bedroom/cabin-bed";
 
 export const cabinBedDefinition = defineFurnishingModel({
+  defaultColor: "#edc9c4",
   defaultRoomType: "bedroom",
-  component: ({ size }) => (
+  component: ({ size, color }) => (
     <group scale={[size[0] / 1.183, size[1] / 1.696, size[2] / 2.432]}>
-      <CabinBed />
+      <CabinBed color={color} />
     </group>
   ),
   label: "Cabin bed",

@@ -116,6 +116,7 @@ export const STABLE_MODELS = new Set([
   "floor-lamp",
   "rattan-bell-pendant",
   "round-globe-wall-lamp",
+  "smoked-globe-wall-light",
   "wall-reading-spot",
   "oak-wall-uplight",
   "six-globe-ceiling-lamp",
@@ -181,6 +182,11 @@ export const STABLE_MODELS = new Set([
   "compact-car",
   "electric-sedan",
   "pickup-truck",
+  "french-wall-mailbox",
+  "us-mailbox",
+  "electrical-panel",
+  "kitchen-hood",
+  "external-ac-unit",
 ]);
 
 export const extensionHas = (

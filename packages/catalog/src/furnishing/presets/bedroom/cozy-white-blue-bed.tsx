@@ -21,7 +21,13 @@ export function CozyBedHeadboard() {
 }
 
 /** Layered ivory linen, navy throws and plump cushions inferred from the reference photo. */
-export function CozyWhiteBlueBedding({ variant = "cozy-white-blue" }: { variant?: string }) {
+export function CozyWhiteBlueBedding({
+  variant = "cozy-white-blue",
+  color,
+}: {
+  variant?: string;
+  color?: string | undefined;
+}) {
   const palette =
     variant === "cozy-sage"
       ? ["#8e9b78", "#bd8064"]
@@ -40,7 +46,7 @@ export function CozyWhiteBlueBedding({ variant = "cozy-white-blue" }: { variant?
         front={1.06}
         lift={0}
         thickness={0.04}
-        color="#e6dfd1"
+        color={color ?? "#e6dfd1"}
       />
       <CozyBedCover
         name="cozy-navy-throw"
@@ -65,7 +71,7 @@ export function CozyWhiteBlueBedding({ variant = "cozy-white-blue" }: { variant?
             name="cozy-sleeping-pillow"
             size={[0.7, 0.14, 0.4]}
             position={[x, 0.614, -0.72]}
-            color="#e9e1d3"
+            color={color ?? "#e9e1d3"}
             radius={0.065}
             outlineColor="#b7ad9c"
           />

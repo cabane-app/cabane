@@ -1,6 +1,7 @@
 import { defineFurnishingModel } from "@cabane/engine";
 import { SageTubArmchair, SAGE_TUB_ARMCHAIR_SIZE } from "../presets/living-room/sage-tub-armchair";
 export const sageTubArmchairDefinition = defineFurnishingModel({
+  defaultColor: "#819b8d",
   component: SageTubArmchair,
   label: "Sage tub armchair",
   category: "Seating",

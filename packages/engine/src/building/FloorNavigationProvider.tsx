@@ -1,84 +1,50 @@
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { reconcileFloorSelection } from "./floor-selection";
+import { createFloorNavigation, resolveFloorNavigation } from "./floor-navigation";
 
-export type FloorSelectionSource = "picker" | "walk" | "target";
-interface NavigationState {
-  activeFloorId: string;
-  wholeBuilding: boolean;
-  source: FloorSelectionSource;
-  request: number;
-}
-const initial: NavigationState = {
-  activeFloorId: "",
-  wholeBuilding: false,
-  source: "target",
-  request: 0,
-};
-const useNavigationState = (initialFloorId = "") => {
-  const [state, setState] = useState(() => ({ ...initial, activeFloorId: initialFloorId }));
-  const views = useRef(new Map<string, unknown>());
-  return useMemo(() => ({ state, setState, views }), [state]);
-};
-const FloorNavigationContext = createContext<ReturnType<typeof useNavigationState> | null>(null);
+export type { FloorSelectionSource } from "./floor-navigation";
+type FloorNavigation = ReturnType<typeof createFloorNavigation>;
+const FloorNavigationContext = createContext<FloorNavigation | null>(null);
+
 export function FloorNavigationProvider({
   children,
   initialFloorId,
+  storageKey,
 }: {
   children: ReactNode;
   initialFloorId?: string;
+  /** Opt in only for the routed workspace; previews and fixtures stay ephemeral. */
+  storageKey?: string;
 }) {
-  const value = useNavigationState(initialFloorId);
+  const [navigation] = useState(() => createFloorNavigation(initialFloorId, storageKey));
   return (
-    <FloorNavigationContext.Provider value={value}>{children}</FloorNavigationContext.Provider>
+    <FloorNavigationContext.Provider value={navigation}>{children}</FloorNavigationContext.Provider>
   );
 }
 
-/** Standalone fixtures have local state; routed product shares the provider above routes. */
+/** Standalone fixtures own an ephemeral instance; routed views use their provider. */
 export function useFloorNavigation(floors: readonly { id: string; belowGround?: boolean }[]) {
   const shared = useContext(FloorNavigationContext);
-  const local = useNavigationState();
-  const { state, setState, views } = shared ?? local;
-  const order = floors.map((floor) => floor.id);
-  const previousOrder = useRef(order);
-  const selected = reconcileFloorSelection(
-    state.activeFloorId
-      ? state
-      : { ...state, activeFloorId: floors.find((floor) => !floor.belowGround)?.id ?? "" },
-    previousOrder.current,
-    order,
+  const local = useRef<FloorNavigation | null>(null);
+  const navigation = shared ?? (local.current ??= createFloorNavigation());
+  const snapshot = useSyncExternalStore(
+    navigation.subscribe,
+    navigation.getSnapshot,
+    navigation.getSnapshot,
   );
   useEffect(() => {
-    previousOrder.current = order;
-    if (selected.activeFloorId !== state.activeFloorId)
-      setState((value) => ({ ...value, ...selected }));
-  }, [order, selected, state.activeFloorId, setState]);
-  const selectFloor = useCallback(
-    (id: string, source: FloorSelectionSource = "picker") => {
-      if (!id) return;
-      setState((value) => ({
-        activeFloorId: id,
-        wholeBuilding: false,
-        source,
-        request: value.request + (source === "walk" ? 0 : 1),
-      }));
-    },
-    [setState],
-  );
+    navigation.reconcile(floors);
+  }, [navigation, floors, snapshot.selection]);
   return {
-    ...state,
-    ...selected,
-    selectFloor,
-    setWholeBuilding: (wholeBuilding: boolean) =>
-      setState((value) => ({ ...value, wholeBuilding })),
-    views: views.current,
+    ...resolveFloorNavigation(snapshot, floors),
+    selectFloor: navigation.selectFloor,
+    setWholeBuilding: navigation.setWholeBuilding,
   };
 }

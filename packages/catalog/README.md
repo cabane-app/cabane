@@ -1,5 +1,40 @@
 # Cabane model catalog
 
+## Mailboxes and utility fixtures
+
+These connectable devices are available in Arrange and searchable in All items.
+Dimensions are inferred generic proportions, not manufacturer measurements.
+The electrical panel takes its lime-green casing, display and buttons from the
+Linky style without claiming an exact product replica.
+
+| Model ID              | Public component    | Size, width × height × depth                  | Arrange room → category |
+| --------------------- | ------------------- | --------------------------------------------- | ----------------------- |
+| `french-wall-mailbox` | `FrenchWallMailbox` | 30 × 40 × 16 cm                               | Entryway → Utility      |
+| `us-mailbox`          | `UsMailbox`         | 28 × 130 × 50 cm, including post and red flag | Outdoor → Outdoor       |
+| `electrical-panel`    | `ElectricalPanel`   | 20 × 32 × 10 cm                               | Laundry → Household     |
+| `kitchen-hood`        | `KitchenHood`       | 60 × 70 × 50 cm                               | Kitchen → Kitchen       |
+| `external-ac-unit`    | `ExternalAcUnit`    | 80 × 60 × 32 cm, including feet and grille    | Outdoor → Household     |
+
+The kitchen hood is one item with **Chimney canopy** (`chimney-canopy`, default)
+and **Inclined glass** (`inclined-glass`) variants sharing the same envelope.
+The two mailboxes remain independently placeable. All five models support independent width, height, and depth resizing. Their components and corresponding `*_SIZE` constants are
+exported from `@cabane/catalog/furnishing`. Device adapters ending in `Model`
+are exported from `@cabane/catalog/device`.
+
+Adding any of these items creates a fresh manual primary slot accepting `switch`,
+`input_boolean`, or `binary_sensor`. Connect a switch or helper for on/off controls,
+or an opening sensor for read-only open/closed status according to its Home
+Assistant device class. Sensor bindings do not gain control commands. Both hood
+variants keep the same capabilities. Additional readings use the normal secondary
+slots. Geometry remains static; the device module shows state and connectivity.
+Previously saved furnishing instances remain readable; re-add them from Arrange
+to get the connectable device version. No household connections are included.
+
+Wall models use Y=0 at their bottom and Z=0 at their back, facing +Z. Set their
+elevation for the intended mounting height. The US mailbox and external AC use
+a floor-contact origin at Y=0 and centered X/Z bounds. Outdoor is a browsing
+default; both can also be placed indoors, including a review room.
+
 ## Demo lounge media
 
 The existing `speaker` preset is a 26 × 39 × 26 cm media-player device. Its
@@ -951,3 +986,22 @@ resizable independently along its width and length. Casa Solstice uses a
 
 The garden swing offers a Cozy variant with a linen seat pad and three sage/clay
 cushions. Its original bare-timber variant remains available.
+
+## Item colors
+
+Arrange Details exposes **Color** and **Reset color** for native textile models:
+upholstered sofas, armchairs, footstools, padded chairs and benches, beds and
+crib bedding, rugs, loose cushions, parasols, awnings, towels, ironing-board
+covers, changing pads and the fabric bin in cube storage. Outdoor teak lounge
+seating and pool loungers use the same control. Motorized curtains and fabric
+roller blinds also support it.
+
+The optional six-digit hex `color` targets the main fabric. Wood, metal, wicker,
+decorative throw cushions, accent blankets, rug motifs and fringe keep their
+finishes. On garden benches and swings, color affects the padded variants;
+selecting a bare timber variant does not add a cushion. Reset removes the
+override and restores the selected variant's original palette.
+
+The wheelie bin uses the same field for its body, lid and molded front foot.
+Its wheels and rear handle keep their dark finish. No additional color channels
+or project fields are introduced.

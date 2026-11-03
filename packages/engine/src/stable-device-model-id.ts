@@ -30,6 +30,7 @@ export type StableDeviceModelId =
   | "woven-pendant"
   | "children-pendant"
   | "round-globe-wall-lamp"
+  | "smoked-globe-wall-light"
   | "wall-reading-spot"
   | "oak-wall-uplight"
   | "six-globe-ceiling-lamp"
@@ -80,4 +81,9 @@ export type StableDeviceModelId =
   | "pop-up-sprinkler"
   | "motorized-valve"
   | "siren"
-  | "smart-button";
+  | "smart-button"
+  | "french-wall-mailbox"
+  | "us-mailbox"
+  | "electrical-panel"
+  | "kitchen-hood"
+  | "external-ac-unit";

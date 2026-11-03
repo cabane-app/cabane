@@ -1,17 +1,17 @@
 import { Outlines, ToonMaterial } from "@cabane/engine";
 
-export function FoxFabricBin() {
+export function FoxFabricBin({ color }: { color?: string | undefined } = {}) {
   return (
     <group position={[-0.195, 0.565, 0.04]}>
       <mesh castShadow>
         <boxGeometry args={[0.31, 0.27, 0.285]} />
-        <ToonMaterial color="#a95f59" />
+        <ToonMaterial color={color ?? "#a95f59"} />
         <Outlines color="#6e4645" thickness={0.004} screenspace={false} />
       </mesh>
       {[-0.095, 0.095].map((x) => (
         <mesh key={x} position={[x, 0.17, 0.12]} rotation={[0, 0, x < 0 ? -0.22 : 0.22]}>
           <coneGeometry args={[0.06, 0.13, 4]} />
-          <ToonMaterial color="#a95f59" />
+          <ToonMaterial color={color ?? "#a95f59"} />
         </mesh>
       ))}
       {[-0.065, 0.065].map((x) => (

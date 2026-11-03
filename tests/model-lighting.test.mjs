@@ -208,6 +208,31 @@ await withModules(async (load) => {
       }
     }
   });
+  test("adaptive strip warnings use each instance's transformed length", () => {
+    const project = personalCabinet();
+    project.sceneItems[0] = { ...project.sceneItems[0], size: [4, 4, 4] };
+    const lighting = {
+      ...cabinetLighting(2),
+      sources: cabinetLighting(2).sources.map((source) => ({
+        ...source,
+        maxSpacingMeters: 0.2,
+      })),
+    };
+    assert.equal(api.modelLightingExecution(lighting).approximated, false);
+    const edited = api.editModelLighting(
+      { project, bindings: {} },
+      project.customModels[0].id,
+      lighting,
+      native,
+    );
+    const checked = api.validateHomeProject(edited.project, native);
+    assert.equal(checked.valid, true, JSON.stringify(checked.issues));
+    assert.equal(
+      checked.issues.filter((issue) => issue.code === "project.model-lighting-approximation")
+        .length,
+      1,
+    );
+  });
   test("an existing dense cabinet reopens, publishes and can be repaired without rewriting saved samples", () =>
     withStorageDom(async (dom) => {
       const project = personalCabinet();

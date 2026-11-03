@@ -231,7 +231,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                   if (!spawn) return;
                   poseRef.current = spawn;
                 }
-                floorNavigation.selectFloor(id);
+                floorNavigation.selectFloor(id, "picker");
                 setSelectedRoomId(null);
                 setSelectedDeviceId(null);
                 if (mode === "room") setMode("overview");

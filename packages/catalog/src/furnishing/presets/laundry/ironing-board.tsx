@@ -4,7 +4,10 @@ import { RoundedFurniturePanel } from "../construction";
 export const IRONING_BOARD_SIZE = [1.2, 0.9, 0.4] as const;
 
 /** Rounded padded sage board, steel trestles and connecting brace. */
-export function IroningBoard({ size = IRONING_BOARD_SIZE }: { size?: SceneItemSize } = {}) {
+export function IroningBoard({
+  size = IRONING_BOARD_SIZE,
+  color,
+}: { size?: SceneItemSize; color?: string | undefined } = {}) {
   return (
     <group
       name="ironing-board"
@@ -15,7 +18,7 @@ export function IroningBoard({ size = IRONING_BOARD_SIZE }: { size?: SceneItemSi
         name="padded-board"
         size={[1.2, 0.045, 0.4]}
         position={[0, 0.8775, 0]}
-        color="#81958a"
+        color={color ?? "#81958a"}
         radius={0.09}
       />
       <RoundedFurniturePanel

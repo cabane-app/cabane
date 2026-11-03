@@ -4,7 +4,7 @@ import { FoxFabricBin } from "./fox-fabric-bin";
 import { StorageTopGiraffe } from "./storage-top-giraffe";
 import { FRAME, FRAME_OUTLINE } from "./cube-storage-finish";
 
-export function CubeStorage() {
+export function CubeStorage({ color }: { color?: string | undefined } = {}) {
   return (
     <group name="kallax-bedroom-two-custom" userData={{ walkCollider: true }}>
       {[-0.39, 0.39].map((x) => (
@@ -29,7 +29,7 @@ export function CubeStorage() {
       <WovenCubeBin x={-0.195} y={0.215} />
       <WovenCubeBin x={0.195} y={0.215} />
       <WovenCubeBin x={0.195} y={0.565} />
-      <FoxFabricBin />
+      <FoxFabricBin color={color} />
       <StorageTopGiraffe />
     </group>
   );

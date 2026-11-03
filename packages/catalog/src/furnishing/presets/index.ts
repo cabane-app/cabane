@@ -15,3 +15,4 @@ export * from "./curtains";
 export * from "./countertop-appliances";
 export * from "./compact-sanitary";
 export * from "./rattan-bell-pendant";
+export * from "./utility";

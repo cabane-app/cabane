@@ -114,6 +114,9 @@ loop ends the drawing chain. Topology derives
 rooms, interior/exterior wall runs, junctions, footprint regions, and ceilings
 from the editable wall graph while retaining room identities where possible.
 Incomplete shells and ambiguous room merges produce actionable diagnostics.
+Room identity anchors stay strictly inside valid room polygons, including concave
+rooms. Renaming or editing room finishes preserves identities and metadata through
+history, Save and reopening without introducing a false merge.
 Rooms exist only inside wall-enclosed areas, so an open plan with several named
 areas separates them with `virtual` walls. Topology treats a virtual wall like any
 other boundary and preserves the flag through draft creation and re-derivation.
@@ -422,16 +425,44 @@ wall colors do not bleed across their boundary. Overlapping junction ownership
 with different edge finishes retains the general interior finish.
 
 Wall Finish exposes Exterior and Interior for exterior walls. Interior walls use
-one Wall color by default; Different colors on each side reveals independently
+one Wall finish by default; Different finishes on each side reveals independently
 editable faces. Side labels use adjacent room names when unambiguous, otherwise
 Side A / Side B. Hovering or focusing a color control highlights the corresponding
 wall face on the plan. Turning the toggle off copies Side A's color to both faces.
 Reset removes that face's override and restores the home's palette; resetting
 Exterior also removes a pre-existing override on its exterior face. These edits
 use the existing faceColors metadata, undo/redo, autosave and Save/import/export.
-The two-sided disclosure is editor state; differing stored face colors reopen it.
+The two-sided disclosure is editor state; differing stored face colors or patterns reopen it.
 Interior walls with differing faces use the general interior finish for Auto edges,
 even if an old exteriorColor value remains from their drawing history.
+
+Wall faces can also use Square tiles, Rectangular tiles, Striped wallpaper or
+Dotted wallpaper. Each face retains its paint color when switching to a pattern
+and back. Pattern color and repeat size (0.1–5 meters per complete repeat) are
+editable in the same Finish group. Interior walls share a finish until split;
+merging sides copies Side A's finish. Patterns wrap neither caps nor opening
+reveals and retain door, window and niche cutouts. They are generated locally,
+without remote textures.
+
+Custom image in the same selector accepts a local PNG, JPG or WebP of up to
+10 MiB and 32 megapixels. Choosing or replacing an image shows a preview and
+filename. Image width (0.1–20 meters) sets the horizontal repeat; the vertical
+repeat preserves the image's proportions and both dimensions are shown in the
+selected measurement units. Invalid replacements leave the previous finish intact.
+Preparation happens entirely in the browser: images are resized to at most 1024
+pixels per edge, flattened onto white and saved as JPEG with metadata removed,
+within 192 KiB per image. Transparent images therefore have a white background.
+Choosing Paint or a generated pattern removes the image from that face through
+ordinary undo/redo. The image repeats across the whole face and respects the same
+caps, reveals and cutouts as generated patterns.
+
+Optional `WallSpec.faceFinishes.left/right` overrides the selected face's paint
+without deleting it. Optimized custom images are embedded in that JSON metadata,
+so history, publication, JSON/`.cabane` backups and HA storage preserve them without
+changing the separate GLB asset protocol. The existing workspace document size
+limit still applies. Custom images and generated patterns require a matching
+updated frontend on every client. Older clients reject unsupported finish data
+instead of stripping it. Existing projects need no migration.
 
 The Construct floor menu places **Setup apartment floor** directly below **Add floor below**.
 Its dialog sets the storey where the lowest modeled floor starts (0–100, with 0

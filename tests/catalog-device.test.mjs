@@ -24,6 +24,20 @@ await withModules(async (load) => {
     assert.deepEqual(ids.sort(), [...catalog.STABLE_DEVICE_MODEL_IDS].sort());
   });
 
+  test("the under-cabinet LED strip uses adaptive full-length lighting", () => {
+    const definition = catalog.stableDeviceRegistry["under-cabinet-led-strip"];
+    assert.equal(definition.sceneLight, undefined);
+    assert.deepEqual(definition.lighting.sources, [
+      {
+        kind: "strip",
+        start: [-0.492, 0.002, 0],
+        end: [0.492, 0.002, 0],
+        samples: 2,
+        maxSpacingMeters: engine.DEFAULT_STRIP_MAX_SPACING_METERS,
+      },
+    ]);
+  });
+
   test("microwave glass and controls sit clearly ahead of their backing surfaces", async () => {
     for (const visualState of [
       "connected-active",
@@ -224,6 +238,7 @@ await withModules(async (load) => {
     "table-lamp",
     "rattan-bell-pendant",
     "round-globe-wall-lamp",
+    "smoked-globe-wall-light",
     "wall-reading-spot",
     "oak-wall-uplight",
     "six-globe-ceiling-lamp",
@@ -232,6 +247,11 @@ await withModules(async (load) => {
     "clip-reading-lamp",
     "woven-pendant",
     "children-pendant",
+    "french-wall-mailbox",
+    "us-mailbox",
+    "electrical-panel",
+    "kitchen-hood",
+    "external-ac-unit",
   ];
 
   test("irrigation sprinklers animate only while active and respect reduced motion", async () => {
@@ -437,6 +457,7 @@ await withModules(async (load) => {
       "floor-lamp",
       "rattan-bell-pendant",
       "round-globe-wall-lamp",
+      "smoked-globe-wall-light",
       "wall-reading-spot",
       "oak-wall-uplight",
       "six-globe-ceiling-lamp",
@@ -502,6 +523,11 @@ await withModules(async (load) => {
       "compact-car",
       "electric-sedan",
       "pickup-truck",
+      "french-wall-mailbox",
+      "us-mailbox",
+      "electrical-panel",
+      "kitchen-hood",
+      "external-ac-unit",
     ]);
     assert.deepEqual([...validationCore.STABLE_MODELS], catalog.STABLE_DEVICE_MODEL_IDS);
     for (const id of catalog.STABLE_DEVICE_MODEL_IDS) {
@@ -512,11 +538,13 @@ await withModules(async (load) => {
         definition.complexity.visibleMeshes <=
           (["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
             ? 72
-            : id === "integrated-roller-shutter"
-              ? 35
-              : id === "pergola-string-lights"
-                ? 17
-                : 16),
+            : id === "external-ac-unit"
+              ? 37
+              : id === "integrated-roller-shutter"
+                ? 35
+                : id === "pergola-string-lights"
+                  ? 17
+                  : 16),
       );
       assert.ok(
         definition.complexity.triangles <=

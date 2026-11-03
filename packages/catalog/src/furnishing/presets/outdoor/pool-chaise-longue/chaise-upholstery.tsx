@@ -18,7 +18,13 @@ export const CHAISE_BACK_CENTER = [0, 0.85 - backVerticalExtent, -1.05 + backDep
 const sage = "#94a58c";
 const sageOutline = "#687662";
 
-export function PoolChaiseUpholstery({ cozy = false }: { cozy?: boolean }) {
+export function PoolChaiseUpholstery({
+  cozy = false,
+  color,
+}: {
+  cozy?: boolean;
+  color?: string | undefined;
+}) {
   return (
     <group name="pool-chaise-upholstery">
       {cozy && (
@@ -43,7 +49,7 @@ export function PoolChaiseUpholstery({ cozy = false }: { cozy?: boolean }) {
         name="pool-chaise-seat-cushion"
         size={[0.68, 0.09, 1.5]}
         position={[0, 0.255, 0.3]}
-        color={sage}
+        color={color ?? sage}
         outlineColor={sageOutline}
         radius={0.035}
       />
@@ -52,7 +58,7 @@ export function PoolChaiseUpholstery({ cozy = false }: { cozy?: boolean }) {
         size={[0.68, BACK_THICKNESS, BACK_DEPTH]}
         position={[...CHAISE_BACK_CENTER]}
         rotation={[CHAISE_BACK_ANGLE_RADIANS, 0, 0]}
-        color={sage}
+        color={color ?? sage}
         outlineColor={sageOutline}
         radius={0.035}
       />

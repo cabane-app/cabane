@@ -4,7 +4,13 @@ import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
 
 export const TUFTED_DIAMOND_RUG_SIZE = [2.6, 0.016, 2] as const;
-export function TuftedDiamondRug({ size = TUFTED_DIAMOND_RUG_SIZE }: { size?: SceneItemSize }) {
+export function TuftedDiamondRug({
+  size = TUFTED_DIAMOND_RUG_SIZE,
+  color,
+}: {
+  size?: SceneItemSize;
+  color?: string | undefined;
+}) {
   const diamond = useMemo(() => {
     const shape = new Shape();
     shape.moveTo(0, 0.3);
@@ -26,7 +32,7 @@ export function TuftedDiamondRug({ size = TUFTED_DIAMOND_RUG_SIZE }: { size?: Sc
       <RoundedFurniturePanel
         size={[2.4, 0.012, 2]}
         position={[0, 0.006, 0]}
-        color="#ddd7c8"
+        color={color ?? "#ddd7c8"}
         radius={0.004}
         outline={false}
       />

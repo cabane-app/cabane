@@ -14,6 +14,7 @@ import {
 import { FlowerPot, FLOWER_POT_SIZE } from "../presets/outdoor";
 export const cozyDecorDefinitions = {
   "round-jute-rug": defineFurnishingModel({
+    defaultColor: "#c7ae7d",
     component: RoundJuteRug,
     label: "Round braided jute rug",
     category: "Decor",
@@ -42,6 +43,7 @@ export const cozyDecorDefinitions = {
     ],
   }),
   "loose-throw-cushion": defineFurnishingModel({
+    defaultColor: "#8e9e7d",
     component: LooseThrowCushion,
     label: "Throw cushion",
     category: "Decor",

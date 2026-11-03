@@ -1,6 +1,7 @@
 import { Euler, Matrix4, Vector3 } from "three";
 import {
   modelLightSources,
+  DEFAULT_STRIP_MAX_SPACING_METERS,
   type CustomModelNormalization,
   type CustomModelLight,
   type CustomModelLightSource,
@@ -41,10 +42,15 @@ export function moveLightSource(
 }
 
 export const stripSamples = (start: ModelVector, end: ModelVector) =>
-  Math.max(2, Math.ceil(Math.hypot(...start.map((n, i) => n - end[i])) / 0.6) + 1);
+  Math.max(
+    2,
+    Math.ceil(Math.hypot(...start.map((n, i) => n - end[i])) / DEFAULT_STRIP_MAX_SPACING_METERS) +
+      1,
+  );
 
 export function fittedLightStrip(
   bounds: DeviceModelBounds,
+  maxSpacingMeters: number | null = DEFAULT_STRIP_MAX_SPACING_METERS,
 ): CustomModelLightSource & { kind: "strip" } {
   const lengths = bounds.max.map((n, i) => n - bounds.min[i]);
   const axis = lengths.indexOf(Math.max(...lengths));
@@ -56,7 +62,8 @@ export function fittedLightStrip(
     number,
     number,
   ];
-  return { kind: "strip", start, end, samples: stripSamples(start, end) };
+  const strip = { kind: "strip" as const, start, end, samples: stripSamples(start, end) };
+  return maxSpacingMeters === null ? strip : { ...strip, maxSpacingMeters };
 }
 
 export function lightingError(light: CustomModelLight | null): string | null {
@@ -76,6 +83,11 @@ export function lightingError(light: CustomModelLight | null): string | null {
     if (source.kind !== "strip") continue;
     if (!Number.isSafeInteger(source.samples) || source.samples < 2)
       return "Enter a whole number of at least two samples for each strip.";
+    if (
+      source.maxSpacingMeters !== undefined &&
+      (!Number.isFinite(source.maxSpacingMeters) || source.maxSpacingMeters <= 0)
+    )
+      return "Adaptive strip spacing must be greater than zero.";
     if (source.end.every((n, i) => n === source.start[i]))
       return "Place each strip end away from its start.";
   }

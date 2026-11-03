@@ -343,7 +343,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             floors={snapshot.project.floors}
             selectedId={activeFloorId}
             disabled={floorControlsDisabled}
-            onSelect={(id) => floorNavigation.selectFloor(id)}
+            onSelect={(id) => floorNavigation.selectFloor(id, "picker")}
             onAdd={mode === "construct" ? () => setFloorDialog("add-above") : undefined}
             onAddBelow={mode === "construct" ? () => setFloorDialog("add-below") : undefined}
             onRename={mode === "construct" ? () => setFloorDialog("rename") : undefined}

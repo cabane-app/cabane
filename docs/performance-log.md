@@ -1,5 +1,33 @@
 # Performance measurements
 
+## Resume here
+
+The harness and first rendering fixes are ready to ship; mobile smoothness is
+still unfinished. The target device is **iPhone 16e**, with no physical-device
+capture yet. Latest Safari Simulator camera replay: **57.2 FPS, p95 27 ms,
+p99 33 ms**. Latest Chromium CPU ×4 touch replay: **32.3 FPS, p95 40.9 ms**.
+Our target remains **p95 ≤20 ms, p99 ≤33.3 ms, <1% above 33.3 ms**.
+
+- Start with [the harness guide](performance.md) and the latest
+  [Safari replay](performance-baselines/2026-11-03-current-ios-simulator-quiet.json)
+  or [CPU stress baseline](performance-baselines/2026-11-03-deferred-preview-cpu4.json).
+  Keep these separate series. Compact baselines are committed; raw arrays,
+  charts, CPU traces, temporary HA sessions and private mappings are ignored.
+- Keep the connected repo home, night, cloudy HA weather and ten lights on.
+  Validate/refresh the local test session as described in the guide. Benchmark
+  commands do not set up or change HA state.
+- First compare the current renderer with a reference under the same host load.
+  The extra culling change needs a contemporaneous comparison: the latest p95
+  is worse than the earlier 19 ms checkpoint despite similar render submission
+  timing. Do not claim a stable speedup from the best intermediate capture.
+- Then profile steady CPU work in batching/material checks and scene traversal.
+  Preserve the verified fixes for geometry replacement and thumbnail stalls.
+  Validate continuous gestures on the iPhone 16e before declaring mobile success.
+- Upstream changes were integrated for delivery after these captures. They add
+  catalog/color behavior, including sofa color controls. The measurements retain
+  their original source revisions; capture a fresh reference before the next
+  optimization, and never bypass a scene/configuration mismatch.
+
 Keep one row per useful experiment. Save raw JSON and charts in ignored
 `test-results/performance/`; retain a small, synthetic baseline JSON alongside
 this log when a comparison needs to survive checkout cleanup. Do not commit

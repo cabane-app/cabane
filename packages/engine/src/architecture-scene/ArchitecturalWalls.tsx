@@ -1,3 +1,5 @@
+import { splitWallSurfaceGeometry } from "../architecture-geometry/wall-surface-geometry";
+import { useWallSurfaceTextures } from "./wall-surface-textures";
 import { wallFrame } from "../architecture-geometry/wall-coordinate-frame";
 import { wallFaceFinish, wallEdgeFinish } from "../architecture-geometry/wall-face-finish";
 import { BufferGeometry, Color, Float32BufferAttribute } from "three";
@@ -85,15 +87,19 @@ export function ArchitecturalWall({
       }
       geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
     }
-    return result;
+    return [
+      ...[result.interior, result.exterior].flatMap((geometry, index) =>
+        geometry
+          ? splitWallSurfaceGeometry(geometry, wall, floor).map((surface, part) => ({
+              ...surface,
+              name: `wall-${wall.id}${index ? "-exterior-face" : ""}${part ? `-${part}` : ""}`,
+            }))
+          : [],
+      ),
+    ];
   }, [floor, openings, wall, interiorColor, exteriorColor]);
-  useEffect(
-    () => () => {
-      geometry.interior?.dispose();
-      geometry.exterior?.dispose();
-    },
-    [geometry],
-  );
+  const textures = useWallSurfaceTextures(geometry);
+  useEffect(() => () => geometry.forEach((surface) => surface.geometry.dispose()), [geometry]);
   const normal = wallExteriorNormal(wall, floor) ?? ([0, 0] as const);
   return (
     <CameraFacingFade
@@ -102,16 +108,19 @@ export function ArchitecturalWall({
       normal={normal}
       reducedMotion={reducedMotion}
     >
-      {geometry.interior && (
-        <mesh name={`wall-${wall.id}`} geometry={geometry.interior} castShadow>
-          <ToonMaterial color="white" vertexColors />
-        </mesh>
-      )}
-      {geometry.exterior && (
-        <mesh name={`wall-${wall.id}-exterior-face`} geometry={geometry.exterior} castShadow>
-          <ToonMaterial color="white" vertexColors />
-        </mesh>
-      )}
+      {geometry.map(({ geometry, name, finish }) => {
+        const texture = finish ? textures.get(finish) : null;
+        return (
+          <mesh key={name} name={name} geometry={geometry} castShadow>
+            <ToonMaterial
+              key={texture ? "pattern" : "solid"}
+              color={texture ? "white" : (finish?.color ?? "white")}
+              map={texture}
+              vertexColors
+            />
+          </mesh>
+        );
+      })}
     </CameraFacingFade>
   );
 }
@@ -146,13 +155,20 @@ export function ArchitecturalWalls({
       }),
     [exteriorColor, floor, interiorColor, baseElevationMeters, below, above],
   );
+  const textures = useWallSurfaceTextures(groups);
   useEffect(() => () => groups.forEach(({ geometry }) => geometry.dispose()), [groups]);
   return (
     <>
-      {groups.map(({ geometry, outwardNormal, fadeNormals }, index) => {
+      {groups.map(({ geometry, outwardNormal, fadeNormals, finish }, index) => {
+        const texture = finish ? textures.get(finish) : null;
         const wall = (
           <mesh key={`mesh-${index}`} geometry={geometry} castShadow {...selectionHandlers}>
-            <ToonMaterial color="white" vertexColors />
+            <ToonMaterial
+              key={texture ? "pattern" : "solid"}
+              color={texture ? "white" : (finish?.color ?? "white")}
+              map={texture}
+              vertexColors
+            />
             <RoomWallEmphasis
               geometry={geometry}
               floor={floor}

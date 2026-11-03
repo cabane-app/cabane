@@ -420,6 +420,12 @@
                                       "const": "strip"
                                     }
                                   },
+                                  "maxSpacingMeters": {
+                                    "optional": true,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
                                   "samples": {
                                     "optional": false,
                                     "schema": {
@@ -495,6 +501,12 @@
                                   }
                                 ],
                                 "elementFlags": [1, 1, 1]
+                              }
+                            },
+                            "maxSpacingMeters": {
+                              "optional": true,
+                              "schema": {
+                                "type": "number"
                               }
                             },
                             "samples": {
@@ -2807,6 +2819,203 @@
                             }
                           }
                         },
+                        "faceFinishes": {
+                          "optional": true,
+                          "schema": {
+                            "properties": {
+                              "left": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "properties": {
+                                        "color": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "#ffffff"
+                                          }
+                                        },
+                                        "image": {
+                                          "optional": false,
+                                          "schema": {
+                                            "properties": {
+                                              "dataUrl": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "height": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              },
+                                              "name": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "width": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "pattern": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "custom-image"
+                                          }
+                                        },
+                                        "repeatMeters": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "properties": {
+                                        "color": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "pattern": {
+                                          "optional": false,
+                                          "schema": {
+                                            "anyOf": [
+                                              {
+                                                "const": "dotted-wallpaper"
+                                              },
+                                              {
+                                                "const": "square-tile"
+                                              },
+                                              {
+                                                "const": "striped-wallpaper"
+                                              },
+                                              {
+                                                "const": "subway-tile"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "repeatMeters": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "right": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "properties": {
+                                        "color": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "#ffffff"
+                                          }
+                                        },
+                                        "image": {
+                                          "optional": false,
+                                          "schema": {
+                                            "properties": {
+                                              "dataUrl": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "height": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              },
+                                              "name": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "width": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "pattern": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "custom-image"
+                                          }
+                                        },
+                                        "repeatMeters": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "properties": {
+                                        "color": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "pattern": {
+                                          "optional": false,
+                                          "schema": {
+                                            "anyOf": [
+                                              {
+                                                "const": "dotted-wallpaper"
+                                              },
+                                              {
+                                                "const": "square-tile"
+                                              },
+                                              {
+                                                "const": "striped-wallpaper"
+                                              },
+                                              {
+                                                "const": "subway-tile"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "repeatMeters": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
                         "from": {
                           "optional": false,
                           "schema": {
@@ -3240,6 +3449,12 @@
                                     "const": "strip"
                                   }
                                 },
+                                "maxSpacingMeters": {
+                                  "optional": true,
+                                  "schema": {
+                                    "type": "number"
+                                  }
+                                },
                                 "samples": {
                                   "optional": false,
                                   "schema": {
@@ -3315,6 +3530,12 @@
                                 }
                               ],
                               "elementFlags": [1, 1, 1]
+                            }
+                          },
+                          "maxSpacingMeters": {
+                            "optional": true,
+                            "schema": {
+                              "type": "number"
                             }
                           },
                           "samples": {
@@ -7771,6 +7992,203 @@
                               "optional": true,
                               "schema": {
                                 "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "faceFinishes": {
+                        "optional": true,
+                        "schema": {
+                          "properties": {
+                            "left": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "properties": {
+                                      "color": {
+                                        "optional": false,
+                                        "schema": {
+                                          "const": "#ffffff"
+                                        }
+                                      },
+                                      "image": {
+                                        "optional": false,
+                                        "schema": {
+                                          "properties": {
+                                            "dataUrl": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "height": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "name": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "width": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "number"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "pattern": {
+                                        "optional": false,
+                                        "schema": {
+                                          "const": "custom-image"
+                                        }
+                                      },
+                                      "repeatMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "properties": {
+                                      "color": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "pattern": {
+                                        "optional": false,
+                                        "schema": {
+                                          "anyOf": [
+                                            {
+                                              "const": "dotted-wallpaper"
+                                            },
+                                            {
+                                              "const": "square-tile"
+                                            },
+                                            {
+                                              "const": "striped-wallpaper"
+                                            },
+                                            {
+                                              "const": "subway-tile"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "repeatMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            "right": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "properties": {
+                                      "color": {
+                                        "optional": false,
+                                        "schema": {
+                                          "const": "#ffffff"
+                                        }
+                                      },
+                                      "image": {
+                                        "optional": false,
+                                        "schema": {
+                                          "properties": {
+                                            "dataUrl": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "height": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "name": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "width": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "number"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "pattern": {
+                                        "optional": false,
+                                        "schema": {
+                                          "const": "custom-image"
+                                        }
+                                      },
+                                      "repeatMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "properties": {
+                                      "color": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "pattern": {
+                                        "optional": false,
+                                        "schema": {
+                                          "anyOf": [
+                                            {
+                                              "const": "dotted-wallpaper"
+                                            },
+                                            {
+                                              "const": "square-tile"
+                                            },
+                                            {
+                                              "const": "striped-wallpaper"
+                                            },
+                                            {
+                                              "const": "subway-tile"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "repeatMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
                               }
                             }
                           }
