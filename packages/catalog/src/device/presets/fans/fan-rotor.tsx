@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import { ExtrudeGeometry, Shape, type Group } from "three";
+import { useEffect, useMemo } from "react";
+import { ExtrudeGeometry, Shape } from "three";
 import { Outlines, ToonMaterial, type HomeDeviceModelProps } from "@cabane/engine";
-import { fanSpeedFactor } from "./fan-operation";
+import { useFanRotation } from "./use-fan-rotation";
 
 /** Swept, rounded blades in the XY plane, turning about the motor's Z axis. */
 export function FanRotor({
@@ -17,7 +16,10 @@ export function FanRotor({
   count: number;
   color: string;
 } & Pick<HomeDeviceModelProps, "state" | "visualState" | "reducedMotion">) {
-  const rotor = useRef<Group>(null);
+  const rotor = useFanRotation(
+    { ...(state === undefined ? {} : { state }), visualState, reducedMotion },
+    "z",
+  );
   const geometry = useMemo(() => {
     const blade = new Shape();
     blade.moveTo(radius * 0.12, -radius * 0.07);
@@ -36,13 +38,6 @@ export function FanRotor({
     return result;
   }, [radius]);
   useEffect(() => () => geometry.dispose(), [geometry]);
-  const speed = fanSpeedFactor({ ...(state === undefined ? {} : { state: state }), visualState });
-  useFrame(({ invalidate }, delta) => {
-    if (!rotor.current || reducedMotion || speed === 0) return;
-    rotor.current.rotation.z =
-      (rotor.current.rotation.z - Math.min(delta, 0.05) * speed * 12) % (Math.PI * 2);
-    invalidate();
-  });
   return (
     <group ref={rotor} name="fan-rotor">
       {Array.from({ length: count }, (_, index) => (
