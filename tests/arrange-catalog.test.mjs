@@ -149,7 +149,7 @@ await withModules(async (load) => {
   });
 
   test("ordinary furnishings and devices can be applied outside or without rooms", () => {
-    for (const modelId of ["three-seat-sofa", "speaker"]) {
+    for (const modelId of ["three-seat-sofa", "speaker", "computer-fan", "ventilation-fan"]) {
       for (const at of [
         [-20, -20],
         [2, 2],
@@ -159,6 +159,15 @@ await withModules(async (load) => {
         assert.ok(candidate.placement, candidate.error);
         const item = createCatalogItem(get(modelId), candidate.placement, []);
         const project = { ...ownerHomeProject, floors: [projectFloor], sceneItems: [item] };
+        const restored = engine.parseHomeProject(JSON.stringify(project));
+        assert.equal(restored.valid, true);
+        assert.deepEqual(restored.project.sceneItems, project.sceneItems);
+        if (["computer-fan", "ventilation-fan"].includes(modelId)) {
+          assert.deepEqual(item.entitySlots[0].compatibleDomains, ["fan"]);
+          assert.equal(item.entitySlots[0].deviceRole, "primary");
+          assert.equal(item.entitySlots[0].required, true);
+          assert.equal(item.entitySlots[0].autoMap, "manual");
+        }
         const result = engine.validateHomeProject(project, ownerProjectRegistries);
         assert.deepEqual(
           result.issues.filter((issue) => issue.path.startsWith("sceneItems[")),
@@ -397,6 +406,8 @@ await withModules(async (load) => {
       "ceiling-fan",
       "table-fan",
       "pedestal-fan",
+      "computer-fan",
+      "ventilation-fan",
     ]) {
       const entry = get(modelId);
       const candidate = catalogStartPlacement(entry, floor, [2, 2]);
@@ -745,7 +756,22 @@ await withModules(async (load) => {
     assert.equal(new Set(collision.map((entry) => entry.key)).size, 2);
     assert.deepEqual(
       filterCatalog(entries, "all", "fan").map((entry) => entry.modelId),
-      ["bathroom-extractor-fan", "ceiling-fan", "pedestal-fan", "table-fan"],
+      [
+        "bathroom-extractor-fan",
+        "ceiling-fan",
+        "computer-fan",
+        "pedestal-fan",
+        "table-fan",
+        "ventilation-fan",
+      ],
+    );
+    assert.deepEqual(
+      filterCatalog(entries, "laundry", "fan").map((entry) => entry.modelId),
+      [],
+    );
+    assert.deepEqual(
+      filterCatalog(entries, "living-room", "fan").map((entry) => entry.modelId),
+      ["ceiling-fan", "computer-fan", "ventilation-fan"],
     );
     assert.equal(filterCatalog(entries, "bedroom", "fan")[0].modelId, "pedestal-fan");
     assert.equal(filterCatalog(entries, "living-room", "fan")[0].modelId, "ceiling-fan");
@@ -945,6 +971,8 @@ await withModules(async (load) => {
       "ceiling-fan",
       "table-fan",
       "pedestal-fan",
+      "computer-fan",
+      "ventilation-fan",
     ]) {
       const entry = get(modelId);
       const candidate = placementCandidate(entry, floor, {

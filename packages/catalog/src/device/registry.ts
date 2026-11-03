@@ -16,6 +16,7 @@ import { heatedTowelRailDefinition } from "./definitions/heated-towel-rail";
 import { utilityDeviceDefinitions } from "./definitions/utility";
 import { underCabinetLedStripDefinition } from "./definitions/under-cabinet-led-strip";
 import { builtInMicrowaveDefinition, microwaveDefinition } from "./definitions/microwaves";
+import { computerFanDefinition, ventilationFanDefinition } from "./definitions/fan-devices";
 import { terracottaPendantDefinition, whiteDomePendantDefinition } from "./definitions/pendants";
 import { rattanBellPendantDeviceDefinition } from "./definitions/rattan-bell-pendant";
 import { astroParallelWallLightDeviceDefinition } from "./definitions/astro-parallel-wall-light";
@@ -546,6 +547,8 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     interaction,
     complexity: { visibleMeshes: 6, triangles: 920 },
   }),
+  "computer-fan": computerFanDefinition,
+  "ventilation-fan": ventilationFanDefinition,
   "ceiling-fan": defineDeviceModel({
     defaultRoomType: "living-room",
     component: CeilingFanModel,
