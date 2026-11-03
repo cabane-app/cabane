@@ -247,6 +247,11 @@ await withModules(async (load) => {
     "clip-reading-lamp",
     "woven-pendant",
     "children-pendant",
+    "french-wall-mailbox",
+    "us-mailbox",
+    "electrical-panel",
+    "kitchen-hood",
+    "external-ac-unit",
   ];
 
   test("irrigation sprinklers animate only while active and respect reduced motion", async () => {
@@ -518,6 +523,11 @@ await withModules(async (load) => {
       "compact-car",
       "electric-sedan",
       "pickup-truck",
+      "french-wall-mailbox",
+      "us-mailbox",
+      "electrical-panel",
+      "kitchen-hood",
+      "external-ac-unit",
     ]);
     assert.deepEqual([...validationCore.STABLE_MODELS], catalog.STABLE_DEVICE_MODEL_IDS);
     for (const id of catalog.STABLE_DEVICE_MODEL_IDS) {
@@ -528,11 +538,13 @@ await withModules(async (load) => {
         definition.complexity.visibleMeshes <=
           (["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
             ? 72
-            : id === "integrated-roller-shutter"
-              ? 35
-              : id === "pergola-string-lights"
-                ? 17
-                : 16),
+            : id === "external-ac-unit"
+              ? 37
+              : id === "integrated-roller-shutter"
+                ? 35
+                : id === "pergola-string-lights"
+                  ? 17
+                  : 16),
       );
       assert.ok(
         definition.complexity.triangles <=

@@ -2,6 +2,7 @@ import { defineFurnishingModel } from "@cabane/engine";
 import { UsMailbox, US_MAILBOX_SIZE } from "../presets/utility/us-mailbox";
 
 export const usMailboxDefinition = defineFurnishingModel({
+  legacyOnly: true,
   component: UsMailbox,
   label: "US mailbox",
   category: "Outdoor",

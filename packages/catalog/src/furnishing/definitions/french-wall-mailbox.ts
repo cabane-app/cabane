@@ -5,6 +5,7 @@ import {
 } from "../presets/utility/french-wall-mailbox";
 
 export const frenchWallMailboxDefinition = defineFurnishingModel({
+  legacyOnly: true,
   component: FrenchWallMailbox,
   label: "French wall mailbox",
   category: "Utility",

@@ -6,6 +6,7 @@ import {
 } from "../presets/utility/kitchen-hood";
 
 export const kitchenHoodDefinition = defineFurnishingModel({
+  legacyOnly: true,
   component: KitchenHood,
   label: "Kitchen hood",
   category: "Kitchen",

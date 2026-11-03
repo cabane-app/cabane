@@ -2,6 +2,7 @@ import { defineFurnishingModel } from "@cabane/engine";
 import { ExternalAcUnit, EXTERNAL_AC_UNIT_SIZE } from "../presets/utility/external-ac-unit";
 
 export const externalAcUnitDefinition = defineFurnishingModel({
+  legacyOnly: true,
   component: ExternalAcUnit,
   label: "External AC unit",
   category: "Household",
