@@ -10,19 +10,48 @@ import {
 } from "three";
 import { sceneLightMaterialHooks } from "../scene-light-wall-mask";
 
+function hasBatchableTransform(mesh: Mesh): boolean {
+  if (mesh.matrixWorld.determinant() <= 0) return false;
+  // Three's batching normal transform supports scale/rotation, not shear.
+  const e = mesh.matrixWorld.elements;
+  for (const [a, b] of [
+    [0, 4],
+    [0, 8],
+    [4, 8],
+  ]) {
+    const dot = e[a] * e[b] + e[a + 1] * e[b + 1] + e[a + 2] * e[b + 2];
+    const aa = e[a] ** 2 + e[a + 1] ** 2 + e[a + 2] ** 2;
+    const bb = e[b] ** 2 + e[b + 1] ** 2 + e[b + 2] ** 2;
+    if (dot * dot > 1e-10 * aa * bb) return false;
+  }
+  return true;
+}
+
+/** After membership is checked, only fade overrides and transforms can differ. */
+export function canRenderToonBatch(mesh: Mesh): boolean {
+  const material = mesh.material as MeshToonMaterial;
+  return (
+    !material.transparent &&
+    material.opacity === 1 &&
+    material.depthWrite === (material.userData.cameraFadeBaseDepthWrite ?? material.depthWrite) &&
+    mesh.castShadow === (mesh.userData.cameraFadeBaseCastShadow ?? mesh.castShadow) &&
+    hasBatchableTransform(mesh)
+  );
+}
+
 /** Conservative eligibility: preserve custom shaders, transparency and deformation. */
-export function toonBatchKey(
+export function isToonBatchCompatible(
   mesh: Mesh,
   allowInstances = false,
   cacheMembership = false,
-): string | null {
+): boolean {
   for (let parent = mesh.parent; parent; parent = parent.parent) {
-    if (parent.type === "Group" && parent.renderOrder !== 0) return null;
+    if (parent.type === "Group" && parent.renderOrder !== 0) return false;
   }
   const instances = mesh as InstancedMesh;
-  if (instances.isInstancedMesh && (!allowInstances || instances.morphTexture)) return null;
+  if (instances.isInstancedMesh && (!allowInstances || instances.morphTexture)) return false;
   const material = mesh.material as MeshToonMaterial;
-  if (Array.isArray(material) || !material.isMeshToonMaterial) return null;
+  if (Array.isArray(material) || !material.isMeshToonMaterial) return false;
   const hooks = sceneLightMaterialHooks(material);
   const fade = material.userData;
   const transparent = cacheMembership
@@ -31,12 +60,6 @@ export function toonBatchKey(
   const opacity = cacheMembership
     ? ((fade.cameraFadeBaseOpacity as number | undefined) ?? material.opacity)
     : material.opacity;
-  const depthWrite = cacheMembership
-    ? ((fade.cameraFadeBaseDepthWrite as boolean | undefined) ?? material.depthWrite)
-    : material.depthWrite;
-  const castShadow = cacheMembership
-    ? ((mesh.userData.cameraFadeBaseCastShadow as boolean | undefined) ?? mesh.castShadow)
-    : mesh.castShadow;
   if (
     mesh.type !== "Mesh" ||
     Array.isArray(material) ||
@@ -68,21 +91,9 @@ export function toonBatchKey(
     material.emissiveMap ||
     material.aoMap ||
     material.lightMap ||
-    (!cacheMembership && mesh.matrixWorld.determinant() <= 0)
+    (!cacheMembership && !hasBatchableTransform(mesh))
   )
-    return null;
-  // Three's batching normal transform supports scale/rotation, not shear.
-  const e = mesh.matrixWorld.elements;
-  for (const [a, b] of [
-    [0, 4],
-    [0, 8],
-    [4, 8],
-  ]) {
-    const dot = e[a] * e[b] + e[a + 1] * e[b + 1] + e[a + 2] * e[b + 2];
-    const aa = e[a] ** 2 + e[a + 1] ** 2 + e[a + 2] ** 2;
-    const bb = e[b] ** 2 + e[b + 1] ** 2 + e[b + 2] ** 2;
-    if (!cacheMembership && dot * dot > 1e-10 * aa * bb) return null;
-  }
+    return false;
   const geometry = mesh.geometry;
   if (
     geometry.drawRange.start !== 0 ||
@@ -90,7 +101,7 @@ export function toonBatchKey(
       (geometry.index?.count ?? geometry.attributes.position?.count ?? 0) ||
     Object.keys(geometry.morphAttributes).length
   )
-    return null;
+    return false;
   for (const name of material.vertexColors
     ? ["position", "normal", "color"]
     : ["position", "normal"]) {
@@ -101,8 +112,25 @@ export function toonBatchKey(
       !(attribute.array instanceof Float32Array) ||
       attribute.normalized
     )
-      return null;
+      return false;
   }
+  return true;
+}
+
+/** Only batching needs a serialized material group; LOD needs eligibility alone. */
+export function toonBatchKey(
+  mesh: Mesh,
+  allowInstances = false,
+  cacheMembership = false,
+): string | null {
+  if (!isToonBatchCompatible(mesh, allowInstances, cacheMembership)) return null;
+  const material = mesh.material as MeshToonMaterial;
+  const depthWrite = cacheMembership
+    ? ((material.userData.cameraFadeBaseDepthWrite as boolean | undefined) ?? material.depthWrite)
+    : material.depthWrite;
+  const castShadow = cacheMembership
+    ? ((mesh.userData.cameraFadeBaseCastShadow as boolean | undefined) ?? mesh.castShadow)
+    : mesh.castShadow;
   return [
     material.gradientMap?.uuid ?? "",
     JSON.stringify(material.defines),

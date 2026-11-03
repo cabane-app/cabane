@@ -59,7 +59,31 @@ ignored `test-results/performance/`. Refresh the session if it expires. The
 loopback harness is left running at
 `http://127.0.0.1:4180/tests/performance-harness.html` for the next phase.
 
-No rendering optimization was made. Stop here for compaction.
+## Camera gesture investigation, November 3
+
+The input-inclusive `touch-orbit-v1` baseline uses trusted Chromium touch events:
+one-finger pan, then two-finger rotation/pinch, repeating every four seconds.
+It retains the same connected Solstice/night/cloudy/ten-light workload. The camera
+and controls target are restored between runs. Source `ddc00e9` is the committed
+harness before any rendering changes.
+
+The [CPU ×4 touch baseline](performance-baselines/2026-11-03-solstice-touch-cpu4.json)
+records **15.2 FPS, p95 85.2 ms, p99 102.6 ms, 100% above 33.3 ms** across three
+ten-second captures. It is a laptop stress proxy, separate from the Safari series.
+The opt-in `--check` fails reproducibly against the working smoothness target.
+Short direct-camera and touch-only-pan probes both reached about 15.5 FPS under
+CPU ×4, suggesting the shared frame work dominates rather than touch handling.
+
+A diagnostic CPU profile attributed about 27% of sampled time to mesh batching
+eligibility/key construction. The first changes separate LOD eligibility from
+serialized material grouping, skip LOD checks for small/planar geometry, and reuse
+membership checks within the same batch render while retaining fade, reflection
+and shear fallbacks. Timed comparisons will determine the result; profiled runs
+are diagnostic only. The scene contains 2,878 objects and 1,938 meshes/materials.
+
+```sh
+npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label candidate --baseline docs/performance-baselines/2026-11-03-solstice-touch-cpu4.json --check
+```
 
 ## Earlier measurements
 

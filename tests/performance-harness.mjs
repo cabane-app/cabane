@@ -187,7 +187,18 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
     )
       throw new Error("HA lights/weather changed during the benchmark. Discard this run.");
     let activePointLights = 0;
+    let objects = 0,
+      meshes = 0;
+    const materials = new Set(),
+      geometries = new Set();
     state.scene.traverse((object) => {
+      objects++;
+      if (object.isMesh) {
+        meshes++;
+        geometries.add(object.geometry);
+        for (const material of Array.isArray(object.material) ? object.material : [object.material])
+          materials.add(material);
+      }
       if (object.isPointLight && object.intensity > 0) activePointLights++;
     });
     const report = {
@@ -196,7 +207,13 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
       label,
       source: __PERFORMANCE_SOURCE__,
       configuration,
-      scene: { activePointLights },
+      scene: {
+        activePointLights,
+        objects,
+        meshes,
+        materials: materials.size,
+        geometries: geometries.size,
+      },
       environment: {
         userAgent: navigator.userAgent,
         platform: navigator.platform,

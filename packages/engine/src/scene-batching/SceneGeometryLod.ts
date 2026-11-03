@@ -7,7 +7,7 @@ import {
   type Mesh,
   type Scene,
 } from "three";
-import { geometryRevision, toonBatchKey } from "./toon-batch-compatibility";
+import { geometryRevision, isToonBatchCompatible } from "./toon-batch-compatibility";
 import type { GeometryLod } from "./geometry-lod";
 import { GeometryLodWorker } from "./GeometryLodWorker";
 import { forgetGeometryLods, registerGeometryLods } from "./geometry-lod-family";
@@ -76,10 +76,11 @@ export class SceneGeometryLod {
     try {
       scene.traverse((object) => {
         const mesh = object as Mesh;
-        if (!mesh.isMesh || toonBatchKey(mesh, true, true) === null) return;
+        if (!mesh.isMesh) return;
         const source = mesh.geometry;
         if (source.userData.preservePlanarFaces === true) return;
         if ((source.index?.count ?? source.attributes.position.count) < 300) return;
+        if (!isToonBatchCompatible(mesh, true, true)) return;
         used.add(source);
         const revision = geometryRevision(mesh);
         let entry = this.entries.get(source);

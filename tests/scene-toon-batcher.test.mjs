@@ -138,6 +138,38 @@ await withModules(async (load) => {
     f.batcher.render(f.renderer, f.scene, f.camera);
     f.batcher.dispose();
   });
+  test("reflections, shear and fade depth/shadow overrides retain their original draw", () => {
+    const mutations = [
+      (mesh) => {
+        mesh.scale.x = -1;
+      },
+      (mesh) => {
+        mesh.matrixAutoUpdate = false;
+        mesh.matrix.makeShear(0.2, 0, 0, 0, 0, 0);
+      },
+      (mesh) => {
+        mesh.material.userData.cameraFadeBaseDepthWrite = true;
+        mesh.material.depthWrite = false;
+      },
+      (mesh) => {
+        mesh.userData.cameraFadeBaseCastShadow = false;
+        mesh.castShadow = true;
+      },
+    ];
+    for (const mutate of mutations) {
+      const f = fixture();
+      mutate(f.a);
+      f.renderer.render = (scene) => {
+        const batch = scene.children.find((object) => object.isBatchedMesh);
+        assert.ok(batch);
+        assert.equal(batch.getVisibleAt(0), false);
+        assert.equal(f.a.material.visible, true);
+        assert.equal(batch.getVisibleAt(1), true);
+      };
+      f.batcher.render(f.renderer, f.scene, f.camera);
+      f.batcher.dispose();
+    }
+  });
   test("restores scene after render failure and falls back without multi-draw", () => {
     const f = fixture(),
       original = f.a.material;

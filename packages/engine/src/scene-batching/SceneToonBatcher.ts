@@ -11,7 +11,7 @@ import {
   type WebGLRenderer,
 } from "three";
 import { geometryLodFamily } from "./geometry-lod-family";
-import { geometryRevision, toonBatchKey } from "./toon-batch-compatibility";
+import { canRenderToonBatch, geometryRevision, toonBatchKey } from "./toon-batch-compatibility";
 
 type Batch = {
   mesh: BatchedMesh;
@@ -189,7 +189,7 @@ export class SceneToonBatcher {
           // Animation/tint changes draw the original mesh, never rewrite static
           // vertex buffers during a frame. Children remain independently eligible.
           let visible =
-            toonBatchKey(source) === key &&
+            canRenderToonBatch(source) &&
             batch.matrices[index].equals(this.matrix) &&
             batch.colors[index].equals(material.color);
           for (let parent: Mesh["parent"] = source; visible && parent; parent = parent.parent)
