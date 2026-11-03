@@ -14,14 +14,14 @@ a regression proxy; a real phone validates mobile improvements.
 Use **Solstice + live dev HA + night + cloudy + 10 lights on** for subsequent
 iterations. The old disconnected demo runs below are historical references.
 
-| Metric                           | Current iOS Simulator baseline | Working 60 Hz target                |
-| -------------------------------- | ------------------------------ | ----------------------------------- |
-| **Frame interval p95 (primary)** | **26 ms**                      | **≤20 ms**, ideally near 16.7 ms    |
-| Average callback FPS             | 44.6                           | Approximately 60                    |
-| Frame interval p99               | 29 ms                          | ≤33.3 ms                            |
-| Intervals above 33.3 ms          | 0.22%                          | <1%                                 |
-| CPU render submission p95        | 5 ms                           | Diagnostic; not GPU time            |
-| Draw calls / triangles (median)  | 299 / 418,022                  | Diagnostic; preserve visual quality |
+| Metric                           | Original iOS Simulator baseline | Working 60 Hz target                |
+| -------------------------------- | ------------------------------- | ----------------------------------- |
+| **Frame interval p95 (primary)** | **26 ms**                       | **≤20 ms**, ideally near 16.7 ms    |
+| Average callback FPS             | 44.6                            | Approximately 60                    |
+| Frame interval p99               | 29 ms                           | ≤33.3 ms                            |
+| Intervals above 33.3 ms          | 0.22%                           | <1%                                 |
+| CPU render submission p95        | 5 ms                            | Diagnostic; not GPU time            |
+| Draw calls / triangles (median)  | 299 / 418,022                   | Diagnostic; preserve visual quality |
 
 The new [compact baseline](performance-baselines/2026-11-03-solstice-ha-night-cloudy-ios-simulator.json)
 uses clean source `db5a7ea`, the current 239-item
@@ -117,8 +117,8 @@ The control source and raw JSON stay in ignored
 
 ## Camera gesture investigation, November 3
 
-For the next CPU iteration, compare against the
-[current CPU ×4 report](performance-baselines/2026-11-03-solstice-touch-cpu4-after.json),
+This checkpoint used the
+[CPU ×4 report](performance-baselines/2026-11-03-solstice-touch-cpu4-after.json),
 source `8114629`. The controlled comparison keeps the same current harness,
 browser, workload and idle WebGL Simulator control in the background:
 
@@ -140,9 +140,9 @@ Host power, thermal state and other background applications remain uncontrolled.
 
 This is a real improvement but **the stress case still fails** p95 ≤20 ms,
 p99 ≤33.3 ms and <1% above 33.3 ms. The no-stutter goal remains open. Run maxima
-were 58, 55.3 and 334 ms; the last outlier remains unexplained and must
-not be hidden by the aggregate. Camera movement covered 100% of measured frames.
-The retained raw samples allow investigating that hitch in the next iteration.
+were 58, 55.3 and 334 ms; the last outlier was unexplained at this checkpoint.
+The investigation below identifies two sources of long camera-frame stalls.
+Camera movement covered 100% of measured frames.
 Remaining steady-frame CPU work is in batching/material eligibility and repeated scene
 traversal; physical-phone validation is still needed for the reported gesture
 problem. The harness now records trusted touch replays, manual gestures and
@@ -179,6 +179,92 @@ are diagnostic only. The scene contains 2,878 objects and 1,938 meshes/materials
 ```sh
 npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label candidate --baseline docs/performance-baselines/2026-11-03-solstice-touch-cpu4.json --check
 ```
+
+## Geometry replacement and workspace thumbnail hitches, November 3
+
+The reported physical device is **iPhone 16e**. No physical-phone report has been
+captured yet; the Safari Simulator and Chromium stress runs remain proxies.
+
+Temporary local tracing reproduced 300 ms camera-frame pauses. An 858-mesh batch
+was repacked for about 250 ms after 19 sofa, chair and planter geometries changed
+identity during ordinary React rerenders. Their constructor inputs were recreated
+even when dimensions were unchanged. `33b3ebb` stabilizes those inputs in three
+catalog components. The regression test failed on the five affected model types
+before the fix and passes after it, including appearance changes and real resizing.
+Follow-up tracing no longer saw these recurring 19-geometry replacements.
+
+`92926bc` tested rejecting batched sources through camera layers before Three's
+frustum and geometry work. Removing the existing material masking also prepared
+unused lighting materials, so `5d82e4b` retains both masks. Children and animated
+fallbacks keep their ordinary draws, and source state is restored after errors.
+Its [first capture](performance-baselines/2026-11-03-early-rejection-masked-cpu4.json)
+recorded 38.5 FPS / p95 31.2 ms / 3.8% above 33.3 ms, versus 32.6 FPS / p95
+40.9 ms before this change. Later host variation means this steady-frame gain
+needs a repeated comparison before treating its size as stable.
+
+A separate approximately 140 ms pause came from the workspace thumbnail timer.
+The CPU profile attributed about 108 ms to synchronous pixel readback, conversion
+and image encoding inside a render callback. `633e840` waits until the camera has
+been still for 500 ms before servicing initial or periodic preview requests.
+It wakes a resting demand canvas once and cancels requests on unmount. The focused
+regression failed before the fix and passes for pan, zoom, rotation and damping.
+Preview refresh is deferred during movement; image quality and scene quality are
+unchanged. Initial LOD preparation and packing remain separate startup costs.
+
+Use the [latest CPU ×4 capture](performance-baselines/2026-11-03-deferred-preview-cpu4.json)
+for the next iteration, source `633e840`, with the same live HA workload and
+100% camera movement in all three ten-second captures:
+
+| Metric                           | Before these fixes, `7e5e462` | Latest, `633e840` | Working target    |
+| -------------------------------- | ----------------------------- | ----------------- | ----------------- |
+| Callback FPS                     | 33.2                          | 32.3              | Approximately 60  |
+| Frame p95                        | 38.1 ms                       | 40.9 ms           | ≤20 ms            |
+| Frame p99                        | 46.6 ms                       | 51.3 ms           | ≤33.3 ms          |
+| Above 33.3 ms                    | 12.1%                         | 27.9%             | <1%               |
+| Worst interval per run           | 59 / 51 / 141 ms              | 73 / 62 / 95 ms   | Inspect every run |
+| Intervals above 100 ms, all runs | 1                             | 0                 | Zero observed     |
+
+The [fresh before capture](performance-baselines/2026-11-03-stable-shapes-before.json)
+and latest capture use clean source, identical configuration and the idle WebGL
+Simulator control in the background. No tests, build or profiler ran during
+capture. Other host applications and thermal state were not controlled. AC power
+was observed afterward; thermal status was unavailable. GPU submission timing
+also varied across captures. **This does not establish a steady-frame speedup or
+meet the stress target**, despite removing the two verified hitch triggers. The
+latest per-run p95 values are 42.6 / 40.9 / 38.8 ms; a 95 ms interval still needs
+attention. Keep individual maxima and long-hitch counts alongside percentiles.
+
+The [latest native Safari pan](performance-baselines/2026-11-03-native-pan-current.json)
+records **59.8 FPS / p95 24 ms / p99 30 ms**, with 100% movement over 598 frames,
+max 37 ms and no >50 ms interval. The same 60 drag pairs previously measured
+57.3 FPS / p95 25 ms. This small difference is not a robust speed claim; the empty
+native-input control itself had p95 24 ms. It remains a Simulator result, not
+acceptance on the iPhone 16e.
+
+The final three-repeat `orbit-v1` Safari replay recorded 58.0 FPS / p95 26 ms /
+p99 32 ms, with run maxima 43 / 34 / 43 ms. A
+[quiet repeat](performance-baselines/2026-11-03-current-ios-simulator-quiet.json),
+with no agent work during capture, recorded 57.2 FPS / p95 27 ms / p99 33 ms,
+run maxima 40 / 38 / 38 ms. Both retain the same 268 median calls / 212,915 median
+triangles and 3 ms CPU submission p95 as the earlier `843663b` replay. Neither
+new capture had a >50 ms interval, but **both miss p95 ≤20 ms**. Do not substitute
+the earlier 19 ms result for the current measurement. Isolate host variation
+from possible steady-frame regressions with a contemporaneous reference capture
+before claiming the added culling change is a stable improvement.
+
+Forty-eight focused tests across catalog rerenders, batching, LOD, shadows,
+preview scheduling and the measurement harness passed. Type checking, targeted
+lint, formatting and import boundaries passed. All instrumentation and large
+traces stay in ignored `test-results/performance/diagnostics/`; the temporary
+instrumentation was removed from product and harness source.
+
+```sh
+npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label candidate --baseline docs/performance-baselines/2026-11-03-deferred-preview-cpu4.json --check
+```
+
+The matching raw JSON and HTML charts use the compact reports' `rawReport` paths.
+The no-stutter goal remains open: reduce steady CPU work, repeat captures under
+comparable host load, and validate continuous camera gestures on the iPhone 16e.
 
 ## Earlier measurements
 
