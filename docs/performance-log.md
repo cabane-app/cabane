@@ -117,6 +117,45 @@ The control source and raw JSON stay in ignored
 
 ## Camera gesture investigation, November 3
 
+For the next CPU iteration, compare against the
+[current CPU ×4 report](performance-baselines/2026-11-03-solstice-touch-cpu4-after.json),
+source `8114629`. The controlled comparison keeps the same current harness,
+browser, workload and idle WebGL Simulator control in the background:
+
+| Metric                    | Old renderer | Current renderer |
+| ------------------------- | ------------ | ---------------- |
+| Callback FPS              | 20.8         | 28.9             |
+| Frame interval p95        | 55.1 ms      | 41.6 ms          |
+| Frame interval p99        | 63.8 ms      | 54.9 ms          |
+| Intervals above 33.3 ms   | 100%         | 52.8%            |
+| CPU render submission p95 | 17.7 ms      | 13 ms            |
+
+The [controlled old-renderer report](performance-baselines/2026-11-03-controlled-touch-before.json)
+used the four renderer files from `ddc00e9` with the current harness. Its metadata
+retains the mixed-source context and file hashes; those files were restored
+after capture, and the working tree matches the committed current renderer.
+The original baseline below had a heavier Simulator home running in the
+background, so prefer this controlled comparison when judging the code change.
+Host power, thermal state and other background applications remain uncontrolled.
+
+This is a real improvement but **the stress case still fails** p95 ≤20 ms,
+p99 ≤33.3 ms and <1% above 33.3 ms. The no-stutter goal remains open. Run maxima
+were 58, 55.3 and 334 ms; the last outlier remains unexplained and must
+not be hidden by the aggregate. Camera movement covered 100% of measured frames.
+The retained raw samples allow investigating that hitch in the next iteration.
+Remaining steady-frame CPU work is in batching/material eligibility and repeated scene
+traversal; physical-phone validation is still needed for the reported gesture
+problem. The harness now records trusted touch replays, manual gestures and
+movement coverage. Forty-two focused regression tests, type checking, targeted
+lint, formatting, import boundaries and unused-code checks passed.
+
+```sh
+npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label candidate --baseline docs/performance-baselines/2026-11-03-solstice-touch-cpu4-after.json --check
+```
+
+Raw JSON and the visual comparison are
+`test-results/performance/2026-11-03-solstice-touch-cpu4-after.{json,html}`.
+
 The input-inclusive `touch-orbit-v1` baseline uses trusted Chromium touch events:
 one-finger pan, then two-finger rotation/pinch, repeating every four seconds.
 It retains the same connected Solstice/night/cloudy/ten-light workload. The camera
