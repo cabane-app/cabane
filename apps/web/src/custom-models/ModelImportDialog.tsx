@@ -1,4 +1,5 @@
-import { MeasurementText } from "@cabane/engine";
+import { MeasurementText, ModelPose } from "@cabane/engine";
+import { ModelImportTabs, type ModelImportSection } from "./ModelImportTabs";
 import { ModelImportSettings } from "./ModelImportSettings";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
@@ -67,7 +68,7 @@ export function ModelImportDialog({
     },
   );
   const lightInitialized = useRef(Boolean(existingModel?.light));
-  const [section, setSection] = useState<"model" | "lighting" | "poses">("model");
+  const [section, setSection] = useState<ModelImportSection>("model");
   const [lightingEnabled, setLightingEnabled] = useState(Boolean(existingModel?.light));
   const previousNormalization = useRef<CustomModel["normalization"] | null>(null);
   const [replacementId, setReplacementId] = useState("");
@@ -155,7 +156,7 @@ export function ModelImportDialog({
   return (
     <dialog
       ref={dialog}
-      className={`model-import-dialog${section === "lighting" ? " model-lighting-dialog" : ""}`}
+      className="model-import-dialog"
       aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault();
@@ -202,134 +203,133 @@ export function ModelImportDialog({
             <EditorIcon name="close" />
           </EditorButton>
         </header>
-        <div className="model-import-workspace" hidden={section === "lighting"}>
-          <div className="model-import-stage">
-            {loaded && normalization ? (
-              <ModelImportPreview
-                root={loaded.root}
-                normalization={normalization}
-                light={light}
-                poses={loaded.poses}
-                pose={previewPose}
-              />
-            ) : (
-              !error && <p role="status">Reading model…</p>
-            )}
-            <div className="model-import-stage-caption">
-              <span>
-                {previewPose === undefined
-                  ? "Original appearance"
-                  : loaded?.poses[Number(previewPose)]?.name || "Pose preview"}
-              </span>
-              <span>Drag to rotate</span>
-            </div>
-            {!!loaded?.poses.length && (
-              <div className="model-pose-previews" role="group" aria-label="Preview poses">
-                <EditorButton
-                  aria-pressed={previewPose === undefined}
-                  onClick={() => setPreviewPose(undefined)}
-                >
-                  Original
-                </EditorButton>
-                {loaded.poses.map((pose, index) => (
-                  <EditorButton
-                    key={index}
-                    aria-pressed={previewPose === String(index)}
-                    onClick={() => setPreviewPose(String(index))}
-                  >
-                    {pose.name || `Pose ${index + 1}`}
-                  </EditorButton>
-                ))}
+        <ModelImportTabs
+          id={titleId}
+          section={section}
+          hasPoses={!!loaded?.poses.length}
+          onChange={setSection}
+        />
+        <div
+          className="model-import-panel"
+          role="tabpanel"
+          id={`${titleId}-panel`}
+          aria-labelledby={`${titleId}-${section}-tab`}
+        >
+          {section !== "lighting" && (
+            <div className="model-import-workspace">
+              <div className="model-import-stage">
+                {loaded && normalization ? (
+                  <ModelImportPreview
+                    root={loaded.root}
+                    normalization={normalization}
+                    light={light}
+                    poses={loaded.poses}
+                    pose={previewPose}
+                  />
+                ) : (
+                  !error && <p role="status">Reading model…</p>
+                )}
+                <div className="model-import-stage-caption">
+                  <span>
+                    {previewPose === undefined
+                      ? "Original appearance"
+                      : loaded?.poses[Number(previewPose)]?.name || "Pose preview"}
+                  </span>
+                  <span>Drag to rotate</span>
+                </div>
+                {!!loaded?.poses.length && (
+                  <div className="model-pose-previews" role="group" aria-label="Preview poses">
+                    <EditorButton
+                      aria-pressed={previewPose === undefined}
+                      onClick={() => setPreviewPose(undefined)}
+                    >
+                      Original
+                    </EditorButton>
+                    {loaded.poses.map((pose, index) => (
+                      <EditorButton
+                        key={index}
+                        aria-pressed={previewPose === String(index)}
+                        onClick={() => setPreviewPose(String(index))}
+                      >
+                        {pose.name || `Pose ${index + 1}`}
+                      </EditorButton>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="model-import-controls">
-            <div className="model-editor-sections" role="group" aria-label="Model settings section">
-              <EditorButton aria-pressed={section === "model"} onClick={() => setSection("model")}>
-                Model
-              </EditorButton>
-              {!!loaded?.poses.length && (
-                <EditorButton
-                  aria-pressed={section === "poses"}
-                  onClick={() => setSection("poses")}
-                >
-                  States
-                </EditorButton>
-              )}
-              <EditorButton aria-pressed={false} onClick={() => setSection("lighting")}>
-                Lighting
-              </EditorButton>
-            </div>
-            <div hidden={section !== "model"}>
-              <ModelImportSettings
-                busy={busy}
-                name={name}
-                setName={setName}
-                placement={placement}
-                setPlacement={setPlacement}
-                profile={profile}
-                onProfileChange={changeProfile}
-                normalization={normalization}
-                scale={scale}
-                setScale={setScale}
-                rotation={rotation}
-                setRotation={setRotation}
-              />
-              {existingModel && (
-                <p className="model-import-hint">
-                  Changes apply to every placed copy. Changing profile requires reconnecting in
-                  Connect.
-                </p>
-              )}
-              {loaded && (
-                <details className="model-import-details">
-                  <summary>File details</summary>
-                  <p className="model-import-hint">
-                    {loaded.complexity.triangles.toLocaleString("en")} triangles ·{" "}
-                    {loaded.complexity.visibleMeshes} meshes. Original materials and textures are
-                    preserved.
-                  </p>
-                  {loaded.notices.map((notice) => (
-                    <p className="model-import-hint" key={notice}>
-                      {notice}
+              <div className="model-import-controls">
+                <div hidden={section !== "model"}>
+                  <ModelImportSettings
+                    busy={busy}
+                    name={name}
+                    setName={setName}
+                    placement={placement}
+                    setPlacement={setPlacement}
+                    profile={profile}
+                    onProfileChange={changeProfile}
+                    normalization={normalization}
+                    scale={scale}
+                    setScale={setScale}
+                    rotation={rotation}
+                    setRotation={setRotation}
+                  />
+                  {existingModel && (
+                    <p className="model-import-hint">
+                      Changes apply to every placed copy. Changing profile requires reconnecting in
+                      Connect.
                     </p>
-                  ))}
-                </details>
-              )}
+                  )}
+                  {loaded && (
+                    <details className="model-import-details">
+                      <summary>File details</summary>
+                      <p className="model-import-hint">
+                        {loaded.complexity.triangles.toLocaleString("en")} triangles ·{" "}
+                        {loaded.complexity.visibleMeshes} meshes. Original materials and textures
+                        are preserved.
+                      </p>
+                      {loaded.notices.map((notice) => (
+                        <p className="model-import-hint" key={notice}>
+                          {notice}
+                        </p>
+                      ))}
+                    </details>
+                  )}
+                </div>
+                {section === "poses" && loaded && (
+                  <ModelPoseEditor
+                    poses={loaded.poses}
+                    profile={profile}
+                    onProfileChange={changeProfile}
+                    value={poses}
+                    onChange={setPoses}
+                    preview={previewPose}
+                    onPreview={setPreviewPose}
+                  />
+                )}
+              </div>
             </div>
-            {section === "poses" && loaded && (
-              <ModelPoseEditor
-                poses={loaded.poses}
-                profile={profile}
-                onProfileChange={changeProfile}
-                value={poses}
-                onChange={setPoses}
-                preview={previewPose}
-                onPreview={setPreviewPose}
-              />
-            )}
-          </div>
+          )}
+          {section === "lighting" && loaded && normalization && (
+            <div className="model-import-lighting">
+              <ModelLightingEditor
+                value={light ?? null}
+                disabled={busy}
+                bounds={normalization.bounds}
+                onChange={(value) => {
+                  setLightingEnabled(!!value);
+                  if (value) setLightSettings(value);
+                }}
+              >
+                <group position={normalization.offset}>
+                  <group rotation={normalization.rotation} scale={normalization.scale}>
+                    <ModelPose root={loaded.root} poses={loaded.poses} pose={previewPose} />
+                    <primitive object={loaded.root} dispose={null} />
+                  </group>
+                </group>
+              </ModelLightingEditor>
+            </div>
+          )}
         </div>
-        {section === "lighting" && (
-          <EditorButton onClick={() => setSection("model")}>Back to model</EditorButton>
-        )}
-        {section === "lighting" && loaded && normalization && (
-          <ModelLightingEditor
-            value={light ?? null}
-            disabled={busy}
-            bounds={normalization.bounds}
-            onChange={(value) => {
-              setLightingEnabled(!!value);
-              if (value) setLightSettings(value);
-            }}
-          >
-            <group position={normalization.offset}>
-              <group rotation={normalization.rotation} scale={normalization.scale}>
-                <primitive object={loaded.root} dispose={null} />
-              </group>
-            </group>
-          </ModelLightingEditor>
-        )}
         {lightError && (
           <p role="alert" className="catalog-add-error">
             <MeasurementText>{lightError}</MeasurementText>

@@ -1,33 +1,66 @@
-.model-import-dialog:not(.model-lighting-dialog) {
+.model-import-dialog {
   width: min(980px, calc(100vw - 40px));
   height: min(700px, calc(100dvh - 40px));
   padding: 0;
   overflow: hidden;
 }
-.model-import-dialog:not(.model-lighting-dialog) > form {
+.model-import-dialog > form {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
-.model-import-dialog:not(.model-lighting-dialog) header {
+.model-import-dialog header {
   padding: 18px 24px;
   border-bottom: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
   flex: none;
 }
-.model-import-dialog:not(.model-lighting-dialog) footer {
+.model-import-dialog footer {
   margin: 0;
   padding: 16px 24px;
   border-top: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
   flex: none;
 }
-.model-import-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+.model-import-tabs {
+  display: flex;
+  flex: none;
+  padding-inline: 24px;
+  border-bottom: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
+}
+.model-import-tabs [role="tab"] {
+  appearance: none;
+  flex: 1;
+  margin: 0;
+  padding: 14px 20px 12px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--editor-ink, #354738);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.model-import-tabs [role="tab"]:hover {
+  background: var(--editor-button-hover, #eae5d9);
+}
+.model-import-tabs [role="tab"][aria-selected="true"] {
+  border-bottom-color: #315744;
+  background: #e9ece2;
+  color: #315744;
+  font-weight: 600;
+}
+.model-import-tabs [role="tab"]:focus-visible {
+  outline: 2px solid #315744;
+  outline-offset: -4px;
+}
+.model-import-panel {
   flex: 1;
   min-height: 0;
 }
-.model-import-workspace[hidden] {
-  display: none;
+.model-import-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
 }
 .model-import-stage {
   display: flex;
@@ -69,24 +102,6 @@
   overflow-y: auto;
   scrollbar-color: #b6baaa transparent;
   min-width: 0;
-}
-.model-import-controls .model-editor-sections {
-  display: flex;
-  gap: 16px;
-  margin: 0 0 24px;
-  border-bottom: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
-}
-.model-import-controls .model-editor-sections .editor-button {
-  padding: 8px 0 12px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  background: transparent;
-}
-.model-import-controls .model-editor-sections .editor-button[aria-pressed="true"] {
-  border-bottom-color: #315744;
-  color: #2e3835;
-  font-weight: 600;
 }
 .model-import-controls .model-import-fields {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -165,17 +180,98 @@
 .model-import-dialog .catalog-add-error {
   margin: 8px 24px;
 }
+.model-import-lighting,
+.model-import-lighting > .model-lighting-editor {
+  height: 100%;
+  min-height: 0;
+}
+.model-import-lighting > .model-lighting-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  margin: 0;
+}
+.model-import-lighting .lighting-layout {
+  display: contents;
+}
+.model-import-lighting .lighting-enable {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  padding: 24px 24px 16px;
+}
+.model-import-lighting .lighting-preview-column {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  position: static;
+  min-height: 0;
+  padding: 20px;
+  overflow-y: auto;
+  background: #eeece3;
+}
+.model-import-lighting .lighting-stage {
+  flex: 1;
+  height: auto;
+  min-height: 180px;
+  background: transparent;
+}
+.model-import-lighting .lighting-stage__hint {
+  background: #eeece3;
+}
+.model-import-lighting .lighting-fields,
+.model-import-lighting .lighting-empty {
+  grid-column: 2;
+  grid-row: 2;
+  max-height: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0 24px 24px;
+  overflow-y: auto;
+}
+.model-import-lighting .lighting-warning {
+  grid-column: 2;
+  margin: 8px 24px;
+}
+.model-import-lighting .lighting-preview-options label {
+  flex-direction: row;
+  align-items: center;
+}
+.model-import-lighting input[type="checkbox"] {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  accent-color: #315744;
+}
+.model-import-lighting .lighting-preview-controls label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+}
+.model-import-lighting .lighting-preview-controls input[type="range"] {
+  min-height: 20px;
+  padding: 0;
+}
 @media (max-width: 700px) {
-  .model-import-dialog:not(.model-lighting-dialog) {
+  .model-import-dialog {
     width: calc(100vw - 16px);
     height: calc(100dvh - 16px);
     max-height: none;
   }
-  .model-import-dialog:not(.model-lighting-dialog) header {
+  .model-import-dialog header {
     padding: 12px 16px;
   }
-  .model-import-dialog:not(.model-lighting-dialog) footer {
+  .model-import-dialog footer {
     padding: 12px 16px;
+  }
+  .model-import-tabs {
+    padding-inline: 16px;
+  }
+  .model-import-tabs [role="tab"] {
+    padding: 12px;
   }
   .model-import-workspace {
     grid-template-columns: 1fr;
@@ -200,9 +296,6 @@
   .model-import-controls {
     padding: 12px 16px 20px;
   }
-  .model-import-controls .model-editor-sections {
-    margin-bottom: 18px;
-  }
   .model-pose-row {
     grid-template-columns: 55px minmax(0, 1fr) auto;
     gap: 8px;
@@ -210,5 +303,31 @@
   .model-pose-column-labels {
     grid-template-columns: 55px 1fr;
     gap: 8px;
+  }
+  .model-import-lighting > .model-lighting-editor {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 300px auto minmax(0, 1fr);
+  }
+  .model-import-lighting .lighting-preview-column {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 8px 16px;
+  }
+  .model-import-lighting .lighting-stage {
+    min-height: 160px;
+  }
+  .model-import-lighting .lighting-enable {
+    grid-column: 1;
+    grid-row: 2;
+    padding: 16px;
+  }
+  .model-import-lighting .lighting-fields,
+  .model-import-lighting .lighting-empty {
+    grid-column: 1;
+    grid-row: 3;
+    padding: 0 16px 16px;
+  }
+  .model-import-lighting .lighting-warning {
+    grid-column: 1;
   }
 }

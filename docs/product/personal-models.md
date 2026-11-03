@@ -181,9 +181,12 @@ Implementation: [import owner](../../packages/engine/src/imported-models/index.t
 
 [Back to product overview](../../PRODUCT_SPEC.md).
 
-Personal import and Edit model expose **Model** and **Lighting** sections. The
-Lighting section shares the visual placement, surface selection and local preview
-used by built-in models. See [model lighting](model-lighting.md).
+Personal import and Edit model use a fixed-size dialog with persistent **Model**,
+**States** (when poses exist), and **Lighting** tabs. Switching tabs preserves the
+draft settings and never replaces navigation with a Back action. Tabs support
+arrow-key, Home and End navigation. Lighting uses the same preview/control frame
+and shares the visual placement, surface selection and local preview used by
+built-in models. See [model lighting](model-lighting.md).
 
 Changing an imported model’s profile replaces only its primary control slot. Optional independent sensor readings retain their slot IDs, visibility and private mappings on every copy, including conversions between furniture and devices. Published mappings remain intact until Apply.
 

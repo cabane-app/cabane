@@ -334,12 +334,6 @@
   outline: 2px solid var(--editor-accent, #395a3d);
   outline-offset: 3px;
 }
-.model-import-dialog.model-lighting-dialog {
-  width: calc(100% - 32px);
-}
-.model-editor-sections {
-  margin-block: 12px 20px;
-}
 .model-import-dialog .lighting-enable label {
   flex-direction: row;
 }
@@ -384,9 +378,6 @@
   }
   .model-lighting-dialog footer {
     bottom: -16px;
-  }
-  .model-import-dialog.model-lighting-dialog {
-    width: calc(100% - 16px);
   }
   .lighting-fields input:not([type="checkbox"]),
   .lighting-fields select {

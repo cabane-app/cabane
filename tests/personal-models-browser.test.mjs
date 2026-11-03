@@ -68,6 +68,71 @@ test(
 );
 
 test(
+  "GLB import keeps its tabs and dialog frame when switching to Lighting",
+  { timeout: 10_000 },
+  withBrowserDiagnostics(async () => {
+    // Native dialog bounds, CSS sizing and focus navigation need a real browser.
+    const { server } = await getBrowserTestServer("app");
+    const browser = await createBrowserTestSession();
+    try {
+      const page = await browser.newPage({ viewport: { width: 1100, height: 760 } });
+      const url = server.resolvedUrls.local[0];
+      await page.goto(`${url}workspaces`);
+      const id = await page.evaluate(async (rootPath) => {
+        const { createWorkspaceRepository } = await import(
+          `/@fs${rootPath}/packages/engine/src/index.ts`
+        );
+        const { ownerProjectRegistries } = await import("/src/project-runtime.ts");
+        const repository = createWorkspaceRepository(window.indexedDB, ownerProjectRegistries);
+        return (await repository.createBlank("Import navigation")).metadata.id;
+      }, process.cwd());
+      await page.goto(`${url}workspaces/${id}/arrange`);
+      await page.getByRole("button", { name: "My models", exact: true }).click();
+      const chooser = page.waitForEvent("filechooser");
+      await page.getByRole("button", { name: "Import model (.glb file)", exact: true }).click();
+      await (
+        await chooser
+      ).setFiles({
+        name: "Poses.glb",
+        mimeType: "model/gltf-binary",
+        buffer: Buffer.from(testGlb({ poses: true })),
+      });
+      const dialog = page.getByRole("dialog", { name: "Import GLB", exact: true });
+      await dialog.getByRole("tab", { name: "States", exact: true }).waitFor();
+      const bounds = await dialog.boundingBox();
+      const tabsBounds = await dialog.getByRole("tablist").boundingBox();
+      await dialog.getByRole("tab", { name: "Lighting", exact: true }).click();
+      await dialog.getByLabel("Enable lighting", { exact: true }).check();
+      for (const name of ["Model", "States", "Lighting"]) {
+        const tab = dialog.getByRole("tab", { name, exact: true });
+        await tab.click();
+        assert.equal(await tab.getAttribute("aria-selected"), "true");
+        assert.deepEqual(await dialog.boundingBox(), bounds);
+        assert.deepEqual(await dialog.getByRole("tablist").boundingBox(), tabsBounds);
+        assert.equal(await dialog.getByRole("tab").count(), 3);
+      }
+      assert.equal(await dialog.getByLabel("Enable lighting", { exact: true }).isChecked(), true);
+      for (const name of [
+        "Enable lighting",
+        "Show handles",
+        "Pick through glass",
+        "Night preview",
+      ]) {
+        const checkbox = await dialog.getByRole("checkbox", { name, exact: true }).boundingBox();
+        assert.equal(checkbox.width, 18, `${name}: normal checkbox width`);
+        assert.equal(checkbox.height, 18, `${name}: normal checkbox height`);
+      }
+      await dialog.getByRole("tab", { name: "Lighting", exact: true }).press("ArrowLeft");
+      const states = dialog.getByRole("tab", { name: "States", exact: true });
+      assert.equal(await states.getAttribute("aria-selected"), "true");
+      assert.equal(await states.evaluate((element) => element === document.activeElement), true);
+    } finally {
+      await browser.close();
+    }
+  }),
+);
+
+test(
   "representative personal models render with 20 rooms, 100 simulated bindings and shared textured resources",
   { timeout: 120000 },
   withBrowserDiagnostics(async () => {
