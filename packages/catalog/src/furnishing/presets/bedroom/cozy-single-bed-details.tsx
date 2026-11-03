@@ -67,26 +67,28 @@ export function CozySingleBedding({
   const rose = variant === "rose";
   return (
     <group>
-      <group scale={[0.56, 1, 0.97]}>
-        <CozyBedCover
-          soft
-          name="single-linen-duvet"
-          back={-0.57}
-          front={1.06}
-          lift={0}
-          thickness={0.04}
-          color={color ?? (rose ? "#dcb5a9" : "#9ba888")}
-        />
-        <CozyBedCover
-          soft
-          name="single-clay-foot-throw"
-          back={0.64}
-          front={1.063}
-          lift={0.028}
-          thickness={0.018}
-          color="#b78162"
-        />
-      </group>
+      <CozyBedCover
+        soft
+        name="single-linen-duvet"
+        back={-0.55}
+        front={1.047}
+        mattressWidth={0.9}
+        mattressFront={1.03}
+        lift={0}
+        thickness={0.04}
+        color={color ?? (rose ? "#dcb5a9" : "#9ba888")}
+      />
+      <CozyBedCover
+        soft
+        name="single-clay-foot-throw"
+        back={0.62}
+        front={1.05}
+        mattressWidth={0.9}
+        mattressFront={1.03}
+        lift={0.028}
+        thickness={0.018}
+        color="#b78162"
+      />
       <RoundedFurniturePanel
         name="single-ivory-sleeping-pillow"
         size={[0.65, 0.14, 0.38]}
@@ -96,17 +98,17 @@ export function CozySingleBedding({
       />
       <RoundedFurniturePanel
         name="single-layered-ivory-pillow"
-        size={[0.51, 0.14, 0.37]}
-        position={[0, 0.75, -0.59]}
-        rotation={[0.85, 0, 0]}
+        size={[0.51, 0.13, 0.3]}
+        position={[0, 0.8, -0.59]}
+        rotation={[0.65, 0, 0]}
         radius={0.06}
         color="#eee0ca"
       />
       <RoundedFurniturePanel
         name="single-blush-lumbar-cushion"
-        size={[0.36, 0.13, 0.24]}
-        position={[0, 0.69, -0.32]}
-        rotation={[0.8, 0, 0.08]}
+        size={[0.36, 0.13, 0.2]}
+        position={[0, 0.775, -0.32]}
+        rotation={[0.5, 0, 0.06]}
         radius={0.05}
         color={rose ? "#c48f7f" : "#c2a57d"}
       />

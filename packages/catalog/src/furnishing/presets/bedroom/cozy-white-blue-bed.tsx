@@ -36,7 +36,7 @@ export function CozyWhiteBlueBedding({
         : variant === "cozy-oat"
           ? ["#b9a586", "#e3d2b7"]
           : ["#242e43", "#f6f0e5"];
-  // Shared drape field: navy underside clears ivory by .033-.018 = .015 m;
+  // On the mattress, navy underside clears ivory by .033-.018 = .015 m;
   // white underside clears navy by .074-.026-.033 = .015 m.
   return (
     <group name="cozy-white-blue-bedding">
@@ -78,8 +78,8 @@ export function CozyWhiteBlueBedding({
           <RoundedFurniturePanel
             name="cozy-ivory-cushion"
             size={[0.48, 0.16, 0.47]}
-            position={[x, 0.77, -0.55]}
-            rotation={[1.02, x < 0 ? -0.12 : 0.12, x < 0 ? -0.1 : 0.1]}
+            position={[x, 0.845, -0.55]}
+            rotation={[0.65, x < 0 ? -0.08 : 0.08, x < 0 ? -0.06 : 0.06]}
             color="#f3ecdf"
             radius={0.07}
             outlineColor="#b9af9d"
@@ -87,8 +87,8 @@ export function CozyWhiteBlueBedding({
           <RoundedFurniturePanel
             name="cozy-navy-cushion"
             size={[0.4, 0.15, 0.4]}
-            position={[x * 1.18, 0.738, -0.27]}
-            rotation={[0.98, x < 0 ? -0.16 : 0.16, x < 0 ? -0.13 : 0.13]}
+            position={[x * 1.18, 0.805, -0.27]}
+            rotation={[0.6, x < 0 ? -0.1 : 0.1, x < 0 ? -0.08 : 0.08]}
             color={palette[0]}
             radius={0.065}
             outlineColor="#74685b"
@@ -98,7 +98,7 @@ export function CozyWhiteBlueBedding({
       <RoundedFurniturePanel
         name="cozy-ivory-lumbar-cushion"
         size={[0.43, 0.14, 0.28]}
-        position={[0, 0.714, -0.2]}
+        position={[0, 0.754, -0.2]}
         rotation={[0.46, 0, -0.08]}
         color="#e9dfc9"
         radius={0.055}
