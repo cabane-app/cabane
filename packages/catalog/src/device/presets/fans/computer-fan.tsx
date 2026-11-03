@@ -1,9 +1,7 @@
-import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import { Path, Shape, type Group } from "three";
+import { Path, Shape } from "three";
 import { ToonMaterial, type HomeDeviceModelProps } from "@cabane/engine";
 import { palette, StatusBeacon } from "../../visuals/device-visual-state";
-import { fanSpeedFactor } from "./fan-operation";
+import { useFanRotation } from "./use-fan-rotation";
 import { PlatformFanGuardWire } from "./platform-fan-guard-wire";
 
 export const COMPUTER_FAN_SIZE = [0.14, 0.03, 0.14] as const;
@@ -19,15 +17,8 @@ aperture.absarc(0, 0, 0.056, 0, Math.PI * 2, true);
 frame.holes.push(aperture);
 
 /** A compact computer fan with a protective guard. */
-export function ComputerFanModel({ state, visualState, reducedMotion }: HomeDeviceModelProps) {
-  const rotor = useRef<Group>(null);
-  const speed = fanSpeedFactor({ ...(state === undefined ? {} : { state }), visualState });
-  useFrame(({ invalidate }, delta) => {
-    if (!rotor.current || reducedMotion || speed === 0) return;
-    rotor.current.rotation.y =
-      (rotor.current.rotation.y - Math.min(delta, 0.05) * speed * 12) % (Math.PI * 2);
-    invalidate();
-  });
+export function ComputerFanModel(props: HomeDeviceModelProps) {
+  const rotor = useFanRotation(props, "y");
 
   const corner = 0.057 / Math.sqrt(2);
   return (
@@ -85,7 +76,7 @@ export function ComputerFanModel({ state, visualState, reducedMotion }: HomeDevi
           </group>
         )),
       )}
-      <StatusBeacon visualState={visualState} position={[0, 0.013, 0]} scale={0.25} />
+      <StatusBeacon visualState={props.visualState} position={[0.062, 0.0135, 0]} scale={0.25} />
     </group>
   );
 }

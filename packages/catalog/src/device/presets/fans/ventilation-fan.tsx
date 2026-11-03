@@ -1,22 +1,12 @@
-import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import { type Group } from "three";
 import { ToonMaterial, type HomeDeviceModelProps } from "@cabane/engine";
 import { StatusBeacon } from "../../visuals/device-visual-state";
-import { fanSpeedFactor } from "./fan-operation";
+import { useFanRotation } from "./use-fan-rotation";
 
 export const VENTILATION_FAN_SIZE = [0.14, 0.3, 0.14] as const;
 
 /** A compact consumer-facing ventilation fan. */
-export function VentilationFanModel({ state, visualState, reducedMotion }: HomeDeviceModelProps) {
-  const rotor = useRef<Group>(null);
-  const speed = fanSpeedFactor({ ...(state === undefined ? {} : { state }), visualState });
-  useFrame(({ invalidate }, delta) => {
-    if (!rotor.current || reducedMotion || speed === 0) return;
-    rotor.current.rotation.y =
-      (rotor.current.rotation.y - Math.min(delta, 0.05) * speed * 12) % (Math.PI * 2);
-    invalidate();
-  });
+export function VentilationFanModel(props: HomeDeviceModelProps) {
+  const rotor = useFanRotation(props, "y");
 
   return (
     <group name="catalog-ventilation-fan">
@@ -59,7 +49,9 @@ export function VentilationFanModel({ state, visualState, reducedMotion }: HomeD
           </group>
         ))}
       </group>
-      <StatusBeacon visualState={visualState} position={[0.045, 0.15, 0.045]} scale={0.18} />
+      <group position={[0, 0.19, 0.068]} rotation={[Math.PI / 2, 0, 0]}>
+        <StatusBeacon visualState={props.visualState} position={[0, 0, 0]} scale={0.1} />
+      </group>
     </group>
   );
 }
