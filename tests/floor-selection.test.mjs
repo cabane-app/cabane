@@ -45,6 +45,11 @@ await withModules(async (load) => {
       createElement("button", { onClick: () => navigation.selectFloor("ground") }, "Locate"),
       createElement(
         "button",
+        { onClick: () => navigation.selectFloor("removed") },
+        "Locate removed",
+      ),
+      createElement(
+        "button",
         { onClick: () => navigation.setWholeBuilding(true) },
         "Show building",
       ),
@@ -111,6 +116,13 @@ await withModules(async (load) => {
         outputs().map((output) => output.textContent),
         ["cellar", "cellar"],
       );
+      await dom.click("Locate removed");
+      assert.deepEqual(
+        outputs().map((output) => output.textContent),
+        ["ground", "ground"],
+      );
+      await dom.click("Show building");
+      assert.ok(outputs().every((output) => output.dataset.wholeBuilding === "true"));
       assert.equal(dom.window.localStorage.length, 0);
     }));
   test("remembers explicit floor picks per workspace and reconciles removed floors without writing", () =>

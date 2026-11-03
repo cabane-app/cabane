@@ -41,7 +41,7 @@ export function useFloorNavigation(floors: readonly { id: string; belowGround?: 
   );
   useEffect(() => {
     navigation.reconcile(floors);
-  }, [navigation, floors]);
+  }, [navigation, floors, snapshot.selection]);
   return {
     ...resolveFloorNavigation(snapshot, floors),
     selectFloor: navigation.selectFloor,
