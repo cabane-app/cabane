@@ -95,6 +95,7 @@ export const DOMAINS = new Set<DeviceDomain>([
   "camera",
   "sensor",
   "binary_sensor",
+  "event",
 ]);
 
 export const STABLE_MODELS = new Set([
@@ -115,6 +116,7 @@ export const STABLE_MODELS = new Set([
   "floor-lamp",
   "rattan-bell-pendant",
   "round-globe-wall-lamp",
+  "smoked-globe-wall-light",
   "wall-reading-spot",
   "oak-wall-uplight",
   "six-globe-ceiling-lamp",

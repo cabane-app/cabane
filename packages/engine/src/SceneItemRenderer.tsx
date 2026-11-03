@@ -1,3 +1,4 @@
+import { SceneItemActivityFeedback } from "./SceneItemActivityFeedback";
 import { ModelLightingSurface } from "./model-lighting/ModelLightingSurface";
 import { lightingSlotForItem } from "./model-lighting/settings";
 import { useVacuumRoom } from "./vacuum-cleaning-location";
@@ -11,6 +12,7 @@ import { orbitLightEntity } from "./orbit-light-control";
 import { useOrbitDevicePress } from "./useOrbitDevicePress";
 import { SceneNightContext, sceneLightState } from "./scene-light-state";
 import { deviceVisualStateForSnapshot } from "./devices";
+import { isAuxiliaryEntitySlot } from "./entity-slot-roles";
 import {
   deviceSlotForItem,
   resolveItemTransform,
@@ -224,6 +226,12 @@ function DeviceSceneItem({
             {...omitUndefinedProperties({ color: item.color })}
             slot={binding}
             {...omitUndefinedProperties({ state: state })}
+            readings={binding.entitySlots.filter(isAuxiliaryEntitySlot).map((slot) => ({
+              slot,
+              ...omitUndefinedProperties({
+                state: resolvedDevice.entities.find((entity) => entity.slotId === slot.id)?.state,
+              }),
+            }))}
             {...omitUndefinedProperties({
               liveMedia: primary ? liveMediaByEntityId[primary.entityId] : undefined,
             })}
@@ -234,6 +242,13 @@ function DeviceSceneItem({
           />
         </DeviceHoverContext.Provider>
       </ModelLightingSurface>
+      {runtime.status === "connected" && (
+        <SceneItemActivityFeedback
+          entities={resolvedDevice.entities}
+          bounds={definition.bounds}
+          reducedMotion={reducedMotion}
+        />
+      )}
     </group>
   );
 }
@@ -292,6 +307,7 @@ export const SceneItemRenderer = memo(function SceneItemRenderer({
   outlineColor?: string;
 }) {
   const nightLighting = useContext(SceneNightContext);
+  const runtime = useHomeAssistantRuntime();
   const lightSlot = lightingSlotForItem(item);
   const lightState = sceneLightState(
     item.lightState,
@@ -332,6 +348,25 @@ export const SceneItemRenderer = memo(function SceneItemRenderer({
           </ModelLightingSurface>
         ) : (
           <MissingSceneItemFallback item={item} />
+        )}
+        {definition && runtime.status === "connected" && (
+          <SceneItemActivityFeedback
+            entities={(item.entitySlots ?? []).flatMap((slot) => {
+              const state = entityStatesBySlotId[slot.id];
+              return state
+                ? [{ slotId: slot.id, entityId: state.entityId, state, issues: [] }]
+                : [];
+            })}
+            bounds={{
+              min: definition.bounds.min.map(
+                (value, axis) => (value * item.size[axis]) / definition.defaultSize[axis],
+              ) as [number, number, number],
+              max: definition.bounds.max.map(
+                (value, axis) => (value * item.size[axis]) / definition.defaultSize[axis],
+              ) as [number, number, number],
+            }}
+            reducedMotion={reducedMotion}
+          />
         )}
       </group>
     );

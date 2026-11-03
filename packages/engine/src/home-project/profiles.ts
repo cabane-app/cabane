@@ -94,7 +94,7 @@ export const validateProfileReferencesAndSlots = (
             issues,
             "project.furnishing-slot",
             path,
-            "Furniture attachments must be optional manual secondary sensor or binary sensor slots.",
+            "Furniture attachments must be optional manual secondary sensor, binary sensor or event slots.",
           );
       });
       return;

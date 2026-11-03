@@ -1,3 +1,4 @@
+import { entityDisplayValue } from "../home-assistant-controls";
 import type { EntityBindingSlotSpec, EntityId, HomeAssistantRuntimeSnapshot } from "../types";
 
 export function connectionSlotLabel(slot: EntityBindingSlotSpec, model?: string) {
@@ -58,8 +59,9 @@ export function entityConnectionSummary(
     deviceName,
     status,
     available: Boolean(state?.available && !state.stale),
-    value:
-      state?.available && !state.stale
+    value: state?.entityId.startsWith("event.")
+      ? entityDisplayValue(state)
+      : state?.available && !state.stale
         ? `${state.state}${typeof unit === "string" ? ` ${unit}` : ""}`
         : null,
   };

@@ -1,5 +1,4 @@
 // Authored, slanted block lettering: real vector letterforms, with no font or texture fetch.
-import { PORTAL_COLORS } from "../portals/portal-contract";
 
 const EXCLAMATION = " M222 35H237L229 69H219Z M218 76H231L228 88H215Z";
 const WORDS = [
@@ -31,12 +30,13 @@ const PALETTES = [
 ];
 
 /** Golden-ratio offsets vary the motion; portal shots inherit the fired portal's color. */
-export function pewArt(shotId: number, shotColor?: string) {
-  const word = WORDS[Math.max(0, shotId - 1) % WORDS.length];
+export function pewArt(shotId: number, shotColor?: string, label?: "PEW!" | "ZAP!" | "POW!") {
+  const word =
+    WORDS.find((word) => word.label === label) ?? WORDS[Math.max(0, shotId - 1) % WORDS.length];
   const palette = shotColor
     ? {
         paper: shotColor,
-        shade: shotColor === PORTAL_COLORS.gold ? "#bd7322" : "#279fc7",
+        shade: shotColor === "#efa632" ? "#bd7322" : "#279fc7",
         ink: "#fffceb",
       }
     : PALETTES[shotId % PALETTES.length];

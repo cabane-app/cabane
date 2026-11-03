@@ -8,6 +8,7 @@ import { astroParallelWallLightDeviceDefinition } from "./definitions/astro-para
 import { clipReadingLampDeviceDefinition } from "./definitions/clip-reading-lamp";
 import { oakWallUplightDeviceDefinition } from "./definitions/oak-wall-uplight";
 import { roundGlobeWallLampDeviceDefinition } from "./definitions/round-globe-wall-lamp";
+import { smokedGlobeWallLightDeviceDefinition } from "./definitions/smoked-globe-wall-light";
 import { sixGlobeCeilingLampDeviceDefinition } from "./definitions/six-globe-ceiling-lamp";
 import { tubularWallLampDeviceDefinition } from "./definitions/tubular-wall-lamp";
 import { wallReadingSpotDeviceDefinition } from "./definitions/wall-reading-spot";
@@ -300,6 +301,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
   }),
   "rattan-bell-pendant": rattanBellPendantDeviceDefinition,
   "round-globe-wall-lamp": roundGlobeWallLampDeviceDefinition,
+  "smoked-globe-wall-light": smokedGlobeWallLightDeviceDefinition,
   "wall-reading-spot": wallReadingSpotDeviceDefinition,
   "oak-wall-uplight": oakWallUplightDeviceDefinition,
   "six-globe-ceiling-lamp": sixGlobeCeilingLampDeviceDefinition,
@@ -419,7 +421,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     defaultSize: [0.122, 0.152, 0.048],
     resizePolicy: { kind: "fixed" },
     preferredPlacement: "wall",
-    supportedDomains: ["light", "switch", "input_boolean"],
+    supportedDomains: ["light", "switch", "input_boolean", "event"],
     mountKind: "wall",
     bounds: { min: [-0.061, 0, -0.001], max: [0.061, 0.152, 0.047] },
     outlineContact: true,

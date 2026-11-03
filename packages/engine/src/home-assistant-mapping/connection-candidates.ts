@@ -13,7 +13,7 @@ export const newReadingDescriptor: BindingSlotDescriptor = {
   roomIds: [],
   spec: {
     id: "new-reading",
-    compatibleDomains: ["sensor", "binary_sensor"],
+    compatibleDomains: ["sensor", "binary_sensor", "event"],
     deviceRole: "secondary",
     required: false,
     autoMap: "manual",
@@ -27,6 +27,7 @@ const typeLabels: Record<string, string> = {
   switch: "Switches",
   valve: "Valves",
   binary_sensor: "Binary sensors",
+  event: "Events",
   temperature: "Temperature",
   water: "Water",
   volume: "Water",

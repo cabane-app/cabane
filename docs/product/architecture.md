@@ -8,7 +8,13 @@ areas:
       [apps/web/src/editor-workspace/, apps/web/src/editor-preview/, apps/web/src/editor-connect/]
     docs: [docs/product/construct.md, docs/product/arrange.md, docs/product/connect.md]
   home_assistant:
-    code: [packages/engine/src/HomeAssistantRuntime.tsx, packages/engine/src/command-scheduler.ts]
+    code:
+      [
+        packages/engine/src/HomeAssistantRuntime.tsx,
+        packages/engine/src/StandaloneHomeAssistantRuntime.tsx,
+        packages/engine/src/home-assistant-activity.ts,
+        packages/engine/src/command-scheduler.ts,
+      ]
     docs: [docs/product/runtime-and-privacy.md]
   dashboard:
     code:
@@ -23,6 +29,7 @@ areas:
       [
         packages/engine/src/architecture-scene/,
         packages/engine/src/rendering.tsx,
+        packages/engine/src/comic-pew/,
         packages/engine/src/styles.css,
       ]
     docs: [docs/product/geometry-and-rendering.md]

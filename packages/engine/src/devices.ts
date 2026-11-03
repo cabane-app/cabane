@@ -28,9 +28,11 @@ export const deviceVisualStateForSnapshot = (
   snapshot: EntityStateSnapshot | undefined,
 ): DeviceVisualState => {
   if (!snapshot || snapshot.stale) return "disconnected";
-  if (!snapshot.available || ["unknown", "unavailable"].includes(snapshot.state)) {
+  if (!snapshot.available || snapshot.state === "unavailable") {
     return "unavailable";
   }
+  if (snapshot.entityId.startsWith("event.")) return "connected-inactive";
+  if (snapshot.state === "unknown") return "unavailable";
   return inactiveStates.has(snapshot.state) ? "connected-inactive" : "connected-active";
 };
 

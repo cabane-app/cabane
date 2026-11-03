@@ -26,6 +26,7 @@ const DEVICE_CATEGORY_ICONS: Record<string, typeof IconHelpCircle> = {
   alarm_control_panel: IconShield,
   binary_sensor: IconActivityHeartbeat,
   button: IconPointer,
+  event: IconPointer,
   camera: IconCamera,
   climate: IconTemperature,
   cover: IconWindow,
