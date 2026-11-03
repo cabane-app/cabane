@@ -9,6 +9,60 @@ Read [the measurement guide](performance.md) before comparing results. Lower p95
 and fewer frames over 33.3 ms are the primary signals. A laptop mobile profile is
 a regression proxy; a real phone validates mobile improvements.
 
+## Current baseline and target
+
+Use **Solstice + live dev HA + night + cloudy + 10 lights on** for subsequent
+iterations. The old disconnected demo runs below are historical references.
+
+| Metric                           | Current iOS Simulator baseline | Working 60 Hz target                |
+| -------------------------------- | ------------------------------ | ----------------------------------- |
+| **Frame interval p95 (primary)** | **26 ms**                      | **≤20 ms**, ideally near 16.7 ms    |
+| Average callback FPS             | 44.6                           | Approximately 60                    |
+| Frame interval p99               | 29 ms                          | ≤33.3 ms                            |
+| Intervals above 33.3 ms          | 0.22%                          | <1%                                 |
+| CPU render submission p95        | 5 ms                           | Diagnostic; not GPU time            |
+| Draw calls / triangles (median)  | 299 / 418,022                  | Diagnostic; preserve visual quality |
+
+The new [compact baseline](performance-baselines/2026-11-03-solstice-ha-night-cloudy-ios-simulator.json)
+uses clean source `db5a7ea`, the current 239-item
+`home/showcase/furnished.project.json`, 27 available mapped synthetic lights with
+exactly 10 on, and 10 active rendered point lights. It uses the real standalone
+HA runtime and private mappings; cloudy weather comes from HA, not a preview.
+The selected weather source was also saved in the dev HA workspace.
+
+Environment: iPhone 17 Pro simulator, iOS 26.1 (23B86), Safari, Apple M5 Pro host,
+402 × 714 viewport, device DPR 3, effective canvas 502 × 892 at DPR 1.25. Three
+ten-second captures followed three seconds of warmup each. Per-run FPS was
+44.6 / 42.5 / 44.7, with p95 26 / 26 / 26 ms and p99 29 / 36 / 28 ms. The second
+run had a transient peak of 2,144,085 submitted triangles and several >50 ms
+intervals; the aggregate median-of-run maxima hides that outlier, so retain the
+per-run evidence. Host background work, power and thermal state were not
+controlled. No tests, builds, profiler or video recording ran during capture.
+
+Raw samples and the chart are in ignored
+`test-results/performance/2026-11-03-solstice-ha-night-cloudy-ios-simulator.{json,html}`.
+The scenario differs from the earlier demo, so the difference is not a measured
+code regression or an optimization result. It establishes a rendering shortfall
+under the requested workload. The direct camera replay still bypasses actual
+touch/gesture/picking work; reproduce that path after compaction before claiming
+the reported mobile drag jank is understood.
+
+The local dev HA was restored from this checkout because its previous mounts
+referenced an unavailable worktree and all 27 mapped Solstice lights were
+unavailable. Its account, volume and saved workspaces were retained. Fixture
+installation now runs before startup. The 10-on/17-off states and cloudy weather
+were applied once; a restart resets the demo weather, and preflight then refuses
+to silently benchmark a different scene. Night is a benchmark browser preference.
+
+The private, temporary HA session and preparation scripts remain only under
+ignored `test-results/performance/`. Refresh the session if it expires. The
+loopback harness is left running at
+`http://127.0.0.1:4180/tests/performance-harness.html` for the next phase.
+
+No rendering optimization was made. Stop here for compaction.
+
+## Earlier measurements
+
 | Date       | Experiment / source                                                                         | Environment                                 | Callback FPS | Frame p95 | >33.3 ms | Calls / triangles (median) | Interpretation                                                                         |
 | ---------- | ------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------ | --------- | -------- | -------------------------- | -------------------------------------------------------------------------------------- |
 | 2026-11-02 | [Initial mobile profile](performance-baselines/2026-11-02-mobile.json), `6e260f2`           | Apple M5 Pro, Chrome 151, CPU ×1            | 120.0        | 8.7 ms    | 0%       | 288 / 168,681              | Laptop is comfortably fluid. No phone acceptance yet.                                  |
