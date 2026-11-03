@@ -21,6 +21,9 @@ explicit RGBA readback before resizing or encoding. This avoids GPU canvas-copy
 channel swaps while retaining image orientation and transparent model cutouts.
 Preview caches are disposable. Catalog previews follow the rendering revision;
 workspace previews discard images from the older copy path.
+Workspace snapshots wait until the camera has been still for 500 ms. Pending
+initial and periodic previews resume after navigation settles, keeping pixel
+readback and thumbnail encoding out of active camera movement.
 
 Hosted and bundled textures and 3D models are allowed in product, catalog and
 home-local renderers. Prefer version-pinned HTTPS asset URLs and retain required
