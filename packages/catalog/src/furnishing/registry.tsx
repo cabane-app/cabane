@@ -341,6 +341,7 @@ const stableFurnishingDefinitions = {
 
   "two-seat-loveseat": defineFurnishingModel({
     component: TwoSeatLoveseat,
+    defaultColor: "#91a18b",
     label: "Two seat loveseat",
     category: "Seating",
     defaultRoomType: "living-room",

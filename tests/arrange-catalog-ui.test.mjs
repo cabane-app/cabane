@@ -316,7 +316,12 @@ await withModules(async (load) => {
   test("fabric picker preserves defaults and supports saved colors, history, duplication, and reset", async () => {
     const engine = await load("/packages/engine/src/index.ts");
     await withDom(async ({ root, document, window }) => {
-      const sofa = ownerHomeProject.sceneItems.find((item) => item.modelId === "sectional-sofa");
+      const definition = ownerProjectRegistries.furnishingModels["two-seat-loveseat"];
+      const sofa = {
+        ...ownerHomeProject.sceneItems.find((item) => item.modelId === "sectional-sofa"),
+        modelId: "two-seat-loveseat",
+        size: definition.defaultSize,
+      };
       let editor;
       function Harness() {
         editor = useFurnishingEditor([sofa]);
@@ -331,7 +336,6 @@ await withModules(async (load) => {
         });
       }
       await act(async () => root.render(React.createElement(Harness)));
-      const definition = ownerProjectRegistries.furnishingModels[sofa.modelId];
       const input = document.querySelector('input[type="color"]');
       assert.equal(input.value, definition.defaultColor);
       assert.equal(editor.items[0].color, undefined);

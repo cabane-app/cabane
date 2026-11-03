@@ -41,6 +41,7 @@ await withModules(async (load) => {
       "single-window-curtain",
       "children-curtains",
       "motorized-curtain",
+      "two-seat-loveseat",
       "three-seat-sofa",
       "sectional-sofa",
     ]) {
@@ -89,11 +90,30 @@ await withModules(async (load) => {
         return found.sort();
       };
       const original = meshColors();
+      if (modelId === "two-seat-loveseat") {
+        assert.deepEqual(
+          original,
+          [
+            ...Array(2).fill("64796b"),
+            ...Array(2).fill("718775"),
+            ...Array(4).fill("91a18b"),
+            ...Array(4).fill("bd9367"),
+          ].sort(),
+          "loveseat without an override retains its original fabric and wood palette",
+        );
+      }
       for (const color of colors) {
         await renderer.update(
           createElement(SceneItemRenderer, { ...props, item: { ...item, color } }),
         );
         assert.ok(meshColors().includes(color.slice(1)), modelId);
+        if (modelId === "two-seat-loveseat") {
+          assert.deepEqual(
+            meshColors(),
+            [...Array(8).fill(color.slice(1)), ...Array(4).fill("bd9367")].sort(),
+            "all loveseat fabric changes while the four oak feet keep their finish",
+          );
+        }
       }
       await renderer.update(createElement(SceneItemRenderer, props));
       assert.deepEqual(meshColors(), original, `${modelId}: reset restores exact palette`);
