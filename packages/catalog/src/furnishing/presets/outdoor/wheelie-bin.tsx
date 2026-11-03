@@ -3,7 +3,13 @@ import { RoundedFurniturePanel } from "../construction";
 
 export const WHEELIE_BIN_SIZE = [0.58, 1.05, 0.64] as const;
 
-export function WheelieBin({ size = WHEELIE_BIN_SIZE }: { size?: SceneItemSize }) {
+export function WheelieBin({
+  size = WHEELIE_BIN_SIZE,
+  color,
+}: {
+  size?: SceneItemSize;
+  color?: string | undefined;
+}) {
   return (
     <group
       name="wheelie-bin"
@@ -14,13 +20,13 @@ export function WheelieBin({ size = WHEELIE_BIN_SIZE }: { size?: SceneItemSize }
         name="bin-body"
         size={[0.52, 0.9, 0.53]}
         position={[0, 0.52, 0.005]}
-        color="#6d8063"
+        color={color ?? "#6d8063"}
       />
       <RoundedFurniturePanel
         name="lid"
         size={[0.58, 0.06, 0.64]}
         position={[0, 1.02, 0]}
-        color="#414e49"
+        color={color ?? "#414e49"}
       />
       <RoundedFurniturePanel
         name="rear-handle"
@@ -52,7 +58,7 @@ export function WheelieBin({ size = WHEELIE_BIN_SIZE }: { size?: SceneItemSize }
         name="front-foot"
         size={[0.38, 0.07, 0.05]}
         position={[0, 0.035, 0.23]}
-        color="#6d8063"
+        color={color ?? "#6d8063"}
       />
     </group>
   );

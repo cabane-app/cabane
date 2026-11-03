@@ -1,3 +1,10 @@
+import {
+  twoSeatLoveseatDefinition,
+  indoorChaiseLongueDefinition,
+  threeSeatSofaDefinition,
+  upholsteredArmchairDefinition,
+  upholsteredOttomanDefinition,
+} from "./definitions/upholstered-seating";
 import { GARDEN_SWING_VARIANTS } from "./presets/outdoor/wooden-garden-swing";
 import { childrenCurtainDefinition } from "./presets/children-bedroom/curtain-definition";
 import { singleWindowCurtainDefinition } from "./presets/curtains/definition";
@@ -16,10 +23,6 @@ import { BreadBin, BREAD_BIN_SIZE } from "./presets/kitchen";
 import { DishDryingRack, DISH_DRYING_RACK_SIZE } from "./presets/kitchen";
 import { MedicineCabinet, MEDICINE_CABINET_SIZE } from "./presets/bathroom";
 import {
-  TwoSeatLoveseat,
-  TWO_SEAT_LOVESEAT_SIZE,
-  IndoorChaiseLongue,
-  INDOOR_CHAISE_LONGUE_SIZE,
   PedestalSideTable,
   PEDESTAL_SIDE_TABLE_SIZE,
   CShapedSofaTable,
@@ -92,12 +95,6 @@ import {
   NEUTRAL_AREA_RUG_SIZE,
   RectangularCoffeeTable,
   RECTANGULAR_COFFEE_TABLE_SIZE,
-  ThreeSeatSofa,
-  THREE_SEAT_SOFA_SIZE,
-  UpholsteredArmchair,
-  UPHOLSTERED_ARMCHAIR_SIZE,
-  UpholsteredOttoman,
-  UPHOLSTERED_OTTOMAN_SIZE,
 } from "./presets/living-room";
 import {
   OakDiningChair,
@@ -183,6 +180,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 20, triangles: 8000 },
   }),
   "ironing-board": defineFurnishingModel({
+    defaultColor: "#81958a",
     component: IroningBoard,
     label: "Ironing board",
     category: "Household",
@@ -339,31 +337,8 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 8, triangles: 3500 },
   }),
 
-  "two-seat-loveseat": defineFurnishingModel({
-    component: TwoSeatLoveseat,
-    defaultColor: "#91a18b",
-    label: "Two seat loveseat",
-    category: "Seating",
-    defaultRoomType: "living-room",
-    defaultSize: TWO_SEAT_LOVESEAT_SIZE,
-    bounds: { min: [-0.8, 0, -0.44], max: [0.8, 0.82, 0.44] },
-    resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
-    preferredPlacement: "absolute",
-    outlineContact: true,
-    complexity: { visibleMeshes: 12, triangles: 6000 },
-  }),
-  "indoor-chaise-longue": defineFurnishingModel({
-    component: IndoorChaiseLongue,
-    label: "Indoor chaise longue",
-    category: "Seating",
-    defaultRoomType: "living-room",
-    defaultSize: INDOOR_CHAISE_LONGUE_SIZE,
-    bounds: { min: [-0.4, 0, -0.825], max: [0.4, 0.8, 0.825] },
-    resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
-    preferredPlacement: "absolute",
-    outlineContact: true,
-    complexity: { visibleMeshes: 7, triangles: 3500 },
-  }),
+  "two-seat-loveseat": twoSeatLoveseatDefinition,
+  "indoor-chaise-longue": indoorChaiseLongueDefinition,
   "pedestal-side-table": defineFurnishingModel({
     component: PedestalSideTable,
     label: "Pedestal side table",
@@ -489,6 +464,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 17, triangles: 7500 },
   }),
   "garden-bench": defineFurnishingModel({
+    defaultColor: "#95a184",
     variants: [
       { id: "default", label: "Bare teak" },
       { id: "sage", label: "Sage seat pad" },
@@ -520,6 +496,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 3, triangles: 400 },
   }),
   "patio-parasol": defineFurnishingModel({
+    defaultColor: "#e4d8ba",
     component: PatioParasol,
     label: "Patio parasol",
     category: "Garden structures",
@@ -637,6 +614,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 7, triangles: 3100 },
   }),
   "wheelie-bin": defineFurnishingModel({
+    defaultColor: "#6d8063",
     component: WheelieBin,
     label: "Wheelie bin",
     category: "Garden tools",
@@ -664,19 +642,7 @@ const stableFurnishingDefinitions = {
   }),
 
   ...legacyLightFurnishingDefinitions,
-  "three-seat-sofa": defineFurnishingModel({
-    component: ThreeSeatSofa,
-    label: "3-seat sofa",
-    defaultColor: "#e2d5bf",
-    category: "Seating",
-    defaultRoomType: "living-room",
-    defaultSize: THREE_SEAT_SOFA_SIZE,
-    bounds: { min: [-1.1, 0, -0.47], max: [1.1, 0.84, 0.47] },
-    resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
-    preferredPlacement: "absolute",
-    outlineContact: true,
-    complexity: { visibleMeshes: 21, triangles: 10_000 },
-  }),
+  "three-seat-sofa": threeSeatSofaDefinition,
   "rectangular-dining-table": defineFurnishingModel({
     component: RectangularDiningTable,
     label: "Rectangular dining table",
@@ -694,6 +660,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 9, triangles: 700 },
   }),
   "oak-dining-chair": defineFurnishingModel({
+    defaultColor: "#e3d7c2",
     component: OakDiningChair,
     label: "Oak dining chair",
     category: "Seating",
@@ -742,6 +709,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 9, triangles: 700 },
   }),
   "ergonomic-office-chair": defineFurnishingModel({
+    defaultColor: "#ddd4c2",
     component: ErgonomicOfficeChair,
     label: "Ergonomic office chair",
     category: "Seating",
@@ -766,6 +734,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 10, triangles: 5_000 },
   }),
   "single-bed": defineFurnishingModel({
+    defaultColor: "#e3d8c4",
     variants: [
       { id: "default", label: "Neutral linen" },
       { id: "sage", label: "Sage and clay" },
@@ -783,6 +752,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 25, triangles: 16000 },
   }),
   "double-bed": defineFurnishingModel({
+    defaultColor: "#ded3c1",
     component: DoubleBed,
     label: "Double bed · 160 × 200",
     category: "Beds",
@@ -825,18 +795,7 @@ const stableFurnishingDefinitions = {
     outlineContact: true,
     complexity: { visibleMeshes: 6, triangles: 2_000 },
   }),
-  "upholstered-armchair": defineFurnishingModel({
-    component: UpholsteredArmchair,
-    label: "Upholstered armchair",
-    category: "Seating",
-    defaultRoomType: "living-room",
-    defaultSize: UPHOLSTERED_ARMCHAIR_SIZE,
-    bounds: { min: [-0.425, 0, -0.44], max: [0.425, 0.9, 0.44] },
-    resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
-    preferredPlacement: "absolute",
-    outlineContact: true,
-    complexity: { visibleMeshes: 10, triangles: 4_000 },
-  }),
+  "upholstered-armchair": upholsteredArmchairDefinition,
   "chest-of-drawers": defineFurnishingModel({
     component: ChestOfDrawers,
     label: "Chest of drawers",
@@ -850,6 +809,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 11, triangles: 4_000 },
   }),
   "neutral-area-rug": defineFurnishingModel({
+    defaultColor: "#d8cfbd",
     component: NeutralAreaRug,
     label: "Rug",
     category: "Decor",
@@ -980,6 +940,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 14, triangles: 2_500 },
   }),
   "entryway-shoe-bench": defineFurnishingModel({
+    defaultColor: "#d8cbb5",
     component: EntrywayShoeBench,
     label: "Entryway shoe bench",
     category: "Entryway",
@@ -1028,6 +989,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 6, triangles: 2_500 },
   }),
   "wooden-crib": defineFurnishingModel({
+    defaultColor: "#d8d3bd",
     component: WoodenCrib,
     label: "Wooden crib · 70 × 140",
     category: "Children",
@@ -1040,6 +1002,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 24, triangles: 6_000 },
   }),
   "counter-stool": defineFurnishingModel({
+    defaultColor: "#d9cbb4",
     component: CounterStool,
     label: "Counter stool",
     category: "Seating",
@@ -1051,18 +1014,7 @@ const stableFurnishingDefinitions = {
     outlineContact: true,
     complexity: { visibleMeshes: 10, triangles: 3_500 },
   }),
-  "upholstered-ottoman": defineFurnishingModel({
-    component: UpholsteredOttoman,
-    label: "Upholstered ottoman",
-    category: "Seating",
-    defaultRoomType: "living-room",
-    defaultSize: UPHOLSTERED_OTTOMAN_SIZE,
-    bounds: { min: [-0.35, 0, -0.275], max: [0.35, 0.42, 0.275] },
-    resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
-    preferredPlacement: "absolute",
-    outlineContact: true,
-    complexity: { visibleMeshes: 7, triangles: 3_000 },
-  }),
+  "upholstered-ottoman": upholsteredOttomanDefinition,
   "arched-mirror": defineFurnishingModel({
     defaultRoomType: "bathroom",
     component: ({ size }) => (
@@ -1096,13 +1048,14 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 12, triangles: 3_600 },
   }),
   "towel-rail": defineFurnishingModel({
+    defaultColor: "#e6dfd2",
     defaultRoomType: "bathroom",
-    component: ({ size }) => (
+    component: ({ size, color }) => (
       <group
         rotation={[0, -Math.PI / 2, 0]}
         scale={[size[2] / 0.098, size[1] / 0.507, size[0] / 0.62]}
       >
-        <TowelRail />
+        <TowelRail color={color} />
       </group>
     ),
     label: "Towel rail",
@@ -1163,10 +1116,11 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 12, triangles: 3_200 },
   }),
   "wicker-towel-basket": defineFurnishingModel({
+    defaultColor: "#eeeae1",
     defaultRoomType: "bathroom",
-    component: ({ size }) => (
+    component: ({ size, color }) => (
       <group scale={[size[0] / 0.38, size[1] / 0.315, size[2] / 0.31]}>
-        <WickerTowelBasket />
+        <WickerTowelBasket color={color} />
       </group>
     ),
     label: "Wicker towel basket",
@@ -1301,6 +1255,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 4, triangles: 700 },
   }),
   "pool-chaise-longue": defineFurnishingModel({
+    defaultColor: "#94a58c",
     variants: [
       { id: "default", label: "Sage upholstery" },
       { id: "cozy", label: "Cushion and clay towel" },
@@ -1382,6 +1337,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 14, triangles: 4700 },
   }),
   "wooden-garden-swing": defineFurnishingModel({
+    defaultColor: "#dfcfb1",
     variants: GARDEN_SWING_VARIANTS,
     component: WoodenGardenSwing,
     label: "Wooden garden swing",

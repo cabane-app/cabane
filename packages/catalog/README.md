@@ -951,3 +951,22 @@ resizable independently along its width and length. Casa Solstice uses a
 
 The garden swing offers a Cozy variant with a linen seat pad and three sage/clay
 cushions. Its original bare-timber variant remains available.
+
+## Item colors
+
+Arrange Details exposes **Color** and **Reset color** for native textile models:
+upholstered sofas, armchairs, footstools, padded chairs and benches, beds and
+crib bedding, rugs, loose cushions, parasols, awnings, towels, ironing-board
+covers, changing pads and the fabric bin in cube storage. Outdoor teak lounge
+seating and pool loungers use the same control. Motorized curtains and fabric
+roller blinds also support it.
+
+The optional six-digit hex `color` targets the main fabric. Wood, metal, wicker,
+decorative throw cushions, accent blankets, rug motifs and fringe keep their
+finishes. On garden benches and swings, color affects the padded variants;
+selecting a bare timber variant does not add a cushion. Reset removes the
+override and restores the selected variant's original palette.
+
+The wheelie bin uses the same field for its body, lid and molded front foot.
+Its wheels and rear handle keep their dark finish. No additional color channels
+or project fields are introduced.

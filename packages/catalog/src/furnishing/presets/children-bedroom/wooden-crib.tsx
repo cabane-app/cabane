@@ -4,7 +4,13 @@ import { RoundedFurniturePanel } from "../construction";
 export const WOODEN_CRIB_SIZE = [0.76, 0.95, 1.46] as const;
 
 /** Generic 70 × 140 cm cot with slatted oak sides and neutral bedding. */
-export function WoodenCrib({ size = WOODEN_CRIB_SIZE }: { size?: SceneItemSize }) {
+export function WoodenCrib({
+  size = WOODEN_CRIB_SIZE,
+  color,
+}: {
+  size?: SceneItemSize;
+  color?: string | undefined;
+}) {
   const sideSlats = [-0.56, -0.37, -0.18, 0.01, 0.2, 0.39, 0.58];
   return (
     <group
@@ -60,7 +66,7 @@ export function WoodenCrib({ size = WOODEN_CRIB_SIZE }: { size?: SceneItemSize }
         name="crib-blanket"
         size={[0.66, 0.035, 0.62]}
         position={[0, 0.468, 0.26]}
-        color="#d8d3bd"
+        color={color ?? "#d8d3bd"}
         radius={0.012}
         outlineColor="#a39d86"
       />

@@ -10,8 +10,10 @@ const TOP = 1.48;
 export function BlindFabric({
   position,
   reducedMotion,
+  color,
 }: {
   position: number | null;
+  color?: string | undefined;
   reducedMotion: boolean;
 }) {
   const cloth = useRef<Group>(null);
@@ -47,7 +49,7 @@ export function BlindFabric({
       <group ref={cloth} name="blind-fabric" position={[0, TOP, 0.072]}>
         <mesh position={[0, -TRAVEL / 2, 0]} castShadow receiveShadow>
           <boxGeometry args={[1.12, TRAVEL, 0.008]} />
-          <ToonMaterial color="#d9d4c6" />
+          <ToonMaterial color={color ?? "#d9d4c6"} />
         </mesh>
       </group>
       <group ref={rail} name="blind-bottom-rail" position={[0, 0.02, 0.072]}>
