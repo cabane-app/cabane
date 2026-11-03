@@ -212,3 +212,7 @@ Its revision-checked write changes only that field in draft and published profil
 not other unpublished work. Public projects omit the entity identifier. Save failures
 retain the previous committed source. Action-bar weather previews are local React
 state and never saved to HA or the binding profile.
+
+Event sources are read-only. Their initial `unknown` state means **No event received**;
+actual unavailability and stale connections remain separate. The last event type
+and time use the same formatter in room controls, connected readings and scene labels.

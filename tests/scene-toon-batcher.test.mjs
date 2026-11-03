@@ -65,11 +65,14 @@ await withModules(async (load) => {
     const f = fixture(),
       original = f.a.material;
     f.a.position.x = 2;
+    f.a.layers.mask = f.b.layers.mask = 3;
     let previous;
     f.renderer.render = (scene) => {
       const batch = scene.children.find((object) => object.isBatchedMesh);
       assert.ok(batch);
       assert.equal(f.child.material.visible, true);
+      assert.equal(f.child.layers.test(f.camera.layers), true, "children keep their own draw");
+      assert.equal(batch.layers.mask, 3);
       const matrix = new Matrix4();
       batch.getMatrixAt(0, matrix);
       assert.deepEqual(matrix.elements, new Matrix4().elements);
@@ -79,7 +82,14 @@ await withModules(async (load) => {
         assert.equal(batch, previous);
         assert.equal(batch.getVisibleAt(0), false);
         assert.equal(f.a.material, original);
-      } else assert.equal(f.a.material.visible, false);
+        assert.equal(f.a.layers.mask, 3, "animated sources keep their ordinary draw");
+      } else {
+        assert.equal(
+          f.a.layers.test(f.camera.layers),
+          false,
+          "batch sources skip renderer culling and geometry updates before material checks",
+        );
+      }
       previous = batch;
     };
     f.batcher.render(f.renderer, f.scene, f.camera);
@@ -87,6 +97,8 @@ await withModules(async (load) => {
     original.color.set("green");
     f.batcher.render(f.renderer, f.scene, f.camera);
     assert.equal(f.a.material, original);
+    assert.equal(f.a.layers.mask, 3);
+    assert.equal(f.b.layers.mask, 3);
     assert.equal(f.scene.children.length, 2);
     f.batcher.dispose();
   });
@@ -138,14 +150,49 @@ await withModules(async (load) => {
     f.batcher.render(f.renderer, f.scene, f.camera);
     f.batcher.dispose();
   });
+  test("reflections, shear and fade depth/shadow overrides retain their original draw", () => {
+    const mutations = [
+      (mesh) => {
+        mesh.scale.x = -1;
+      },
+      (mesh) => {
+        mesh.matrixAutoUpdate = false;
+        mesh.matrix.makeShear(0.2, 0, 0, 0, 0, 0);
+      },
+      (mesh) => {
+        mesh.material.userData.cameraFadeBaseDepthWrite = true;
+        mesh.material.depthWrite = false;
+      },
+      (mesh) => {
+        mesh.userData.cameraFadeBaseCastShadow = false;
+        mesh.castShadow = true;
+      },
+    ];
+    for (const mutate of mutations) {
+      const f = fixture();
+      mutate(f.a);
+      f.renderer.render = (scene) => {
+        const batch = scene.children.find((object) => object.isBatchedMesh);
+        assert.ok(batch);
+        assert.equal(batch.getVisibleAt(0), false);
+        assert.equal(f.a.material.visible, true);
+        assert.equal(batch.getVisibleAt(1), true);
+      };
+      f.batcher.render(f.renderer, f.scene, f.camera);
+      f.batcher.dispose();
+    }
+  });
   test("restores scene after render failure and falls back without multi-draw", () => {
     const f = fixture(),
       original = f.a.material;
+    f.a.layers.mask = f.b.layers.mask = 3;
     f.renderer.render = () => {
       throw new Error("render failed");
     };
     assert.throws(() => f.batcher.render(f.renderer, f.scene, f.camera), /render failed/);
     assert.equal(f.a.material, original);
+    assert.equal(f.a.layers.mask, 3);
+    assert.equal(f.b.layers.mask, 3);
     assert.equal(f.scene.children.length, 2);
     f.renderer.extensions.has = () => false;
     f.renderer.render = (scene) => {

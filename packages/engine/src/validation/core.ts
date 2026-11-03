@@ -95,6 +95,7 @@ export const DOMAINS = new Set<DeviceDomain>([
   "camera",
   "sensor",
   "binary_sensor",
+  "event",
 ]);
 
 export const STABLE_MODELS = new Set([
@@ -115,6 +116,7 @@ export const STABLE_MODELS = new Set([
   "floor-lamp",
   "rattan-bell-pendant",
   "round-globe-wall-lamp",
+  "smoked-globe-wall-light",
   "wall-reading-spot",
   "oak-wall-uplight",
   "six-globe-ceiling-lamp",
@@ -136,6 +138,8 @@ export const STABLE_MODELS = new Set([
   "motorized-blind",
   "integrated-roller-shutter",
   "leak-sensor",
+  "computer-fan",
+  "ventilation-fan",
   "ceiling-fan",
   "table-fan",
   "pedestal-fan",
@@ -180,6 +184,20 @@ export const STABLE_MODELS = new Set([
   "compact-car",
   "electric-sedan",
   "pickup-truck",
+  "printer-3d",
+  "paper-printer",
+  "adjustable-desk-lamp",
+  "mini-van",
+  "wallbox",
+  "fireplace",
+  "tripod-television",
+  "clothes-iron",
+
+  "french-wall-mailbox",
+  "us-mailbox",
+  "electrical-panel",
+  "kitchen-hood",
+  "external-ac-unit",
 ]);
 
 export const extensionHas = (

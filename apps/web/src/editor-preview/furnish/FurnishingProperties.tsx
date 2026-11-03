@@ -94,6 +94,66 @@ export function FurnishingProperties({
           />
         </fieldset>
       )}
+      {((!!definition.defaultColor && !!onColorChange) ||
+        (selected.kind === "device" &&
+          !onEditLighting &&
+          !!onLightStateChange &&
+          resolveModelVariant(definition, selected.variant).sceneLight !== false &&
+          selected.entitySlots.some(
+            (slot) => slot.deviceRole === "primary" && slot.compatibleDomains.includes("light"),
+          ))) && (
+        <fieldset>
+          <legend>Appearance</legend>
+          {definition.defaultColor && onColorChange && (
+            <>
+              <label>
+                <span>Color</span>
+                <input
+                  type="color"
+                  value={selected.color ?? definition.defaultColor}
+                  onInput={(event) =>
+                    onColorChange(selected.id, event.currentTarget.value, definition)
+                  }
+                />
+              </label>
+              <EditorButton
+                disabled={selected.color === undefined}
+                onClick={() => onColorChange(selected.id, null, definition)}
+              >
+                Reset color
+              </EditorButton>
+            </>
+          )}
+          {!onEditLighting &&
+            selected.kind === "device" &&
+            resolveModelVariant(definition, selected.variant).sceneLight !== false &&
+            selected.entitySlots.some(
+              (slot) => slot.deviceRole === "primary" && slot.compatibleDomains.includes("light"),
+            ) &&
+            onLightStateChange && (
+              <>
+                <label>
+                  <span>State</span>
+                  <select
+                    value={selected.lightState ?? "connected"}
+                    onChange={(event) =>
+                      onLightStateChange(
+                        selected.id,
+                        event.currentTarget.value as
+                          "always-off" | "always-on" | "night-only" | "connected",
+                      )
+                    }
+                  >
+                    <option value="always-off">Always off</option>
+                    <option value="always-on">Always on</option>
+                    <option value="night-only">Night only</option>
+                    <option value="connected">Connected</option>
+                  </select>
+                </label>
+              </>
+            )}
+        </fieldset>
+      )}
       <fieldset>
         <legend>Dimensions</legend>
         {definition.resizePolicy.kind === "uniform" ? (
@@ -339,68 +399,6 @@ export function FurnishingProperties({
               );
             }}
           />
-        </fieldset>
-      )}
-
-      {((!!definition.defaultColor && !!onColorChange) ||
-        (selected.kind === "device" &&
-          !onEditLighting &&
-          !!onLightStateChange &&
-          resolveModelVariant(definition, selected.variant).sceneLight !== false &&
-          selected.entitySlots.some(
-            (slot) => slot.deviceRole === "primary" && slot.compatibleDomains.includes("light"),
-          ))) && (
-        <fieldset>
-          <legend>Appearance</legend>
-          {definition.defaultColor && onColorChange && (
-            <>
-              <label>
-                <span>Color</span>
-                <input
-                  type="color"
-                  value={selected.color ?? definition.defaultColor}
-                  onInput={(event) =>
-                    onColorChange(selected.id, event.currentTarget.value, definition)
-                  }
-                />
-              </label>
-              <button
-                type="button"
-                disabled={selected.color === undefined}
-                onClick={() => onColorChange(selected.id, null, definition)}
-              >
-                Reset color
-              </button>
-            </>
-          )}
-          {!onEditLighting &&
-            selected.kind === "device" &&
-            resolveModelVariant(definition, selected.variant).sceneLight !== false &&
-            selected.entitySlots.some(
-              (slot) => slot.deviceRole === "primary" && slot.compatibleDomains.includes("light"),
-            ) &&
-            onLightStateChange && (
-              <>
-                <label>
-                  <span>State</span>
-                  <select
-                    value={selected.lightState ?? "connected"}
-                    onChange={(event) =>
-                      onLightStateChange(
-                        selected.id,
-                        event.currentTarget.value as
-                          "always-off" | "always-on" | "night-only" | "connected",
-                      )
-                    }
-                  >
-                    <option value="always-off">Always off</option>
-                    <option value="always-on">Always on</option>
-                    <option value="night-only">Night only</option>
-                    <option value="connected">Connected</option>
-                  </select>
-                </label>
-              </>
-            )}
         </fieldset>
       )}
     </SelectionDetailsPanel>

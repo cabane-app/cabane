@@ -1,5 +1,133 @@
 # Cabane model catalog
 
+## Everyday household additions
+
+These static furnishings are available in Arrange and All items. No runtime
+bindings are created. Dimensions use **width × height × depth in centimetres**;
+code uses the same order in metres. Generic sizes are inferred unless a source
+is linked below. Floor and surface objects start at Y=0 with centered footprints;
+wall objects have their back at Z=0 and bottom at Y=0.
+
+| Model ID           | Public component  | Dimensions (cm) | Arrange room / category |
+| ------------------ | ----------------- | --------------- | ----------------------- |
+| `indoor-bin`       | `IndoorBin`       | 36 × 62 × 40    | Kitchen / Household     |
+| `wall-clock`       | `WallClock`       | 30 × 30 × 4.5   | Living room / Decor     |
+| `cordless-vacuum`  | `CordlessVacuum`  | 25 × 125.6 × 26 | Laundry / Cleaning      |
+| `saucepan`         | `Saucepan`        | 36 × 11.5 × 20  | Kitchen / Kitchen       |
+| `frying-pan`       | `FryingPan`       | 46 × 5.5 × 28   | Kitchen / Kitchen       |
+| `baby-high-chair`  | `BabyHighChair`   | 56 × 90 × 60    | Dining room / Seating   |
+| `bicycle`          | `Bicycle`         | 64 × 110 × 180  | Outdoor / Vehicles      |
+| `stroller`         | `Stroller`        | 60.2 × 105 × 92 | Entryway / Household    |
+| `wifi-router`      | `WifiRouter`      | 24 × 20 × 16.4  | Office / Electronics    |
+| `desktop-pc-tower` | `DesktopPcTower`  | 21 × 44 × 43    | Office / Electronics    |
+| `desktop-keyboard` | `DesktopKeyboard` | 44 × 3 × 15     | Office / Electronics    |
+| `desktop-mouse`    | `DesktopMouse`    | 6.5 × 4 × 11.5  | Office / Electronics    |
+| `shower-curtain`   | `ShowerCurtain`   | 180 × 200 × 12  | Bathroom / Bathroom     |
+| `pet-bed`          | `PetBed`          | 80 × 24 × 60    | Living room / Pets      |
+| `cat-litter-tray`  | `CatLitterTray`   | 46 × 18 × 58    | Bathroom / Pets         |
+| `robot-lawn-mower` | `RobotLawnMower`  | 64 × 34 × 86    | Outdoor / Garden        |
+
+Indoor bin offers **Kitchen recycling**, **Bathroom pedal**, and **Office
+wastebasket** variants. Color changes its shell and lids, preserving hardware.
+Variants share the current item's dimensions; use the independent size controls
+for a smaller bin. Suggested bathroom size is 24 × 32 × 28 cm and office size
+is 28 × 34 × 28 cm, also exported as `BATHROOM_BIN_SIZE` and `OFFICE_BIN_SIZE`.
+The office variant has an open, hollow shell. All three use the same color picker.
+
+The wall clock is a simple slate round case with an ivory dial and static 10:10
+hands. It resizes proportionally and starts with wall support.
+
+The wall-docked vacuum uses the [Dyson V8 technical sheet](https://www.dyson.com/content/dam/dyson/for-business/business-refresh/docs/us/vacuums/Dyson_US_V8_tech_spec.pdf)
+for its 125.6 cm length, 25 cm head and 68.4 cm wand. The [V8 dock guide](https://www.dyson.com/content/dam/dyson/maintenance/cord-free-vacuums/sticks/dyson-v8-vacuums/pdfs/V8-Wall-Dock-Installation-Guide-Global.pdf)
+informs the wall cradle. Docked depth, cyclone details and component proportions
+are inferred for a simplified upright pose. The dust cup is opaque blue-grey;
+this is a stylized reference model rather than an exact product replica.
+
+Saucepan and frying pan are independently placeable open vessels, with handles
+included in their bounds. Set Elevation to the hob surface height; Y=0 is the
+underside. Both resize proportionally.
+
+Baby high chair offers **Stokke Tripp Trapp style** and **IKEA ANTILOP**.
+The [current ANTILOP with tray](https://www.ikea.com/gb/en/p/antilop-highchair-with-tray-white-white-s79597515/)
+provides the shared 56 × 90 × 60 cm envelope, a 54 cm seat height and a 25 × 22 cm
+seat. The [official Tripp Trapp page](https://www.stokke.com/GBR/en-gb/high-chairs/tripp-trapp/1001.html)
+informs its stepped wooden construction. Its source 46 × 79 × 49 cm proportions
+were corroborated by retailer listings, not independently read from the official
+measurement image, and are scaled per axis into the common placement envelope.
+These are style approximations; tray sections and baby supports are inferred.
+Both variants resize proportionally as placed items.
+
+Bicycle offers **E-bike**, **MTB**, and **Gravel** within one inferred envelope.
+The battery/motor, suspension with knobby tyres, and drop bars distinguish them.
+It resizes proportionally and permits indoor garage or outdoor placement.
+
+Stroller is a generic four-wheel pushchair with a fabric seat, curved canopy,
+handle and under-seat basket. Color changes the fabric; frame and wheels retain
+their finishes. It resizes proportionally and permits indoor or outdoor placement.
+
+Wi-Fi router is a generic tabletop internet box with upright antennas, rear
+Ethernet ports and static status lenses. Its full envelope includes the antennas.
+It resizes proportionally.
+
+Desktop tower, keyboard and mouse are independently placeable, with proportional
+resizing and surface-contact origins. Set Elevation to the desk top for keyboard
+and mouse. Use the existing `desktop-monitor` when composing a complete desktop.
+
+Shower curtain includes continuous pleated fabric, thirteen rings, and a tension
+rail. Color targets the fabric. Width, drop and depth resize independently.
+Its Y=0 origin is the curtain hem: set Elevation near the tub rim, or slightly
+inside the bath, then adjust Height so the rail top reaches the desired mounting
+height. The rail top is Elevation + Height. It starts with absolute placement
+and has no floor walk collider.
+
+Pet bed offers **White fluffy** and **Padded fabric** variants. The oval
+bolster, inset cushion and sparse batched tufts share one envelope. All axes
+resize independently, and Color changes the fabric. Reset restores the selected
+variant's original white or sage palette.
+
+Cat litter tray has a hollow rounded shell and inset litter surface. Color
+changes the shell, keeping the litter neutral. It resizes proportionally.
+
+Robot lawn mower includes a low wheeled mower docked at its charging station.
+The inferred envelope includes the base and charging support. It resizes
+proportionally and permits indoor storage or outdoor placement. Geometry is
+static; this preset does not add mower commands or a Home Assistant binding.
+
+## Mailboxes and utility fixtures
+
+These connectable devices are available in Arrange and searchable in All items.
+Dimensions are inferred generic proportions, not manufacturer measurements.
+The electrical panel takes its lime-green casing, display and buttons from the
+Linky style without claiming an exact product replica.
+
+| Model ID              | Public component    | Size, width × height × depth                  | Arrange room → category |
+| --------------------- | ------------------- | --------------------------------------------- | ----------------------- |
+| `french-wall-mailbox` | `FrenchWallMailbox` | 30 × 40 × 16 cm                               | Entryway → Utility      |
+| `us-mailbox`          | `UsMailbox`         | 28 × 130 × 50 cm, including post and red flag | Outdoor → Outdoor       |
+| `electrical-panel`    | `ElectricalPanel`   | 20 × 32 × 10 cm                               | Laundry → Household     |
+| `kitchen-hood`        | `KitchenHood`       | 60 × 70 × 50 cm                               | Kitchen → Kitchen       |
+| `external-ac-unit`    | `ExternalAcUnit`    | 80 × 60 × 32 cm, including feet and grille    | Outdoor → Household     |
+
+The kitchen hood is one item with **Chimney canopy** (`chimney-canopy`, default)
+and **Inclined glass** (`inclined-glass`) variants sharing the same envelope.
+The two mailboxes remain independently placeable. All five models support independent width, height, and depth resizing. Their components and corresponding `*_SIZE` constants are
+exported from `@cabane/catalog/furnishing`. Device adapters ending in `Model`
+are exported from `@cabane/catalog/device`.
+
+Adding any of these items creates a fresh manual primary slot accepting `switch`,
+`input_boolean`, or `binary_sensor`. Connect a switch or helper for on/off controls,
+or an opening sensor for read-only open/closed status according to its Home
+Assistant device class. Sensor bindings do not gain control commands. Both hood
+variants keep the same capabilities. Additional readings use the normal secondary
+slots. Geometry remains static; the device module shows state and connectivity.
+Previously saved furnishing instances remain readable; re-add them from Arrange
+to get the connectable device version. No household connections are included.
+
+Wall models use Y=0 at their bottom and Z=0 at their back, facing +Z. Set their
+elevation for the intended mounting height. The US mailbox and external AC use
+a floor-contact origin at Y=0 and centered X/Z bounds. Outdoor is a browsing
+default; both can also be placed indoors, including a review room.
+
 ## Demo lounge media
 
 The existing `speaker` preset is a 26 × 39 × 26 cm media-player device. Its
@@ -346,7 +474,7 @@ photo-matched presets, not verified manufacturer products.
 ## Connected fans
 
 Import these device components and `stableDeviceRegistry` from
-`@cabane/catalog/device`. All three are available in Arrange under All items
+`@cabane/catalog/device`. All five are available in Arrange under All items
 (search **fan**) and the room filters below. Each new instance receives its own
 manual primary slot compatible with the Home Assistant `fan` domain. Connect
 maps that slot at runtime; no household entity IDs are stored in the catalog.
@@ -356,25 +484,31 @@ according to the bound entity's capabilities.
 Dimensions are **width × depth × height in centimetres**, including the base,
 guard, and motor; animation waves are outside the physical placement envelope.
 
-| Model ID       | Public component   | Default dimensions | Finish and construction                                                        | Arrange room |
-| -------------- | ------------------ | ------------------ | ------------------------------------------------------------------------------ | ------------ |
-| `ceiling-fan`  | `CeilingFanModel`  | 120 × 120 × 40     | Four rounded wood blades, off-white motor/canopy, grey downrod                 | Living room  |
-| `table-fan`    | `TableFanModel`    | 36 × 24 × 48       | Three blades, front/back wire guards, off-white base and short neck            | Office       |
-| `pedestal-fan` | `PedestalFanModel` | 45 × 40 × 135      | Three blades, front/back wire guards, off-white round base and telescopic post | Bedroom      |
+| Model ID          | Public component      | Default dimensions | Finish and construction                                                        | Arrange room |
+| ----------------- | --------------------- | ------------------ | ------------------------------------------------------------------------------ | ------------ |
+| `ceiling-fan`     | `CeilingFanModel`     | 120 × 120 × 40     | Four rounded wood blades, off-white motor/canopy, grey downrod                 | Living room  |
+| `table-fan`       | `TableFanModel`       | 36 × 24 × 48       | Three blades, front/back wire guards, off-white base and short neck            | Office       |
+| `pedestal-fan`    | `PedestalFanModel`    | 45 × 40 × 135      | Three blades, front/back wire guards, off-white round base and telescopic post | Bedroom      |
+| `computer-fan`    | `ComputerFanModel`    | 14 × 14 × 3        | Five-blade upward rotor, square dark mount, raised wire guard                  | Living room  |
+| `ventilation-fan` | `VentilationFanModel` | 14 × 14 × 30       | Pale cylindrical housing with three-blade internal rotor and collars           | Living room  |
 
 These are generic presets; all dimensions, proportions, and finishes are
-inferred, with no manufacturer reference. Each supports uniform resizing.
+inferred, with no manufacturer reference. The existing generic fans support
+uniform resizing; the compact fans support independent axis resizing.
 Table and pedestal fans have their base at Y=0 and face +Z. Set an absolute
-placement's elevation to the tabletop height for the table fan. The ceiling
-fan uses ceiling placement: its canopy top is at local Y=0.40 and the motor
-bottom at Y=0, following the pendant convention. Ceiling placement deducts the
-model height from the room's ceiling height.
+placement's elevation to the tabletop height for the table fan. The compact
+fans also use absolute placement with their support at Y=0 and preserve their
+distinctive silhouettes. The ceiling fan uses ceiling placement: its
+canopy top is at local Y=0.40 and the motor bottom at Y=0, following the
+pendant convention. Ceiling placement deducts the model height from the room's
+ceiling height.
 
 Blades rotate only while the bound fan is on, with rotation speed following HA
 percentage (a moderate default when the entity has no percentage). At zero
 percentage, off, unavailable, or disconnected, both rotation and airflow stop.
 Table and pedestal fans project five blue waves straight ahead, reusing the
-AC's cold palette and animation. The ceiling fan has no airflow effect.
+AC's cold palette and animation. The compact fans and ceiling fan have no
+airflow effect.
 Reduced motion keeps the blades still and uses the AC's static wave treatment.
 Waves do not extend walk collision. These models contain no scene lights,
 external assets, or additional HA capabilities.
@@ -951,3 +1085,65 @@ resizable independently along its width and length. Casa Solstice uses a
 
 The garden swing offers a Cozy variant with a linen seat pad and three sage/clay
 cushions. Its original bare-timber variant remains available.
+
+## Workshop, utility and living-room devices
+
+These eight independently placeable presets are available in Arrange and All items.
+Each receives a fresh manual primary slot. Printers, minivan, wallbox, fireplace
+and iron accept `switch`, `sensor` or `binary_sensor`: switches use existing on/off
+controls, while readings remain read-only. The fireplace also accepts `light` for
+its native illumination. The lamp uses the standard `light`
+profile, brightness-responsive glow and engine-owned warm illumination. The tripod
+TV preserves the television camera, media-player and switch profiles, live camera
+surface, animated picture, and reduced-motion behavior. No vendor-specific
+printer, vehicle or charger commands are added.
+
+Dimensions below are inferred generic envelopes in **width × depth × height cm**,
+including cables, mirrors, trays, feet and other protrusions. The adjustable lamp
+uses the supplied [reference image](https://reviewepedia.com/wp-content/uploads/2026/02/16.jpg)
+for its white spring-balanced construction, not verified manufacturer dimensions.
+All other designs are generic. Code sizes use [width, height, depth] metres.
+
+| Model ID               | Public component          | Dimensions (cm)    | Arrange room / category |
+| ---------------------- | ------------------------- | ------------------ | ----------------------- |
+| `printer-3d`           | `Printer3DModel`          | 48 × 48 × 60       | Office / Appliances     |
+| `paper-printer`        | `PaperPrinterModel`       | 44 × 42 × 25       | Office / Electronics    |
+| `adjustable-desk-lamp` | `AdjustableDeskLampModel` | 22 × 56.32 × 71.34 | Office / Lighting       |
+| `mini-van`             | `MiniVanModel`            | 216 × 490 × 186    | Outdoor / Vehicles      |
+| `wallbox`              | `WallboxModel`            | 30 × 22.25 × 80    | Outdoor / Utilities     |
+| `fireplace`            | `FireplaceModel`          | 140 × 50 × 120     | Living room / Climate   |
+| `tripod-television`    | `TripodTelevisionModel`   | 110 × 40 × 75      | Living room / Media     |
+| `clothes-iron`         | `ClothesIronModel`        | 12 × 32 × 14.4     | Laundry / Appliances    |
+
+Components and matching size constants are exported from `@cabane/catalog/device`.
+The lamp and tripod TV resize proportionally; the others retain fixed dimensions.
+The TV uses a short tabletop tripod, with the screen 12 cm above its supporting
+surface. Place it on furniture by setting Elevation to the furniture top height.
+Floor and surface items start at Y=0, have centered X/Z footprints, and face +Z.
+Wallbox and fireplace instead place their back at Z=0. Mount the wallbox with its
+cable bottom at the desired elevation; the fireplace hearth belongs at floor level.
+The wallbox and minivan also allow indoor garage placement. The lamp articulation
+is a fixed working pose. The minivan's Color picker changes the painted body while preserving glass, trim
+and wheels. Reset color restores sage. The fireplace's stylized flames follow its
+connected on-state or Scene state → Always on, with warm engine-owned light.
+Always off hides the fire, and reduced motion keeps its flames static. Other new utility devices use status or display
+feedback without implying continuous mechanical activity.
+
+## Item colors
+
+Arrange Details exposes **Color** and **Reset color** for native textile models:
+upholstered sofas, armchairs, footstools, padded chairs and benches, beds and
+crib bedding, rugs, loose cushions, parasols, awnings, towels, ironing-board
+covers, changing pads and the fabric bin in cube storage. Outdoor teak lounge
+seating and pool loungers use the same control. Motorized curtains and fabric
+roller blinds also support it.
+
+The optional six-digit hex `color` targets the main fabric. Wood, metal, wicker,
+decorative throw cushions, accent blankets, rug motifs and fringe keep their
+finishes. On garden benches and swings, color affects the padded variants;
+selecting a bare timber variant does not add a cushion. Reset removes the
+override and restores the selected variant's original palette.
+
+The wheelie bin uses the same field for its body, lid and molded front foot.
+Its wheels and rear handle keep their dark finish. No additional color channels
+or project fields are introduced.

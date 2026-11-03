@@ -1,4 +1,22 @@
+import { catLitterTrayDefinition } from "./cat-litter-tray";
+import { robotLawnMowerDefinition } from "./robot-lawn-mower";
+import { petBedDefinition } from "./pet-bed";
+import { desktopPcDefinitions } from "./desktop-pc";
+import { showerCurtainDefinition } from "./shower-curtain";
+import { wifiRouterDefinition } from "./wifi-router";
+import { strollerDefinition } from "./stroller";
+import { babyHighChairDefinition } from "./baby-high-chair";
+import { bicycleDefinition } from "./bicycle";
+import { cookwareDefinitions } from "./cookware";
+import { indoorBinDefinition } from "./indoor-bin";
+import { wallClockDefinition } from "./wall-clock";
+import { cordlessVacuumDefinition } from "./cordless-vacuum";
 import { teakLoungeDefinitions } from "./teak-lounge";
+import { frenchWallMailboxDefinition } from "./french-wall-mailbox";
+import { usMailboxDefinition } from "./us-mailbox";
+import { electricalPanelDefinition } from "./electrical-panel";
+import { kitchenHoodDefinition } from "./kitchen-hood";
+import { externalAcUnitDefinition } from "./external-ac-unit";
 import { cozyDecorDefinitions } from "./cozy-decor";
 import { clipReadingLampDefinition } from "./clip-reading-lamp";
 import { wallLiftingDryingRackDefinition } from "./wall-lifting-drying-rack";
@@ -81,6 +99,24 @@ import { roundWallDisplayDefinition } from "./round-wall-display";
 import { threeTierWallShelvesDefinition } from "./three-tier-wall-shelves";
 
 export const furnishingPresetDefinitions = {
+  "cat-litter-tray": catLitterTrayDefinition,
+  "robot-lawn-mower": robotLawnMowerDefinition,
+  "pet-bed": petBedDefinition,
+  ...desktopPcDefinitions,
+  "shower-curtain": showerCurtainDefinition,
+  "wifi-router": wifiRouterDefinition,
+  stroller: strollerDefinition,
+  "baby-high-chair": babyHighChairDefinition,
+  bicycle: bicycleDefinition,
+  ...cookwareDefinitions,
+  "indoor-bin": indoorBinDefinition,
+  "wall-clock": wallClockDefinition,
+  "cordless-vacuum": cordlessVacuumDefinition,
+  "french-wall-mailbox": frenchWallMailboxDefinition,
+  "us-mailbox": usMailboxDefinition,
+  "electrical-panel": electricalPanelDefinition,
+  "kitchen-hood": kitchenHoodDefinition,
+  "external-ac-unit": externalAcUnitDefinition,
   ...cozyDecorDefinitions,
   ...teakLoungeDefinitions,
   ...laundryCleaningDefinitions,

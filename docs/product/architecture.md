@@ -8,7 +8,12 @@ areas:
       [apps/web/src/editor-workspace/, apps/web/src/editor-preview/, apps/web/src/editor-connect/]
     docs: [docs/product/construct.md, docs/product/arrange.md, docs/product/connect.md]
   home_assistant:
-    code: [packages/engine/src/HomeAssistantRuntime.tsx, packages/engine/src/command-scheduler.ts]
+    code:
+      [
+        packages/engine/src/HomeAssistantRuntime.tsx,
+        packages/engine/src/StandaloneHomeAssistantRuntime.tsx,
+        packages/engine/src/command-scheduler.ts,
+      ]
     docs: [docs/product/runtime-and-privacy.md]
   dashboard:
     code:
@@ -16,6 +21,7 @@ areas:
         packages/engine/src/CabaneDashboard.tsx,
         packages/engine/src/home-assistant-dashboard/,
         packages/engine/src/navigation/,
+        packages/engine/src/building/,
       ]
     docs: [docs/product/dashboard-and-cameras.md]
   rendering:
@@ -46,7 +52,7 @@ areas:
     docs: [home/README.md, docs/agent-home-generation.md, docs/product/generation.md]
   verification_and_delivery:
     code: [scripts/, tests/]
-    docs: [docs/product/verification-and-delivery.md, docs/test-guidelines.md]
+    docs: [docs/product/verification-and-delivery.md, docs/test-guidelines.md, docs/performance.md]
 ---
 
 # Architecture

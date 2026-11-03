@@ -21,6 +21,9 @@ explicit RGBA readback before resizing or encoding. This avoids GPU canvas-copy
 channel swaps while retaining image orientation and transparent model cutouts.
 Preview caches are disposable. Catalog previews follow the rendering revision;
 workspace previews discard images from the older copy path.
+Workspace snapshots wait until the camera has been still for 500 ms. Pending
+initial and periodic previews resume after navigation settles, keeping pixel
+readback and thumbnail encoding out of active camera movement.
 
 Hosted and bundled textures and 3D models are allowed in product, catalog and
 home-local renderers. Prefer version-pinned HTTPS asset URLs and retain required
@@ -249,11 +252,19 @@ while interior ceiling heights and opening dimensions remain authored values.
 The shared stylized renderer uses opaque toon batching and cached automatic
 meshoptimizer LOD in Orbit, Walk, and Arrange. Static transforms/colors are baked
 into persistent batch buffers; camera LOD and fading changes retain those buffers.
+Procedural geometry constructor inputs stay stable across live-state and appearance
+updates. Shape dimensions rebuild their geometry; unchanged parts retain their
+picking buffers and prepared LODs.
 Moving/recolored and incompatible meshes retain ordinary draws. Source meshes
 remain the picking surface, and existing InstancedMesh objects retain all instances.
 LOD simplification runs in a worker; unavailable workers keep full detail.
+Preparing newly added or changed geometry retains previously prepared detail
+levels and batch families. Only completed new families are published together,
+so unrelated updates do not restore the whole scene to full detail or repack it.
 Shadow invalidation inspects authored geometry before LOD substitution, avoiding
-camera-only LOD redraws. Devices without native multi-draw keep ordinary draws.
+camera-only LOD redraws. The engine's fragment-only wall-light mask preserves
+shadow reuse; unknown authored shaders and render hooks remain conservative.
+Devices without native multi-draw keep ordinary draws.
 The reusable performance script includes camera-motion timings and batch-buffer
 churn checks. Real-device verification remains necessary for mobile fluidity.
 

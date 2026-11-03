@@ -1,3 +1,4 @@
+export { SceneActivityPulse } from "./SceneActivityPulse";
 export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";
 export * from "./types";
@@ -147,6 +148,13 @@ export {
 } from "./measurement-units";
 export { formatMeasurementText } from "./measurement-text";
 export { MeasurementText } from "./MeasurementText";
+export { WALL_IMAGE_LIMITS, wallImageDimensions, wallSurfaceImageError } from "./wall-image";
+export {
+  wallSurfaceRepeatHeight,
+  type WallImageFinish,
+  type WallPatternFinish,
+  type WallSurfaceImage,
+} from "./wall-types";
 
 export { MAX_ORTHOGRAPHIC_ZOOM, MIN_EDITOR_ZOOM } from "./navigation/camera-zoom";
 
@@ -159,7 +167,11 @@ export {
   modelLightingPointCount,
 } from "./model-lighting/settings";
 export { editModelLighting } from "./model-lighting/edit";
-export { SCENE_LIGHT_BUDGET, modelLightingExecution } from "./model-lighting/execution";
+export {
+  DEFAULT_STRIP_MAX_SPACING_METERS,
+  SCENE_LIGHT_BUDGET,
+  modelLightingExecution,
+} from "./model-lighting/execution";
 
 export {
   modelLightingSurfaces,

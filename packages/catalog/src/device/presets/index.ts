@@ -9,3 +9,4 @@ export * from "./security";
 export * from "./sensors";
 export * from "./vehicles";
 export * from "./irrigation";
+export * from "./utility";

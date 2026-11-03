@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-03T15:55:45.334Z",
+  "label": "touch-baseline",
+  "source": {
+    "commit": "ddc00e96eef25d01cf12f55835c371c342eeaec3",
+    "dirty": false,
+    "homeHash": "69fd427fbaf102e41c1ff7d8833d2712482f66952c7eabaacab4a0f605f3dafb"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "touch-orbit-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 487,
+      "height": 1055,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [39.09400000000001, 45.572, 45.76400000000001],
+      "quaternion": [
+        -0.35829231738036693, 0.3288030008929161, 0.13649890390018493, 0.86306619163542
+      ],
+      "target": [9, 0.2, 12],
+      "zoom": 9.129213483146065
+    },
+    "workload": {
+      "scenario": "solstice-ha-night-cloudy-v1",
+      "home": "home/showcase/furnished.project.json",
+      "sceneItems": 239,
+      "lighting": "night",
+      "weather": "cloudy",
+      "weatherSource": "Home Assistant",
+      "mappedLights": 27,
+      "lightsOn": 10,
+      "fixtureHash": "fef844bd1dad6405e8b649d0c69fa267903bc1cebace5001ed97f762a791146e"
+    },
+    "profile": "mobile",
+    "cpuRate": 4
+  },
+  "scene": {
+    "activePointLights": 10
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 4,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "summary": {
+    "fps": 15.15966550931586,
+    "frameMsP50": 63,
+    "frameMsP95": 85.20000004768372,
+    "frameMsP99": 102.60000014305115,
+    "over33MsPercent": 100,
+    "over50MsPercent": 100,
+    "cpuSubmitMsP95": 26.90000009536743,
+    "callsMedian": 297,
+    "callsMax": 299,
+    "trianglesMedian": 258678,
+    "trianglesMax": 261010
+  },
+  "rawReport": "test-results/performance/touch-baseline.json",
+  "runSummaries": [
+    {
+      "frames": 155,
+      "durationMs": 10224.5,
+      "cameraTravel": 33.398517808117944,
+      "summary": {
+        "fps": 15.15966550931586,
+        "frameMsP50": 63,
+        "frameMsP95": 85.39999985694885,
+        "frameMsP99": 102.60000014305115,
+        "over33MsPercent": 100,
+        "over50MsPercent": 100,
+        "cpuSubmitMsP95": 27.899999856948853,
+        "callsMedian": 297,
+        "callsMax": 299,
+        "trianglesMedian": 260258,
+        "trianglesMax": 435092
+      }
+    },
+    {
+      "frames": 161,
+      "durationMs": 10301.899999856949,
+      "cameraTravel": 28.66544386163969,
+      "summary": {
+        "fps": 15.628185092287406,
+        "frameMsP50": 61.799999952316284,
+        "frameMsP95": 78.09999990463257,
+        "frameMsP99": 97.89999985694885,
+        "over33MsPercent": 100,
+        "over50MsPercent": 100,
+        "cpuSubmitMsP95": 24.399999856948853,
+        "callsMedian": 297,
+        "callsMax": 299,
+        "trianglesMedian": 258678,
+        "trianglesMax": 260258
+      }
+    },
+    {
+      "frames": 147,
+      "durationMs": 10144.5,
+      "cameraTravel": 34.686122415056175,
+      "summary": {
+        "fps": 14.49061067573562,
+        "frameMsP50": 67.79999995231628,
+        "frameMsP95": 85.20000004768372,
+        "frameMsP99": 103.29999995231628,
+        "over33MsPercent": 100,
+        "over50MsPercent": 100,
+        "cpuSubmitMsP95": 26.90000009536743,
+        "callsMedian": 297,
+        "callsMax": 301,
+        "trianglesMedian": 257957,
+        "trianglesMax": 261010
+      }
+    }
+  ]
+}

@@ -42,3 +42,5 @@ provider; the real client and hook are forbidden by the import check. Add future
 simulation behavior here, never as `isDemo` branches in controls or models.
 
 Fan power and valve open/close commands also update only in memory.
+
+Event profiles use a fixed synthetic last-event timestamp and `short_release` type, with no commands.

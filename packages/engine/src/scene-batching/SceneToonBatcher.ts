@@ -11,7 +11,7 @@ import {
   type WebGLRenderer,
 } from "three";
 import { geometryLodFamily } from "./geometry-lod-family";
-import { geometryRevision, toonBatchKey } from "./toon-batch-compatibility";
+import { canRenderToonBatch, geometryRevision, toonBatchKey } from "./toon-batch-compatibility";
 
 type Batch = {
   mesh: BatchedMesh;
@@ -157,7 +157,7 @@ export class SceneToonBatcher {
         this.batches.delete(key);
       }
     }
-    const originals: Array<[Mesh, Mesh["material"]]> = [];
+    const originals: Array<[Mesh, Mesh["material"], number]> = [];
     const attached: BatchedMesh[] = [];
     this.inverse.copy(scene.matrixWorld).invert();
     try {
@@ -189,7 +189,7 @@ export class SceneToonBatcher {
           // Animation/tint changes draw the original mesh, never rewrite static
           // vertex buffers during a frame. Children remain independently eligible.
           let visible =
-            toonBatchKey(source) === key &&
+            canRenderToonBatch(source) &&
             batch.matrices[index].equals(this.matrix) &&
             batch.colors[index].equals(material.color);
           for (let parent: Mesh["parent"] = source; visible && parent; parent = parent.parent)
@@ -201,8 +201,13 @@ export class SceneToonBatcher {
             batch.mesh.setGeometryIdAt(index, geometryId);
             batch.selectedIds[index] = geometryId;
           }
-          originals.push([source, source.material]);
+          // Layer rejection precedes frustum tests, geometry uploads and depth
+          // sorting in Three. Unlike visible=false, it keeps children drawable.
+          // Retain material masking so downstream lighting preparation also
+          // skips the authored materials of these render-only substitutes.
+          originals.push([source, source.material, source.layers.mask]);
           source.material = this.hidden;
+          source.layers.mask = 0;
         }
         scene.add(batch.mesh);
         batch.mesh.matrixWorld.copy(scene.matrixWorld);
@@ -210,7 +215,10 @@ export class SceneToonBatcher {
       }
       render();
     } finally {
-      for (const [source, material] of originals) source.material = material;
+      for (const [source, material, layers] of originals) {
+        source.material = material;
+        source.layers.mask = layers;
+      }
       for (const mesh of attached) scene.remove(mesh);
     }
   }

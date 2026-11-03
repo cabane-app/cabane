@@ -1,4 +1,4 @@
-/** Optional read-only attachments never drive a model's primary appearance or commands. */
+/** Optional read-only attachments are separate from primary state and commands. */
 export const isAuxiliaryEntitySlot = (slot: {
   deviceRole?: unknown;
   required?: unknown;
@@ -11,5 +11,5 @@ export const isAuxiliaryEntitySlot = (slot: {
   Array.isArray(slot.compatibleDomains) &&
   slot.compatibleDomains.length > 0 &&
   slot.compatibleDomains.every(
-    (domain: unknown) => domain === "sensor" || domain === "binary_sensor",
+    (domain: unknown) => domain === "sensor" || domain === "binary_sensor" || domain === "event",
   );

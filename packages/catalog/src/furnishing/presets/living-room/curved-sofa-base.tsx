@@ -2,8 +2,17 @@ import { useMemo } from "react";
 import { Shape } from "three";
 import { ToonMaterial } from "@cabane/engine";
 
+const extrusion = {
+  depth: 0.23,
+  bevelEnabled: true,
+  bevelThickness: 0.02,
+  bevelSize: 0.02,
+  bevelSegments: 2,
+  curveSegments: 20,
+};
+
 /** One continuous shallow crescent plinth, with softened connected edges. */
-export function CurvedSofaBase() {
+export function CurvedSofaBase({ color }: { color?: string | undefined }) {
   const shape = useMemo(() => {
     const result = new Shape();
     result.moveTo(-1.28, -0.3);
@@ -32,20 +41,8 @@ export function CurvedSofaBase() {
         castShadow
         receiveShadow
       >
-        <extrudeGeometry
-          args={[
-            shape,
-            {
-              depth: 0.23,
-              bevelEnabled: true,
-              bevelThickness: 0.02,
-              bevelSize: 0.02,
-              bevelSegments: 2,
-              curveSegments: 20,
-            },
-          ]}
-        />
-        <ToonMaterial color="#a9aca5" />
+        <extrudeGeometry args={[shape, extrusion]} />
+        <ToonMaterial color={color ?? "#a9aca5"} />
       </mesh>
     </group>
   );

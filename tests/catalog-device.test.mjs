@@ -24,6 +24,20 @@ await withModules(async (load) => {
     assert.deepEqual(ids.sort(), [...catalog.STABLE_DEVICE_MODEL_IDS].sort());
   });
 
+  test("the under-cabinet LED strip uses adaptive full-length lighting", () => {
+    const definition = catalog.stableDeviceRegistry["under-cabinet-led-strip"];
+    assert.equal(definition.sceneLight, undefined);
+    assert.deepEqual(definition.lighting.sources, [
+      {
+        kind: "strip",
+        start: [-0.492, 0.002, 0],
+        end: [0.492, 0.002, 0],
+        samples: 2,
+        maxSpacingMeters: engine.DEFAULT_STRIP_MAX_SPACING_METERS,
+      },
+    ]);
+  });
+
   test("microwave glass and controls sit clearly ahead of their backing surfaces", async () => {
     for (const visualState of [
       "connected-active",
@@ -224,6 +238,7 @@ await withModules(async (load) => {
     "table-lamp",
     "rattan-bell-pendant",
     "round-globe-wall-lamp",
+    "smoked-globe-wall-light",
     "wall-reading-spot",
     "oak-wall-uplight",
     "six-globe-ceiling-lamp",
@@ -232,6 +247,13 @@ await withModules(async (load) => {
     "clip-reading-lamp",
     "woven-pendant",
     "children-pendant",
+    "french-wall-mailbox",
+    "us-mailbox",
+    "electrical-panel",
+    "kitchen-hood",
+    "external-ac-unit",
+    "computer-fan",
+    "ventilation-fan",
   ];
 
   test("irrigation sprinklers animate only while active and respect reduced motion", async () => {
@@ -437,6 +459,7 @@ await withModules(async (load) => {
       "floor-lamp",
       "rattan-bell-pendant",
       "round-globe-wall-lamp",
+      "smoked-globe-wall-light",
       "wall-reading-spot",
       "oak-wall-uplight",
       "six-globe-ceiling-lamp",
@@ -458,6 +481,8 @@ await withModules(async (load) => {
       "motorized-blind",
       "integrated-roller-shutter",
       "leak-sensor",
+      "computer-fan",
+      "ventilation-fan",
       "ceiling-fan",
       "table-fan",
       "pedestal-fan",
@@ -502,6 +527,20 @@ await withModules(async (load) => {
       "compact-car",
       "electric-sedan",
       "pickup-truck",
+      "printer-3d",
+      "paper-printer",
+      "adjustable-desk-lamp",
+      "mini-van",
+      "wallbox",
+      "fireplace",
+      "tripod-television",
+      "clothes-iron",
+
+      "french-wall-mailbox",
+      "us-mailbox",
+      "electrical-panel",
+      "kitchen-hood",
+      "external-ac-unit",
     ]);
     assert.deepEqual([...validationCore.STABLE_MODELS], catalog.STABLE_DEVICE_MODEL_IDS);
     for (const id of catalog.STABLE_DEVICE_MODEL_IDS) {
@@ -510,23 +549,33 @@ await withModules(async (load) => {
       assert.equal(typeof definition.component, "function");
       assert.ok(
         definition.complexity.visibleMeshes <=
-          (["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
-            ? 72
-            : id === "integrated-roller-shutter"
-              ? 35
-              : id === "pergola-string-lights"
-                ? 17
-                : 16),
+          (["printer-3d", "adjustable-desk-lamp", "tripod-television"].includes(id)
+            ? 40
+            : id === "external-ac-unit"
+              ? 37
+              : id === "paper-printer"
+                ? 18
+                : ["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
+                  ? 72
+                  : id === "integrated-roller-shutter"
+                    ? 35
+                    : id === "pergola-string-lights"
+                      ? 17
+                      : id === "computer-fan"
+                        ? 20
+                        : 16),
       );
       assert.ok(
         definition.complexity.triangles <=
-          (["compact-car", "electric-sedan", "pickup-truck"].includes(id)
+          (["compact-car", "electric-sedan", "pickup-truck", "mini-van"].includes(id)
             ? 34_000
-            : id === "rattan-bell-pendant"
-              ? 40_000
-              : id === "pergola-string-lights"
-                ? 28_000
-                : 5_000),
+            : ["printer-3d", "wallbox"].includes(id)
+              ? 8_000
+              : id === "rattan-bell-pendant"
+                ? 40_000
+                : id === "pergola-string-lights"
+                  ? 28_000
+                  : 5_000),
       );
       assert.ok(definition.bounds.min.every(Number.isFinite));
       assert.ok(definition.bounds.max.every(Number.isFinite));
@@ -1219,7 +1268,13 @@ await withModules(async (load) => {
 
   test("fan geometry matches placement bounds and declared toon complexity in every state", async () => {
     const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
-    for (const id of ["ceiling-fan", "table-fan", "pedestal-fan"]) {
+    for (const id of [
+      "ceiling-fan",
+      "table-fan",
+      "pedestal-fan",
+      "computer-fan",
+      "ventilation-fan",
+    ]) {
       const definition = catalog.stableDeviceRegistry[id];
       const binding = room.devices.find((device) => device.model === id);
       assert.deepEqual(definition.supportedDomains, ["fan"]);
@@ -1243,10 +1298,9 @@ await withModules(async (load) => {
           }),
         );
         // Airflow is an effect outside the physical placement/collision envelope.
-        const body =
-          id === "ceiling-fan"
-            ? renderer.scene.instance
-            : renderer.scene.findByProps({ name: "fan-body" }).instance;
+        const body = ["table-fan", "pedestal-fan"].includes(id)
+          ? renderer.scene.findByProps({ name: "fan-body" }).instance
+          : renderer.scene.instance;
         const bounds = new Box3().setFromObject(body, true);
         for (const edge of ["min", "max"])
           bounds[edge].toArray().forEach((value, axis) => {
@@ -1273,19 +1327,86 @@ await withModules(async (load) => {
         }
         assert.ok(triangles <= definition.complexity.triangles, `${id}: ${triangles} triangles`);
         assert.equal(
-          renderer.scene.findAll((node) => node.props.name?.startsWith("fan-blade-")).length,
-          id === "ceiling-fan" ? 4 : 3,
+          renderer.scene.findAll((node) => node.props.name?.includes("fan-blade-")).length,
+          id === "ceiling-fan" ? 4 : id === "computer-fan" ? 5 : 3,
         );
         assert.equal(renderer.scene.findAll((node) => node.instance.isLight).length, 0);
-        assert.equal(body.userData?.walkCollider, id === "ceiling-fan" ? undefined : true);
+        assert.equal(
+          body.userData?.walkCollider,
+          ["table-fan", "pedestal-fan"].includes(id) ? true : undefined,
+        );
         await renderer.unmount();
+      }
+    }
+  });
+
+  test("compact fan status beacons remain visible outside their opaque housings", async () => {
+    for (const id of ["computer-fan", "ventilation-fan"]) {
+      for (const visualState of [
+        "disconnected",
+        "unavailable",
+        "connected-inactive",
+        "connected-active",
+      ]) {
+        const renderer = await create(
+          createElement(catalog.stableDeviceRegistry[id].component, {
+            visualState,
+            reducedMotion: true,
+            walkMode: false,
+            onInteract() {},
+          }),
+        );
+        try {
+          renderer.scene.instance.updateMatrixWorld(true);
+          const meshes = renderer.scene
+            .findAll((node) => node.type === "Mesh")
+            .map((node) => node.instance);
+          const beacon = renderer.scene.findByProps({
+            name: `device-state-${visualState}`,
+          }).instance;
+          const beaconMeshes = [];
+          beacon.traverse((object) => {
+            if (object.isMesh) beaconMeshes.push(object);
+          });
+          const camera = new Vector3(0.2, 0.4, 0.4);
+          const ray = new Raycaster();
+          const visible = beaconMeshes.some((mesh) => {
+            const positions = mesh.geometry.attributes.position;
+            const indices = mesh.geometry.index;
+            for (let index = 0; index < (indices?.count ?? positions.count); index += 3) {
+              const target = new Vector3();
+              for (let corner = 0; corner < 3; corner++) {
+                target.add(
+                  new Vector3().fromBufferAttribute(
+                    positions,
+                    indices ? indices.getX(index + corner) : index + corner,
+                  ),
+                );
+              }
+              target.divideScalar(3).applyMatrix4(mesh.matrixWorld);
+              ray.set(camera, target.sub(camera).normalize());
+              if (beaconMeshes.includes(ray.intersectObjects(meshes, false)[0]?.object))
+                return true;
+            }
+            return false;
+          });
+          assert.ok(visible, `${id}/${visualState}: the housing hides the entire status beacon`);
+        } finally {
+          await renderer.unmount();
+        }
       }
     }
   });
 
   test("fan rotors follow HA speed and stop when off, disconnected, unavailable or motion is reduced", async () => {
     const room = fixtures.equippedFixtureManifest.floors[0].rooms[0];
-    for (const id of ["ceiling-fan", "table-fan", "pedestal-fan"]) {
+    for (const [id, axis] of [
+      ["ceiling-fan", "z"],
+      ["table-fan", "z"],
+      ["pedestal-fan", "z"],
+      ["computer-fan", "y"],
+      ["ventilation-fan", "y"],
+    ]) {
       const definition = catalog.stableDeviceRegistry[id];
       const binding = room.devices.find((device) => device.model === id);
       const baseState =
@@ -1309,14 +1430,14 @@ await withModules(async (load) => {
       );
       const rotor = renderer.scene.findByProps({ name: "fan-rotor" }).instance;
       await renderer.advanceFrames(1, 0.02);
-      const slow = Math.abs(rotor.rotation.z);
+      const slow = Math.abs(rotor.rotation[axis]);
       assert.ok(slow > 0);
       await renderer.update(
         createElement(definition.component, { ...props, state: snapshot(100) }),
       );
-      const beforeFast = rotor.rotation.z;
+      const beforeFast = rotor.rotation[axis];
       await renderer.advanceFrames(1, 0.02);
-      assert.ok(Math.abs(Math.abs(rotor.rotation.z - beforeFast) - slow * 4) < 1e-6);
+      assert.ok(Math.abs(Math.abs(rotor.rotation[axis] - beforeFast) - slow * 4) < 1e-6);
       for (const scenario of [
         { state: snapshot(0) },
         { state: snapshot(50, "off"), visualState: "connected-inactive" },
@@ -1325,9 +1446,9 @@ await withModules(async (load) => {
         { state: snapshot(50), reducedMotion: true },
       ]) {
         await renderer.update(createElement(definition.component, { ...props, ...scenario }));
-        const stoppedAt = rotor.rotation.z;
+        const stoppedAt = rotor.rotation[axis];
         await renderer.advanceFrames(2, 0.02);
-        assert.equal(rotor.rotation.z, stoppedAt, `${id}: ${JSON.stringify(scenario)}`);
+        assert.equal(rotor.rotation[axis], stoppedAt, `${id}: ${JSON.stringify(scenario)}`);
       }
       await renderer.unmount();
     }

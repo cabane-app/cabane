@@ -1,6 +1,7 @@
 import { defineFurnishingModel } from "@cabane/engine";
 import { HeadboardFreeDoubleBed } from "../presets/bedroom/headboard-free-double-bed";
 export const headboardFreeDoubleBedDefinition = defineFurnishingModel({
+  defaultColor: "#ded9cd",
   component: HeadboardFreeDoubleBed,
   label: "Headboard free double bed",
   category: "Bedroom",

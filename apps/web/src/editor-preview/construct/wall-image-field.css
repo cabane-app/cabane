@@ -1,0 +1,48 @@
+.wall-image-field {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.wall-image-field__source {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.wall-image-field__preview {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  background: var(--preview-paper);
+  border: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+.wall-image-field__file {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+.wall-image-field__name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.wall-image-field__hint,
+.wall-image-field__file small {
+  color: var(--preview-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.wall-image-field__error {
+  color: #914c37;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  margin: 0;
+}

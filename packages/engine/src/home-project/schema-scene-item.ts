@@ -125,12 +125,7 @@ export const sceneItem = (
     candidate.color !== undefined &&
     (typeof candidate.color !== "string" || !/^#[0-9a-f]{6}$/i.test(candidate.color))
   )
-    addProjectIssue(
-      issues,
-      "project.item-color",
-      `${path}.color`,
-      "Choose a six-digit hex fabric color.",
-    );
+    addProjectIssue(issues, "project.item-color", `${path}.color`, "Choose a six-digit hex color.");
   if (!legacy) string(candidate.floorId, `${path}.floorId`, issues);
   if (!["furnishing", "device"].includes(String(candidate.kind)))
     addProjectIssue(issues, "project.item-kind", `${path}.kind`, "Scene item kind is invalid.");

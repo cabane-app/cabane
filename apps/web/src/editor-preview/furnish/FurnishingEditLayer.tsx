@@ -385,10 +385,10 @@ export function FurnishingEditLayer({
               renderOrder={20}
             >
               <PlanOverlayMaterial
-                color={selected ? "#6b896c" : "#ffffff"}
+                color={selected ? "#19e6ef" : "#ffffff"}
                 transparent
                 visible={selected}
-                opacity={0.12}
+                opacity={0.035}
                 depthTest={false}
                 depthWrite={false}
               />

@@ -1,9 +1,9 @@
 {
-  "revision": 30,
-  "fingerprint": "c7078f0c13601dc5bd0a6c682c56be1368a2931e97e00b8eab2f0b8acbb132e8",
-  "summary": "Connect stairs to terrain and add masonry stair styles",
+  "revision": 33,
+  "fingerprint": "380926c2e6b4c889a7f82bc6fc982f88e2d98e541fcef0df391c4c7a752f88cf",
+  "summary": "Add per-face wall tiles, wallpaper and custom images",
   "breakingChanges": [
-    "Existing floor-to-floor stairs and omitted styles remain compatible. Terrain connections and Concrete or Stone styles require the matching frontend and Home Assistant panel. Terrain rise, landing validation and Walk follow the current grade without adding a storey. No migration is required."
+    "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
   ],
   "history": [
     {
@@ -207,6 +207,27 @@
       "summary": "Connect stairs directly to terrain",
       "breakingChanges": [
         "Existing floor-to-floor stairs remain compatible. Terrain stairs store one floor and a terrain endpoint and require the matching panel update. Their rise, landing validation and Walk route follow the current terrain without adding a storey."
+      ]
+    },
+    {
+      "revision": 30,
+      "summary": "Connect stairs to terrain and add masonry stair styles",
+      "breakingChanges": [
+        "Existing floor-to-floor stairs and omitted styles remain compatible. Terrain connections and Concrete or Stone styles require the matching frontend and Home Assistant panel. Terrain rise, landing validation and Walk follow the current grade without adding a storey. No migration is required."
+      ]
+    },
+    {
+      "revision": 31,
+      "summary": "Support read-only event readings and live device feedback",
+      "breakingChanges": [
+        "Event slots, Event personal-model profiles and optional event readings require the matching frontend and Home Assistant panel. Existing homes, lighting, terrain and apartment floors remain supported without migration. Runtime activity is transient and changes no saved fields."
+      ]
+    },
+    {
+      "revision": 32,
+      "summary": "Adapt linear model lighting to transformed instance length",
+      "breakingChanges": [
+        "Adaptive maxSpacingMeters on strip sources requires the matching frontend and Home Assistant panel. Existing fixed-sample strips remain supported without migration."
       ]
     }
   ],

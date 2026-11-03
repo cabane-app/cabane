@@ -57,7 +57,13 @@ export function CozySingleHeadboard() {
     </group>
   );
 }
-export function CozySingleBedding({ variant }: { variant: string }) {
+export function CozySingleBedding({
+  variant,
+  color,
+}: {
+  variant: string;
+  color?: string | undefined;
+}) {
   const rose = variant === "rose";
   return (
     <group>
@@ -69,7 +75,7 @@ export function CozySingleBedding({ variant }: { variant: string }) {
           front={1.06}
           lift={0}
           thickness={0.04}
-          color={rose ? "#dcb5a9" : "#9ba888"}
+          color={color ?? (rose ? "#dcb5a9" : "#9ba888")}
         />
         <CozyBedCover
           soft
@@ -86,7 +92,7 @@ export function CozySingleBedding({ variant }: { variant: string }) {
         size={[0.65, 0.14, 0.38]}
         position={[0, 0.62, -0.7]}
         radius={0.065}
-        color="#f0e6d5"
+        color={color ?? "#f0e6d5"}
       />
       <RoundedFurniturePanel
         name="single-layered-ivory-pillow"

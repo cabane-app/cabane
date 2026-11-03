@@ -40,6 +40,8 @@
       "home-presence-model.test.mjs",
       "home-presence-status.test.mjs",
       "item-entity-attachments.test.mjs",
+      "device-model-readings.test.mjs",
+      "light-dimmer-percent.test.mjs",
       "light-groups.test.mjs",
       "model-generation-guide.test.mjs",
       "multiple-floor-editing.test.mjs",
@@ -60,6 +62,7 @@
       "runtime-binding-profile.test.mjs",
       "setup-progress.test.mjs",
       "vacuum-flight.test.mjs",
+      "wall-surface-finishes.test.mjs",
       "weather.test.mjs",
       "workspace-startup-routing.test.mjs",
       "model-lighting.test.mjs",
@@ -79,6 +82,7 @@
       "ceiling-surfaces.test.mjs",
       "construct-alignment-deletion.test.mjs",
       "construct-editor.test.mjs",
+      "room-identity.test.mjs",
       "construction-grid.test.mjs",
       "construction-outline-handle.test.mjs",
       "editor-camera.test.mjs",
@@ -148,8 +152,10 @@
       "wall-fade-platform.test.mjs",
       "wall-niche-properties.test.mjs",
       "wall-niches.test.mjs",
+      "wall-image-browser.test.mjs",
       "workspace-publication.test.mjs",
-      "measurement-units.test.mjs"
+      "measurement-units.test.mjs",
+      "wall-surface-finishes.test.mjs"
     ]
   },
   "runtime": {
@@ -187,6 +193,8 @@
       "home-presence-model.test.mjs",
       "home-presence-status.test.mjs",
       "item-entity-attachments.test.mjs",
+      "device-model-readings.test.mjs",
+      "light-dimmer-percent.test.mjs",
       "light-groups.test.mjs",
       "onboarding.test.mjs",
       "opening-connect.test.mjs",
@@ -207,6 +215,7 @@
       "scene-systems.test.mjs",
       "setup-progress.test.mjs",
       "vacuum-flight.test.mjs",
+      "wall-surface-finishes.test.mjs",
       "weather.test.mjs"
     ]
   },
@@ -305,6 +314,8 @@
       "scene-geometry-lod.test.mjs",
       "scene-performance-probe.test.mjs",
       "scene-performance-report.test.mjs",
+      "scene-preview.test.mjs",
+      "scene-runtime-performance.test.mjs",
       "scene-toon-batcher.test.mjs",
       "shadow-map-cache.test.mjs",
       "toon-orbit-browser.test.mjs",

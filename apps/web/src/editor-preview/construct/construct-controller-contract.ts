@@ -120,6 +120,7 @@ export interface ConstructEditorController extends ConstructEditorState {
         | "exteriorColor"
         | "edgeColor"
         | "faceColors"
+        | "faceFinishes"
         | "niches"
       >
     >,

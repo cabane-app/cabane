@@ -6,6 +6,7 @@ export { ChildrenPendantGeometry, ChildrenPendantModel } from "./children-pendan
 export { CeilingLightModel } from "./ceiling-light";
 export { RecessedDownlightModel } from "./recessed-downlight";
 export { WallSconceModel } from "./wall-sconce";
+export { SmokedGlobeWallLightModel, SMOKED_GLOBE_WALL_LIGHT_SIZE } from "./smoked-globe-wall-light";
 export {
   IlluminatedRoundMirrorModel,
   ILLUMINATED_ROUND_MIRROR_SIZE,
