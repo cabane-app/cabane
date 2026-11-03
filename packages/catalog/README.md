@@ -987,6 +987,49 @@ resizable independently along its width and length. Casa Solstice uses a
 The garden swing offers a Cozy variant with a linen seat pad and three sage/clay
 cushions. Its original bare-timber variant remains available.
 
+## Workshop, utility and living-room devices
+
+These eight independently placeable presets are available in Arrange and All items.
+Each receives a fresh manual primary slot. Printers, minivan, wallbox, fireplace
+and iron accept `switch`, `sensor` or `binary_sensor`: switches use existing on/off
+controls, while readings remain read-only. The fireplace also accepts `light` for
+its native illumination. The lamp uses the standard `light`
+profile, brightness-responsive glow and engine-owned warm illumination. The tripod
+TV preserves the television camera, media-player and switch profiles, live camera
+surface, animated picture, and reduced-motion behavior. No vendor-specific
+printer, vehicle or charger commands are added.
+
+Dimensions below are inferred generic envelopes in **width × depth × height cm**,
+including cables, mirrors, trays, feet and other protrusions. The adjustable lamp
+uses the supplied [reference image](https://reviewepedia.com/wp-content/uploads/2026/02/16.jpg)
+for its white spring-balanced construction, not verified manufacturer dimensions.
+All other designs are generic. Code sizes use [width, height, depth] metres.
+
+| Model ID               | Public component          | Dimensions (cm)    | Arrange room / category |
+| ---------------------- | ------------------------- | ------------------ | ----------------------- |
+| `printer-3d`           | `Printer3DModel`          | 48 × 48 × 60       | Office / Appliances     |
+| `paper-printer`        | `PaperPrinterModel`       | 44 × 42 × 25       | Office / Electronics    |
+| `adjustable-desk-lamp` | `AdjustableDeskLampModel` | 22 × 56.32 × 71.34 | Office / Lighting       |
+| `mini-van`             | `MiniVanModel`            | 216 × 490 × 186    | Outdoor / Vehicles      |
+| `wallbox`              | `WallboxModel`            | 30 × 22.25 × 80    | Outdoor / Utilities     |
+| `fireplace`            | `FireplaceModel`          | 140 × 50 × 120     | Living room / Climate   |
+| `tripod-television`    | `TripodTelevisionModel`   | 110 × 40 × 75      | Living room / Media     |
+| `clothes-iron`         | `ClothesIronModel`        | 12 × 32 × 14.4     | Laundry / Appliances    |
+
+Components and matching size constants are exported from `@cabane/catalog/device`.
+The lamp and tripod TV resize proportionally; the others retain fixed dimensions.
+The TV uses a short tabletop tripod, with the screen 12 cm above its supporting
+surface. Place it on furniture by setting Elevation to the furniture top height.
+Floor and surface items start at Y=0, have centered X/Z footprints, and face +Z.
+Wallbox and fireplace instead place their back at Z=0. Mount the wallbox with its
+cable bottom at the desired elevation; the fireplace hearth belongs at floor level.
+The wallbox and minivan also allow indoor garage placement. The lamp articulation
+is a fixed working pose. The minivan's Color picker changes the painted body while preserving glass, trim
+and wheels. Reset color restores sage. The fireplace's stylized flames follow its
+connected on-state or Scene state → Always on, with warm engine-owned light.
+Always off hides the fire, and reduced motion keeps its flames static. Other new utility devices use status or display
+feedback without implying continuous mechanical activity.
+
 ## Item colors
 
 Arrange Details exposes **Color** and **Reset color** for native textile models:

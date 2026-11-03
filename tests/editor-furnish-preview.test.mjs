@@ -94,9 +94,9 @@ await withModules(async (load) => {
               kind: "device",
               entitySlots: [
                 {
-                  id: "curtain-cover",
-                  presentation: { label: "Curtain", dashboardRole: "primary" },
-                  compatibleDomains: ["cover"],
+                  id: `${modelId}-primary`,
+                  presentation: { label: definition.label, dashboardRole: "primary" },
+                  compatibleDomains: definition.supportedDomains,
                   deviceRole: "primary",
                   autoMap: "manual",
                 },
@@ -157,11 +157,30 @@ await withModules(async (load) => {
           "loveseat without an override retains its original fabric and wood palette",
         );
       }
-      for (const color of colors) {
+      const vanMeshes = () =>
+        renderer.scene.findAll((node) => node.type === "Mesh").map((node) => node.instance);
+      const vanGeometry = modelId === "mini-van" ? vanMeshes().map((mesh) => mesh.geometry) : [];
+      const fixedVanColors =
+        modelId === "mini-van"
+          ? original.filter((color) => color !== definition.defaultColor.slice(1))
+          : [];
+      for (const color of modelId === "mini-van" ? [...colors, "#496874"] : colors) {
         await renderer.update(
           createElement(SceneItemRenderer, { ...props, item: { ...item, color } }),
         );
         assert.ok(meshColors().includes(color.slice(1)), modelId);
+        if (modelId === "mini-van") {
+          vanMeshes().forEach((mesh, index) =>
+            assert.equal(mesh.geometry, vanGeometry[index], "recolor reuses geometry"),
+          );
+          const changedColors = meshColors();
+          changedColors.splice(changedColors.indexOf(color.slice(1)), 1);
+          assert.deepEqual(
+            changedColors,
+            fixedVanColors,
+            "glass, trim and wheels keep their finish",
+          );
+        }
         const changed = surfaces();
         assert.deepEqual(
           changed.map(({ color: _color, ...surface }) => surface),

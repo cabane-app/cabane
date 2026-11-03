@@ -1,3 +1,16 @@
+import { clothesIronDefinition } from "./clothes-iron";
+import { tripodTelevisionDefinition } from "./presets/media/tripod-television";
+import { wallboxDefinition } from "./wallbox";
+import { fireplaceDefinition } from "./fireplace";
+import {
+  compactCarDefinition,
+  electricSedanDefinition,
+  pickupTruckDefinition,
+} from "./definitions/vehicles";
+import { miniVanDefinition } from "./presets/vehicles/mini-van";
+import { printer3dDefinition } from "./printer-3d";
+import { paperPrinterDefinition } from "./paper-printer";
+import { adjustableDeskLampDefinition } from "./presets/lighting/adjustable-desk-lamp";
 import { IntegratedRollerShutterModel, INTEGRATED_ROLLER_SHUTTER_SIZE } from "./presets/covers";
 import { heatedTowelRailDefinition } from "./definitions/heated-towel-rail";
 import { utilityDeviceDefinitions } from "./definitions/utility";
@@ -18,14 +31,6 @@ import {
   wallTelevisionDefinition,
 } from "./definitions/wall-television";
 import { KITCHEN_FINISH_VARIANTS } from "../furnishing/presets/kitchen/kitchen-finish";
-import {
-  CompactCarModel,
-  COMPACT_CAR_SIZE,
-  ElectricSedanModel,
-  ELECTRIC_SEDAN_SIZE,
-  PickupTruckModel,
-  PICKUP_TRUCK_SIZE,
-} from "./presets/vehicles";
 import { defineDeviceModel, defineDeviceModelRegistry } from "@cabane/engine";
 import type { StableDeviceModelId, StableDeviceRegistry } from "@cabane/engine";
 import {
@@ -1150,54 +1155,17 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     interaction,
     complexity: { visibleMeshes: 9, triangles: 1_900 },
   }),
-  "compact-car": defineDeviceModel({
-    component: CompactCarModel,
-    label: "Compact European car",
-    category: "Vehicles",
-    defaultRoomType: "outdoor",
-    placementEnvironment: "indoor-outdoor",
-    defaultSize: COMPACT_CAR_SIZE,
-    resizePolicy: { kind: "fixed" },
-    preferredPlacement: "absolute",
-    mountKind: "surface",
-    supportedDomains: ["sensor"],
-    bounds: { min: [-0.97, 0, -2.0], max: [0.97, 1.5, 2.0] },
-    outlineContact: true,
-    interaction,
-    complexity: { visibleMeshes: 14, triangles: 31_000 },
-  }),
-  "electric-sedan": defineDeviceModel({
-    component: ElectricSedanModel,
-    label: "Tesla-like electric sedan",
-    category: "Vehicles",
-    defaultRoomType: "outdoor",
-    placementEnvironment: "indoor-outdoor",
-    defaultSize: ELECTRIC_SEDAN_SIZE,
-    resizePolicy: { kind: "fixed" },
-    preferredPlacement: "absolute",
-    mountKind: "surface",
-    supportedDomains: ["sensor"],
-    bounds: { min: [-1.04, 0, -2.35], max: [1.04, 1.45, 2.35] },
-    outlineContact: true,
-    interaction,
-    complexity: { visibleMeshes: 15, triangles: 32_000 },
-  }),
-  "pickup-truck": defineDeviceModel({
-    component: PickupTruckModel,
-    label: "Pickup truck",
-    category: "Vehicles",
-    defaultRoomType: "outdoor",
-    placementEnvironment: "indoor-outdoor",
-    defaultSize: PICKUP_TRUCK_SIZE,
-    resizePolicy: { kind: "fixed" },
-    preferredPlacement: "absolute",
-    mountKind: "surface",
-    supportedDomains: ["sensor"],
-    bounds: { min: [-1.12, 0, -2.7], max: [1.12, 1.86, 2.7] },
-    outlineContact: true,
-    interaction,
-    complexity: { visibleMeshes: 16, triangles: 34_000 },
-  }),
+  "compact-car": compactCarDefinition,
+  "electric-sedan": electricSedanDefinition,
+  "pickup-truck": pickupTruckDefinition,
+  "printer-3d": printer3dDefinition,
+  "paper-printer": paperPrinterDefinition,
+  "adjustable-desk-lamp": adjustableDeskLampDefinition,
+  "mini-van": miniVanDefinition,
+  wallbox: wallboxDefinition,
+  fireplace: fireplaceDefinition,
+  "tripod-television": tripodTelevisionDefinition,
+  "clothes-iron": clothesIronDefinition,
   ...utilityDeviceDefinitions,
 } satisfies StableDeviceRegistry);
 

@@ -10,6 +10,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
   const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
   const engine = await load("/packages/engine/src/index.ts");
+  const { isDeviceModelDefinition } = await load("/packages/engine/src/validation/core.ts");
   const { homeManifest } = await load("/tests/fixtures/bundled-home.ts");
   const { homeExtensions, ownerHomeProject } = await load("/tests/fixtures/bundled-home.ts");
   const { KitchenLighting } = await load("/home/src/extensions/kitchen/kitchen-lighting.tsx");
@@ -143,6 +144,94 @@ await withModules(async (load) => {
           }
         }
       }
+    }
+  });
+
+  test("fireplace flames follow connected and local scene states with reduced motion", async () => {
+    const definition = stableDeviceRegistry.fireplace;
+    const projected = engine.resolveProjectModels(
+      {},
+      { deviceModels: stableDeviceRegistry, furnishingModels: {} },
+    );
+    assert.equal(
+      isDeviceModelDefinition(projected.deviceModels.fireplace),
+      true,
+      "native fire lighting remains valid",
+    );
+    const floor = homeManifest.floors[0];
+    const placement = { kind: "absolute", at: [2, 2], elevationMeters: 0, rotationYRadians: 0 };
+    const entitySlots = [
+      {
+        id: "fire-primary",
+        deviceRole: "primary",
+        compatibleDomains: definition.supportedDomains,
+        autoMap: "manual",
+        required: true,
+        presentation: { label: "Fireplace" },
+      },
+    ];
+    const base = {
+      id: "fire",
+      floorId: floor.id,
+      modelId: "fireplace",
+      kind: "device",
+      entitySlots,
+      size: definition.defaultSize,
+      placement,
+    };
+    const snapshot = (state) => ({
+      entityId: "switch.fixture_fireplace",
+      state,
+      attributes: {},
+      available: true,
+      stale: false,
+    });
+    const element = (mode, state, reducedMotion = false) =>
+      createElement(engine.SceneItemRenderer, {
+        item: { ...base, lightState: mode },
+        floor,
+        furnishingModels: {},
+        deviceModels: stableDeviceRegistry,
+        entityStatesBySlotId: {},
+        liveMediaByEntityId: {},
+        reducedMotion,
+        walkMode: false,
+        onInteract() {},
+        resolvedDevice: {
+          slot: {
+            id: base.id,
+            model: base.modelId,
+            entitySlots,
+            placement: { at: [2, 2], elevationMeters: 0, support: { kind: "surface" } },
+          },
+          entities: state ? [{ slotId: "fire-primary", entityId: state.entityId, state }] : [],
+          issues: [],
+        },
+      });
+    const renderer = await create(element("connected", snapshot("off")));
+    try {
+      for (const [mode, state, active] of [
+        ["connected", snapshot("on"), true],
+        ["connected", snapshot("off"), false],
+        ["connected", { ...snapshot("on"), available: false }, false],
+        ["connected", undefined, false],
+        ["always-on", undefined, true],
+        ["always-off", snapshot("on"), false],
+      ]) {
+        await renderer.update(element(mode, state));
+        const fire = renderer.scene.instance.getObjectByName("fireplace-flames");
+        assert.equal(Boolean(fire), active, `${mode} / ${state?.state ?? "unbound"}`);
+        if (!active) continue;
+        await renderer.advanceFrames(1, 0.05);
+        const scale = fire.scale.y;
+        await renderer.advanceFrames(1, 0.05);
+        assert.notEqual(fire.scale.y, scale, "active fire animates");
+        await renderer.update(element(mode, state, true));
+        await renderer.advanceFrames(2, 0.05);
+        assert.equal(fire.scale.y, 1, "reduced motion settles flames");
+      }
+    } finally {
+      await renderer.unmount();
     }
   });
 
