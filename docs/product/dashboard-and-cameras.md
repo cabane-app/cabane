@@ -139,6 +139,11 @@ entity supports every possible action. Sensor-only content is read-only.
 Optimistic commands reconcile with confirmed state and expose pending/error
 feedback. Invalid or stale bindings limit mutation.
 
+Light dimmers span 0% to 100%. Reaching 0% turns the light off; positive values
+turn it on at the selected brightness. Decreasing an already-off light is a no-op,
+and Home moves the slider to off. An off light reads 0% rather than its last
+reported brightness.
+
 When multiple single-entity light modules share the exact same HA light entity,
 the room overview shows its first module once. Individual scene devices and
 their focused controls remain available. This also works for HA Light Groups
