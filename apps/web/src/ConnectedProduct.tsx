@@ -208,7 +208,10 @@ export function ConnectedProduct({
       </WalkToolStorageProvider>
     );
   return (
-    <FloorNavigationProvider key={record.homeId}>
+    <FloorNavigationProvider
+      key={record.homeId}
+      storageKey={`cabane:selected-floor:${record.homeId}`}
+    >
       {connectionError && (
         <div className="workspace-connection-error" role="alert">
           {connectionError}
