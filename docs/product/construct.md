@@ -114,6 +114,9 @@ loop ends the drawing chain. Topology derives
 rooms, interior/exterior wall runs, junctions, footprint regions, and ceilings
 from the editable wall graph while retaining room identities where possible.
 Incomplete shells and ambiguous room merges produce actionable diagnostics.
+Room identity anchors stay strictly inside valid room polygons, including concave
+rooms. Renaming or editing room finishes preserves identities and metadata through
+history, Save and reopening without introducing a false merge.
 Rooms exist only inside wall-enclosed areas, so an open plan with several named
 areas separates them with `virtual` walls. Topology treats a virtual wall like any
 other boundary and preserves the flag through draft creation and re-derivation.
