@@ -1,6 +1,6 @@
 import { deriveFloorLevels } from "../building/floor-levels";
 import { pointInsidePolygon, worldPointToPlan } from "../geometry";
-import { isWalkPointClear, type BoxWalkCollider, type WalkPoint } from "../navigation";
+import type { BoxWalkCollider, WalkPoint } from "../navigation";
 import { deriveStairFlight } from "../stairs/flight-geometry";
 import { stairFloorIds } from "../stairs/stair-connection";
 import { safeBuildingSpawn } from "../stairs/stair-navigation";
@@ -29,7 +29,13 @@ export function resolveWalkLanding(
     })
   )
     return null;
-  const spawn = safeBuildingSpawn(building, level.floorId, plan, supportsTerrain);
-  if (!spawn || !isWalkPointClear(position, furniture(level.elevationMeters))) return null;
+  const spawn = safeBuildingSpawn(
+    building,
+    level.floorId,
+    plan,
+    supportsTerrain,
+    furniture(level.elevationMeters),
+  );
+  if (!spawn) return null;
   return { x: position.x, z: position.z, floorId: level.floorId, elevation: level.elevationMeters };
 }

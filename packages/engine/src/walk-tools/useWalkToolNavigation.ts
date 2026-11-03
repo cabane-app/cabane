@@ -1,14 +1,14 @@
 import { useLayoutEffect, type MutableRefObject, type RefObject } from "react";
-import type { Box3, Scene, PerspectiveCamera } from "three";
+import type { Scene, PerspectiveCamera } from "three";
 import {
   clampPitch,
   roomAtWorldPoint,
   WALK_EYE_HEIGHT,
   type WalkPose,
   type StickVector,
-  type BoxWalkCollider,
 } from "../navigation";
 import { resolveWalkLanding } from "../navigation/walk-landing";
+import { collectSceneWalkColliders } from "../navigation/scene-walk-colliders";
 import type { WalkSupport } from "../navigation/walk-support";
 import { createTerrainSupportQuery } from "../navigation/terrain-support";
 import type { BuildingGeometry } from "../stairs/types";
@@ -21,7 +21,6 @@ export function useWalkToolNavigation({
   building,
   floor,
   scene,
-  box,
   toolNavigationRef,
   poseRef,
   cameraRef,
@@ -42,7 +41,6 @@ export function useWalkToolNavigation({
   building?: BuildingGeometry;
   floor: FloorSpec;
   scene: Scene;
-  box: Box3;
   toolNavigationRef?: MutableRefObject<WalkToolNavigation | null>;
   poseRef: MutableRefObject<WalkPose>;
   cameraRef: RefObject<PerspectiveCamera | null>;
@@ -73,30 +71,8 @@ export function useWalkToolNavigation({
       resolveWalkLanding(
         geometry,
         position,
-        (targetElevation) => {
-          scene.updateMatrixWorld(true);
-          const obstacles: BoxWalkCollider[] = [];
-          scene.traverse((object) => {
-            if (object.userData.walkCollider !== true) return;
-            box.setFromObject(object);
-            if (
-              !box.isEmpty() &&
-              box.max.y > targetElevation + 0.05 &&
-              box.min.y < targetElevation + WALK_EYE_HEIGHT + 0.2
-            )
-              obstacles.push({
-                kind: "box",
-                id: object.uuid,
-                minX: box.min.x,
-                maxX: box.max.x,
-                minZ: box.min.z,
-                maxZ: box.max.z,
-                minY: box.min.y,
-                maxY: box.max.y,
-              });
-          });
-          return obstacles;
-        },
+        (targetElevation) =>
+          collectSceneWalkColliders(scene, targetElevation, WALK_EYE_HEIGHT + 0.2),
         supportsTerrain,
       );
     const navigation: WalkToolNavigation = {
@@ -144,7 +120,6 @@ export function useWalkToolNavigation({
     building,
     floor,
     scene,
-    box,
     toolNavigationRef,
     poseRef,
     cameraRef,

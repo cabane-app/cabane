@@ -352,6 +352,7 @@ export const safeBuildingSpawn = (
   floorId: string,
   start?: import("../types").PlanPoint,
   supportsTerrain?: (point: WalkPoint) => boolean,
+  itemColliders?: readonly BoxWalkCollider[],
 ) => {
   const floor = building.floors.find((f) => f.id === floorId);
   if (!floor || floor.footprint.length < 3) return null;
@@ -373,7 +374,7 @@ export const safeBuildingSpawn = (
   const elevation = deriveFloorLevels(building.floors).find(
     (f) => f.floorId === floorId,
   )!.elevationMeters;
-  const items = landingItemColliders(building, floor, elevation);
+  const items = itemColliders ?? landingItemColliders(building, floor, elevation);
   const terrain = building.home?.apartmentFloor
     ? null
     : createTerrainSurface(building.home?.terrain, building.floors);

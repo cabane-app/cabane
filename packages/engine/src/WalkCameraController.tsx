@@ -3,6 +3,10 @@ import { useWalkToolNavigation } from "./walk-tools/useWalkToolNavigation";
 import type { WalkToolNavigation } from "./walk-tools";
 import { passableOpeningIds, type OpeningPositions } from "./opening-pose";
 import { prepareWalkColliders } from "./navigation/prepared-walk-colliders";
+import {
+  collectSceneWalkColliders,
+  observeSceneWalkColliders,
+} from "./navigation/scene-walk-colliders";
 import { resolveWalkFall } from "./navigation/walk-fall";
 import {
   WALK_JUMP_GRAVITY,
@@ -27,7 +31,7 @@ import { PerspectiveCamera } from "@react-three/drei";
 
 import { useFrame, useThree } from "@react-three/fiber";
 
-import { Box3, type Object3D, type PerspectiveCamera as ThreePerspectiveCamera } from "three";
+import { type PerspectiveCamera as ThreePerspectiveCamera } from "three";
 
 import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 
@@ -125,7 +129,6 @@ export function WalkCameraController({
   const bobWeight = useRef(0);
   const furniture = useRef<BoxWalkCollider[]>([]);
   const lastRoomId = useRef<string | null>(null);
-  const box = useMemo(() => new Box3(), []);
   const { scene, invalidate } = useThree();
   const supportsTerrain = useMemo(() => createTerrainSupportQuery(scene), [scene]);
   // Continuous movement already tests the player radius against walls and pool
@@ -137,37 +140,18 @@ export function WalkCameraController({
       : undefined;
 
   useEffect(() => {
-    scene.updateMatrixWorld(true);
-    const next: BoxWalkCollider[] = [];
-    scene.traverse((object: Object3D) => {
-      if (object.userData.walkCollider !== true) return;
-      box.setFromObject(object);
-      if (
-        !box.isEmpty() &&
-        box.max.y > elevation + 0.05 &&
-        box.min.y < elevation + WALK_EYE_HEIGHT + 1
-      )
-        next.push({
-          kind: "box",
-          id: object.uuid,
-          minX: box.min.x,
-          maxX: box.max.x,
-          minZ: box.min.z,
-          maxZ: box.max.z,
-          minY: box.min.y,
-          maxY: box.max.y,
-          ...(object.userData.walkSupport === true ? { supportY: box.max.y } : {}),
-        });
-    });
-    furniture.current = next;
-  }, [box, scene, floor.id, elevation]);
+    const refresh = () => {
+      furniture.current = collectSceneWalkColliders(scene, elevation);
+    };
+    refresh();
+    return observeSceneWalkColliders(scene, refresh);
+  }, [scene, floor, building, elevation]);
 
   useWalkToolNavigation(
     omitUndefinedProperties({
       ...(building === undefined ? {} : { building: building }),
       floor,
       scene,
-      box,
       ...(toolNavigationRef === undefined ? {} : { toolNavigationRef: toolNavigationRef }),
       poseRef,
       cameraRef,
