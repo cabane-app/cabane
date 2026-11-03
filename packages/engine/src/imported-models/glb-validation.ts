@@ -174,7 +174,10 @@ export function inspectGlb(bytes: Uint8Array) {
   for (const node of scene.nodes) visit(node, 0);
   if (!meshes) fail("The GLB has no triangle meshes.");
   const notices: string[] = [];
-  if (json.animations?.length) notices.push("Animations are ignored; the initial pose is shown.");
+  if (json.animations?.length)
+    notices.push(
+      "Single-keyframe animations can be mapped as named poses. Moving animations are ignored.",
+    );
   if (json.nodes?.some((node) => node.camera !== undefined))
     notices.push("Embedded cameras are ignored.");
   if (json.extensions?.KHR_lights_punctual)

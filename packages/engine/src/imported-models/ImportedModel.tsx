@@ -2,7 +2,9 @@ import { useModelLightingState } from "../model-lighting/ModelLightingSurface";
 import { useEffect, useMemo, useState } from "react";
 import { useThree } from "@react-three/fiber";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
-import type { Object3D } from "three";
+import { ModelPose } from "./ModelPose";
+import { selectedModelPose } from "./poses";
+import type { AnimationClip, Object3D } from "three";
 import { ToonMaterial } from "../rendering";
 import { acquireGlb, disposeGlbSkeletons } from "./glb-resources";
 import type { CustomModel, ModelVector } from "./contracts";
@@ -21,19 +23,24 @@ export function ImportedModelGeometry({
   const lightingContext = useModelLightingState();
   const lightState = lightingContext ? lightingContext.state : state;
   const invalidate = useThree((state) => state.invalidate);
-  const [loaded, setLoaded] = useState<{ root?: Object3D; error?: string }>({});
+  const [loaded, setLoaded] = useState<{
+    root?: Object3D;
+    poses?: AnimationClip[];
+    error?: string;
+  }>({});
   const hash = model.asset.sha256,
     byteLength = model.asset.byteLength;
+  const hasPoses = !!model.poses;
   useEffect(() => {
     let active = true;
     let instance: Object3D | undefined;
     setLoaded({});
-    const lease = acquireGlb({ sha256: hash, byteLength });
+    const lease = acquireGlb({ sha256: hash, byteLength }, undefined, hasPoses);
     void lease.pending.then(
-      ({ root }) => {
+      ({ root, poses }) => {
         if (active) {
           instance = clone(root);
-          setLoaded({ root: instance });
+          setLoaded({ root: instance, poses });
           invalidate();
         }
       },
@@ -49,7 +56,7 @@ export function ImportedModelGeometry({
       if (instance) disposeGlbSkeletons(instance);
       lease.release();
     };
-  }, [hash, byteLength, invalidate]);
+  }, [hash, byteLength, invalidate, hasPoses]);
   const { normalization } = model;
   const uniformScale = size[0] / normalization.size[0];
   const center = useMemo(
@@ -72,6 +79,11 @@ export function ImportedModelGeometry({
       {loaded.root ? (
         <group position={normalization.offset}>
           <group rotation={normalization.rotation} scale={normalization.scale}>
+            <ModelPose
+              root={loaded.root}
+              poses={loaded.poses ?? []}
+              pose={selectedModelPose(model.poses, state)}
+            />
             <ImportedModelSurface root={loaded.root} light={model.light} state={lightState} />
           </group>
         </group>

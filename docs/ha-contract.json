@@ -1,9 +1,9 @@
 {
-  "revision": 33,
-  "fingerprint": "380926c2e6b4c889a7f82bc6fc982f88e2d98e541fcef0df391c4c7a752f88cf",
-  "summary": "Add per-face wall tiles, wallpaper and custom images",
+  "revision": 34,
+  "fingerprint": "2f9d82b8dccda241d22e7016d2077507f0e2820bf5416e259a8cf2c0dc048765",
+  "summary": "Support optional named poses for imported GLB models",
   "breakingChanges": [
-    "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
+    "Existing imported models stay static without migration. Projects with custom-model pose mappings require the matching frontend and HA panel. GLB bytes and the asset protocol are unchanged."
   ],
   "history": [
     {
@@ -228,6 +228,13 @@
       "summary": "Adapt linear model lighting to transformed instance length",
       "breakingChanges": [
         "Adaptive maxSpacingMeters on strip sources requires the matching frontend and Home Assistant panel. Existing fixed-sample strips remain supported without migration."
+      ]
+    },
+    {
+      "revision": 33,
+      "summary": "Add per-face wall tiles, wallpaper and custom images",
+      "breakingChanges": [
+        "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
       ]
     }
   ],

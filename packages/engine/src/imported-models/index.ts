@@ -10,3 +10,5 @@ export { importedEmissiveMaterialNames } from "./light-materials";
 export { resolveProjectModels } from "./resolve-models";
 export * from "./archive";
 export { editCustomModel } from "./model-updates";
+export { ModelPose } from "./ModelPose";
+export { modelPoseStates, selectedModelPose } from "./poses";

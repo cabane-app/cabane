@@ -648,6 +648,28 @@
                     ]
                   }
                 },
+                "poses": {
+                  "optional": true,
+                  "schema": {
+                    "properties": {
+                      "defaultPose": {
+                        "optional": true,
+                        "schema": {
+                          "type": "string"
+                        }
+                      },
+                      "states": {
+                        "optional": false,
+                        "schema": {
+                          "properties": {},
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
                 "profile": {
                   "optional": false,
                   "schema": {

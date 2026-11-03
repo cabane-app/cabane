@@ -27,10 +27,9 @@ renormalizing the import or changing its other copies.
 Original GLB materials, colours, and embedded textures are preserved. Personal
 models receive scene lighting without compulsory toon conversion or contours.
 Native procedural models retain their materials, batching, LOD, and outlines.
-Animations remain in their initial pose; embedded cameras and lights are ignored
-with preview notices. Light profiles may explicitly select named Standard/Physical
-materials whose emissive colour and intensity follow the connected light. Other
-visual variants driven by HA state are outside this version.
+Models remain in their initial pose unless named poses are explicitly configured.
+Embedded cameras and lights are ignored with preview notices. Light profiles may explicitly select named Standard/Physical
+materials whose emissive colour and intensity follow the connected light. Named single-keyframe animations can optionally follow the primary device state.
 Only the import owner may load personal GLB resources; catalog/home generation
 follows the [visual asset contract](geometry-and-rendering.md#visual-assets).
 
@@ -115,7 +114,7 @@ materials; surface glow alone does not emit area light or bloom. The shared
 [lighting editor](model-lighting.md) supports camera navigation, glass passthrough,
 move/rotation gizmos, precise coordinates and simulated preview state.
 Camera opens the
-existing viewer. Sensor, Cover, and the other profiles retain static geometry.
+existing viewer. Profiles without a configured pose mapping retain static geometry.
 Import and preview never inspect or operate household devices.
 
 The Event (remote / button) profile accepts `event.*`. Room modules show the last
@@ -187,3 +186,30 @@ Lighting section shares the visual placement, surface selection and local previe
 used by built-in models. See [model lighting](model-lighting.md).
 
 Changing an imported model’s profile replaces only its primary control slot. Optional independent sensor readings retain their slot IDs, visibility and private mappings on every copy, including conversions between furniture and devices. Published mappings remain intact until Apply.
+
+## Named poses
+
+The import and Edit model dialogs keep the 3D preview alongside Model and States
+settings (above them on phones). Original and named-pose buttons preview appearance
+without changing the mapping. States associates exact primary device states with
+poses: off/on for Toggle, Switch, Binary sensor and Light; closed/open/opening/closing
+for Cover; locked/unlocked for Lock. Selecting a pose previews it immediately.
+Default appearance is used for disconnected, unavailable, stale or unmatched states.
+Furniture can use a fixed default pose. Reset to static model removes all pose settings.
+Profile changes clear state associations while retaining the default pose.
+
+This first version recognizes up to 32 animations with one keyframe per sampler,
+excluding cubic-spline tracks, as fixed named poses. Animation names need not follow
+a naming convention; unnamed entries receive a display label. References are indices
+in the filtered pose list of the immutable asset, so duplicate names remain distinct.
+Moving animations are not converted to arbitrary start/end poses or played.
+Malformed optional animation data falls back to the original static model with a notice.
+
+`CustomModel.poses` optionally stores `defaultPose` and a `states` map. Existing
+models without this field retain their original static loading and bounds. Posed
+instances share immutable assets but apply transforms independently, only when their
+selected pose changes. Normalization uses the union of the rest and supported poses
+so selection/collision bounds and the origin stay fixed across state changes.
+Mappings survive workspace saves, model packs and .cabane backups. Older clients
+need the matching frontend to open projects using this optional field. No backend
+asset protocol changes are required.

@@ -43,6 +43,59 @@ await withModules(async (load) => {
     sceneItems: [],
   });
 
+  test("named GLB poses are opt-in, independent, bounded and portable", async () => {
+    const { applyModelPose } = await load("/packages/engine/src/imported-models/poses.ts");
+    const poseBytes = testGlb({ poses: true });
+    const legacy = await api.loadGlb(poseBytes);
+    const enabled = await api.loadGlb(poseBytes, true);
+    assert.equal(legacy.poses.length, 0);
+    assert.deepEqual(
+      enabled.poses.map((pose) => pose.name),
+      ["Resting", "Raised"],
+    );
+    const first = enabled.root.clone(true),
+      second = enabled.root.clone(true);
+    const reset = applyModelPose(first, enabled.poses, "1");
+    assert.equal(first.children[0].position.y, 1);
+    assert.equal(second.children[0].position.y, 0);
+    reset();
+    assert.equal(first.children[0].position.y, 0);
+    const normalization = api.normalizeGlb(enabled.root, "floor", [0, 0, 0], 1, enabled.poses);
+    assert.equal(normalization.size[1], 1.5);
+    assert.equal(enabled.root.children[0].position.y, 0);
+    const mapping = { defaultPose: "0", states: { on: "1", off: "0" } };
+    assert.equal(
+      api.selectedModelPose(mapping, { state: "on", available: true, stale: false }),
+      "1",
+    );
+    assert.equal(api.selectedModelPose(mapping, { state: "on", available: false }), "0");
+    assert.equal(api.selectedModelPose(mapping, { state: "unknown", available: true }), "0");
+    const poseAsset = {
+      bytes: poseBytes,
+      byteLength: poseBytes.length,
+      sha256: await api.modelAssetHash(poseBytes),
+    };
+    const definition = {
+      ...model(),
+      asset: { byteLength: poseAsset.byteLength, sha256: poseAsset.sha256 },
+      poses: mapping,
+      normalization,
+    };
+    const packed = await api.readCabaneModelPack(
+      api.createCabaneModelPack([definition], [poseAsset]),
+    );
+    assert.deepEqual(packed.models[0].poses, mapping);
+    const parsed = api.parseHomeProjectSchema(project([definition]));
+    assert.equal(parsed.valid, true, JSON.stringify(parsed.issues));
+    assert.deepEqual(parsed.project.customModels[0].poses, mapping);
+    const invalid = api.parseHomeProjectSchema(
+      project([{ ...definition, poses: { states: { on: "999" } } }]),
+    );
+    assert.equal(invalid.valid, false);
+    api.disposeGlb(legacy.root);
+    api.disposeGlb(enabled.root);
+  });
+
   test("Blender and Three.js skill exports decode with their authored physical dimensions", async () => {
     for (const source of ["blender", "three"]) {
       const fixture = JSON.parse(

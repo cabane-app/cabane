@@ -10,6 +10,7 @@ import {
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
+import { applyModelPose } from "./poses";
 import { inspectGlb, type GlbDocument } from "./glb-validation";
 import {
   CUSTOM_MODEL_LIMITS,
@@ -53,7 +54,7 @@ export function disposeGlb(root: Object3D) {
   }
 }
 
-export async function loadGlb(bytes: Uint8Array) {
+export async function loadGlb(bytes: Uint8Array, includePoses = false) {
   const inspection = inspectGlb(bytes);
   const manager = new LoadingManager();
   let imageError = false;
@@ -72,7 +73,25 @@ export async function loadGlb(bytes: Uint8Array) {
       const json = parser.json as GlbDocument;
       json.scenes = [json.scenes![json.scene ?? 0]];
       json.scene = 0;
-      json.animations = [];
+      json.animations = includePoses
+        ? (json.animations ?? [])
+            .filter((entry) => {
+              const animation = entry as { samplers?: { input: number; interpolation?: string }[] };
+              return (
+                animation &&
+                Array.isArray(animation.samplers) &&
+                animation.samplers.length > 0 &&
+                animation.samplers.length <= 512 &&
+                animation.samplers.every(
+                  (sampler) =>
+                    sampler &&
+                    json.accessors?.[sampler.input]?.count === 1 &&
+                    sampler.interpolation !== "CUBICSPLINE",
+                )
+              );
+            })
+            .slice(0, 32)
+        : [];
       json.cameras = [];
       for (const node of json.nodes ?? []) {
         delete node.camera;
@@ -118,15 +137,38 @@ export async function loadGlb(bytes: Uint8Array) {
     disposeGlb(gltf.scene);
     throw new Error("The decoded model is invalid or exceeds 100,000 triangles / 128 meshes.");
   }
-  return { root: gltf.scene, bounds, ...inspection };
+  for (const [index, clip] of gltf.animations.entries()) {
+    if (
+      clip.tracks.some((track) => Array.from(track.values).some((value) => !Number.isFinite(value)))
+    ) {
+      disposeGlb(gltf.scene);
+      throw new Error("A model pose contains invalid coordinates.");
+    }
+    const reset = applyModelPose(gltf.scene, gltf.animations, String(index));
+    const posedBounds = new Box3().setFromObject(gltf.scene, true);
+    reset();
+    if (
+      posedBounds.isEmpty() ||
+      [...posedBounds.min.toArray(), ...posedBounds.max.toArray()].some((n) => !Number.isFinite(n))
+    ) {
+      disposeGlb(gltf.scene);
+      throw new Error("A model pose has invalid bounds.");
+    }
+  }
+  return { root: gltf.scene, bounds, ...inspection, poses: gltf.animations };
 }
 
 type CacheEntry = { users: number; pending: ReturnType<typeof loadGlb> };
 const cache = new Map<string, CacheEntry>();
 
 /** Leases share GPU resources; each instance clones only the object hierarchy. */
-export function acquireGlb(asset: ModelAssetReference, source?: ModelAssetSource) {
-  let entry = cache.get(asset.sha256);
+export function acquireGlb(
+  asset: ModelAssetReference,
+  source?: ModelAssetSource,
+  includePoses = false,
+) {
+  const cacheKey = `${asset.sha256}:${includePoses}`;
+  let entry = cache.get(cacheKey);
   if (!entry) {
     const pending = (async () => {
       const bytes = await (source ?? createModelAssetRepository(window.indexedDB)).read(
@@ -138,14 +180,23 @@ export function acquireGlb(asset: ModelAssetReference, source?: ModelAssetSource
         (await modelAssetHash(bytes)) !== asset.sha256
       )
         throw new Error("Missing or damaged GLB. Import a complete .cabane backup.");
-      return loadGlb(bytes);
+      try {
+        return await loadGlb(bytes, includePoses);
+      } catch (error) {
+        if (!includePoses) throw error;
+        const staticModel = await loadGlb(bytes);
+        staticModel.notices.push(
+          "Poses could not be read. The original static model is available.",
+        );
+        return staticModel;
+      }
     })();
     entry = { users: 0, pending };
-    cache.set(asset.sha256, entry);
+    cache.set(cacheKey, entry);
     const loading = entry;
     void pending.catch(() => {
       // Restoring valid bytes must allow a retry while an older placeholder remains mounted.
-      if (cache.get(asset.sha256) === loading) cache.delete(asset.sha256);
+      if (cache.get(cacheKey) === loading) cache.delete(cacheKey);
     });
   }
   entry.users++;
@@ -159,8 +210,8 @@ export function acquireGlb(asset: ModelAssetReference, source?: ModelAssetSource
       leased.users--;
       // React StrictMode's immediate remount can reuse this pending load.
       queueMicrotask(() => {
-        if (leased.users || cache.get(asset.sha256) !== leased) return;
-        cache.delete(asset.sha256);
+        if (leased.users || cache.get(cacheKey) !== leased) return;
+        cache.delete(cacheKey);
         void leased.pending.then(
           ({ root }) => disposeGlb(root),
           () => undefined,
@@ -173,13 +224,14 @@ export function acquireGlb(asset: ModelAssetReference, source?: ModelAssetSource
 export async function openGlbPreview(bytes: Uint8Array) {
   inspectGlb(bytes);
   const asset = { bytes, byteLength: bytes.byteLength, sha256: await modelAssetHash(bytes) };
-  const lease = acquireGlb(asset, { read: async () => bytes });
+  const lease = acquireGlb(asset, { read: async () => bytes }, true);
   try {
     const resource = await lease.pending;
     const root = clone(resource.root);
     let released = false;
     return {
       ...resource,
+      restRoot: resource.root,
       root,
       asset,
       release: () => {

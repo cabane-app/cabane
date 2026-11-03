@@ -1,10 +1,9 @@
 import { MeasurementText } from "@cabane/engine";
-import { LengthInput } from "../editor-chrome/LengthInput";
+import { ModelImportSettings } from "./ModelImportSettings";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   createBrowserUuid,
   createModelAssetRepository,
-  CUSTOM_MODEL_PROFILES,
   openGlbPreview,
   normalizeGlb,
   useCabaneDom,
@@ -17,10 +16,12 @@ import {
 } from "@cabane/engine";
 import { EditorButton } from "../editor-chrome/EditorButton";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
+import { ModelPoseEditor } from "./ModelPoseEditor";
 import { ModelImportPreview } from "./ModelImportPreview";
 import { ModelLightingEditor } from "../model-lighting/ModelLightingEditor";
 import { lightingError, renormalizeLighting } from "../model-lighting/lighting-layout";
 import "./custom-models.css";
+import "./model-import-layout.css";
 
 type Loaded = Awaited<ReturnType<typeof openGlbPreview>>;
 type MissingModelOption = { key: string; id: string; kind: "furnishing" | "device"; count: number };
@@ -52,6 +53,10 @@ export function ModelImportDialog({
   const [rotation, setRotation] = useState<ModelVector>(
     existingModel?.normalization.rotation ?? [0, 0, 0],
   );
+  const [poses, setPoses] = useState<CustomModel["poses"]>(existingModel?.poses);
+  const [previewPose, setPreviewPose] = useState<string | undefined>(
+    existingModel?.poses?.defaultPose,
+  );
   const [scale, setScale] = useState(existingModel?.normalization.scale ?? 1);
   const [lightSettings, setLightSettings] = useState<CustomModelLight>(
     existingModel?.light ?? {
@@ -62,7 +67,7 @@ export function ModelImportDialog({
     },
   );
   const lightInitialized = useRef(Boolean(existingModel?.light));
-  const [section, setSection] = useState<"model" | "lighting">("model");
+  const [section, setSection] = useState<"model" | "lighting" | "poses">("model");
   const [lightingEnabled, setLightingEnabled] = useState(Boolean(existingModel?.light));
   const previousNormalization = useRef<CustomModel["normalization"] | null>(null);
   const [replacementId, setReplacementId] = useState("");
@@ -108,11 +113,12 @@ export function ModelImportDialog({
       existingModel &&
       placement === existingModel.placement &&
       scale === existingModel.normalization.scale &&
+      poses === existingModel.poses &&
       rotation.every((n, axis) => n === existingModel.normalization.rotation[axis])
     )
       return existingModel.normalization;
-    return normalizeGlb(loaded.root, placement, rotation, scale);
-  }, [loaded, placement, rotation, scale, existingModel]);
+    return normalizeGlb(loaded.restRoot, placement, rotation, scale, poses ? loaded.poses : []);
+  }, [loaded, placement, rotation, scale, existingModel, poses]);
   useEffect(() => {
     const previous = previousNormalization.current;
     if (normalization && previous && normalization !== previous)
@@ -123,8 +129,29 @@ export function ModelImportDialog({
   const lightError = lightingError(light ?? null);
   const valid =
     name.trim() && loaded && normalization && Number.isFinite(scale) && scale > 0 && !lightError;
-  const changeVector = (value: ModelVector, axis: number, next: number): ModelVector =>
-    value.map((n, i) => (i === axis ? next : n)) as [number, number, number];
+  const changeProfile = (next: CustomModelProfile) => {
+    setProfile(next as CustomModelProfile);
+    setPoses((previous) =>
+      previous
+        ? {
+            ...(previous.defaultPose !== undefined ? { defaultPose: previous.defaultPose } : {}),
+            states: {},
+          }
+        : undefined,
+    );
+    if (normalization && next === "light" && !lightInitialized.current) {
+      lightInitialized.current = true;
+      setLightingEnabled(true);
+      setLightSettings((previous) => ({
+        ...previous,
+        position: [
+          0,
+          (normalization.bounds.min[1] + normalization.bounds.max[1]) / 2,
+          normalization.bounds.max[2],
+        ],
+      }));
+    }
+  };
   return (
     <dialog
       ref={dialog}
@@ -152,6 +179,7 @@ export function ModelImportDialog({
               normalization,
               complexity: loaded.complexity,
               ...(light ? { light } : {}),
+              ...(poses ? { poses } : {}),
             },
             loaded.asset,
             replacementId || null,
@@ -174,118 +202,117 @@ export function ModelImportDialog({
             <EditorIcon name="close" />
           </EditorButton>
         </header>
-        <div
-          className="lighting-type model-editor-sections"
-          role="group"
-          aria-label="Model settings section"
-        >
-          <EditorButton aria-pressed={section === "model"} onClick={() => setSection("model")}>
-            Model
-          </EditorButton>
-          <EditorButton
-            aria-pressed={section === "lighting"}
-            onClick={() => setSection("lighting")}
-          >
-            Lighting
-          </EditorButton>
+        <div className="model-import-workspace" hidden={section === "lighting"}>
+          <div className="model-import-stage">
+            {loaded && normalization ? (
+              <ModelImportPreview
+                root={loaded.root}
+                normalization={normalization}
+                light={light}
+                poses={loaded.poses}
+                pose={previewPose}
+              />
+            ) : (
+              !error && <p role="status">Reading model…</p>
+            )}
+            <div className="model-import-stage-caption">
+              <span>
+                {previewPose === undefined
+                  ? "Original appearance"
+                  : loaded?.poses[Number(previewPose)]?.name || "Pose preview"}
+              </span>
+              <span>Drag to rotate</span>
+            </div>
+            {!!loaded?.poses.length && (
+              <div className="model-pose-previews" role="group" aria-label="Preview poses">
+                <EditorButton
+                  aria-pressed={previewPose === undefined}
+                  onClick={() => setPreviewPose(undefined)}
+                >
+                  Original
+                </EditorButton>
+                {loaded.poses.map((pose, index) => (
+                  <EditorButton
+                    key={index}
+                    aria-pressed={previewPose === String(index)}
+                    onClick={() => setPreviewPose(String(index))}
+                  >
+                    {pose.name || `Pose ${index + 1}`}
+                  </EditorButton>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="model-import-controls">
+            <div className="model-editor-sections" role="group" aria-label="Model settings section">
+              <EditorButton aria-pressed={section === "model"} onClick={() => setSection("model")}>
+                Model
+              </EditorButton>
+              {!!loaded?.poses.length && (
+                <EditorButton
+                  aria-pressed={section === "poses"}
+                  onClick={() => setSection("poses")}
+                >
+                  States
+                </EditorButton>
+              )}
+              <EditorButton aria-pressed={false} onClick={() => setSection("lighting")}>
+                Lighting
+              </EditorButton>
+            </div>
+            <div hidden={section !== "model"}>
+              <ModelImportSettings
+                busy={busy}
+                name={name}
+                setName={setName}
+                placement={placement}
+                setPlacement={setPlacement}
+                profile={profile}
+                onProfileChange={changeProfile}
+                normalization={normalization}
+                scale={scale}
+                setScale={setScale}
+                rotation={rotation}
+                setRotation={setRotation}
+              />
+              {existingModel && (
+                <p className="model-import-hint">
+                  Changes apply to every placed copy. Changing profile requires reconnecting in
+                  Connect.
+                </p>
+              )}
+              {loaded && (
+                <details className="model-import-details">
+                  <summary>File details</summary>
+                  <p className="model-import-hint">
+                    {loaded.complexity.triangles.toLocaleString("en")} triangles ·{" "}
+                    {loaded.complexity.visibleMeshes} meshes. Original materials and textures are
+                    preserved.
+                  </p>
+                  {loaded.notices.map((notice) => (
+                    <p className="model-import-hint" key={notice}>
+                      {notice}
+                    </p>
+                  ))}
+                </details>
+              )}
+            </div>
+            {section === "poses" && loaded && (
+              <ModelPoseEditor
+                poses={loaded.poses}
+                profile={profile}
+                onProfileChange={changeProfile}
+                value={poses}
+                onChange={setPoses}
+                preview={previewPose}
+                onPreview={setPreviewPose}
+              />
+            )}
+          </div>
         </div>
-        <div hidden={section !== "model"}>
-          {loaded && normalization ? (
-            <ModelImportPreview root={loaded.root} normalization={normalization} light={light} />
-          ) : (
-            !error && <p role="status">Reading model…</p>
-          )}
-          {existingModel && (
-            <p className="model-import-hint">
-              Changes apply to every placed copy when you save. Copies keep their support and
-              relative scale. Preferred placement sets the model origin and the support for new
-              copies. Changing profile clears draft connections for this model; reconnect in
-              Connect.
-            </p>
-          )}
-          <fieldset disabled={busy} className="model-import-fields">
-            <label>
-              Name
-              <input autoFocus required value={name} onChange={(e) => setName(e.target.value)} />
-            </label>
-            <label>
-              Preferred placement
-              <select
-                aria-label="Preferred placement"
-                value={placement}
-                onChange={(e) => setPlacement(e.target.value as CustomModelPlacement)}
-              >
-                <option value="floor">Floor</option>
-                <option value="wall">Wall</option>
-                <option value="ceiling">Ceiling</option>
-              </select>
-            </label>
-            <label>
-              Profile
-              <select
-                aria-label="Profile"
-                value={profile}
-                onChange={(e) => {
-                  setProfile(e.target.value as CustomModelProfile);
-                  if (normalization && e.target.value === "light" && !lightInitialized.current) {
-                    lightInitialized.current = true;
-                    setLightingEnabled(true);
-                    setLightSettings((previous) => ({
-                      ...previous,
-                      position: [
-                        0,
-                        (normalization.bounds.min[1] + normalization.bounds.max[1]) / 2,
-                        normalization.bounds.max[2],
-                      ],
-                    }));
-                  }
-                }}
-              >
-                {CUSTOM_MODEL_PROFILES.map(([id, label]) => (
-                  <option key={id} value={id}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </fieldset>
-          {normalization && (
-            <>
-              <fieldset disabled={busy} className="model-import-vectors">
-                <legend>Dimensions · uniform scale</legend>
-                {["Width", "Height", "Depth"].map((label, i) => (
-                  <label key={label}>
-                    {label}
-                    <LengthInput
-                      label={label}
-                      min={0.001}
-                      value={normalization.size[i]}
-                      onCommit={(n) => setScale((scale * n) / normalization.size[i])}
-                    />
-                  </label>
-                ))}
-              </fieldset>
-              <fieldset disabled={busy} className="model-import-vectors">
-                <legend>Orientation (degrees)</legend>
-                {["X", "Y", "Z"].map((label, i) => (
-                  <label key={label}>
-                    {label}
-                    <input
-                      type="number"
-                      step="any"
-                      value={Number(((rotation[i] * 180) / Math.PI).toFixed(2))}
-                      onChange={(e) => {
-                        const n = Number(e.target.value);
-                        if (Number.isFinite(n))
-                          setRotation(changeVector(rotation, i, (n * Math.PI) / 180));
-                      }}
-                    />
-                  </label>
-                ))}
-              </fieldset>
-            </>
-          )}
-        </div>
+        {section === "lighting" && (
+          <EditorButton onClick={() => setSection("model")}>Back to model</EditorButton>
+        )}
         {section === "lighting" && loaded && normalization && (
           <ModelLightingEditor
             value={light ?? null}
@@ -306,23 +333,6 @@ export function ModelImportDialog({
         {lightError && (
           <p role="alert" className="catalog-add-error">
             <MeasurementText>{lightError}</MeasurementText>
-          </p>
-        )}
-        {loaded && (
-          <p className="model-import-hint">
-            {loaded.complexity.triangles.toLocaleString("en")} triangles ·{" "}
-            {loaded.complexity.visibleMeshes} meshes. Original materials and textures are preserved.
-          </p>
-        )}
-        {loaded?.notices.map((notice) => (
-          <p className="model-import-hint" key={notice}>
-            {notice}
-          </p>
-        ))}
-        {profile !== "furniture" && profile !== "light" && (
-          <p className="model-import-hint">
-            Geometry stays static. Connect uses the existing{" "}
-            {CUSTOM_MODEL_PROFILES.find(([id]) => id === profile)?.[1]} controls.
           </p>
         )}
         {replacementOptions.length > 0 && (

@@ -1,0 +1,214 @@
+.model-import-dialog:not(.model-lighting-dialog) {
+  width: min(980px, calc(100vw - 40px));
+  height: min(700px, calc(100dvh - 40px));
+  padding: 0;
+  overflow: hidden;
+}
+.model-import-dialog:not(.model-lighting-dialog) > form {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.model-import-dialog:not(.model-lighting-dialog) header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
+  flex: none;
+}
+.model-import-dialog:not(.model-lighting-dialog) footer {
+  margin: 0;
+  padding: 16px 24px;
+  border-top: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
+  flex: none;
+}
+.model-import-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+.model-import-workspace[hidden] {
+  display: none;
+}
+.model-import-stage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px;
+  background: #eeece3;
+}
+.model-import-stage .model-import-preview {
+  flex: 1;
+  min-height: 160px;
+  height: auto;
+  margin: 0;
+  background: transparent;
+}
+.model-import-stage-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0 12px;
+  font-size: 0.75rem;
+  color: #58675e;
+}
+.model-import-stage-caption > :first-child {
+  font-weight: 600;
+}
+.model-pose-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.model-pose-previews .editor-button[aria-pressed="true"] {
+  background: #315744;
+  color: #fffdf7;
+  border-color: #315744;
+}
+.model-import-controls {
+  padding: 20px 24px;
+  overflow-y: auto;
+  scrollbar-color: #b6baaa transparent;
+  min-width: 0;
+}
+.model-import-controls .model-editor-sections {
+  display: flex;
+  gap: 16px;
+  margin: 0 0 24px;
+  border-bottom: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
+}
+.model-import-controls .model-editor-sections .editor-button {
+  padding: 8px 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+}
+.model-import-controls .model-editor-sections .editor-button[aria-pressed="true"] {
+  border-bottom-color: #315744;
+  color: #2e3835;
+  font-weight: 600;
+}
+.model-import-controls .model-import-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  gap: 16px 12px;
+}
+.model-import-controls .model-import-vectors {
+  margin-top: 24px;
+}
+.model-import-controls input,
+.model-import-controls select {
+  min-height: 40px;
+}
+.model-import-details {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
+}
+.model-import-details summary {
+  cursor: pointer;
+  font-weight: 500;
+  padding: 4px 0;
+}
+.model-import-details > label {
+  margin-top: 12px;
+}
+.model-import-details summary:focus-visible {
+  outline: 2px solid #315744;
+  outline-offset: 4px;
+}
+.model-pose-editor h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.model-pose-editor > .model-import-hint {
+  margin-top: 8px;
+  font-size: 0.875rem;
+}
+.model-pose-profile {
+  margin-top: 24px;
+}
+.model-pose-mappings {
+  margin-top: 24px;
+}
+.model-pose-column-labels {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  color: #58675e;
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+}
+.model-pose-row {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--editor-line, rgba(70, 70, 58, 0.14));
+}
+.model-pose-state {
+  font-weight: 500;
+}
+.model-pose-row .editor-button {
+  padding: 6px;
+  font-size: 0.75rem;
+}
+.model-pose-row .editor-button[aria-pressed="true"] {
+  background: #e9ece2;
+  border-color: #315744;
+}
+.model-pose-reset {
+  margin-top: 18px;
+}
+.model-import-dialog .catalog-add-error {
+  margin: 8px 24px;
+}
+@media (max-width: 700px) {
+  .model-import-dialog:not(.model-lighting-dialog) {
+    width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
+    max-height: none;
+  }
+  .model-import-dialog:not(.model-lighting-dialog) header {
+    padding: 12px 16px;
+  }
+  .model-import-dialog:not(.model-lighting-dialog) footer {
+    padding: 12px 16px;
+  }
+  .model-import-workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: 210px minmax(0, 1fr);
+  }
+  .model-import-stage {
+    padding: 8px 16px;
+  }
+  .model-import-stage .model-import-preview {
+    min-height: 100px;
+  }
+  .model-import-stage-caption {
+    margin: 4px 0 6px;
+  }
+  .model-pose-previews {
+    justify-content: center;
+  }
+  .model-pose-previews .editor-button {
+    min-height: 32px;
+    padding: 4px 12px;
+  }
+  .model-import-controls {
+    padding: 12px 16px 20px;
+  }
+  .model-import-controls .model-editor-sections {
+    margin-bottom: 18px;
+  }
+  .model-pose-row {
+    grid-template-columns: 55px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .model-pose-column-labels {
+    grid-template-columns: 55px 1fr;
+    gap: 8px;
+  }
+}
