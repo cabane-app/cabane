@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -79,6 +79,34 @@ if (action === "refresh" || !existsSync(join(target, "frontend/manifest.json")))
     await rm(staging, { recursive: true, force: true });
   }
 }
+// The development YAML enables this fixture. Install it into the existing volume
+// before startup, including on a fresh volume; retain private runtime-plan.json.
+const fixtureDirectory = join(root, "dev/home-assistant/showcase/solstice");
+const fixtureFiles = Object.fromEntries(
+  await Promise.all(
+    (await readdir(fixtureDirectory))
+      .filter((name) => /\.(py|json)$/.test(name))
+      .map(async (name) => [name, await readFile(join(fixtureDirectory, name), "utf8")]),
+  ),
+);
+run(
+  "docker",
+  [
+    "compose",
+    "-f",
+    "dev/home-assistant/compose.yaml",
+    "run",
+    "--rm",
+    "--no-deps",
+    "-T",
+    "--entrypoint",
+    "python",
+    "homeassistant",
+    "-c",
+    "import json,sys,pathlib; root=pathlib.Path('/config/custom_components/solstice'); root.mkdir(parents=True,exist_ok=True); [(root/name).write_text(source) for name,source in json.load(sys.stdin).items()]",
+  ],
+  { input: JSON.stringify(fixtureFiles), stdio: ["pipe", "inherit", "inherit"] },
+);
 compose("up", "-d", "--wait", "--wait-timeout", "360");
 console.log(
   "Local Cabane panel: http://127.0.0.1:8123/cabane — reload the browser after rebuilding.",

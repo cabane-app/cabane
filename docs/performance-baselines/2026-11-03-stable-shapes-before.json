@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-03T17:27:36.849Z",
+  "label": "stable-shapes-before",
+  "source": {
+    "commit": "7e5e462917394b6fbbd1d0397d4a67234dd62ee1",
+    "dirty": false,
+    "homeHash": "69fd427fbaf102e41c1ff7d8833d2712482f66952c7eabaacab4a0f605f3dafb"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "touch-orbit-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 487,
+      "height": 1055,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [39.09400000000001, 45.572, 45.76400000000001],
+      "quaternion": [
+        -0.35829231738036693, 0.3288030008929161, 0.13649890390018493, 0.86306619163542
+      ],
+      "target": [9, 0.2, 12],
+      "zoom": 9.129213483146065
+    },
+    "workload": {
+      "scenario": "solstice-ha-night-cloudy-v1",
+      "home": "home/showcase/furnished.project.json",
+      "sceneItems": 239,
+      "lighting": "night",
+      "weather": "cloudy",
+      "weatherSource": "Home Assistant",
+      "mappedLights": 27,
+      "lightsOn": 10,
+      "fixtureHash": "fef844bd1dad6405e8b649d0c69fa267903bc1cebace5001ed97f762a791146e"
+    },
+    "profile": "mobile",
+    "cpuRate": 4
+  },
+  "scene": {
+    "activePointLights": 10,
+    "objects": 2878,
+    "meshes": 1938,
+    "materials": 1938,
+    "geometries": 1922
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 4,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "summary": {
+    "fps": 33.17225809022674,
+    "frameMsP50": 29.100000143051147,
+    "frameMsP95": 38.09999990463257,
+    "frameMsP99": 46.59999990463257,
+    "over33MsPercent": 12.058823529411764,
+    "over50MsPercent": 0.30303030303030304,
+    "cpuSubmitMsP95": 10.499999761581421,
+    "callsMedian": 268,
+    "callsMax": 299,
+    "trianglesMedian": 140326,
+    "trianglesMax": 258390
+  },
+  "rawReport": "test-results/performance/2026-11-03-stable-shapes-before.json",
+  "runSummaries": [
+    {
+      "frames": 330,
+      "movingFrames": 330,
+      "durationMs": 10119.300000190735,
+      "frameMsMax": 59.200000047683716,
+      "over100MsCount": 0,
+      "summary": {
+        "fps": 32.61095134977518,
+        "frameMsP50": 29.600000143051147,
+        "frameMsP95": 38.60000014305115,
+        "frameMsP99": 46.59999990463257,
+        "over33MsPercent": 18.78787878787879,
+        "over50MsPercent": 0.30303030303030304,
+        "cpuSubmitMsP95": 11.299999952316284,
+        "callsMedian": 267.5,
+        "callsMax": 299,
+        "trianglesMedian": 142336,
+        "trianglesMax": 260170
+      }
+    },
+    {
+      "frames": 340,
+      "movingFrames": 340,
+      "durationMs": 10084.900000095367,
+      "frameMsMax": 51.299999952316284,
+      "over100MsCount": 0,
+      "summary": {
+        "fps": 33.71377009160079,
+        "frameMsP50": 28.600000143051147,
+        "frameMsP95": 38.09999990463257,
+        "frameMsP99": 45.799999952316284,
+        "over33MsPercent": 12.058823529411764,
+        "over50MsPercent": 0.29411764705882354,
+        "cpuSubmitMsP95": 10.499999761581421,
+        "callsMedian": 268,
+        "callsMax": 301,
+        "trianglesMedian": 139462,
+        "trianglesMax": 258390
+      }
+    },
+    {
+      "frames": 335,
+      "movingFrames": 335,
+      "durationMs": 10098.799999952316,
+      "frameMsMax": 140.79999995231628,
+      "over100MsCount": 1,
+      "summary": {
+        "fps": 33.17225809022674,
+        "frameMsP50": 29.100000143051147,
+        "frameMsP95": 35.5,
+        "frameMsP99": 48.299999952316284,
+        "over33MsPercent": 9.253731343283581,
+        "over50MsPercent": 0.5970149253731343,
+        "cpuSubmitMsP95": 10.100000143051147,
+        "callsMedian": 268,
+        "callsMax": 299,
+        "trianglesMedian": 140326,
+        "trianglesMax": 255010
+      }
+    }
+  ]
+}

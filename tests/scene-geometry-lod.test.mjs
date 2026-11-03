@@ -18,6 +18,9 @@ await withModules(async (load) => {
     "/packages/engine/src/scene-batching/SceneGeometryLod.ts",
   );
   const { ShadowMapCache } = await load("/packages/engine/src/shadow-map-cache.ts");
+  const { geometryLodFamily } = await load(
+    "/packages/engine/src/scene-batching/geometry-lod-family.ts",
+  );
   const { roundedBoxGeometry } = await load(
     "/packages/engine/src/rounded-box/rounded-box-geometry.ts",
   );
@@ -215,5 +218,45 @@ await withModules(async (load) => {
     lod.render(scene, camera, 100, () => assert.notEqual(mesh.geometry, source));
     assert.equal(invalidations, 2);
     lod.dispose();
+  });
+  test("a new mesh preparing LODs preserves the detail and batch family of prepared meshes", async () => {
+    const source = new SphereGeometry(1, 48, 32);
+    const low = new SphereGeometry(1, 8, 6);
+    const added = new SphereGeometry(0.5, 24, 16);
+    let finish;
+    const pending = new Promise((resolve) => {
+      finish = resolve;
+    });
+    const lod = new SceneGeometryLod(
+      () => {},
+      async (geometry) => (geometry === source ? [{ geometry: low, error: 0.001 }] : pending),
+    );
+    const scene = new Scene();
+    const mesh = new Mesh(source, new MeshToonMaterial());
+    scene.add(mesh);
+    const camera = new OrthographicCamera(-50, 50, 50, -50, 0.1, 100);
+    camera.position.z = 10;
+    try {
+      lod.render(scene, camera, 100, () => {});
+      await lod.ready;
+      const family = geometryLodFamily(source);
+      const assertPrepared = () =>
+        assert.ok(mesh.geometry === low, "unrelated work must not restore full detail");
+      lod.render(scene, camera, 100, assertPrepared);
+      scene.add(new Mesh(added, new MeshToonMaterial()));
+      lod.render(scene, camera, 100, assertPrepared);
+      lod.render(scene, camera, 100, assertPrepared);
+      finish([]);
+      await lod.ready;
+      assert.ok(
+        geometryLodFamily(source) === family,
+        "unrelated work must not rebuild existing GPU batches",
+      );
+      lod.render(scene, camera, 100, assertPrepared);
+    } finally {
+      finish([]);
+      await lod.ready;
+      lod.dispose();
+    }
   });
 });

@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-03T17:05:05.183Z",
+  "label": "controlled-before",
+  "source": {
+    "commit": "81146298451f4334500877a3e67480be60558b6f",
+    "dirty": true,
+    "homeHash": "69fd427fbaf102e41c1ff7d8833d2712482f66952c7eabaacab4a0f605f3dafb",
+    "renderingCommit": "ddc00e96eef25d01cf12f55835c371c342eeaec3",
+    "harnessCommit": "81146298451f4334500877a3e67480be60558b6f",
+    "note": "Only the four renderer files were temporarily restored to ddc00e9; the current harness and background control stayed the same.",
+    "renderingFiles": {
+      "packages/engine/src/scene-batching/SceneGeometryLod.ts": "8d70e33c4547de43e996b46eb907e18efe623ff2928f04005fe2ea918db09450",
+      "packages/engine/src/scene-batching/SceneToonBatcher.ts": "d3960507aa476bd0bf2b0bb8aad02988649ba8c83241cad61959e35e85a7290a",
+      "packages/engine/src/scene-batching/toon-batch-compatibility.ts": "818a7693694dbbab2b3e0d5006e9e3c205d31fb1e5ea7b6b68dcf089797af418",
+      "packages/engine/src/shadow-map-cache.ts": "26a168605466ef4bb709388c2f98c0afb6ee332d3d1464f71e4414b366cd682d"
+    }
+  },
+  "configuration": {
+    "build": "production",
+    "path": "touch-orbit-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 487,
+      "height": 1055,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [39.09400000000001, 45.572, 45.76400000000001],
+      "quaternion": [
+        -0.35829231738036693, 0.3288030008929161, 0.13649890390018493, 0.86306619163542
+      ],
+      "target": [9, 0.2, 12],
+      "zoom": 9.129213483146065
+    },
+    "workload": {
+      "scenario": "solstice-ha-night-cloudy-v1",
+      "home": "home/showcase/furnished.project.json",
+      "sceneItems": 239,
+      "lighting": "night",
+      "weather": "cloudy",
+      "weatherSource": "Home Assistant",
+      "mappedLights": 27,
+      "lightsOn": 10,
+      "fixtureHash": "fef844bd1dad6405e8b649d0c69fa267903bc1cebace5001ed97f762a791146e"
+    },
+    "profile": "mobile",
+    "cpuRate": 4
+  },
+  "scene": {
+    "activePointLights": 10,
+    "objects": 2878,
+    "meshes": 1938,
+    "materials": 1938,
+    "geometries": 1922
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 4,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "summary": {
+    "fps": 20.812067034775218,
+    "frameMsP50": 44.700000047683716,
+    "frameMsP95": 55.10000014305115,
+    "frameMsP99": 63.799999952316284,
+    "over33MsPercent": 100,
+    "over50MsPercent": 17.272727272727273,
+    "cpuSubmitMsP95": 17.700000047683716,
+    "callsMedian": 297,
+    "callsMax": 299,
+    "trianglesMedian": 258310,
+    "trianglesMax": 260258
+  },
+  "rawReport": "test-results/performance/2026-11-03-controlled-touch-before.json",
+  "runSummaries": [
+    {
+      "frames": 220,
+      "movingFrames": 220,
+      "durationMs": 10084.299999952316,
+      "frameMsMax": 74.89999985694885,
+      "summary": {
+        "fps": 21.81609035838286,
+        "frameMsP50": 44.700000047683716,
+        "frameMsP95": 55.10000014305115,
+        "frameMsP99": 61.700000047683716,
+        "over33MsPercent": 100,
+        "over50MsPercent": 17.272727272727273,
+        "cpuSubmitMsP95": 17.700000047683716,
+        "callsMedian": 297,
+        "callsMax": 299,
+        "trianglesMedian": 259082,
+        "trianglesMax": 435092
+      }
+    },
+    {
+      "frames": 202,
+      "movingFrames": 202,
+      "durationMs": 10120.099999904633,
+      "frameMsMax": 152.70000004768372,
+      "summary": {
+        "fps": 19.960277072549044,
+        "frameMsP50": 48,
+        "frameMsP95": 63.200000047683716,
+        "frameMsP99": 74.79999995231628,
+        "over33MsPercent": 100,
+        "over50MsPercent": 37.62376237623762,
+        "cpuSubmitMsP95": 19.799999952316284,
+        "callsMedian": 297,
+        "callsMax": 299,
+        "trianglesMedian": 258310,
+        "trianglesMax": 260106
+      }
+    },
+    {
+      "frames": 210,
+      "movingFrames": 210,
+      "durationMs": 10090.299999952316,
+      "frameMsMax": 772.7999999523163,
+      "summary": {
+        "fps": 20.812067034775218,
+        "frameMsP50": 44.200000047683716,
+        "frameMsP95": 52.799999952316284,
+        "frameMsP99": 63.799999952316284,
+        "over33MsPercent": 100,
+        "over50MsPercent": 9.523809523809524,
+        "cpuSubmitMsP95": 16,
+        "callsMedian": 297,
+        "callsMax": 299,
+        "trianglesMedian": 252590,
+        "trianglesMax": 260258
+      }
+    }
+  ]
+}

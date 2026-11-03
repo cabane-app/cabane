@@ -223,10 +223,15 @@ for synthetic HA devices and synchronization, and the
 
 ### Measure scene rendering performance
 
-`npm run measure:scene` records draw calls and triangles in Orbit, Walk,
-Construct and Arrange. Keep reports in ignored `test-results/` and compare on the
-same machine and browser. This check is separate from `verify`; its results do
-not establish real-device frame rates.
+`npm run perf -- --label baseline` measures production-app camera motion with a
+mobile viewport and Chrome's normal GPU selection, saving JSON and a visual HTML report.
+It defaults to the repo's furnished Solstice home with live dev HA, night mode,
+cloudy weather and ten lights on; prepare its private local session first.
+Use `--scenario demo` for the old disconnected fixture. Compare
+before/after frame intervals, hitches, and rendering workload on the same device.
+`npm run measure:scene` provides detailed draw-call and triangle diagnostics in
+Orbit, Walk, Construct and Arrange. See the [performance guide](docs/performance.md)
+for repeatable comparisons, physical-phone testing, and the measurement log.
 
 ## Project structure
 

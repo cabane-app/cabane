@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-03T17:55:12.410Z",
+  "label": "2026-11-03-native-pan-current",
+  "source": {
+    "commit": "633e840b8de2a159538f4a96572f09b47d3cbabd",
+    "dirty": false,
+    "homeHash": "69fd427fbaf102e41c1ff7d8833d2712482f66952c7eabaacab4a0f605f3dafb"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "manual-gestures-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "Europe/Paris",
+    "seconds": 10,
+    "runs": 1,
+    "viewport": {
+      "width": 402,
+      "height": 714
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 502,
+      "height": 892,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [39.09400000000001, 45.57200000000002, 45.76400000000001],
+      "quaternion": [-0.358292317380367, 0.32880300089291614, 0.136498903900185, 0.86306619163542],
+      "target": [9, 0.2, 12],
+      "zoom": 9.41011235955056
+    },
+    "workload": {
+      "scenario": "solstice-ha-night-cloudy-v1",
+      "home": "home/showcase/furnished.project.json",
+      "sceneItems": 239,
+      "lighting": "night",
+      "weather": "cloudy",
+      "weatherSource": "Home Assistant",
+      "mappedLights": 27,
+      "lightsOn": 10,
+      "fixtureHash": "fef844bd1dad6405e8b649d0c69fa267903bc1cebace5001ed97f762a791146e"
+    },
+    "profile": "ios-simulator",
+    "simulatorRuntime": "iOS 26.1 (23B86)",
+    "gesture": "Device Hub native pan: 60 repetitions, (1250,975) to (1380,975) and back, continuously through capture"
+  },
+  "scene": {
+    "activePointLights": 10,
+    "objects": 2878,
+    "meshes": 1938,
+    "materials": 1938,
+    "geometries": 1922
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Mobile/15E148 Safari/604.1",
+    "platform": "iPhone",
+    "hardwareConcurrency": 8,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Apple Inc.",
+      "renderer": "Apple GPU",
+      "multiDraw": true
+    },
+    "execution": "ios-simulator",
+    "simulatorDevice": "iPhone 17 Pro",
+    "cpu": "Apple M5 Pro",
+    "hostPlatform": "darwin 25.6.0",
+    "headless": false
+  },
+  "summary": {
+    "fps": 59.770114942528735,
+    "frameMsP50": 16,
+    "frameMsP95": 24,
+    "frameMsP99": 30,
+    "over33MsPercent": 0.16722408026755853,
+    "over50MsPercent": 0,
+    "cpuSubmitMsP95": 2.000000000014552,
+    "callsMedian": 268,
+    "callsMax": 299,
+    "trianglesMedian": 230763,
+    "trianglesMax": 436364
+  },
+  "comparison": {
+    "fps": {
+      "before": 57.348386452193026,
+      "after": 59.770114942528735,
+      "delta": 2.4217284903357097,
+      "percent": 4.222836317033122
+    },
+    "frameMsP50": {
+      "before": 16,
+      "after": 16,
+      "delta": 0,
+      "percent": 0
+    },
+    "frameMsP95": {
+      "before": 24.999999999992724,
+      "after": 24,
+      "delta": -0.999999999992724,
+      "percent": -3.9999999999720606
+    },
+    "frameMsP99": {
+      "before": 31,
+      "after": 30,
+      "delta": -1,
+      "percent": -3.225806451612903
+    },
+    "over33MsPercent": {
+      "before": 0.5226480836236934,
+      "after": 0.16722408026755853,
+      "delta": -0.3554240033561349,
+      "percent": -68.00445930880714
+    },
+    "over50MsPercent": {
+      "before": 0,
+      "after": 0,
+      "delta": 0,
+      "percent": null
+    },
+    "cpuSubmitMsP95": {
+      "before": 3,
+      "after": 2.000000000014552,
+      "delta": -0.9999999999854481,
+      "percent": -33.33333333284827
+    },
+    "callsMedian": {
+      "before": 268,
+      "after": 268,
+      "delta": 0,
+      "percent": 0
+    },
+    "callsMax": {
+      "before": 299,
+      "after": 299,
+      "delta": 0,
+      "percent": 0
+    },
+    "trianglesMedian": {
+      "before": 230763,
+      "after": 230763,
+      "delta": 0,
+      "percent": 0
+    },
+    "trianglesMax": {
+      "before": 436524,
+      "after": 436364,
+      "delta": -160,
+      "percent": -0.03665319661690995
+    }
+  },
+  "rawReport": "test-results/performance/2026-11-03-native-pan-current.json",
+  "runSummaries": [
+    {
+      "frames": 598,
+      "movingFrames": 598,
+      "durationMs": 10005,
+      "frameMsMax": 36.99999999998545,
+      "over100MsCount": 0,
+      "summary": {
+        "fps": 59.770114942528735,
+        "frameMsP50": 16,
+        "frameMsP95": 24,
+        "frameMsP99": 30,
+        "over33MsPercent": 0.16722408026755853,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 2.000000000014552,
+        "callsMedian": 268,
+        "callsMax": 299,
+        "trianglesMedian": 230763,
+        "trianglesMax": 436364
+      }
+    }
+  ]
+}
