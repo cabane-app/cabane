@@ -110,7 +110,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("closed cabinets reject tool arrivals whether GLB faces share one primitive or six", async () => {
+  test("tool arrivals preserve manifest item interiors and reject closed cabinets across GLB primitives", async () => {
     const polygon = [
       [0, 0],
       [8, 0],
@@ -132,6 +132,31 @@ await withModules(async (load) => {
       stairs: [],
       sceneItems: [],
     };
+    const kitchen = colliderRoot(
+      box([2.55, 0.9, 0.6], [0, 0.45, -0.85]),
+      box([0.6, 0.9, 2.3], [-0.975, 0.45, 0]),
+    );
+    kitchen.position.set(3, 0, 3);
+    building.sceneItems = [
+      {
+        id: "imported-kitchen",
+        kind: "furnishing",
+        modelId: "personal:kitchen",
+        floorId: floor.id,
+        size: [2.55, 0.9, 2.3],
+        placement: { kind: "absolute", at: [3, 3], elevationMeters: 0, rotationYRadians: 0 },
+      },
+    ];
+    const furniture = (elevation) => collectSceneWalkColliders(kitchen, elevation, 1.72);
+    assert.ok(
+      resolveWalkLanding(building, { x: 3.3, y: 0, z: 3.3 }, furniture),
+      "manifest item envelope must not block the loaded kitchen interior",
+    );
+    assert.equal(
+      resolveWalkLanding(building, { x: 2.025, y: 0, z: 3.3 }, furniture),
+      null,
+      "the solid kitchen arm still blocks arrival",
+    );
     for (const split of [false, true]) {
       const bytes = testGlb({
         mutate(json) {
