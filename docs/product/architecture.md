@@ -22,6 +22,7 @@ areas:
         packages/engine/src/CabaneDashboard.tsx,
         packages/engine/src/home-assistant-dashboard/,
         packages/engine/src/navigation/,
+        packages/engine/src/building/,
       ]
     docs: [docs/product/dashboard-and-cameras.md]
   rendering:

@@ -22,7 +22,11 @@ await withModules(async (load) => {
     return createElement(
       "div",
       null,
-      createElement("output", null, navigation.activeFloorId),
+      createElement(
+        "output",
+        { "data-whole-building": navigation.wholeBuilding },
+        navigation.activeFloorId,
+      ),
       createElement(FloorPicker, {
         floors: available,
         selectedId: navigation.activeFloorId,
@@ -39,6 +43,11 @@ await withModules(async (load) => {
         ),
       ),
       createElement("button", { onClick: () => navigation.selectFloor("ground") }, "Locate"),
+      createElement(
+        "button",
+        { onClick: () => navigation.setWholeBuilding(true) },
+        "Show building",
+      ),
     );
   }
   const mountNavigation = async (dom) => {
@@ -64,6 +73,46 @@ await withModules(async (load) => {
   };
   const choose = async (dom, name) =>
     act(async () => dom.document.querySelector(`button[aria-label="${name}"]`).click());
+  test("consumers share one selection and floor reconciliation within their provider", () =>
+    withStorageDom(async (dom) => {
+      const navigation = await dom.mount(mountNavigation, dom);
+      function FloorStatus({ available }) {
+        const { activeFloorId, wholeBuilding } = useFloorNavigation(available);
+        return createElement("output", { "data-whole-building": wholeBuilding }, activeFloorId);
+      }
+      const render = async (available) =>
+        act(async () =>
+          navigation.root.render(
+            createElement(
+              FloorNavigationProvider,
+              null,
+              createElement(Navigation, { available }),
+              createElement(FloorStatus, { available }),
+            ),
+          ),
+        );
+      const outputs = () => [...dom.document.querySelectorAll("output")];
+      await render(floors);
+      await choose(dom, "Upper");
+      assert.deepEqual(
+        outputs().map((output) => output.textContent),
+        ["upper", "upper"],
+      );
+      await dom.click("Show building");
+      assert.ok(outputs().every((output) => output.dataset.wholeBuilding === "true"));
+      await render(floors.slice(0, 2));
+      assert.deepEqual(
+        outputs().map((output) => output.textContent),
+        ["ground", "ground"],
+      );
+      assert.ok(outputs().every((output) => output.dataset.wholeBuilding === "false"));
+      await choose(dom, "Cellar");
+      assert.deepEqual(
+        outputs().map((output) => output.textContent),
+        ["cellar", "cellar"],
+      );
+      assert.equal(dom.window.localStorage.length, 0);
+    }));
   test("remembers explicit floor picks per workspace and reconciles removed floors without writing", () =>
     withStorageDom(async (dom) => {
       let navigation = await dom.mount(mountNavigation, dom);
