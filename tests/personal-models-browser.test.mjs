@@ -72,31 +72,20 @@ test(
   { timeout: 10_000 },
   withBrowserDiagnostics(async () => {
     // Native dialog bounds, CSS sizing and focus navigation need a real browser.
-    const { server } = await getBrowserTestServer("app");
+    // The file-picker/workspace flow is covered above; mount the real dialogue directly here.
+    const { server } = await getBrowserTestServer();
     const browser = await createBrowserTestSession();
     try {
       const page = await browser.newPage({ viewport: { width: 1100, height: 760 } });
-      const url = server.resolvedUrls.local[0];
-      await page.goto(`${url}workspaces`);
-      const id = await page.evaluate(async (rootPath) => {
-        const { createWorkspaceRepository } = await import(
-          `/@fs${rootPath}/packages/engine/src/index.ts`
-        );
-        const { ownerProjectRegistries } = await import("/src/project-runtime.ts");
-        const repository = createWorkspaceRepository(window.indexedDB, ownerProjectRegistries);
-        return (await repository.createBlank("Import navigation")).metadata.id;
-      }, process.cwd());
-      await page.goto(`${url}workspaces/${id}/arrange`);
-      await page.getByRole("button", { name: "My models", exact: true }).click();
-      const chooser = page.waitForEvent("filechooser");
-      await page.getByRole("button", { name: "Import model (.glb file)", exact: true }).click();
-      await (
-        await chooser
-      ).setFiles({
-        name: "Poses.glb",
-        mimeType: "model/gltf-binary",
-        buffer: Buffer.from(testGlb({ poses: true })),
-      });
+      await page.goto(server.resolvedUrls.local[0]);
+      await page.evaluate(
+        async (bytes) => {
+          document.body.innerHTML = '<div id="root"></div>';
+          const { mountImportDialog } = await import("/tests/model-import-harness.tsx");
+          mountImportDialog(bytes);
+        },
+        Array.from(testGlb({ poses: true })),
+      );
       const dialog = page.getByRole("dialog", { name: "Import GLB", exact: true });
       await dialog.getByRole("tab", { name: "States", exact: true }).waitFor();
       const bounds = await dialog.boundingBox();

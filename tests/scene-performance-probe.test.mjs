@@ -177,7 +177,7 @@ for (const [interrupted, touch] of [
       else delete globalThis.document;
     });
     let clock = 100;
-    t.mock.method(performance, "now", () => (clock += 5));
+    t.mock.method(performance, "now", () => clock);
     const camera = new OrthographicCamera();
     camera.position.set(10, 12, 10);
     const pose = {
@@ -195,6 +195,7 @@ for (const [interrupted, touch] of [
         },
       },
       render(triangles) {
+        clock += 5; // Each submitted pass takes 5 ms.
         if (this.info.autoReset) this.info.reset();
         this.info.render.calls++;
         this.info.render.triangles += triangles;
@@ -220,6 +221,9 @@ for (const [interrupted, touch] of [
         setImmediate(() => {
           pending = false;
           if (!subscribers.size) return;
+          clock += 15; // Idle time plus two 5 ms submissions gives a 25 ms frame.
+          // Reading time is passive, even when another library queries it.
+          performance.now();
           for (const [ref] of [...subscribers].sort((a, b) => a[1] - b[1])) ref.current();
           if (touch) camera.zoom += 0.01;
           gl.render(120); // beauty (including submitted shadow triangles)
