@@ -40,24 +40,24 @@ export function createFloorNavigation(initialFloorId = "", storageKey?: string) 
   };
   return {
     getSnapshot: () => snapshot,
-    subscribe(listener: () => void) {
+    subscribe: (listener: () => void) => {
       listeners.add(listener);
       return () => {
         listeners.delete(listener);
       };
     },
-    reconcile(floors: readonly Floor[]) {
+    reconcile: (floors: readonly Floor[]) => {
       update(
         resolveFloorNavigation(snapshot, floors),
         floors.map((floor) => floor.id),
       );
     },
-    selectFloor(id: string, source: FloorSelectionSource = "target") {
+    selectFloor: (id: string, source: FloorSelectionSource = "target") => {
       if (!id) return;
       if (source === "picker") writeFloorPreference(storageKey, id);
       update({ activeFloorId: id, wholeBuilding: false });
     },
-    setWholeBuilding(wholeBuilding: boolean) {
+    setWholeBuilding: (wholeBuilding: boolean) => {
       update({ ...snapshot.selection, wholeBuilding });
     },
   };
