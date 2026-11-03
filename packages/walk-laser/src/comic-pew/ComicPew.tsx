@@ -2,23 +2,19 @@ import type { CSSProperties, RefObject } from "react";
 import { pewArt } from "./pew-art";
 import "./comic-pew.css";
 
-/** Shared comic burst for walk-tool shots and live scene activity. */
+/** Camera-local ink and flat cel colors, kept clear of the aiming reticle. */
 export function ComicPew({
   shotId,
   shotColor,
-  word,
   anchor,
   reducedMotion,
-  onComplete,
 }: {
   shotId: number;
   shotColor?: string | undefined;
-  word?: "PEW!" | "ZAP!" | "POW!";
-  anchor?: RefObject<HTMLDivElement | null>;
+  anchor: RefObject<HTMLDivElement | null>;
   reducedMotion: boolean;
-  onComplete?: (() => void) | undefined;
 }) {
-  const art = pewArt(shotId, shotColor, word);
+  const art = pewArt(shotId, shotColor);
   const style = {
     "--pew-angle": `${art.angle}deg`,
     "--pew-drift": `${art.drift}px`,
@@ -34,9 +30,6 @@ export function ComicPew({
           data-shot={shotId}
           data-reduced-motion={reducedMotion}
           style={style}
-          onAnimationEnd={(event) => {
-            if (event.target === event.currentTarget) onComplete?.();
-          }}
         >
           <svg viewBox="-18 -20 316 174" className="comic-pew__art" focusable="false">
             <title>{art.label}</title>
