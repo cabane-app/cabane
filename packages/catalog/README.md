@@ -1,5 +1,98 @@
 # Cabane model catalog
 
+## Everyday household additions
+
+These static furnishings are available in Arrange and All items. No runtime
+bindings are created. Dimensions use **width × height × depth in centimetres**;
+code uses the same order in metres. Generic sizes are inferred unless a source
+is linked below. Floor and surface objects start at Y=0 with centered footprints;
+wall objects have their back at Z=0 and bottom at Y=0.
+
+| Model ID           | Public component  | Dimensions (cm) | Arrange room / category |
+| ------------------ | ----------------- | --------------- | ----------------------- |
+| `indoor-bin`       | `IndoorBin`       | 36 × 62 × 40    | Kitchen / Household     |
+| `wall-clock`       | `WallClock`       | 30 × 30 × 4.5   | Living room / Decor     |
+| `cordless-vacuum`  | `CordlessVacuum`  | 25 × 125.6 × 26 | Laundry / Cleaning      |
+| `saucepan`         | `Saucepan`        | 36 × 11.5 × 20  | Kitchen / Kitchen       |
+| `frying-pan`       | `FryingPan`       | 46 × 5.5 × 28   | Kitchen / Kitchen       |
+| `baby-high-chair`  | `BabyHighChair`   | 56 × 90 × 60    | Dining room / Seating   |
+| `bicycle`          | `Bicycle`         | 64 × 110 × 180  | Outdoor / Vehicles      |
+| `stroller`         | `Stroller`        | 60.2 × 105 × 92 | Entryway / Household    |
+| `wifi-router`      | `WifiRouter`      | 24 × 20 × 16.4  | Office / Electronics    |
+| `desktop-pc-tower` | `DesktopPcTower`  | 21 × 44 × 43    | Office / Electronics    |
+| `desktop-keyboard` | `DesktopKeyboard` | 44 × 3 × 15     | Office / Electronics    |
+| `desktop-mouse`    | `DesktopMouse`    | 6.5 × 4 × 11.5  | Office / Electronics    |
+| `shower-curtain`   | `ShowerCurtain`   | 180 × 200 × 12  | Bathroom / Bathroom     |
+| `pet-bed`          | `PetBed`          | 80 × 24 × 60    | Living room / Pets      |
+| `cat-litter-tray`  | `CatLitterTray`   | 46 × 18 × 58    | Bathroom / Pets         |
+| `robot-lawn-mower` | `RobotLawnMower`  | 64 × 34 × 86    | Outdoor / Garden        |
+
+Indoor bin offers **Kitchen recycling**, **Bathroom pedal**, and **Office
+wastebasket** variants. Color changes its shell and lids, preserving hardware.
+Variants share the current item's dimensions; use the independent size controls
+for a smaller bin. Suggested bathroom size is 24 × 32 × 28 cm and office size
+is 28 × 34 × 28 cm, also exported as `BATHROOM_BIN_SIZE` and `OFFICE_BIN_SIZE`.
+The office variant has an open, hollow shell. All three use the same color picker.
+
+The wall clock is a simple slate round case with an ivory dial and static 10:10
+hands. It resizes proportionally and starts with wall support.
+
+The wall-docked vacuum uses the [Dyson V8 technical sheet](https://www.dyson.com/content/dam/dyson/for-business/business-refresh/docs/us/vacuums/Dyson_US_V8_tech_spec.pdf)
+for its 125.6 cm length, 25 cm head and 68.4 cm wand. The [V8 dock guide](https://www.dyson.com/content/dam/dyson/maintenance/cord-free-vacuums/sticks/dyson-v8-vacuums/pdfs/V8-Wall-Dock-Installation-Guide-Global.pdf)
+informs the wall cradle. Docked depth, cyclone details and component proportions
+are inferred for a simplified upright pose. The dust cup is opaque blue-grey;
+this is a stylized reference model rather than an exact product replica.
+
+Saucepan and frying pan are independently placeable open vessels, with handles
+included in their bounds. Set Elevation to the hob surface height; Y=0 is the
+underside. Both resize proportionally.
+
+Baby high chair offers **Stokke Tripp Trapp style** and **IKEA ANTILOP**.
+The [current ANTILOP with tray](https://www.ikea.com/gb/en/p/antilop-highchair-with-tray-white-white-s79597515/)
+provides the shared 56 × 90 × 60 cm envelope, a 54 cm seat height and a 25 × 22 cm
+seat. The [official Tripp Trapp page](https://www.stokke.com/GBR/en-gb/high-chairs/tripp-trapp/1001.html)
+informs its stepped wooden construction. Its source 46 × 79 × 49 cm proportions
+were corroborated by retailer listings, not independently read from the official
+measurement image, and are scaled per axis into the common placement envelope.
+These are style approximations; tray sections and baby supports are inferred.
+Both variants resize proportionally as placed items.
+
+Bicycle offers **E-bike**, **MTB**, and **Gravel** within one inferred envelope.
+The battery/motor, suspension with knobby tyres, and drop bars distinguish them.
+It resizes proportionally and permits indoor garage or outdoor placement.
+
+Stroller is a generic four-wheel pushchair with a fabric seat, curved canopy,
+handle and under-seat basket. Color changes the fabric; frame and wheels retain
+their finishes. It resizes proportionally and permits indoor or outdoor placement.
+
+Wi-Fi router is a generic tabletop internet box with upright antennas, rear
+Ethernet ports and static status lenses. Its full envelope includes the antennas.
+It resizes proportionally.
+
+Desktop tower, keyboard and mouse are independently placeable, with proportional
+resizing and surface-contact origins. Set Elevation to the desk top for keyboard
+and mouse. Use the existing `desktop-monitor` when composing a complete desktop.
+
+Shower curtain includes continuous pleated fabric, thirteen rings, and a tension
+rail. Color targets the fabric. Width, drop and depth resize independently.
+Its Y=0 origin is the curtain hem: set Elevation near the tub rim, or slightly
+inside the bath, then adjust Height so the rail top reaches the desired mounting
+height. The rail top is Elevation + Height. It starts with absolute placement
+and has no floor walk collider.
+
+Pet bed offers **White fluffy** and **Padded fabric** variants. The oval
+bolster, inset cushion and sparse batched tufts share one envelope. All axes
+resize independently, and Color changes the fabric. Reset restores the selected
+variant's original white or sage palette.
+
+Cat litter tray has a hollow rounded shell and inset litter surface. Color
+changes the shell, keeping the litter neutral. It resizes proportionally.
+
+Robot lawn mower includes a low wheeled mower docked at its charging station.
+The inferred envelope includes the base and charging support. It resizes
+proportionally and permits indoor storage or outdoor placement. Geometry is
+static; this preset does not add mower commands or a Home Assistant binding.
+
 ## Mailboxes and utility fixtures
 
 These connectable devices are available in Arrange and searchable in All items.

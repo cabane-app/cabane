@@ -487,6 +487,7 @@ await withModules(async (load) => {
         .map((entry) => entry.modelId)
         .sort(),
       [
+        "bicycle",
         "compact-car",
         "deciduous-tree",
         "electric-sedan",
@@ -516,6 +517,7 @@ await withModules(async (load) => {
         "pop-up-sprinkler",
         "raised-garden-bed",
         "retractable-awning",
+        "robot-lawn-mower",
         "rotating-sprinkler",
         "slatted-folding-chair",
         "slatted-folding-table",
@@ -679,12 +681,16 @@ await withModules(async (load) => {
       [
         "printer-3d",
         "adjustable-desk-lamp",
+        "desktop-keyboard",
+        "desktop-mouse",
+        "desktop-pc-tower",
         "ergonomic-office-chair",
         "oak-bookshelf",
         "oak-desk",
         "paper-printer",
         "smart-power-strip",
         "table-fan",
+        "wifi-router",
       ],
     );
     const kitchenCabinetResults = new Set(

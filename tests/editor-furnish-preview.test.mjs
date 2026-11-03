@@ -221,7 +221,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("every built-in furnishing supports independent dimensions and height undo/redo", () => {
+  test("every built-in furnishing respects its resize policy and supports size undo/redo", () => {
     for (const [modelId, definition] of Object.entries(stableFurnishingRegistry)) {
       const original = {
         id: modelId,
@@ -240,10 +240,20 @@ await withModules(async (load) => {
           size,
           definition,
         });
-        assert.deepEqual(changed.items[0].size, size, `${modelId}: axis ${axis}`);
+        const policy = definition.resizePolicy;
+        const expected =
+          policy.kind === "uniform"
+            ? original.size.map((value) => value * (size[axis] / original.size[axis]))
+            : policy.kind === "fixed" ||
+                (policy.kind === "planar" && axis === 1) ||
+                (policy.kind === "axes" &&
+                  !policy.axes.includes(["width", "height", "depth"][axis]))
+              ? original.size
+              : size;
+        assert.deepEqual(changed.items[0].size, expected, `${modelId}: axis ${axis}`);
         const undone = furnishingEditorReducer(changed, { type: "undo" });
         assert.deepEqual(undone.items[0], original);
-        assert.deepEqual(furnishingEditorReducer(undone, { type: "redo" }).items[0].size, size);
+        assert.deepEqual(furnishingEditorReducer(undone, { type: "redo" }).items[0].size, expected);
       }
     }
   });
