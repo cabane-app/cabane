@@ -1,3 +1,37 @@
+.editor-draft-saving {
+  position: absolute;
+  z-index: 5;
+  right: calc(18px + var(--editor-properties-clearance, 0px));
+  bottom: calc(72px + var(--editor-issues-clearance, 0px));
+  width: 14px;
+  height: 14px;
+  color: var(--preview-muted);
+  pointer-events: none;
+}
+.editor-draft-saving__spinner {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 2px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: editor-draft-saving-spin 1s linear infinite;
+}
+@keyframes editor-draft-saving-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .editor-draft-saving__spinner {
+    animation: none;
+  }
+}
+.direction-preview[data-mobile-editor="true"] .editor-draft-saving {
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(var(--editor-mobile-dock-bottom) + 92px);
+}
 .direction-preview .editor-draft-error {
   z-index: 12;
   width: 360px;

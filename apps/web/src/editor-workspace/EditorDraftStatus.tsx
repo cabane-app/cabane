@@ -24,9 +24,9 @@ export function EditorDraftStatus({
   if (!error && !workspace.saving) return null;
   if (!error)
     return (
-      <div className="direction-status is-saving" role="status">
-        <span aria-hidden="true" />
-        Saving draft…
+      <div className="editor-draft-saving" role="status">
+        <span className="editor-draft-saving__spinner" aria-hidden="true" />
+        <span className="arrange-announcement">Saving draft…</span>
       </div>
     );
   const conflict = error instanceof WorkspaceConflictError;
