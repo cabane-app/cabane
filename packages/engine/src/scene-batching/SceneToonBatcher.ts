@@ -85,10 +85,6 @@ export class SceneToonBatcher {
       const ids = new Map<BufferGeometry, number>();
       const tint = source.material as MeshToonMaterial;
       for (const geometry of families[instance]) {
-        // Picking still uses the detailed source meshes. Prepare tight bounds
-        // when geometry is packed so misses never need a full triangle scan.
-        geometry.computeBoundingBox();
-        geometry.computeBoundingSphere();
         const packed = new BufferGeometry();
         packed.setAttribute("position", geometry.attributes.position.clone());
         packed.setAttribute("normal", geometry.attributes.normal.clone());

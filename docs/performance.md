@@ -52,6 +52,14 @@ without any movement. This is an interaction check, with its own
 frames can make the aggregate look better. Use the movement fraction when judging
 the result. Native touch checks complement the repeatable CLI comparison.
 
+Calibrate automated Simulator input before interpreting it: on this host, an
+empty WebGL page recorded p95 17 ms idle and 24 ms under the same Device Hub drag
+commands, despite averaging 60 FPS in both cases. The
+[control measurement](performance-baselines/2026-11-03-native-input-calibration.json)
+shows scheduling noise from the simulator/input path. A failing 20 ms target
+under that automation does not by itself establish an application problem.
+Keep the phone target unchanged and validate real gestures on a physical device.
+
 ## Current development scenario
 
 The default `--scenario dev-home` opens

@@ -88,13 +88,32 @@ source `692360d`: **57.3 FPS, p95 25 ms, p99 31 ms, 0.52% above 33.3 ms**.
 The camera moved in all 574 measured frames; the longest interval was 38 ms.
 Device Hub sent 60 repeated horizontal drags through the normal iOS touch path.
 This exposes a remaining interaction shortfall even though the direct camera
-path meets its target. The earlier 23%-movement capture is retained only in
+path meets its target, but the control experiment below shows that this gap
+cannot be attributed entirely to Cabane. The earlier 23%-movement capture is retained only in
 ignored files and is not acceptance evidence. Raw reports/charts are in
 `test-results/performance/2026-11-03-{incremental-lod-ios-simulator,native-pan-before}.{json,html}`.
 
 The touch-hover experiment `a94bb46` recorded p95 26 ms versus 25 ms before,
 with 100% movement coverage in both cases. It did not improve the timing and was
 reverted. Its raw report is `test-results/performance/2026-11-03-native-pan-hover.json`.
+
+Precomputing source picking bounds (`1294182`) avoids triangle visits for a
+missed ray in the focused test, but did not demonstrate a frame-time win in this
+native replay (p95 28 ms). It was also reverted. Keep the first measured renderer
+improvements rather than retaining speculative changes.
+
+### Native-input control
+
+An [empty WebGL control](performance-baselines/2026-11-03-native-input-calibration.json)
+used the same viewport, drawing buffer and drag commands, with only `gl.clear`
+per animation frame. It measured **60 FPS / p95 17 ms idle**, and **60 FPS / p95
+24 ms with automated dragging**. No drag interval exceeded 33.3 ms; max was 27 ms.
+This is evidence of input/simulator scheduling noise and weakens the earlier
+interpretation of the 25 ms app gesture result. It does not prove the user's
+physical-phone stutter is fixed. The phone target remains p95 ≤20 ms.
+The control source and raw JSON stay in ignored
+`test-results/performance/diagnostics/input-control.html` and
+`test-results/performance/native-input-control{,-idle}.json`.
 
 ## Camera gesture investigation, November 3
 
