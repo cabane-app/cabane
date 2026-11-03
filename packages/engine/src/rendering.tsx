@@ -166,12 +166,11 @@ export function CameraFacingFade({
     [retainShadows],
   );
   useEffect(() => {
-    if (!enabled) {
-      opacityRef.current = 1;
-      applyOpacity(1);
-    }
+    if (!enabled) opacityRef.current = 1;
+    // New meshes and replacement materials inherit the current fade at a stationary camera.
+    applyOpacity(opacityRef.current);
     invalidate();
-  }, [enabled, invalidate, normal, normals, reducedMotion, applyOpacity]);
+  }, [enabled, invalidate, normal, normals, reducedMotion, applyOpacity, children]);
   useFrame(({ camera }, delta) => {
     const target = cameraFacingWallOpacityForNormals(
       enabled,

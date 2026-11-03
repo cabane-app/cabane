@@ -83,6 +83,12 @@ transfer precedes the revision-checked document write; see
 Arrange → My models can exchange a model-only ZIP pack (`manifest.json` plus
 `assets/<sha256>.glb`) independently of a workspace JSON or `.cabane` backup.
 
+Custom wall images are optimized JPEG data embedded directly in the optional
+wall-face finish metadata. They follow draft/published records, undo/redo,
+duplication, JSON and `.cabane` backups, and HA document transfer. No companion
+image asset or external URL is required. Images share the existing 5 MiB workspace
+document limit; image preparation is bounded separately to 192 KiB per image.
+
 Construct and Arrange use a shared panel layout. The left sidebar holds tools,
 placement choices, catalog and home settings. Selecting architecture, stairs,
 furniture or devices on desktop opens the same right Properties inspector automatically,

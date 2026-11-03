@@ -1,6 +1,6 @@
 import { planPointToWorld, pointInsidePolygon, worldPointToPlan } from "../geometry";
 
-import type { FloorSpec, PlanPoint, WallJunctionSpec, WallSpec } from "../types";
+import type { FloorSpec, PlanPoint, WallJunctionSpec, WallSpec, WallSurfaceFinish } from "../types";
 import { Horizontal, WallPlanFloor } from "./architecture-geometry-contract";
 
 export const normalize = ([x, z]: Horizontal): Horizontal => {
@@ -19,6 +19,20 @@ export const wallFrame = (wall: WallSpec, floor: WallPlanFloor) => {
     normal: [-direction[1], direction[0]] as Horizontal,
     length: Math.hypot(to[0] - from[0], to[1] - from[1]),
   };
+};
+
+/** Uploaded artwork reads left to right when looking at either visible wall face. */
+export const wallSurfaceU = (
+  point: Horizontal,
+  frame: ReturnType<typeof wallFrame>,
+  finish: WallSurfaceFinish | undefined,
+  side: "left" | "right",
+) => {
+  const distance =
+    (point[0] - frame.from[0]) * frame.direction[0] +
+    (point[1] - frame.from[1]) * frame.direction[1];
+  const direction = finish?.pattern === "custom-image" && side === "right" ? -1 : 1;
+  return (distance * direction) / (finish?.repeatMeters ?? 1);
 };
 
 export const pointInsideFloorFootprint = (candidate: PlanPoint, floor: WallPlanFloor) =>
