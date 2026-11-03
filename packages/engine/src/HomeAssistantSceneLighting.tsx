@@ -129,7 +129,8 @@ export function HomeAssistantSceneLighting({
       extensionDeviceModels,
     );
     if (
-      !definition?.sceneLight ||
+      !definition ||
+      (!definition.lighting && !definition.sceneLight) ||
       resolveModelVariant(definition, sceneItem?.variant).sceneLight === false
     )
       continue;
@@ -166,11 +167,13 @@ export function HomeAssistantSceneLighting({
     // Keep strips compact until all active copies can share the execution budget.
     const sources = definition.lighting
       ? modelLightEmissions(definition.lighting, "ha-device-light-" + id)
-      : (definition.sceneLights ?? [definition.sceneLight]).map((source, index) => ({
-          ...source,
-          name: "ha-device-light-" + id + (index ? "-" + index : ""),
-          intensity: source.maxIntensity,
-        }));
+      : (definition.sceneLights ?? (definition.sceneLight ? [definition.sceneLight] : [])).map(
+          (source, index) => ({
+            ...source,
+            name: "ha-device-light-" + id + (index ? "-" + index : ""),
+            intensity: source.maxIntensity,
+          }),
+        );
     for (const source of sources) {
       const properties: SceneLightSource = {
         name: source.name,
@@ -183,13 +186,13 @@ export function HomeAssistantSceneLighting({
         ...("strip" in source && source.strip
           ? {
               strip: {
+                ...source.strip,
                 end: deviceLightPosition(
                   transform.position,
                   transform.rotationYRadians,
                   scale,
                   source.strip.end,
                 ),
-                samples: source.strip.samples,
               },
             }
           : {}),
