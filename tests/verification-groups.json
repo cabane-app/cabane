@@ -82,6 +82,7 @@
       "ceiling-surfaces.test.mjs",
       "construct-alignment-deletion.test.mjs",
       "construct-editor.test.mjs",
+      "room-identity.test.mjs",
       "construction-grid.test.mjs",
       "construction-outline-handle.test.mjs",
       "editor-camera.test.mjs",

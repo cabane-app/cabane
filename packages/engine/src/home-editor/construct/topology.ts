@@ -10,7 +10,7 @@ import { FLOOR_EDITOR_EPSILON, FloorTopologyInput, FloorTopologyResult } from ".
 import { footprintForFaces } from "./topology-footprint";
 import { buildGraph, connected, traverseFaces } from "./topology-graph";
 import { deriveJunctions } from "./topology-junctions";
-import { centroid, containsPoint, issue, length, round } from "./topology-plan-math";
+import { containsPoint, issue, length, round } from "./topology-plan-math";
 import { normalizeWallRuns } from "./topology-wall-runs";
 
 export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyResult => {
@@ -342,7 +342,7 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
   return { floor, issues, faces, classifications, wallRuns };
 };
 
-export const roomAnchorForPolygon = centroid;
+export { roomAnchorForPolygon } from "./topology-plan-math";
 export { FLOOR_EDITOR_EPSILON } from "./topology-contract";
 export type {
   DerivedWallRun,
