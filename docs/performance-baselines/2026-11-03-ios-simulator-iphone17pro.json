@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-03T14:40:24.445Z",
+  "label": "initial-ios-simulator-iphone17pro",
+  "source": {
+    "commit": "d884338db54e6c91506bec6a00a497d20ba6b6f0",
+    "dirty": false,
+    "homeHash": "bf2f18c6b77cdd64b52ad278b30749eb53931b1a157318c7554d4e1c36d71a89"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "orbit-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "Europe/Paris",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 402,
+      "height": 714
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 502,
+      "height": 892,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [36.86466999999999, 43.36799999999999, 45.215999999999994],
+      "quaternion": [
+        -0.35901795001590964, 0.32868810161215745, 0.1367753487319077, 0.8627645955903818
+      ],
+      "target": [8.328669999999999, 0.2, 13.2],
+      "zoom": 9.265850945494995
+    },
+    "profile": "ios-simulator",
+    "simulatorRuntime": "iOS 26.1 (23B86)"
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Mobile/15E148 Safari/604.1",
+    "platform": "iPhone",
+    "hardwareConcurrency": 8,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Apple Inc.",
+      "renderer": "Apple GPU",
+      "multiDraw": true
+    },
+    "execution": "ios-simulator",
+    "simulatorDevice": "iPhone 17 Pro",
+    "cpu": "Apple M5 Pro",
+    "hostPlatform": "darwin 25.6.0",
+    "headless": false
+  },
+  "summary": {
+    "fps": 59.97600959616145,
+    "frameMsP50": 17,
+    "frameMsP95": 18,
+    "frameMsP99": 19,
+    "over33MsPercent": 0,
+    "over50MsPercent": 0,
+    "cpuSubmitMsP95": 3,
+    "callsMedian": 286,
+    "callsMax": 286,
+    "trianglesMedian": 168894,
+    "trianglesMax": 173462
+  },
+  "rawReport": "test-results/performance/2026-11-03-ios-simulator-iphone17pro.json",
+  "runSummaries": [
+    {
+      "frames": 598,
+      "durationMs": 10000,
+      "summary": {
+        "fps": 59.8,
+        "frameMsP50": 17,
+        "frameMsP95": 18,
+        "frameMsP99": 19.999999999992724,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 3,
+        "callsMedian": 286,
+        "callsMax": 286,
+        "trianglesMedian": 168912,
+        "trianglesMax": 173462
+      }
+    },
+    {
+      "frames": 600,
+      "durationMs": 10000,
+      "summary": {
+        "fps": 60,
+        "frameMsP50": 17,
+        "frameMsP95": 17.000000000014552,
+        "frameMsP99": 18.999999999985448,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 3,
+        "callsMedian": 286,
+        "callsMax": 286,
+        "trianglesMedian": 168894,
+        "trianglesMax": 173462
+      }
+    },
+    {
+      "frames": 600,
+      "durationMs": 10004.000000000015,
+      "summary": {
+        "fps": 59.97600959616145,
+        "frameMsP50": 17,
+        "frameMsP95": 18,
+        "frameMsP99": 19,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 3,
+        "callsMedian": 286,
+        "callsMax": 286,
+        "trianglesMedian": 168894,
+        "trianglesMax": 173462
+      }
+    }
+  ]
+}

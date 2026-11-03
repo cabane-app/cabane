@@ -65,6 +65,43 @@ running at the same time. Reuse passing measurements until relevant inputs chang
 
 ## Testing a real phone
 
+### iOS Simulator baseline
+
+An iOS Simulator run is useful for Safari/WebKit regression comparisons while a
+physical phone is unavailable. Keep it in a separate series from Chromium and
+physical-device runs. The [measurement log](performance-log.md) records the
+initial iPhone 17 Pro / iOS 26.1 baseline and its host hardware.
+
+1. Start `npm run perf:serve` and open the desired device in Xcode's Simulator /
+   Device Hub. Keep the device and Safari visible.
+2. Open `http://127.0.0.1:4180/tests/performance-harness.html` in simulator Safari.
+   The simulator can reach the Mac's loopback server directly; no VPN is needed.
+3. Select **Explore the demo**, then **Run benchmark**. Keep Safari's toolbar,
+   orientation and window visibility consistent. Do not record video or profile
+   during the timing run.
+4. Select **Download JSON**, then accept Safari's download prompt. The file is
+   beneath the selected simulator's data directory in
+   `Containers/Data/Application/*/Library/Safari/Downloads/*/cabane-performance.json`.
+   Copy it into ignored `test-results/performance/` for analysis.
+5. When importing the JSON, record `configuration.profile: "ios-simulator"`,
+   `configuration.simulatorRuntime` (including build), and the environment's
+   simulator device, host CPU and OS. Use the same context fields on future runs.
+   The archived baseline demonstrates these fields; the browser's user agent can
+   hide the true iOS version, so retain the runtime explicitly.
+
+If `xcrun simctl` is missing because the active tools point to CommandLineTools,
+use the installed Xcode for that command without changing system defaults:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun simctl list devices available
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun simctl openurl SIMULATOR_UDID http://127.0.0.1:4180/tests/performance-harness.html
+```
+
+Simulator rendering still uses the Mac's hardware. A useful simulator baseline
+does not establish physical-phone performance.
+
+### Physical device
+
 Desktop emulation is useful for fast iteration. A mobile viewport and CPU slowdown
 do not reproduce a phone's hardware, graphics driver, memory limits, or thermal
 behavior. Chrome describes Device Mode as an

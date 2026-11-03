@@ -9,10 +9,11 @@ Read [the measurement guide](performance.md) before comparing results. Lower p95
 and fewer frames over 33.3 ms are the primary signals. A laptop mobile profile is
 a regression proxy; a real phone validates mobile improvements.
 
-| Date       | Experiment / source                                                               | Environment                      | Callback FPS | Frame p95 | >33.3 ms | Calls / triangles (median) | Interpretation                                                                         |
-| ---------- | --------------------------------------------------------------------------------- | -------------------------------- | ------------ | --------- | -------- | -------------------------- | -------------------------------------------------------------------------------------- |
-| 2026-11-02 | [Initial mobile profile](performance-baselines/2026-11-02-mobile.json), `6e260f2` | Apple M5 Pro, Chrome 151, CPU ×1 | 120.0        | 8.7 ms    | 0%       | 288 / 168,681              | Laptop is comfortably fluid. No phone acceptance yet.                                  |
-| 2026-11-02 | [CPU sensitivity](performance-baselines/2026-11-02-mobile-cpu4.json), `6e260f2`   | Same host/browser, CPU ×4        | 37.8         | 30.6 ms   | 1.1%     | 286 / 168,681              | Harness exposes reduced CPU headroom. Separate comparison series, no code improvement. |
+| Date       | Experiment / source                                                                         | Environment                                 | Callback FPS | Frame p95 | >33.3 ms | Calls / triangles (median) | Interpretation                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------ | --------- | -------- | -------------------------- | -------------------------------------------------------------------------------------- |
+| 2026-11-02 | [Initial mobile profile](performance-baselines/2026-11-02-mobile.json), `6e260f2`           | Apple M5 Pro, Chrome 151, CPU ×1            | 120.0        | 8.7 ms    | 0%       | 288 / 168,681              | Laptop is comfortably fluid. No phone acceptance yet.                                  |
+| 2026-11-02 | [CPU sensitivity](performance-baselines/2026-11-02-mobile-cpu4.json), `6e260f2`             | Same host/browser, CPU ×4                   | 37.8         | 30.6 ms   | 1.1%     | 286 / 168,681              | Harness exposes reduced CPU headroom. Separate comparison series, no code improvement. |
+| 2026-11-03 | [iOS Simulator](performance-baselines/2026-11-03-ios-simulator-iphone17pro.json), `d884338` | iPhone 17 Pro, iOS 26.1 Safari, M5 Pro host | 60.0         | 18.0 ms   | 0%       | 286 / 168,894              | Useful Safari regression baseline. Simulator speed uses the Mac's hardware.            |
 
 Both measurements used a clean checkout, a production build, three ten-second
 captures, and three seconds of warmup before each capture. Chrome was headless,
@@ -27,6 +28,23 @@ exceed the existing workload guardrails despite the laptop's smooth cadence.
 Use them to guide diagnosis, not to infer a phone frame rate. Small count
 differences between these runs reflect sampling and transient passes, not an
 optimization.
+
+The **iOS Simulator** measurement is a separate series: Safari on an iPhone 17 Pro
+simulator, iOS 26.1 (23B86), running on the same Apple M5 Pro / Darwin 25.6.0 host.
+The production benchmark ran without CPU throttling for three ten-second
+captures, each with three seconds of warmup. Per-run p95 was 18, 17 and 18 ms;
+p99 was about 19 ms overall. No sampled interval exceeded 33.3 ms. Safari reported
+`Apple GPU` and `WEBGL_multi_draw`, with a 402 × 714 viewport, device DPR 3 and
+an actual 502 × 892 canvas at DPR 1.25. Safari remained visible in Device Hub;
+there was no video recording or profiler capture during measurement.
+
+This result establishes approximately 60 Hz callback pacing in this simulator.
+Do not treat the difference from desktop Chromium's 120 Hz baseline as a speed
+regression: the browser, viewport and execution environment differ. Simulator
+timings support iteration on this host, not an estimate of a physical iPhone's
+GPU, battery or thermal behavior. Power and thermal state were not recorded for
+this run. The raw JSON and HTML are
+`test-results/performance/2026-11-03-ios-simulator-iphone17pro.{json,html}`.
 
 The linked compact JSON files retain configuration, source, device context and
 per-run summaries. They work as `--baseline` or as the first input to
