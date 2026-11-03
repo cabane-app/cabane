@@ -1,4 +1,3 @@
-import { HomeAssistantActivityTracker } from "./home-assistant-activity";
 import { createSessionStorageSender } from "./home-assistant-storage-session";
 import { getAuth, type Auth, type Connection } from "home-assistant-js-websocket";
 
@@ -240,7 +239,6 @@ export function StandaloneHomeAssistantRuntime({
           return;
         }
         connectionRef.current = connection;
-        const activity = new HomeAssistantActivityTracker();
 
         const refreshRegistries = async () => {
           const [nextAreas, nextDevices, nextEntities] = await Promise.all([
@@ -262,7 +260,6 @@ export function StandaloneHomeAssistantRuntime({
 
         const handleReady = () => {
           if (!isCurrent()) return;
-          activity.reset();
           void refreshRegistries()
             .then(() => {
               if (!isCurrent()) return;
@@ -278,7 +275,6 @@ export function StandaloneHomeAssistantRuntime({
         const handleDisconnected = () => {
           if (!isCurrent()) return;
           schedulerRef.current?.cancelPendingValues();
-          activity.reset();
           setEntityStates((current) => markEntityStatesStale(current));
           updateStatus("reconnecting");
         };
@@ -309,7 +305,7 @@ export function StandaloneHomeAssistantRuntime({
           client.subscribeEntities(connection, (states) => {
             if (isCurrent()) {
               const snapshot = normalizeEntityStates(states, connection.connected === false);
-              setEntityStates(activity.update(snapshot));
+              setEntityStates(snapshot);
             }
           }),
         );

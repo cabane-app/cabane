@@ -5,7 +5,7 @@ import { ToonMaterial } from "./rendering";
 
 const noRaycast = () => undefined;
 
-/** The shared zap impact, also used for brief feedback at a live device. */
+/** Brief electrical impact used by walk-tool shots. */
 export function SceneActivityPulse({
   color,
   delay = 0,
