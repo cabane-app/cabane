@@ -4,8 +4,10 @@ export const WOODEN_GARDEN_SWING_SIZE = [2.2, 2.1, 1.4] as const;
 export function WoodenGardenSwing({
   size = WOODEN_GARDEN_SWING_SIZE,
   variant = "default",
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
   variant?: string;
 }) {
   return (
@@ -20,7 +22,7 @@ export function WoodenGardenSwing({
             name="swing-linen-seat-pad"
             size={[1.18, 0.075, 0.4]}
             position={[0, 0.5975, 0]}
-            color="#dfcfb1"
+            color={color ?? "#dfcfb1"}
             radius={0.03}
           />
           {[-0.36, 0, 0.36].map((x, i) => (

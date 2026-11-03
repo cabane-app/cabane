@@ -2,10 +2,11 @@ import { defineFurnishingModel } from "@cabane/engine";
 import { CustomDiningSet } from "../presets/dining-room/photo-dining-set/dining-set";
 
 export const diningSetDefinition = defineFurnishingModel({
+  defaultColor: "#b58e56",
   defaultRoomType: "dining-room",
-  component: ({ size }) => (
+  component: ({ size, color }) => (
     <group scale={[size[0] / 1.785, size[1] / 1.12, size[2] / 1.785]}>
-      <CustomDiningSet footprintScale={0.88} />
+      <CustomDiningSet footprintScale={0.88} color={color} />
     </group>
   ),
   label: "Dining set",

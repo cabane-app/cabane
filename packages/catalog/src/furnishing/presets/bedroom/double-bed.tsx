@@ -8,8 +8,10 @@ export const DOUBLE_BED_SIZE = [1.7, 1.1, 2.15] as const;
 export function DoubleBed({
   size = DOUBLE_BED_SIZE,
   variant = "default",
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
   variant?: string | undefined;
 }) {
   const cozy = ["cozy-white-blue", "cozy-sage", "cozy-rose", "cozy-oat"].includes(variant);
@@ -31,7 +33,7 @@ export function DoubleBed({
               name="double-bed-padded-headboard"
               size={[1.56, 0.62, 0.07]}
               position={[0, 0.74, -0.985]}
-              color="#d4c6af"
+              color={color ?? "#d4c6af"}
               radius={0.035}
             />
           </>
@@ -66,7 +68,7 @@ export function DoubleBed({
               name="double-bed-duvet"
               size={[1.64, 0.1, 1.48]}
               position={[0, 0.57, 0.27]}
-              color="#ded3c1"
+              color={color ?? "#ded3c1"}
               radius={0.045}
               outlineColor="#a79b87"
             />
@@ -76,7 +78,7 @@ export function DoubleBed({
                 name="double-bed-pillow"
                 size={[0.68, 0.11, 0.39]}
                 position={[x, 0.6, -0.68]}
-                color="#f4f0e6"
+                color={color ?? "#f4f0e6"}
                 radius={0.05}
                 outlineColor="#b6ad9c"
               />
@@ -84,7 +86,7 @@ export function DoubleBed({
           </>
         )}
       </group>
-      {cozy && <CozyWhiteBlueBedding variant={variant} />}
+      {cozy && <CozyWhiteBlueBedding variant={variant} color={color} />}
     </group>
   );
 }

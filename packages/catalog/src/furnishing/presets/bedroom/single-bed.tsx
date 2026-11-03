@@ -8,8 +8,10 @@ export const SINGLE_BED_SIZE = [1, 0.95, 2.1] as const;
 export function SingleBed({
   size = SINGLE_BED_SIZE,
   variant = "default",
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
   variant?: string;
 }) {
   return (
@@ -47,7 +49,7 @@ export function SingleBed({
             name="single-bed-padded-headboard"
             size={[0.9, 0.49, 0.06]}
             position={[0, 0.67, -0.975]}
-            color="#cfc0a8"
+            color={color ?? "#cfc0a8"}
             radius={0.027}
           />
         </>
@@ -61,14 +63,14 @@ export function SingleBed({
         outlineColor="#a8a08e"
       />
       {variant !== "default" ? (
-        <CozySingleBedding variant={variant} />
+        <CozySingleBedding variant={variant} color={color} />
       ) : (
         <>
           <RoundedFurniturePanel
             name="single-bed-duvet"
             size={[0.94, 0.085, 1.48]}
             position={[0, 0.5525, 0.285]}
-            color="#e3d8c4"
+            color={color ?? "#e3d8c4"}
             radius={0.035}
             outlineColor="#a99c85"
           />
@@ -76,7 +78,7 @@ export function SingleBed({
             name="single-bed-pillow"
             size={[0.61, 0.105, 0.36]}
             position={[0, 0.59, -0.69]}
-            color="#f2eee4"
+            color={color ?? "#f2eee4"}
             radius={0.045}
             outlineColor="#b5ac9b"
           />

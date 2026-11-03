@@ -4,7 +4,13 @@ import { RoundedFurniturePanel } from "../construction";
 export const ENTRYWAY_SHOE_BENCH_SIZE = [1, 0.5, 0.38] as const;
 
 /** Padded entry bench with slatted shoe storage below. */
-export function EntrywayShoeBench({ size = ENTRYWAY_SHOE_BENCH_SIZE }: { size?: SceneItemSize }) {
+export function EntrywayShoeBench({
+  size = ENTRYWAY_SHOE_BENCH_SIZE,
+  color,
+}: {
+  size?: SceneItemSize;
+  color?: string | undefined;
+}) {
   return (
     <group
       name="entryway-shoe-bench"
@@ -33,7 +39,7 @@ export function EntrywayShoeBench({ size = ENTRYWAY_SHOE_BENCH_SIZE }: { size?: 
         name="shoe-bench-seat"
         size={[1, 0.12, 0.38]}
         position={[0, 0.44, 0]}
-        color="#d8cbb5"
+        color={color ?? "#d8cbb5"}
         radius={0.035}
       />
     </group>

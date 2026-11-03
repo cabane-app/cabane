@@ -4,7 +4,13 @@ import { RoundedFurniturePanel } from "../construction";
 export const COUNTER_STOOL_SIZE = [0.48, 0.92, 0.5] as const;
 
 /** Oak counter stool with a 65 cm padded seat, low back, and foot rail. */
-export function CounterStool({ size = COUNTER_STOOL_SIZE }: { size?: SceneItemSize }) {
+export function CounterStool({
+  size = COUNTER_STOOL_SIZE,
+  color,
+}: {
+  size?: SceneItemSize;
+  color?: string | undefined;
+}) {
   return (
     <group
       name="counter-stool"
@@ -41,7 +47,7 @@ export function CounterStool({ size = COUNTER_STOOL_SIZE }: { size?: SceneItemSi
         name="counter-stool-seat"
         size={[0.48, 0.1, 0.5]}
         position={[0, 0.65, 0]}
-        color="#d9cbb4"
+        color={color ?? "#d9cbb4"}
         radius={0.045}
       />
       <RoundedFurniturePanel

@@ -1,6 +1,6 @@
 import type { SceneModelProps } from "@cabane/engine";
 import { RoundedFurniturePanel as Panel } from "../construction/rounded-furniture-panel";
-export function SlattedSingleBed({ size }: SceneModelProps) {
+export function SlattedSingleBed({ size, color }: SceneModelProps) {
   return (
     <group
       name="slatted-single-bed"
@@ -29,10 +29,15 @@ export function SlattedSingleBed({ size }: SceneModelProps) {
       <Panel
         size={[0.88, 0.035, 1.55]}
         position={[0, 0.5075, 0.21]}
-        color="#e2c9ce"
+        color={color ?? "#e2c9ce"}
         radius={0.009}
       />
-      <Panel size={[0.7, 0.12, 0.4]} position={[0, 0.54, -0.74]} color="#e5dfcc" radius={0.035} />
+      <Panel
+        size={[0.7, 0.12, 0.4]}
+        position={[0, 0.54, -0.74]}
+        color={color ?? "#e5dfcc"}
+        radius={0.035}
+      />
       <Panel size={[0.025, 0.14, 1]} position={[0.46, 0.6, -0.44]} color="#f0eee8" />
     </group>
   );

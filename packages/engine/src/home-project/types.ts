@@ -77,7 +77,7 @@ interface SceneItemBase {
   lightSlotId?: string;
   /** Local scene appearance only; this never sends Home Assistant commands. */
   lightState?: "always-off" | "always-on" | "night-only" | "connected";
-  /** Optional six-digit hex fabric override; omitted preserves the model palette. */
+  /** Optional six-digit hex color override; omitted preserves the model palette. */
   color?: string;
   /** Omitted values use the model's first variant. */
   variant?: string;

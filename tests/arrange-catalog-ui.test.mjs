@@ -313,62 +313,68 @@ await withModules(async (load) => {
     });
   });
 
-  test("fabric picker preserves defaults and supports saved colors, history, duplication, and reset", async () => {
+  test("item color picker preserves defaults and supports saved colors, history, duplication, and reset", async () => {
     const engine = await load("/packages/engine/src/index.ts");
-    await withDom(async ({ root, document, window }) => {
-      const sofa = ownerHomeProject.sceneItems.find((item) => item.modelId === "sectional-sofa");
-      let editor;
-      function Harness() {
-        editor = useFurnishingEditor([sofa]);
-        return React.createElement(FurnishingInspector, {
-          ...ownerProjectRegistries,
-          items: editor.items,
-          selectedId: sofa.id,
-          onPlacementChange: editor.updatePlacement,
-          onSizeChange: editor.updateSize,
-          onColorChange: editor.updateColor,
-          onClose() {},
+    for (const modelId of ["two-seat-loveseat", "wheelie-bin"]) {
+      await withDom(async ({ root, document, window }) => {
+        const definition = ownerProjectRegistries.furnishingModels[modelId];
+        const selectedItem = {
+          ...ownerHomeProject.sceneItems.find((item) => item.modelId === "sectional-sofa"),
+          modelId,
+          size: definition.defaultSize,
+        };
+        let editor;
+        function Harness() {
+          editor = useFurnishingEditor([selectedItem]);
+          return React.createElement(FurnishingInspector, {
+            ...ownerProjectRegistries,
+            items: editor.items,
+            selectedId: selectedItem.id,
+            onPlacementChange: editor.updatePlacement,
+            onSizeChange: editor.updateSize,
+            onColorChange: editor.updateColor,
+            onClose() {},
+          });
+        }
+        await act(async () => root.render(React.createElement(Harness)));
+        const input = document.querySelector('input[type="color"]');
+        assert.equal(input.value, definition.defaultColor);
+        assert.equal(editor.items[0].color, undefined);
+        await act(async () => {
+          Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(
+            input,
+            "#325a84",
+          );
+          input.dispatchEvent(new window.Event("input", { bubbles: true }));
+          input.dispatchEvent(new window.Event("change", { bubbles: true }));
         });
-      }
-      await act(async () => root.render(React.createElement(Harness)));
-      const definition = ownerProjectRegistries.furnishingModels[sofa.modelId];
-      const input = document.querySelector('input[type="color"]');
-      assert.equal(input.value, definition.defaultColor);
-      assert.equal(editor.items[0].color, undefined);
-      await act(async () => {
-        Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(
-          input,
-          "#325a84",
+        assert.equal(editor.items[0].color, "#325a84");
+        const project = {
+          ...ownerHomeProject,
+          sceneItems: ownerHomeProject.sceneItems.map((item) =>
+            item.id === selectedItem.id ? editor.items[0] : item,
+          ),
+        };
+        assert.equal(engine.parseHomeProject(JSON.stringify(project)).valid, true);
+        assert.equal(engine.validateHomeProject(project, ownerProjectRegistries).valid, true);
+        const invalid = structuredClone(project);
+        invalid.sceneItems.find((item) => item.id === selectedItem.id).color = "red";
+        assert.equal(engine.parseHomeProject(JSON.stringify(invalid)).valid, false);
+        await act(async () => editor.undo());
+        assert.deepEqual(editor.items[0], selectedItem);
+        await act(async () => editor.redo());
+        assert.equal(editor.items[0].color, "#325a84");
+        await act(async () => editor.duplicate(selectedItem.id));
+        assert.equal(editor.items[1].color, "#325a84");
+        assert.notEqual(editor.items[1].id, selectedItem.id);
+        const reset = [...document.querySelectorAll("button")].find(
+          (button) => button.textContent === "Reset color",
         );
-        input.dispatchEvent(new window.Event("input", { bubbles: true }));
-        input.dispatchEvent(new window.Event("change", { bubbles: true }));
+        await act(async () => reset.click());
+        assert.equal(editor.items[0].color, undefined);
+        assert.equal(document.querySelector('input[type="color"]').value, definition.defaultColor);
       });
-      assert.equal(editor.items[0].color, "#325a84");
-      const project = {
-        ...ownerHomeProject,
-        sceneItems: ownerHomeProject.sceneItems.map((item) =>
-          item.id === sofa.id ? editor.items[0] : item,
-        ),
-      };
-      assert.equal(engine.parseHomeProject(JSON.stringify(project)).valid, true);
-      assert.equal(engine.validateHomeProject(project, ownerProjectRegistries).valid, true);
-      const invalid = structuredClone(project);
-      invalid.sceneItems.find((item) => item.id === sofa.id).color = "red";
-      assert.equal(engine.parseHomeProject(JSON.stringify(invalid)).valid, false);
-      await act(async () => editor.undo());
-      assert.deepEqual(editor.items[0], sofa);
-      await act(async () => editor.redo());
-      assert.equal(editor.items[0].color, "#325a84");
-      await act(async () => editor.duplicate(sofa.id));
-      assert.equal(editor.items[1].color, "#325a84");
-      assert.notEqual(editor.items[1].id, sofa.id);
-      const reset = [...document.querySelectorAll("button")].find(
-        (button) => button.textContent === "Reset color",
-      );
-      await act(async () => reset.click());
-      assert.equal(editor.items[0].color, undefined);
-      assert.equal(document.querySelector('input[type="color"]').value, definition.defaultColor);
-    });
+    }
   });
 
   test("light details offer all four states and update the editor", async () => {

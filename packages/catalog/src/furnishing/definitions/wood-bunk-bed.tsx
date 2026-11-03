@@ -1,6 +1,7 @@
 import { defineFurnishingModel } from "@cabane/engine";
 import { WoodBunkBed } from "../presets/children-bedroom/wood-bunk-bed";
 export const woodBunkBedDefinition = defineFurnishingModel({
+  defaultColor: "#647f90",
   component: WoodBunkBed,
   label: "Wood bunk bed",
   category: "Children",

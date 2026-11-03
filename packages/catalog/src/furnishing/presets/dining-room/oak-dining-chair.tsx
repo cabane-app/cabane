@@ -4,7 +4,13 @@ import { CurvedChairBack } from "./curved-chair-back";
 
 export const OAK_DINING_CHAIR_SIZE = [0.49, 0.82, 0.5] as const;
 
-export function OakDiningChair({ size = OAK_DINING_CHAIR_SIZE }: { size?: SceneItemSize }) {
+export function OakDiningChair({
+  size = OAK_DINING_CHAIR_SIZE,
+  color,
+}: {
+  size?: SceneItemSize;
+  color?: string | undefined;
+}) {
   return (
     <group
       name="oak-dining-chair"
@@ -29,7 +35,7 @@ export function OakDiningChair({ size = OAK_DINING_CHAIR_SIZE }: { size?: SceneI
         name="dining-chair-upholstered-seat"
         size={[0.445, 0.045, 0.435]}
         position={[0, 0.4625, 0.0225]}
-        color="#e3d7c2"
+        color={color ?? "#e3d7c2"}
         radius={0.019}
       />
       {[-0.185, 0.185].map((x) => (

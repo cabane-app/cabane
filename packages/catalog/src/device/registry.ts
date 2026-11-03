@@ -481,6 +481,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     complexity: { visibleMeshes: 6, triangles: 900 },
   }),
   "motorized-blind": defineDeviceModel({
+    defaultColor: "#d9d4c6",
     defaultRoomType: "living-room",
     component: MotorizedBlindModel,
     label: "Motorized blind",

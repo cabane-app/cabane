@@ -1,6 +1,7 @@
 import { defineFurnishingModel } from "@cabane/engine";
 import { RoundBandedRug } from "../presets/children-bedroom/round-banded-rug";
 export const roundBandedRugDefinition = defineFurnishingModel({
+  defaultColor: "#dec9bb",
   component: RoundBandedRug,
   label: "Round banded rug",
   category: "Children",

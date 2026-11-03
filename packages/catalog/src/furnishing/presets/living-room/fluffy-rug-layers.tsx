@@ -4,7 +4,7 @@ import { ToonMaterial } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
 
 /** Fine, irregular white pile without a contrasting border or printed motif. */
-export function FluffyRugLayers() {
+export function FluffyRugLayers({ color }: { color?: string | undefined }) {
   const pile = useMemo(() => {
     const geometry = new PlaneGeometry(1.99, 2.99, 80, 120);
     geometry.rotateX(-Math.PI / 2);
@@ -29,12 +29,12 @@ export function FluffyRugLayers() {
         name="area-rug-fluffy-base"
         size={[2, 0.011, 3]}
         position={[0, 0.0055, 0]}
-        color="#ffffff"
+        color={color ?? "#ffffff"}
         radius={0.005}
         outline={false}
       />
       <mesh name="area-rug-fluffy-pile" geometry={pile} receiveShadow>
-        <ToonMaterial color="#ffffff" />
+        <ToonMaterial color={color ?? "#ffffff"} />
       </mesh>
     </>
   );
