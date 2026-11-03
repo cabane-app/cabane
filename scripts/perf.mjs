@@ -169,39 +169,47 @@ async function serveHarness(options) {
     root: repository,
     configFile: false,
     envDir: "/tmp/cabane-no-runtime-env",
-    plugins:
-      options.scenario === "dev-home"
-        ? [
-            {
-              name: "performance-dev-ha-session",
-              configurePreviewServer(server) {
-                server.middlewares.use("/__performance/dev-ha", async (request, response) => {
-                  if (
-                    request.method !== "GET" ||
-                    !/^(127\.0\.0\.1|localhost|\[::1\])(?::\d+)?$/.test(request.headers.host ?? "")
-                  ) {
-                    response.writeHead(403).end("Loopback benchmark only.");
-                    return;
-                  }
-                  try {
-                    const session = await loadDevelopmentHome(repository);
-                    response.writeHead(200, {
-                      "Content-Type": "application/json",
-                      "Cache-Control": "no-store",
-                    });
-                    response.end(JSON.stringify(session));
-                  } catch (error) {
-                    response.writeHead(503, {
-                      "Content-Type": "text/plain",
-                      "Cache-Control": "no-store",
-                    });
-                    response.end(error.message);
-                  }
+    plugins: [
+      {
+        name: "performance-harness-routes",
+        configurePreviewServer(server) {
+          // The fixture enters normal app routes. Reload must return to
+          // this dedicated entry, since this build has no root index.html.
+          server.middlewares.use((request, _response, next) => {
+            if (
+              request.method === "GET" &&
+              /^\/(?:workspaces(?:\/|$)|demo(?:[/?]|$))/.test(request.url ?? "")
+            )
+              request.url = harnessPath;
+            next();
+          });
+          if (options.scenario === "dev-home")
+            server.middlewares.use("/__performance/dev-ha", async (request, response) => {
+              if (
+                request.method !== "GET" ||
+                !/^(127\.0\.0\.1|localhost|\[::1\])(?::\d+)?$/.test(request.headers.host ?? "")
+              ) {
+                response.writeHead(403).end("Loopback benchmark only.");
+                return;
+              }
+              try {
+                const session = await loadDevelopmentHome(repository);
+                response.writeHead(200, {
+                  "Content-Type": "application/json",
+                  "Cache-Control": "no-store",
                 });
-              },
-            },
-          ]
-        : [],
+                response.end(JSON.stringify(session));
+              } catch (error) {
+                response.writeHead(503, {
+                  "Content-Type": "text/plain",
+                  "Cache-Control": "no-store",
+                });
+                response.end(error.message);
+              }
+            });
+        },
+      },
+    ],
     build: { outDir: buildDirectory },
     preview: { host: options.host, port: options.port, strictPort: true },
   });
