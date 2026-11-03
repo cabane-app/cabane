@@ -240,3 +240,29 @@ export function useHomeEditorShortcuts({
     setDragging,
   ]);
 }
+
+export function useEditorSaveShortcut(disabled: boolean, onSave: () => void) {
+  const dom = useCabaneDom();
+  useEffect(() => {
+    const handleSave = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.isComposing ||
+        !(event.metaKey || event.ctrlKey) ||
+        event.altKey ||
+        event.shiftKey ||
+        event.key.toLowerCase() !== "s"
+      )
+        return;
+      event.preventDefault();
+      if (
+        !disabled &&
+        !event.repeat &&
+        !dom.root.querySelector('dialog[open], [aria-modal="true"]')
+      )
+        onSave();
+    };
+    dom.events.addEventListener("keydown", handleSave, true);
+    return () => dom.events.removeEventListener("keydown", handleSave, true);
+  }, [disabled, dom, onSave]);
+}

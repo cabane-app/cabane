@@ -382,7 +382,15 @@ await withModules(async (load) => {
           }),
         ),
       );
-      await act(async () => button("Save").click());
+      await act(async () => {
+        const event = new dom.window.KeyboardEvent("keydown", {
+          key: "s",
+          ctrlKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+        assert.equal(dom.window.dispatchEvent(event), false, "browser Save is prevented");
+      });
       assert.match(dom.window.document.getElementById("publish-title").textContent, /to fix/);
       assert.equal(calls.length, 0, "errors still block publication");
       assert.equal(closed.length, 0);
@@ -399,7 +407,15 @@ await withModules(async (load) => {
         ),
       );
       assert.equal(button("Back").disabled, true, "Back is unavailable before the first save");
-      await act(async () => button("Save").click());
+      await act(async () => {
+        const event = new dom.window.KeyboardEvent("keydown", {
+          key: "s",
+          metaKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+        assert.equal(dom.window.dispatchEvent(event), false, "browser Save is prevented");
+      });
       assert.equal(dom.window.document.querySelector('[aria-labelledby="publish-title"]'), null);
       assert.equal(calls.length, 1);
       assert.equal(button("Back").disabled, true);
