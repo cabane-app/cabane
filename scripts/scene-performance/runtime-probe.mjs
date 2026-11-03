@@ -10,7 +10,7 @@ export async function captureRuntime({
   const state = root.store.getState();
   const { gl, camera, controls } = state;
   if (!camera.isOrthographicCamera || !controls?.target || !state.internal.priority)
-    throw new Error("Open the demo's Orbit view before running the benchmark.");
+    throw new Error("Open the benchmark home's Orbit view before running the benchmark.");
   if (document.visibilityState !== "visible") throw new Error("Keep the benchmark tab visible.");
   const initial = {
     position: camera.position.clone(),

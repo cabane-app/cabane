@@ -1,4 +1,4 @@
-/* global __PERFORMANCE_SOURCE__ */
+/* global __PERFORMANCE_SOURCE__, __PERFORMANCE_SCENARIO__ */
 import "fake-indexeddb/auto";
 import { _roots, addAfterEffect } from "@react-three/fiber";
 import { waitForSceneGeometryLods } from "../packages/engine/src/scene-batching/SceneGeometryLod";
@@ -45,13 +45,16 @@ globalThis.Date = new Proxy(NativeDate, {
     return key === "now" ? () => new NativeDate(fixedTime).getTime() : Reflect.get(target, key);
   },
 });
+const devHome =
+  __PERFORMANCE_SCENARIO__ === "dev-home" ? await import("./performance-dev-home.mjs") : null;
+const preparedHome = devHome ? await devHome.prepareDevelopmentHome() : null;
 await import("../apps/web/src/main.tsx");
 
 const panel = document.createElement("aside");
 panel.className = "perf-panel";
 panel.setAttribute("aria-label", "Performance benchmark");
 panel.innerHTML = `<strong>Performance benchmark</strong>
-  <p>Open <b>Explore the demo</b>. Keep Orbit view and this tab visible.</p>
+  <p>${devHome ? "Repo home · live dev HA · night · cloudy · 10 lights on." : "Open <b>Explore the demo</b>."} Keep Orbit view and this tab visible.</p>
   <label>Device / experiment <input id="perf-label" value="manual" maxlength="100"></label>
   <button id="perf-run">Run benchmark · 3 × 10s</button>
   <p id="perf-status" role="status">Production build · steady camera motion</p>
@@ -68,7 +71,7 @@ const mainRoot = () => {
 const ready = () => {
   const state = mainRoot()?.store.getState();
   return Boolean(
-    location.pathname === "/demo" &&
+    location.pathname === (preparedHome?.path ?? "/demo") &&
     state?.camera.isOrthographicCamera &&
     state.scene.getObjectByName("architecture-scene") &&
     state.controls,
@@ -101,7 +104,7 @@ async function run({ seconds = 10, runs = 3, label = "manual" } = {}) {
     runs > 10
   )
     throw new Error("Use 1–60 seconds and 1–10 runs.");
-  if (!ready()) throw new Error("Open Explore the demo, then return to Orbit view.");
+  if (!ready()) throw new Error("Open the benchmark home in Orbit view.");
   const root = mainRoot();
   const state = root.store.getState();
   const camera = state.camera;
@@ -141,6 +144,7 @@ async function run({ seconds = 10, runs = 3, label = "manual" } = {}) {
     }
     const gl = state.gl.getContext();
     const debug = gl.getExtension("WEBGL_debug_renderer_info");
+    const workload = devHome ? (await devHome.readDevelopmentHome()).workload : null;
     const configuration = {
       build: "production",
       path: "orbit-v1",
@@ -158,19 +162,30 @@ async function run({ seconds = 10, runs = 3, label = "manual" } = {}) {
         target: state.controls.target.toArray(),
         zoom: camera.zoom,
       },
+      ...(workload ? { workload } : {}),
     };
     const results = [];
     for (let index = 0; index < runs; index++) {
-      if (!ready()) throw new Error("Return to the demo's Orbit view and retry.");
+      if (!ready()) throw new Error("Return to the benchmark home's Orbit view and retry.");
       status.textContent = `Run ${index + 1}/${runs} · 3s warmup + ${seconds}s capture`;
       results.push(await captureRuntime({ root, addAfterEffect, seconds, isValid: ready }));
     }
+    if (
+      devHome &&
+      JSON.stringify((await devHome.readDevelopmentHome()).workload) !== JSON.stringify(workload)
+    )
+      throw new Error("HA lights/weather changed during the benchmark. Discard this run.");
+    let activePointLights = 0;
+    state.scene.traverse((object) => {
+      if (object.isPointLight && object.intensity > 0) activePointLights++;
+    });
     const report = {
       schemaVersion: 1,
       measuredAt: new NativeDate().toISOString(),
       label,
       source: __PERFORMANCE_SOURCE__,
       configuration,
+      scene: { activePointLights },
       environment: {
         userAgent: navigator.userAgent,
         platform: navigator.platform,

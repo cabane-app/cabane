@@ -9,6 +9,7 @@ import react from "@vitejs/plugin-react";
 import { chromium } from "playwright-core";
 import { build, preview } from "vite";
 import { compareRuntimeReports, renderRuntimeReport } from "./scene-performance/runtime-report.mjs";
+import { loadDevelopmentHome } from "./scene-performance/development-home.mjs";
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const buildDirectory = resolve(repository, "test-results/performance/build");
@@ -32,13 +33,14 @@ const help = `Usage: npm run perf -- [options]
   --output PATH       JSON report (default: test-results/performance/NAME-TIMESTAMP.json)
   --baseline PATH     Compare with a report from the same machine and configuration
   --profile NAME      mobile (390x844, DPR 3, touch) or desktop (1440x960, DPR 1)
+  --scenario NAME     dev-home (default, live local HA) or demo (old disconnected fixture)
   --cpu-rate N        Chromium CPU slowdown multiplier (default: 1, unthrottled)
   --seconds N         Measured motion per run, excluding warmup (default: 10)
   --runs N            Repetitions (default: 3)
   --headed            Show Chrome while measuring (default: headless)
   --help              Print this help
 
-Usage: npm run perf:serve -- [--host HOST] [--port PORT]
+Usage: npm run perf:serve -- [--host HOST] [--port PORT] [--scenario NAME]
   Build and serve the same production harness for a real phone.
   Default: http://127.0.0.1:4180${harnessPath}
   Use --host 0.0.0.0 explicitly to allow devices on your LAN.
@@ -55,6 +57,7 @@ function parseOptions(args) {
     command: args[0] === "serve" ? args.shift() : "measure",
     label: "baseline",
     profile: "mobile",
+    scenario: "dev-home",
     cpuRate: 1,
     seconds: 10,
     runs: 3,
@@ -66,6 +69,7 @@ function parseOptions(args) {
     "--output": "output",
     "--baseline": "baseline",
     "--profile": "profile",
+    "--scenario": "scenario",
     "--cpu-rate": "cpuRate",
     "--seconds": "seconds",
     "--runs": "runs",
@@ -82,7 +86,7 @@ function parseOptions(args) {
     const key = names[flag];
     const allowed =
       options.command === "serve"
-        ? ["host", "port"].includes(key)
+        ? ["host", "port", "scenario"].includes(key)
         : key && !["host", "port"].includes(key);
     if (!allowed) throw new Error(`Unknown option: ${flag}`);
     const value = args[++index];
@@ -91,6 +95,12 @@ function parseOptions(args) {
   }
   if (!Object.hasOwn(profiles, options.profile))
     throw new Error("--profile must be mobile or desktop.");
+  if (!["dev-home", "demo"].includes(options.scenario))
+    throw new Error("--scenario must be dev-home or demo.");
+  if (options.scenario === "dev-home" && !["127.0.0.1", "localhost", "::1"].includes(options.host))
+    throw new Error(
+      "The live dev HA benchmark must stay on loopback. Use --scenario demo for LAN sharing.",
+    );
   for (const [key, minimum, maximum] of [
     ["cpuRate", 1, 20],
     ["seconds", 1, 60],
@@ -110,8 +120,9 @@ function parseOptions(args) {
   return options;
 }
 
-async function buildHarness(source) {
-  source ??= await sourceMetadata();
+async function buildHarness(source, scenario = "dev-home") {
+  source ??= await sourceMetadata(scenario);
+  if (scenario === "dev-home") await loadDevelopmentHome(repository);
   console.log("Building the production performance harness…");
   await build({
     root: repository,
@@ -122,6 +133,7 @@ async function buildHarness(source) {
     define: {
       __THUMBNAIL_REVISION__: JSON.stringify("performance-harness"),
       __PERFORMANCE_SOURCE__: JSON.stringify(source),
+      __PERFORMANCE_SCENARIO__: JSON.stringify(scenario),
     },
     build: {
       target: "es2022",
@@ -138,17 +150,53 @@ async function serveHarness(options) {
     root: repository,
     configFile: false,
     envDir: "/tmp/cabane-no-runtime-env",
+    plugins:
+      options.scenario === "dev-home"
+        ? [
+            {
+              name: "performance-dev-ha-session",
+              configurePreviewServer(server) {
+                server.middlewares.use("/__performance/dev-ha", async (request, response) => {
+                  if (
+                    request.method !== "GET" ||
+                    !/^(127\.0\.0\.1|localhost|\[::1\])(?::\d+)?$/.test(request.headers.host ?? "")
+                  ) {
+                    response.writeHead(403).end("Loopback benchmark only.");
+                    return;
+                  }
+                  try {
+                    const session = await loadDevelopmentHome(repository);
+                    response.writeHead(200, {
+                      "Content-Type": "application/json",
+                      "Cache-Control": "no-store",
+                    });
+                    response.end(JSON.stringify(session));
+                  } catch (error) {
+                    response.writeHead(503, {
+                      "Content-Type": "text/plain",
+                      "Cache-Control": "no-store",
+                    });
+                    response.end(error.message);
+                  }
+                });
+              },
+            },
+          ]
+        : [],
     build: { outDir: buildDirectory },
     preview: { host: options.host, port: options.port, strictPort: true },
   });
 }
 
-async function sourceMetadata() {
-  const homeFiles = await Promise.all(
-    ["project", "layout", "items"].map((name) =>
-      readFile(resolve(repository, `home/src/${name}.json`), "utf8"),
-    ),
-  );
+async function sourceMetadata(scenario) {
+  const homeFiles =
+    scenario === "dev-home"
+      ? [await readFile(resolve(repository, "home/showcase/furnished.project.json"), "utf8")]
+      : await Promise.all(
+          ["project", "layout", "items"].map((name) =>
+            readFile(resolve(repository, `home/src/${name}.json`), "utf8"),
+          ),
+        );
   return {
     commit: execFileSync("git", ["rev-parse", "HEAD"], {
       cwd: repository,
@@ -168,8 +216,8 @@ async function measure(options) {
   const baseline = options.baseline
     ? JSON.parse(await readFile(resolve(options.baseline), "utf8"))
     : null;
-  const source = await sourceMetadata();
-  await buildHarness(source);
+  const source = await sourceMetadata(options.scenario);
+  await buildHarness(source, options.scenario);
   let server, browser;
   try {
     server = await serveHarness(options);
@@ -249,7 +297,7 @@ async function measure(options) {
 }
 
 async function serve(options) {
-  await buildHarness();
+  await buildHarness(undefined, options.scenario);
   const server = await serveHarness(options);
   const urls = [...(server.resolvedUrls?.local ?? []), ...(server.resolvedUrls?.network ?? [])];
   console.log("Performance harness ready:");

@@ -35,6 +35,7 @@ export default {
         "tests/**/*.test.mjs",
         "tests/*harness.tsx",
         "tests/*harness.mjs",
+        "tests/performance-dev-home.mjs",
         "tests/fixtures/**/*.{ts,tsx}",
         "tests/fixtures/browser-diagnostics-probe.mjs", // Executed in a child test process.
         "tests/*.types.ts",

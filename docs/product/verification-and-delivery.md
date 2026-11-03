@@ -212,7 +212,10 @@ not established by their presence alone.
 
 `npm run perf` measures production-app orbit motion with a mobile viewport and
 Chrome's normal GPU selection, reporting frame-interval percentiles, hitches, CPU submission
-time, and rendering workload. Raw JSON and a visual HTML report are kept in
+time, and rendering workload. It defaults to the checked-in Solstice home with
+live local HA, night lighting, cloudy weather and ten lights on. The private
+temporary session stays under ignored `test-results/`; `--scenario demo` retains
+the old disconnected workload. Raw JSON and a visual HTML report are kept in
 ignored `test-results/performance/`. See the [performance guide](../performance.md)
 for comparisons and physical-phone testing, and the [performance log](../performance-log.md)
 for recorded baselines and improvements. Desktop emulation is not mobile acceptance.

@@ -1,7 +1,8 @@
 # Measuring Cabane performance
 
 Use `npm run perf` before and after a rendering change. It measures the production
-app with the bundled demo, a repeatable moving camera, and a small report. Keep the
+app with the checked-in Casa Solstice development home, live dev HA, a repeatable
+moving camera, and a small report. Keep the
 same scene, settings, browser, and machine for comparisons. Confirm improvements
 on a physical phone before calling them mobile improvements.
 
@@ -23,6 +24,41 @@ The browser also needs time outside application work to produce each frame
 ([rendering performance](https://web.dev/articles/rendering-performance)).
 Do not interpret CPU submission time or `1000 / p95` as GPU time or measured FPS.
 
+Our working 60 Hz target is **frame interval p95 ≤20 ms, p99 ≤33.3 ms, and less
+than 1% of sampled intervals above 33.3 ms**, with average cadence close to 60 FPS.
+The ideal frame budget is 16.7 ms; 20 ms allows for timer precision and scheduling
+variation. CPU submission, draw calls and triangles explain cost; they are
+secondary metrics, not substitutes for smooth interaction.
+
+The `orbit-v1` path directly moves the camera. It does **not** replay touch input,
+picking, gestures, or first-use compilation. Passing this rendering baseline does
+not resolve reports of jank during real camera dragging. The next investigation
+must reproduce that interaction and measure its pacing/latency before claiming
+mobile acceptance. Simulator timings use the host GPU and may hide phone limits.
+
+## Current development scenario
+
+The default `--scenario dev-home` opens
+`home/showcase/furnished.project.json` as a normal connected workspace, not the
+onboarding demo. The one-shot setup uses 27 mapped synthetic HA lights with
+exactly 10 on, night lighting, and a selected HA weather entity reporting
+`cloudy` (not a weather preview). The current source has 239 scene items.
+
+The session and private mappings live only in ignored
+`test-results/performance/dev-ha-session.local.json`. It contains `origin`, a
+temporary `accessToken`, `expiresAt`, `profile`, `lights` and `weather`. The
+fixture source, account and HA workspace remain separate. Use only the loopback
+test HA on `127.0.0.1:8123`; credentials never enter the build or reports.
+Refresh the temporary session when it expires. No benchmark command silently
+changes HA lights or weather: preflight rejects unavailable lights, a count other
+than ten on, or weather other than cloudy. Reports retain only counts and a hash
+of private mappings/state, and verify the workload again after capture.
+
+The cloudy weather override is a one-shot HA state update and resets after an HA
+restart. Night mode is set in the benchmark's memory-only browser preferences.
+The selected weather source is also saved in the existing dev HA workspace.
+No periodic automation or production change is installed.
+
 ## Repeatable local measurements
 
 ```sh
@@ -34,7 +70,8 @@ npm run perf -- --label candidate --baseline test-results/performance/baseline-T
 The default `mobile` profile uses a 390 × 844 CSS-pixel viewport, DPR 3, touch
 input, and Chrome's normal GPU selection (recorded in the report). The production build runs in an isolated browser
 workspace without household data. The harness uses fresh memory-only storage on
-every page load, including preferences, so it always opens this build's demo.
+every page load, including preferences, so it opens this build's repo home with
+the prepared HA mappings and night mode.
 Each of three runs warms up for three seconds,
 then measures ten seconds of the time-based `orbit-v1` camera path. Summary values
 are medians across runs. This measures steady motion, not startup or every editor
@@ -48,6 +85,7 @@ npm run perf -- --label mobile-cpu4 --cpu-rate 4
 npm run perf -- --label longer --seconds 20 --runs 3
 npm run perf -- --label visible --headed
 npm run perf -- --label candidate --output test-results/performance/candidate.json
+npm run perf -- --scenario demo --label old-demo
 ```
 
 Reports contain raw frame samples and source, scene, browser, OS, GPU, viewport,
@@ -76,7 +114,7 @@ initial iPhone 17 Pro / iOS 26.1 baseline and its host hardware.
    Device Hub. Keep the device and Safari visible.
 2. Open `http://127.0.0.1:4180/tests/performance-harness.html` in simulator Safari.
    The simulator can reach the Mac's loopback server directly; no VPN is needed.
-3. Select **Explore the demo**, then **Run benchmark**. Keep Safari's toolbar,
+3. The connected repo home opens directly. Select **Run benchmark**. Keep Safari's toolbar,
    orientation and window visibility consistent. Do not record video or profile
    during the timing run.
 4. Select **Download JSON**, then accept Safari's download prompt. The file is
@@ -113,7 +151,7 @@ rendering performance on a physical device.
 Start the production harness on the development machine:
 
 ```sh
-npm run perf:serve -- --host 0.0.0.0
+npm run perf:serve -- --scenario demo --host 0.0.0.0
 ```
 
 On a phone on the same trusted LAN, open
@@ -121,6 +159,11 @@ On a phone on the same trusted LAN, open
 the demo**, then **Run benchmark** and **Download JSON**. The harness wraps the
 real app; the benchmark controls are absent from the normal product. The page
 must remain visible while measuring. Stop the server when finished.
+
+This LAN command serves the old disconnected demo. The live dev HA scenario
+stays loopback-only so it does not expose its temporary credentials. A real phone
+needs an appropriate authenticated HA/HTTPS route to measure that scenario;
+desktop demo numbers cannot substitute for it.
 
 Use a meaningful label such as `pixel-7-chrome-baseline`. Record the phone model,
 OS/browser version, battery/charging state, and whether the device is cool or hot

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { developmentWorkload } from "../scripts/scene-performance/development-home.mjs";
 import {
   compareRuntimeReports,
   renderRuntimeReport,
@@ -42,6 +43,49 @@ const report = () => ({
   },
   source: { commit: "before", dirty: false, homeHash: "fixture-hash" },
   ...summarizeRuns([run(), run(), run()]),
+});
+
+test("development workload rejects unavailable lights, wrong light count and preview-only weather without exposing mappings", () => {
+  const lights = Array.from({ length: 15 }, (_, i) => `light.private_${i}`);
+  const session = {
+    lights,
+    weather: "weather.private",
+    profile: { entityIdsBySlotId: { private: lights[0] } },
+  };
+  const states = [
+    ...lights.map((entity_id, i) => ({
+      entity_id,
+      state: i < 10 ? "on" : "off",
+      attributes: { brightness: 200 },
+    })),
+    { entity_id: session.weather, state: "cloudy", attributes: { cloud_coverage: 100 } },
+  ];
+  const project = { sceneItems: Array(239).fill({}) };
+  const workload = developmentWorkload(project, session, states);
+  assert.equal(workload.mappedLights, 15);
+  assert.equal(workload.lightsOn, 10);
+  assert.equal(workload.weatherSource, "Home Assistant");
+  assert.ok(!JSON.stringify(workload).includes("private"));
+  assert.throws(
+    () => developmentWorkload(project, { ...session, lights: lights.slice(0, 14) }, states),
+    /15 available/,
+  );
+  assert.throws(
+    () => developmentWorkload(project, { ...session, lights: [lights[0], ...lights] }, states),
+    /distinct/,
+  );
+  const unavailable = structuredClone(states);
+  unavailable[0].state = "unavailable";
+  assert.throws(() => developmentWorkload(project, session, unavailable), /15 available/);
+  const fewerOn = structuredClone(states);
+  fewerOn[0].state = "off";
+  assert.throws(() => developmentWorkload(project, session, fewerOn), /10 mapped lights on/);
+  const clear = structuredClone(states);
+  clear.at(-1).state = "sunny";
+  assert.throws(() => developmentWorkload(project, session, clear), /must report cloudy/);
+  const changed = structuredClone(states);
+  changed[0].attributes.brightness = 100;
+  assert.notEqual(developmentWorkload(project, session, changed).fixtureHash, workload.fixtureHash);
 });
 
 test("runtime summary uses mean callback cadence and nearest-rank frame percentiles", () => {
