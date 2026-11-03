@@ -182,6 +182,14 @@ export const STABLE_MODELS = new Set([
   "compact-car",
   "electric-sedan",
   "pickup-truck",
+  "printer-3d",
+  "paper-printer",
+  "adjustable-desk-lamp",
+  "mini-van",
+  "wallbox",
+  "fireplace",
+  "tripod-television",
+  "clothes-iron",
 ]);
 
 export const extensionHas = (

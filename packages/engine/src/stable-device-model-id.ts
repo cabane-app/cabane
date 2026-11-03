@@ -81,4 +81,12 @@ export type StableDeviceModelId =
   | "pop-up-sprinkler"
   | "motorized-valve"
   | "siren"
-  | "smart-button";
+  | "smart-button"
+  | "printer-3d"
+  | "paper-printer"
+  | "adjustable-desk-lamp"
+  | "mini-van"
+  | "wallbox"
+  | "fireplace"
+  | "tripod-television"
+  | "clothes-iron";

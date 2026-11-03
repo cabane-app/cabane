@@ -518,6 +518,14 @@ await withModules(async (load) => {
       "compact-car",
       "electric-sedan",
       "pickup-truck",
+      "printer-3d",
+      "paper-printer",
+      "adjustable-desk-lamp",
+      "mini-van",
+      "wallbox",
+      "fireplace",
+      "tripod-television",
+      "clothes-iron",
     ]);
     assert.deepEqual([...validationCore.STABLE_MODELS], catalog.STABLE_DEVICE_MODEL_IDS);
     for (const id of catalog.STABLE_DEVICE_MODEL_IDS) {
@@ -526,23 +534,29 @@ await withModules(async (load) => {
       assert.equal(typeof definition.component, "function");
       assert.ok(
         definition.complexity.visibleMeshes <=
-          (["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
-            ? 72
-            : id === "integrated-roller-shutter"
-              ? 35
-              : id === "pergola-string-lights"
-                ? 17
-                : 16),
+          (["printer-3d", "adjustable-desk-lamp", "tripod-television"].includes(id)
+            ? 40
+            : id === "paper-printer"
+              ? 18
+              : ["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
+                ? 72
+                : id === "integrated-roller-shutter"
+                  ? 35
+                  : id === "pergola-string-lights"
+                    ? 17
+                    : 16),
       );
       assert.ok(
         definition.complexity.triangles <=
-          (["compact-car", "electric-sedan", "pickup-truck"].includes(id)
+          (["compact-car", "electric-sedan", "pickup-truck", "mini-van"].includes(id)
             ? 34_000
-            : id === "rattan-bell-pendant"
-              ? 40_000
-              : id === "pergola-string-lights"
-                ? 28_000
-                : 5_000),
+            : ["printer-3d", "wallbox"].includes(id)
+              ? 8_000
+              : id === "rattan-bell-pendant"
+                ? 40_000
+                : id === "pergola-string-lights"
+                  ? 28_000
+                  : 5_000),
       );
       assert.ok(definition.bounds.min.every(Number.isFinite));
       assert.ok(definition.bounds.max.every(Number.isFinite));

@@ -500,6 +500,7 @@ await withModules(async (load) => {
         "garden-shrub",
         "garden-trellis",
         "low-garden-lantern",
+        "mini-van",
         "olive-tree",
         "outdoor-bbq",
         "outdoor-dining-chair",
@@ -522,6 +523,7 @@ await withModules(async (load) => {
         "teak-lounge-chair",
         "teak-lounge-sofa",
         "terracotta-planter",
+        "wallbox",
         "watering-can",
         "wheelie-bin",
         "wooden-garden-swing",
@@ -672,7 +674,16 @@ await withModules(async (load) => {
     assert.equal(filterCatalog(entries, "all", "sectional furniture")[0].kind, "furnishing");
     assert.deepEqual(
       filterCatalog(entries, "office", "").map((entry) => entry.modelId),
-      ["ergonomic-office-chair", "oak-bookshelf", "oak-desk", "smart-power-strip", "table-fan"],
+      [
+        "printer-3d",
+        "adjustable-desk-lamp",
+        "ergonomic-office-chair",
+        "oak-bookshelf",
+        "oak-desk",
+        "paper-printer",
+        "smart-power-strip",
+        "table-fan",
+      ],
     );
     const kitchenCabinetResults = new Set(
       filterCatalog(entries, "kitchen", "kitchen cabinet").map((entry) => entry.modelId),
@@ -703,7 +714,7 @@ await withModules(async (load) => {
     );
     assert.deepEqual(
       filterCatalog(entries, "laundry", "appliances device").map((entry) => entry.modelId),
-      ["tumble-dryer", "washing-machine", "water-heater"],
+      ["clothes-iron", "tumble-dryer", "washing-machine", "water-heater"],
     );
     assert.deepEqual(
       filterCatalog(entries, "kitchen", "appliances device").map((entry) => entry.modelId),

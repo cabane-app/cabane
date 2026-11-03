@@ -35,7 +35,7 @@ await withModules(async (load) => {
   const floor = neutralDemoManifest.floors[0];
   const { stableFurnishingRegistry } = await load("/packages/catalog/src/furnishing/index.ts");
 
-  test("fabric overrides reach mounted curtains and sofas without changing default palettes", async () => {
+  test("color overrides reach mounted furniture and devices without changing default palettes", async () => {
     const colors = ["#325a84", "#c03f68"];
     for (const modelId of [
       "single-window-curtain",
@@ -43,24 +43,24 @@ await withModules(async (load) => {
       "motorized-curtain",
       "three-seat-sofa",
       "sectional-sofa",
+      "mini-van",
     ]) {
-      const definition = (
-        modelId === "motorized-curtain" ? stableDeviceRegistry : stableFurnishingRegistry
-      )[modelId];
+      const isDevice = Object.hasOwn(stableDeviceRegistry, modelId);
+      const definition = (isDevice ? stableDeviceRegistry : stableFurnishingRegistry)[modelId];
       const item = {
         id: modelId,
         floorId: floor.id,
         modelId,
         size: definition.defaultSize,
         placement: { kind: "absolute", at: [2, 2], elevationMeters: 0, rotationYRadians: 0 },
-        ...(modelId === "motorized-curtain"
+        ...(isDevice
           ? {
               kind: "device",
               entitySlots: [
                 {
-                  id: "curtain-cover",
-                  presentation: { label: "Curtain", dashboardRole: "primary" },
-                  compatibleDomains: ["cover"],
+                  id: `${modelId}-primary`,
+                  presentation: { label: definition.label, dashboardRole: "primary" },
+                  compatibleDomains: definition.supportedDomains,
                   deviceRole: "primary",
                   autoMap: "manual",
                 },
@@ -89,11 +89,28 @@ await withModules(async (load) => {
         return found.sort();
       };
       const original = meshColors();
-      for (const color of colors) {
+      const vanMeshes = () =>
+        renderer.scene.findAll((node) => node.type === "Mesh").map((node) => node.instance);
+      const vanGeometry = modelId === "mini-van" ? vanMeshes().map((mesh) => mesh.geometry) : [];
+      const fixedVanColors =
+        modelId === "mini-van"
+          ? original.filter((color) => color !== definition.defaultColor.slice(1))
+          : [];
+      for (const color of modelId === "mini-van" ? [...colors, "#496874"] : colors) {
         await renderer.update(
           createElement(SceneItemRenderer, { ...props, item: { ...item, color } }),
         );
         assert.ok(meshColors().includes(color.slice(1)), modelId);
+        if (modelId === "mini-van") {
+          assert.deepEqual(
+            vanMeshes().map((mesh) => mesh.geometry),
+            vanGeometry,
+            "recolor reuses geometry",
+          );
+          const changed = meshColors();
+          changed.splice(changed.indexOf(color.slice(1)), 1);
+          assert.deepEqual(changed, fixedVanColors, "glass, trim and wheels keep their finish");
+        }
       }
       await renderer.update(createElement(SceneItemRenderer, props));
       assert.deepEqual(meshColors(), original, `${modelId}: reset restores exact palette`);
