@@ -420,6 +420,12 @@
                                       "const": "strip"
                                     }
                                   },
+                                  "maxSpacingMeters": {
+                                    "optional": true,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
                                   "samples": {
                                     "optional": false,
                                     "schema": {
@@ -495,6 +501,12 @@
                                   }
                                 ],
                                 "elementFlags": [1, 1, 1]
+                              }
+                            },
+                            "maxSpacingMeters": {
+                              "optional": true,
+                              "schema": {
+                                "type": "number"
                               }
                             },
                             "samples": {
@@ -3437,6 +3449,12 @@
                                     "const": "strip"
                                   }
                                 },
+                                "maxSpacingMeters": {
+                                  "optional": true,
+                                  "schema": {
+                                    "type": "number"
+                                  }
+                                },
                                 "samples": {
                                   "optional": false,
                                   "schema": {
@@ -3512,6 +3530,12 @@
                                 }
                               ],
                               "elementFlags": [1, 1, 1]
+                            }
+                          },
+                          "maxSpacingMeters": {
+                            "optional": true,
+                            "schema": {
+                              "type": "number"
                             }
                           },
                           "samples": {

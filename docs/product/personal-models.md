@@ -96,7 +96,10 @@ separate work. Positions and strip endpoints are metres in normalized support
 space, after the import's orientation and size corrections. Instance rotation and
 uniform resizing transform source positions and range alongside the model.
 Total intensity is shared between sources, then between each strip's samples,
-including both endpoints. Sample counts are explicit and survive endpoint edits.
+including both endpoints. Fixed sample counts are explicit and survive endpoint
+edits. Adaptive strips may additionally declare a maximum world-space spacing;
+the runtime derives a per-instance sample request from the transformed length,
+keeping the authored count as a minimum.
 
 There is no eight-point logical model limit or source-discarding floor cutoff.
 The shared [execution policy](model-lighting.md#rendering) approximates all active

@@ -24,6 +24,20 @@ await withModules(async (load) => {
     assert.deepEqual(ids.sort(), [...catalog.STABLE_DEVICE_MODEL_IDS].sort());
   });
 
+  test("the under-cabinet LED strip uses adaptive full-length lighting", () => {
+    const definition = catalog.stableDeviceRegistry["under-cabinet-led-strip"];
+    assert.equal(definition.sceneLight, undefined);
+    assert.deepEqual(definition.lighting.sources, [
+      {
+        kind: "strip",
+        start: [-0.492, 0.002, 0],
+        end: [0.492, 0.002, 0],
+        samples: 2,
+        maxSpacingMeters: engine.DEFAULT_STRIP_MAX_SPACING_METERS,
+      },
+    ]);
+  });
+
   test("microwave glass and controls sit clearly ahead of their backing surfaces", async () => {
     for (const visualState of [
       "connected-active",
@@ -224,6 +238,7 @@ await withModules(async (load) => {
     "table-lamp",
     "rattan-bell-pendant",
     "round-globe-wall-lamp",
+    "smoked-globe-wall-light",
     "wall-reading-spot",
     "oak-wall-uplight",
     "six-globe-ceiling-lamp",
@@ -437,6 +452,7 @@ await withModules(async (load) => {
       "floor-lamp",
       "rattan-bell-pendant",
       "round-globe-wall-lamp",
+      "smoked-globe-wall-light",
       "wall-reading-spot",
       "oak-wall-uplight",
       "six-globe-ceiling-lamp",

@@ -17,9 +17,12 @@ entity IDs enter these declarations.
 Add points and LED strips to the same source list. Authored logical sources have
 no per-model point limit or per-floor cutoff. Physical illumination uses the
 bounded approximation described below. Duplicate source makes an offset copy, useful for
-repeated shelves. Each strip has its own start, end and sample count. Fit along
-model spans the longest model axis without replacing the chosen count. Suggest
-sample count estimates a count from its length; moving endpoints preserves it.
+repeated shelves. Each strip has its own start, end and explicit sample count.
+Adaptive strips may also declare a maximum physical spacing; the engine derives
+the requested count after instance transforms so a longer copy receives more
+emitters without rewriting the authored minimum. Fit along model spans the
+longest model axis without replacing the chosen count. Suggest sample count
+estimates a fixed count from its length; moving endpoints preserves it.
 Total brightness is shared equally between logical sources, then between the
 samples of each strip. Increasing samples smooths coverage without increasing
 that strip's total brightness.
@@ -62,7 +65,8 @@ Explicit source lists contain point and strip declarations in normalized support
 space. Legacy single-point, multiple-point and single-strip declarations remain
 readable without migration. Editing source layouts writes the explicit form.
 Normalization, instance resizing and rotation transform every source and strip
-endpoint consistently. Older clients reject unsupported fields rather than
+endpoint consistently. Adaptive maximum spacing is measured after those
+transforms, in world metres. Older clients reject unsupported fields rather than
 stripping them.
 
 ## Rendering
@@ -86,8 +90,8 @@ the lighting editor and runtime. Each preview and active floor has a budget of
 or customized copies share the floor budget. Sample counts are requests for
 spatial resolution, not array sizes or guaranteed physical light counts. Saved
 logical sources, counts, connections and total brightness are never truncated or
-rewritten. Legacy point, points and strip forms use the same policy. Portable
-types and migrations are unchanged. Manifest validation imposes no separate
+rewritten. Legacy point, points and strip forms use the same policy. No schema-version
+change or data migration is required. Manifest validation imposes no separate
 per-model emitter count limit and accepts empty, glow-only, zero-brightness and
 zero-range output. Four strips with four samples remain sixteen physical lights
 when the shared budget permits.

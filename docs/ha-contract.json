@@ -1,9 +1,9 @@
 {
   "revision": 33,
-  "fingerprint": "884514262f8fe3e458eaf7483dafb667e69b36d15fa84f8ffb207253f2ee8bed",
-  "summary": "Support custom image wall finishes",
+  "fingerprint": "380926c2e6b4c889a7f82bc6fc982f88e2d98e541fcef0df391c4c7a752f88cf",
+  "summary": "Add per-face wall tiles, wallpaper and custom images",
   "breakingChanges": [
-    "Homes using embedded custom wall images require this updated frontend and matching Home Assistant panel. Existing paint and generated patterns remain compatible. Images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
+    "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
   ],
   "history": [
     {
@@ -225,9 +225,9 @@
     },
     {
       "revision": 32,
-      "summary": "Add generated per-face wall tiles and wallpaper",
+      "summary": "Adapt linear model lighting to transformed instance length",
       "breakingChanges": [
-        "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Older clients retain the unsupported-field recovery path. Existing paint-only homes need no migration; HA workspace storage preserves the nested finishes."
+        "Adaptive maxSpacingMeters on strip sources requires the matching frontend and Home Assistant panel. Existing fixed-sample strips remain supported without migration."
       ]
     }
   ],
