@@ -72,7 +72,7 @@ export const poolWorldRing = (
 ): [number, number][] => polygon.map((point) => [...planPointToWorld(point, coordinates)]);
 
 /** Round-joined outward buffer. Boolean union handles concave corners without crossed miters. */
-const bufferedPoolFootprint = (
+export const bufferedPoolFootprint = (
   polygon: Polygon,
   coordinates: FloorCoordinates,
   width: number,
@@ -174,7 +174,8 @@ export function poolVerticalLayout(pool: PoolSpec) {
   const lift = raised ? height : 0;
   return {
     height,
-    bottom: raised ? POOL_GROUND_Y : POOL_GROUND_Y - height,
+    // Above-ground basins keep an opaque floor above the intact terrain.
+    bottom: raised ? POOL_GROUND_Y + 0.025 : POOL_GROUND_Y - height,
     rim: POOL_RIM_BASE_Y + lift,
     water: POOL_WATER_Y + lift,
   };

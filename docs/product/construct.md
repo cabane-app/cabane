@@ -473,8 +473,12 @@ windows. These instanced shells have no rooms, devices, selection or Walk surfac
 and never appear in floor navigation. Plan views omit them; ordinary camera framing
 continues to use only the real floors. The decorative ground sits below the stack.
 
-Pools default to **In-ground** with an editable depth. Select **Above-ground (wood)**
+Pools use the same thumbnail-card picker as boundaries and the shared length input
+with increment/decrement buttons. They default to **In-ground** with an editable
+depth. Select **Above-ground (wood)**
 for a raised timber pool with horizontal boards, upright braces and wooden coping.
 Height (above ground) or depth (in ground) is editable from 0.3 to 5 m and defaults
 to 1.5 m. Both types retain the drawn outline and support move, reshape, undo and
-redo. Above-ground pools leave the terrain intact beneath them.
+redo. Above-ground pools leave the terrain intact beneath them. Their liner floor
+sits above the ground, the timber shell stays clear of the liner, and the coping
+projects beyond the shell and uprights.

@@ -218,7 +218,9 @@ await withModules(async (load) => {
       );
       assert.match(markup, /Pool corner 1 X/);
       assert.match(markup, /Perimeter/);
-      assert.match(markup, /Pool type/);
+      assert.match(markup, /Pool types/);
+      assert.doesNotMatch(markup, /<select/);
+      assert.match(markup, /Increase Pool depth/);
       assert.match(markup, /Pool depth/);
       act(() => editor.configurePool(editor.draft.pools[0].id, "above-ground-wood", 1.2));
       assert.equal(editor.previewFloor.pools[0].heightMeters, 1.2);

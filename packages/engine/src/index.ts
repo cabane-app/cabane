@@ -12,6 +12,7 @@ export * from "./room-types";
 export * from "./devices";
 export * from "./geometry";
 export * from "./pools/pool-footprint";
+export { PoolTypePreview } from "./pools/PoolTypePreview";
 export * from "./floor-finishes";
 export * from "./opening-orientation";
 export * from "./architecture-geometry";

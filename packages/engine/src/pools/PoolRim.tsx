@@ -17,7 +17,20 @@ export function PoolRim({ pool, coordinates }: { pool: PoolSpec; coordinates: Fl
       castShadow
       receiveShadow
     >
-      <extrudeGeometry args={[shapes, { depth: 0.1, bevelEnabled: false }]} />
+      <extrudeGeometry
+        args={[
+          shapes,
+          {
+            depth: pool.type === "above-ground-wood" ? 0.075 : 0.1,
+            bevelEnabled: pool.type === "above-ground-wood",
+            bevelSize: 0.008,
+            bevelOffset: -0.008,
+            bevelThickness: 0.008,
+            bevelSegments: 1,
+            steps: 1,
+          },
+        ]}
+      />
       <ToonMaterial color={pool.type === "above-ground-wood" ? "#c99a52" : "#e2d9c6"} />
     </mesh>
   );

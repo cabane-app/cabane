@@ -596,10 +596,6 @@
 }
 .construction-inspector button,
 .furnishing-editor-inspector button,
-.construction-inspector label.pool-type-field,
-.selection-details label.pool-type-field {
-  grid-template-columns: minmax(0, 1fr);
-}
 .construction-inspector input,
 .furnishing-editor-inspector input {
   font-family: inherit;
@@ -697,6 +693,10 @@
   gap: 10px;
   color: var(--preview-muted);
   font-size: var(--editor-text-control, 0.875rem);
+}
+.construction-inspector label.pool-size-field,
+.selection-details label.pool-size-field {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 140px);
 }
 .construction-inspector input,
 .construction-inspector select,
