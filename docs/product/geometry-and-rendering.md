@@ -246,6 +246,9 @@ while interior ceiling heights and opening dimensions remain authored values.
 The shared stylized renderer uses opaque toon batching and cached automatic
 meshoptimizer LOD in Orbit, Walk, and Arrange. Static transforms/colors are baked
 into persistent batch buffers; camera LOD and fading changes retain those buffers.
+Procedural geometry constructor inputs stay stable across live-state and appearance
+updates. Shape dimensions rebuild their geometry; unchanged parts retain their
+picking buffers and prepared LODs.
 Moving/recolored and incompatible meshes retain ordinary draws. Source meshes
 remain the picking surface, and existing InstancedMesh objects retain all instances.
 LOD simplification runs in a worker; unavailable workers keep full detail.

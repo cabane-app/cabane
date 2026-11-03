@@ -12,6 +12,60 @@ await withModules(async (load) => {
   const { SceneItemRenderer, validateHomeProject } = await load("/packages/engine/src/index.ts");
   const { ownerProjectRegistries } = await load("/apps/web/src/project-runtime.ts");
   const { stableFurnishingRegistry } = await load("/packages/catalog/src/furnishing/index.ts");
+  const { OutdoorBasin } = await load(
+    "/packages/catalog/src/furnishing/presets/outdoor/outdoor-basin.tsx",
+  );
+
+  test("live rerenders retain procedural buffers instead of invalidating whole-scene batches", async () => {
+    const replaced = [];
+    for (const modelId of [
+      "curved-three-seat-sofa",
+      "oak-dining-chair",
+      "leafy-planter",
+      "outdoor-fire-pit",
+      "flower-pot",
+    ]) {
+      const definition = stableFurnishingRegistry[modelId];
+      const props = () => ({ size: [...definition.defaultSize], entityStatesBySlotId: {} });
+      const renderer = await create(createElement(definition.component, props()));
+      try {
+        const originals = new Map();
+        renderer.scene.instance.traverse((object) => {
+          if (object.isMesh) originals.set(object, object.geometry);
+        });
+        await renderer.update(createElement(definition.component, props()));
+        renderer.scene.instance.traverse((object) => {
+          if (object.isMesh && originals.get(object) !== object.geometry)
+            replaced.push(`${modelId}: ${object.name}`);
+        });
+      } finally {
+        await renderer.unmount();
+      }
+    }
+    assert.deepEqual(replaced, [], "unchanged shapes must retain picking and LOD buffers");
+    const basin = (radius, color) =>
+      createElement(OutdoorBasin, {
+        name: "basin",
+        radius,
+        height: 0.4,
+        color,
+        position: [0, 0, 0],
+      });
+    const renderer = await create(basin(0.25, "red"));
+    try {
+      const mesh = renderer.scene.instance.getObjectByName("basin");
+      const geometry = mesh.geometry;
+      await renderer.update(basin(0.25, "blue"));
+      assert.equal(mesh.geometry, geometry, "appearance updates retain the shape");
+      assert.equal(mesh.material.color.getHexString(), "0000ff");
+      await renderer.update(basin(0.5, "blue"));
+      assert.notEqual(mesh.geometry, geometry, "dimension changes rebuild the shape");
+      mesh.geometry.computeBoundingBox();
+      assert.ok(Math.abs(mesh.geometry.boundingBox.max.x - 0.5) < 1e-6);
+    } finally {
+      await renderer.unmount();
+    }
+  });
 
   test("every built-in furnishing renders independent height changes", async () => {
     for (const [modelId, definition] of Object.entries(stableFurnishingRegistry)) {
