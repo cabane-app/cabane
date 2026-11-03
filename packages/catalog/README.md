@@ -1,5 +1,40 @@
 # Cabane model catalog
 
+## Mailboxes and utility fixtures
+
+These connectable devices are available in Arrange and searchable in All items.
+Dimensions are inferred generic proportions, not manufacturer measurements.
+The electrical panel takes its lime-green casing, display and buttons from the
+Linky style without claiming an exact product replica.
+
+| Model ID              | Public component    | Size, width × height × depth                  | Arrange room → category |
+| --------------------- | ------------------- | --------------------------------------------- | ----------------------- |
+| `french-wall-mailbox` | `FrenchWallMailbox` | 30 × 40 × 16 cm                               | Entryway → Utility      |
+| `us-mailbox`          | `UsMailbox`         | 28 × 130 × 50 cm, including post and red flag | Outdoor → Outdoor       |
+| `electrical-panel`    | `ElectricalPanel`   | 20 × 32 × 10 cm                               | Laundry → Household     |
+| `kitchen-hood`        | `KitchenHood`       | 60 × 70 × 50 cm                               | Kitchen → Kitchen       |
+| `external-ac-unit`    | `ExternalAcUnit`    | 80 × 60 × 32 cm, including feet and grille    | Outdoor → Household     |
+
+The kitchen hood is one item with **Chimney canopy** (`chimney-canopy`, default)
+and **Inclined glass** (`inclined-glass`) variants sharing the same envelope.
+The two mailboxes remain independently placeable. All five models support independent width, height, and depth resizing. Their components and corresponding `*_SIZE` constants are
+exported from `@cabane/catalog/furnishing`. Device adapters ending in `Model`
+are exported from `@cabane/catalog/device`.
+
+Adding any of these items creates a fresh manual primary slot accepting `switch`,
+`input_boolean`, or `binary_sensor`. Connect a switch or helper for on/off controls,
+or an opening sensor for read-only open/closed status according to its Home
+Assistant device class. Sensor bindings do not gain control commands. Both hood
+variants keep the same capabilities. Additional readings use the normal secondary
+slots. Geometry remains static; the device module shows state and connectivity.
+Previously saved furnishing instances remain readable; re-add them from Arrange
+to get the connectable device version. No household connections are included.
+
+Wall models use Y=0 at their bottom and Z=0 at their back, facing +Z. Set their
+elevation for the intended mounting height. The US mailbox and external AC use
+a floor-contact origin at Y=0 and centered X/Z bounds. Outdoor is a browsing
+default; both can also be placed indoors, including a review room.
+
 ## Demo lounge media
 
 The existing `speaker` preset is a 26 × 39 × 26 cm media-player device. Its
