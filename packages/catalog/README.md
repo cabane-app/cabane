@@ -1,5 +1,40 @@
 # Cabane model catalog
 
+## Mailboxes and utility fixtures
+
+These connectable devices are available in Arrange and searchable in All items.
+Dimensions are inferred generic proportions, not manufacturer measurements.
+The electrical panel takes its lime-green casing, display and buttons from the
+Linky style without claiming an exact product replica.
+
+| Model ID              | Public component    | Size, width × height × depth                  | Arrange room → category |
+| --------------------- | ------------------- | --------------------------------------------- | ----------------------- |
+| `french-wall-mailbox` | `FrenchWallMailbox` | 30 × 40 × 16 cm                               | Entryway → Utility      |
+| `us-mailbox`          | `UsMailbox`         | 28 × 130 × 50 cm, including post and red flag | Outdoor → Outdoor       |
+| `electrical-panel`    | `ElectricalPanel`   | 20 × 32 × 10 cm                               | Laundry → Household     |
+| `kitchen-hood`        | `KitchenHood`       | 60 × 70 × 50 cm                               | Kitchen → Kitchen       |
+| `external-ac-unit`    | `ExternalAcUnit`    | 80 × 60 × 32 cm, including feet and grille    | Outdoor → Household     |
+
+The kitchen hood is one item with **Chimney canopy** (`chimney-canopy`, default)
+and **Inclined glass** (`inclined-glass`) variants sharing the same envelope.
+The two mailboxes remain independently placeable. All five models support independent width, height, and depth resizing. Their components and corresponding `*_SIZE` constants are
+exported from `@cabane/catalog/furnishing`. Device adapters ending in `Model`
+are exported from `@cabane/catalog/device`.
+
+Adding any of these items creates a fresh manual primary slot accepting `switch`,
+`input_boolean`, or `binary_sensor`. Connect a switch or helper for on/off controls,
+or an opening sensor for read-only open/closed status according to its Home
+Assistant device class. Sensor bindings do not gain control commands. Both hood
+variants keep the same capabilities. Additional readings use the normal secondary
+slots. Geometry remains static; the device module shows state and connectivity.
+Previously saved furnishing instances remain readable; re-add them from Arrange
+to get the connectable device version. No household connections are included.
+
+Wall models use Y=0 at their bottom and Z=0 at their back, facing +Z. Set their
+elevation for the intended mounting height. The US mailbox and external AC use
+a floor-contact origin at Y=0 and centered X/Z bounds. Outdoor is a browsing
+default; both can also be placed indoors, including a review room.
+
 ## Demo lounge media
 
 The existing `speaker` preset is a 26 × 39 × 26 cm media-player device. Its
@@ -873,6 +908,9 @@ not stored in Git.
 Reusable bedroom, dining, balcony, bathroom and kitchen models extend the shared
 catalog without importing apartment placements or private assets. Square cube
 storage offers two- and four-compartment variants behind one frame and descriptor.
+The wood bunk bed (`wood-bunk-bed`, 101.5 × 160 × 208 cm) offers right-side,
+left-side, front-end and back-end ladder variants. All four share the same
+placement envelope and independent axis resizing.
 The existing potted plant gains a white-pot variant without changing its default.
 
 Bathroom definitions are grouped by fixtures, storage and lighting. They retain
@@ -954,3 +992,65 @@ resizable independently along its width and length. Casa Solstice uses a
 
 The garden swing offers a Cozy variant with a linen seat pad and three sage/clay
 cushions. Its original bare-timber variant remains available.
+
+## Workshop, utility and living-room devices
+
+These eight independently placeable presets are available in Arrange and All items.
+Each receives a fresh manual primary slot. Printers, minivan, wallbox, fireplace
+and iron accept `switch`, `sensor` or `binary_sensor`: switches use existing on/off
+controls, while readings remain read-only. The fireplace also accepts `light` for
+its native illumination. The lamp uses the standard `light`
+profile, brightness-responsive glow and engine-owned warm illumination. The tripod
+TV preserves the television camera, media-player and switch profiles, live camera
+surface, animated picture, and reduced-motion behavior. No vendor-specific
+printer, vehicle or charger commands are added.
+
+Dimensions below are inferred generic envelopes in **width × depth × height cm**,
+including cables, mirrors, trays, feet and other protrusions. The adjustable lamp
+uses the supplied [reference image](https://reviewepedia.com/wp-content/uploads/2026/02/16.jpg)
+for its white spring-balanced construction, not verified manufacturer dimensions.
+All other designs are generic. Code sizes use [width, height, depth] metres.
+
+| Model ID               | Public component          | Dimensions (cm)    | Arrange room / category |
+| ---------------------- | ------------------------- | ------------------ | ----------------------- |
+| `printer-3d`           | `Printer3DModel`          | 48 × 48 × 60       | Office / Appliances     |
+| `paper-printer`        | `PaperPrinterModel`       | 44 × 42 × 25       | Office / Electronics    |
+| `adjustable-desk-lamp` | `AdjustableDeskLampModel` | 22 × 56.32 × 71.34 | Office / Lighting       |
+| `mini-van`             | `MiniVanModel`            | 216 × 490 × 186    | Outdoor / Vehicles      |
+| `wallbox`              | `WallboxModel`            | 30 × 22.25 × 80    | Outdoor / Utilities     |
+| `fireplace`            | `FireplaceModel`          | 140 × 50 × 120     | Living room / Climate   |
+| `tripod-television`    | `TripodTelevisionModel`   | 110 × 40 × 75      | Living room / Media     |
+| `clothes-iron`         | `ClothesIronModel`        | 12 × 32 × 14.4     | Laundry / Appliances    |
+
+Components and matching size constants are exported from `@cabane/catalog/device`.
+The lamp and tripod TV resize proportionally; the others retain fixed dimensions.
+The TV uses a short tabletop tripod, with the screen 12 cm above its supporting
+surface. Place it on furniture by setting Elevation to the furniture top height.
+Floor and surface items start at Y=0, have centered X/Z footprints, and face +Z.
+Wallbox and fireplace instead place their back at Z=0. Mount the wallbox with its
+cable bottom at the desired elevation; the fireplace hearth belongs at floor level.
+The wallbox and minivan also allow indoor garage placement. The lamp articulation
+is a fixed working pose. The minivan's Color picker changes the painted body while preserving glass, trim
+and wheels. Reset color restores sage. The fireplace's stylized flames follow its
+connected on-state or Scene state → Always on, with warm engine-owned light.
+Always off hides the fire, and reduced motion keeps its flames static. Other new utility devices use status or display
+feedback without implying continuous mechanical activity.
+
+## Item colors
+
+Arrange Details exposes **Color** and **Reset color** for native textile models:
+upholstered sofas, armchairs, footstools, padded chairs and benches, beds and
+crib bedding, rugs, loose cushions, parasols, awnings, towels, ironing-board
+covers, changing pads and the fabric bin in cube storage. Outdoor teak lounge
+seating and pool loungers use the same control. Motorized curtains and fabric
+roller blinds also support it.
+
+The optional six-digit hex `color` targets the main fabric. Wood, metal, wicker,
+decorative throw cushions, accent blankets, rug motifs and fringe keep their
+finishes. On garden benches and swings, color affects the padded variants;
+selecting a bare timber variant does not add a cushion. Reset removes the
+override and restores the selected variant's original palette.
+
+The wheelie bin uses the same field for its body, lid and molded front foot.
+Its wheels and rear handle keep their dark finish. No additional color channels
+or project fields are introduced.

@@ -112,6 +112,71 @@ await withModules(async (load) => {
     }
   }
 
+  test("Issues identifies named walls and openings on their floor and keeps Locate targets stable", async () => {
+    await withDom(async (root, document) => {
+      const floorId = "upper-floor";
+      const issues = [
+        { kind: "wall", id: acceptedFloor.walls[0].id },
+        { kind: "opening", id: acceptedFloor.openings[0].id },
+      ].map((target) => ({
+        code: "opening.containment",
+        path: target.kind,
+        severity: "error",
+        source: "project",
+        message: "The opening does not fit in its wall.",
+        suggestion: "Reduce its width.",
+        floorId,
+        target,
+      }));
+      const selected = [];
+      function Harness({ prefix }) {
+        const project = {
+          ...ownerHomeProject,
+          floors: [
+            acceptedFloor,
+            {
+              ...acceptedFloor,
+              id: floorId,
+              walls: acceptedFloor.walls.map((wall) => ({
+                ...wall,
+                name: prefix && `${prefix} wall`,
+              })),
+              openings: acceptedFloor.openings.map((opening) => ({
+                ...opening,
+                name: prefix && `${prefix} door`,
+              })),
+            },
+          ],
+        };
+        const repairs = useEditorIssueRepairs({ ...registries, editorProject: project });
+        return React.createElement(EditorValidationPanel, {
+          issues,
+          expanded: true,
+          itemLabel: repairs.itemLabel,
+          onSelect: (issue) => selected.push(issue),
+        });
+      }
+      for (const prefix of ["Kitchen", "Garden", undefined]) {
+        await act(async () => root.render(React.createElement(Harness, { prefix })));
+        const rows = [...document.querySelectorAll("li")];
+        for (const [index, row] of rows.entries()) {
+          const issue = issues[index];
+          const name = prefix && `${prefix} ${index === 0 ? "wall" : "door"}`;
+          if (name)
+            assert.ok(row.querySelector(".editor-issues__message").textContent.includes(name));
+          const button = row.querySelector("button");
+          assert.ok(
+            button
+              .getAttribute("aria-label")
+              .startsWith(`Locate ${issue.target.kind} ${name || issue.target.id}:`),
+          );
+          await act(async () => button.click());
+        }
+      }
+      assert.deepEqual(selected, [...issues, ...issues, ...issues]);
+    });
+  });
+
   test("Arrange refuses unsupported moves and resizes without changing the draft or history", async () => {
     await withDom(async (root) => {
       const initial = brokenItem();

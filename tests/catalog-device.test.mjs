@@ -24,6 +24,20 @@ await withModules(async (load) => {
     assert.deepEqual(ids.sort(), [...catalog.STABLE_DEVICE_MODEL_IDS].sort());
   });
 
+  test("the under-cabinet LED strip uses adaptive full-length lighting", () => {
+    const definition = catalog.stableDeviceRegistry["under-cabinet-led-strip"];
+    assert.equal(definition.sceneLight, undefined);
+    assert.deepEqual(definition.lighting.sources, [
+      {
+        kind: "strip",
+        start: [-0.492, 0.002, 0],
+        end: [0.492, 0.002, 0],
+        samples: 2,
+        maxSpacingMeters: engine.DEFAULT_STRIP_MAX_SPACING_METERS,
+      },
+    ]);
+  });
+
   test("microwave glass and controls sit clearly ahead of their backing surfaces", async () => {
     for (const visualState of [
       "connected-active",
@@ -224,6 +238,7 @@ await withModules(async (load) => {
     "table-lamp",
     "rattan-bell-pendant",
     "round-globe-wall-lamp",
+    "smoked-globe-wall-light",
     "wall-reading-spot",
     "oak-wall-uplight",
     "six-globe-ceiling-lamp",
@@ -232,6 +247,11 @@ await withModules(async (load) => {
     "clip-reading-lamp",
     "woven-pendant",
     "children-pendant",
+    "french-wall-mailbox",
+    "us-mailbox",
+    "electrical-panel",
+    "kitchen-hood",
+    "external-ac-unit",
     "computer-fan",
     "ventilation-fan",
   ];
@@ -439,6 +459,7 @@ await withModules(async (load) => {
       "floor-lamp",
       "rattan-bell-pendant",
       "round-globe-wall-lamp",
+      "smoked-globe-wall-light",
       "wall-reading-spot",
       "oak-wall-uplight",
       "six-globe-ceiling-lamp",
@@ -506,6 +527,20 @@ await withModules(async (load) => {
       "compact-car",
       "electric-sedan",
       "pickup-truck",
+      "printer-3d",
+      "paper-printer",
+      "adjustable-desk-lamp",
+      "mini-van",
+      "wallbox",
+      "fireplace",
+      "tripod-television",
+      "clothes-iron",
+
+      "french-wall-mailbox",
+      "us-mailbox",
+      "electrical-panel",
+      "kitchen-hood",
+      "external-ac-unit",
     ]);
     assert.deepEqual([...validationCore.STABLE_MODELS], catalog.STABLE_DEVICE_MODEL_IDS);
     for (const id of catalog.STABLE_DEVICE_MODEL_IDS) {
@@ -514,25 +549,33 @@ await withModules(async (load) => {
       assert.equal(typeof definition.component, "function");
       assert.ok(
         definition.complexity.visibleMeshes <=
-          (["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
-            ? 72
-            : id === "integrated-roller-shutter"
-              ? 35
-              : id === "pergola-string-lights"
-                ? 17
-                : id === "computer-fan"
-                  ? 20
-                  : 16),
+          (["printer-3d", "adjustable-desk-lamp", "tripod-television"].includes(id)
+            ? 40
+            : id === "external-ac-unit"
+              ? 37
+              : id === "paper-printer"
+                ? 18
+                : ["pop-up-sprinkler", "rotating-sprinkler"].includes(id)
+                  ? 72
+                  : id === "integrated-roller-shutter"
+                    ? 35
+                    : id === "pergola-string-lights"
+                      ? 17
+                      : id === "computer-fan"
+                        ? 20
+                        : 16),
       );
       assert.ok(
         definition.complexity.triangles <=
-          (["compact-car", "electric-sedan", "pickup-truck"].includes(id)
+          (["compact-car", "electric-sedan", "pickup-truck", "mini-van"].includes(id)
             ? 34_000
-            : id === "rattan-bell-pendant"
-              ? 40_000
-              : id === "pergola-string-lights"
-                ? 28_000
-                : 5_000),
+            : ["printer-3d", "wallbox"].includes(id)
+              ? 8_000
+              : id === "rattan-bell-pendant"
+                ? 40_000
+                : id === "pergola-string-lights"
+                  ? 28_000
+                  : 5_000),
       );
       assert.ok(definition.bounds.min.every(Number.isFinite));
       assert.ok(definition.bounds.max.every(Number.isFinite));

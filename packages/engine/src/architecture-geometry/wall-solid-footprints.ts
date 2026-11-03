@@ -4,7 +4,13 @@ import { BufferGeometry } from "three";
 
 import { planPointToWorld } from "../geometry";
 
-import type { FloorSpec, OpeningSpec, WallJunctionSpec, WallSpec } from "../types";
+import type {
+  FloorSpec,
+  OpeningSpec,
+  WallJunctionSpec,
+  WallSpec,
+  WallSurfaceFinish,
+} from "../types";
 import {
   EPSILON,
   Horizontal,
@@ -15,6 +21,7 @@ import { wallExteriorNormal, wallFrame } from "./wall-coordinate-frame";
 
 export interface ArchitecturalWallGeometryGroup {
   geometry: BufferGeometry;
+  finish?: WallSurfaceFinish;
   outwardNormal: Horizontal | null;
   fadeNormals: readonly Horizontal[];
   center: Horizontal;

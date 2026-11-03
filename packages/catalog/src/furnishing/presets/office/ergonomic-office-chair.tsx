@@ -6,8 +6,10 @@ export const ERGONOMIC_OFFICE_CHAIR_SIZE = [0.68, 1.04, 0.68] as const;
 
 export function ErgonomicOfficeChair({
   size = ERGONOMIC_OFFICE_CHAIR_SIZE,
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
 }) {
   return (
     <group
@@ -27,7 +29,7 @@ export function ErgonomicOfficeChair({
         name="office-chair-seat"
         size={[0.51, 0.085, 0.49]}
         position={[0, 0.5, 0.025]}
-        color="#ddd4c2"
+        color={color ?? "#ddd4c2"}
         radius={0.039}
       />
       <RoundedFurniturePanel
@@ -51,14 +53,14 @@ export function ErgonomicOfficeChair({
         size={[0.423, 0.428, 0.065]}
         position={[0, 0.8093, -0.2413]}
         rotation={[-0.13, 0, 0]}
-        color="#e0d8c8"
+        color={color ?? "#e0d8c8"}
         radius={0.03}
       />
       <RoundedFurniturePanel
         name="office-chair-lumbar-pad"
         size={[0.34, 0.09, 0.045]}
         position={[0, 0.6543, -0.1973]}
-        color="#c9c1ae"
+        color={color ?? "#c9c1ae"}
         radius={0.019}
         outline={false}
       />

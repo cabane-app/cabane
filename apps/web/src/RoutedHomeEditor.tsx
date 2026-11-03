@@ -54,7 +54,7 @@ export function RoutedHomeEditor({ onClose, ...props }: ComponentProps<typeof Ho
         initialRequest={request}
         onWorkspaces={() => void navigate("/workspaces")}
         onHomeAssistantSettings={() =>
-          void navigate(`${workspaceHomePath(props.initialRecord.homeId)}/home-assistant`)
+          go({ mode: "construct", panel: "settings", settingsSection: "home-assistant" })
         }
         onRecoveryWorkspaces={() => {
           allowExit.current = true;

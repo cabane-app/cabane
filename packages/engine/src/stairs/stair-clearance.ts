@@ -46,11 +46,15 @@ export function stairVolumesIntersect(a: StairVolume, b: StairVolume) {
   );
 }
 
-/** Rendered tread slabs and spiral bridges at their actual building elevations. */
+/** Rendered tread slabs or masonry bodies, plus spiral bridges. */
 export function stairStructureVolumes(flight: StairFlight) {
   const base = flight.baseElevationMeters;
   const volumes = flight.treads.map((tread) =>
-    stairVolume(stairPolygon(tread.polygon), base + tread.elevation - 0.12, base + tread.elevation),
+    stairVolume(
+      stairPolygon(tread.polygon),
+      base + (flight.style && flight.style !== "open" ? -0.06 : tread.elevation - 0.12),
+      base + tread.elevation,
+    ),
   );
   if (flight.shape === "spiral") {
     const top = base + flight.riseMeters;

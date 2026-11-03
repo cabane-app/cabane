@@ -39,6 +39,7 @@ await withModules(async (load) => {
   const { statesBySlotIdForRoom } = await load(
     "/packages/engine/src/architecture-scene/RoomFurnishings.tsx",
   );
+  const { composeOwnerProjectManifest } = await load("/apps/web/src/project-runtime.ts");
   const definition = catalog.stableDeviceRegistry["integrated-roller-shutter"];
   const registries = {
     deviceModels: catalog.stableDeviceRegistry,
@@ -159,11 +160,14 @@ await withModules(async (load) => {
   test("exterior fitting clears the closed window and slider geometry on thin and thick reversed walls", async () => {
     const original = fixture().floor;
     const sourceWindow = original.openings[0];
-    for (const thickness of [0.08, 0.2, 0.4]) {
+    const framePositions = new Map();
+    for (const thickness of [0.08, 0.2, 0.4, 0.9]) {
       for (const reversed of [false, true]) {
         for (const kind of [
           "clear",
+          "clear-double",
           "privacy",
+          "privacy-double",
           "outward",
           "privacy-outward",
           "arched",
@@ -192,6 +196,7 @@ await withModules(async (load) => {
               }
             : {
                 ...sourceWindow,
+                panelCount: kind.endsWith("-double") ? 2 : sourceWindow.panelCount,
                 glazing: kind.startsWith("privacy") ? "privacy" : "clear",
                 variant: kind === "arched" ? "steel-arched" : "plain",
                 openingSide: kind.includes("outward") ? "left" : "right",
@@ -208,6 +213,13 @@ await withModules(async (load) => {
           const candidate = candidates[0];
           const transform = e.resolveItemTransform(candidate.placement, floor);
           assert.ok(transform.position[2] < 0, "physical placement remains on the exterior side");
+          const frameKey = `${reversed}/${kind}`;
+          if (!framePositions.has(frameKey)) framePositions.set(frameKey, transform.position[2]);
+          assert.equal(
+            transform.position[2],
+            framePositions.get(frameKey),
+            "the integrated shutter stays beside the window frame regardless of wall thickness",
+          );
           assert.equal(
             e.roomIdForItem(
               { ...fixture().item, placement: candidate.placement },
@@ -262,6 +274,23 @@ await withModules(async (load) => {
           await renderer.unmount();
         }
       }
+    }
+  });
+
+  test("the app assigns fitted shutters to the indoor room without changing saved offsets", () => {
+    for (const thickness of [0.2, 0.9]) {
+      const { floor, item, project } = fixture();
+      floor.walls.find((wall) => wall.id === item.placement.wallId).thicknessMeters = thickness;
+      const placement = { ...item.placement, depthOffsetMeters: -0.043 };
+      project.sceneItems = [{ ...item, placement }];
+      const manifest = composeOwnerProjectManifest(project);
+      assert.equal(outsideRoomDevices(manifest, floor.id), null);
+      assert.deepEqual(
+        e.collectBindingSlots(manifest).find((slot) => slot.slotId === item.entitySlots[0].id)
+          .roomIds,
+        ["fixture-studio"],
+      );
+      assert.deepEqual(manifest.sceneItems[0].placement, placement);
     }
   });
 
@@ -351,7 +380,7 @@ await withModules(async (load) => {
     };
     const valid = e.validateHomeProject(project, registries);
     assert.equal(valid.valid, true, JSON.stringify(valid.issues));
-    const manifest = e.composeHomeManifest(project, registries);
+    const manifest = composeOwnerProjectManifest(project);
     assert.equal(e.roomIdForItem(item, floor, definition), "fixture-studio");
     assert.equal(e.resolvedRoomIdForItem(item, project, definition), "fixture-studio");
     assert.equal(e.isActionBarDeviceNavigable(project, item.id, registries.deviceModels), true);

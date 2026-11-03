@@ -16,6 +16,16 @@ export function useEditorIssueRepairs(
   const [repairMessage, setRepairMessage] = useState<string | null>(null);
   const [repairError, setRepairError] = useState<string | null>(null);
   const itemLabel = (issue: ConstructContextualIssue) => {
+    const target = issue.target;
+    if (target?.kind === "wall" || target?.kind === "opening") {
+      for (const floor of controller.editorProject.floors) {
+        if (issue.floorId && floor.id !== issue.floorId) continue;
+        const elements = target.kind === "wall" ? floor.walls : floor.openings;
+        const element = elements.find((element) => element.id === target.id);
+        if (element) return element.name || undefined;
+      }
+      return undefined;
+    }
     const item =
       issue.target?.kind === "scene-item" &&
       controller.editorProject.sceneItems.find((item) => item.id === issue.target?.id);

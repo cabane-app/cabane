@@ -6,6 +6,8 @@ colors:
   preview-ink: "#2e3835"
   preview-muted: "#6f7771"
   preview-accent: "#bd724d"
+  settings-ink: "#67517c"
+  settings-selected: "#e9e1ef"
   connection-blue: "#365f6c"
   connection-selected: "#dce8e8"
   connection-surface: "#fffcf6"
@@ -224,7 +226,7 @@ Source search is a borderless input inside a tinted field with a search icon. Fo
 
 ### Navigation
 
-Keep Construct, Arrange and Connect as labeled modes. The standard editor sidebar remains visible in Connect, listing rooms with connected/total counts and the House plan and Refresh from HA actions. The house plan gives spatial entry into Connect. The device rail uses catalog model thumbnails when available, an object name and a short status. Selecting a room leaves device details empty until an object is chosen; selecting a connection then opens its source picker. Column headings share top padding and the connection-heading role. Selecting an object preserves the stable surrounding columns. At intermediate widths, connections and sources use successive views beside the device list. Mobile retains rooms in the standard Tools panel below the work area, with Devices and Connections return actions at their respective steps.
+Keep Construct, Arrange and Connect as labeled modes. Settings uses its own muted violet accent, shared by the active top-bar tab and the selected sidebar section. The standard editor sidebar remains visible in Connect, listing rooms with connected/total counts and the House plan and Refresh from HA actions. The house plan gives spatial entry into Connect. The device rail uses catalog model thumbnails when available, an object name and a short status. Selecting a room leaves device details empty until an object is chosen; selecting a connection then opens its source picker. Column headings share top padding and the connection-heading role. Selecting an object preserves the stable surrounding columns. At intermediate widths, connections and sources use successive views beside the device list. Mobile retains rooms in the standard Tools panel below the work area, with Devices and Connections return actions at their respective steps.
 
 ### Connection and reading rows
 

@@ -19,6 +19,9 @@ recorder:
 # media players, cameras, vacuums, weather, and other demo platforms.
 demo:
 
+# Synthetic devices for the checked-in development home.
+solstice:
+
 http:
   cors_allowed_origins:
     - http://127.0.0.1:4173

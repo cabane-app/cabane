@@ -134,7 +134,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("device choices use HA names, group by room, and retain names in draft slots", async () => {
+  test("device choices include outside rooms, use HA names, and retain chosen targets", async () => {
     const dom = new JSDOM('<div id="root"></div>');
     const previous = Object.fromEntries(
       ["window", "document", "HTMLElement", "IS_REACT_ACT_ENVIRONMENT"].map((key) => [
@@ -155,8 +155,10 @@ await withModules(async (load) => {
       project,
       disabled: false,
       roomNames: { study: "Salon" },
-      deviceNames: { "study-lamp": "Climatisation du salon" },
-      onChange() {},
+      deviceNames: { "study-lamp": "Climatisation du salon", "garden-lamp": "Garden light" },
+      onChange: (items) => {
+        project.actionBar = { items };
+      },
     };
     try {
       await act(async () => root.render(React.createElement(ActionBarEditor, props)));
@@ -170,6 +172,16 @@ await withModules(async (load) => {
       assert.equal(group.querySelector("h3").textContent, "Salon");
       assert.ok(group.querySelector('button[aria-label="Climatisation du salon · Salon"]'));
       assert.equal(group.querySelectorAll("button").length, 1);
+      const outside = document.querySelector('section[aria-label="Outside rooms"]');
+      assert.ok(outside.querySelector('button[aria-label="Garden light · Outside rooms"]'));
+      await act(async () => outside.querySelector("button").click());
+      assert.deepEqual(project.actionBar.items.at(-1).target, {
+        kind: "device",
+        deviceId: "garden-lamp",
+      });
+      await act(async () => root.render(React.createElement(ActionBarEditor, props)));
+      assert.ok(document.querySelector('button[aria-label="Edit Garden light shortcut"]'));
+      assert.equal(document.querySelector('[role="alert"]'), null);
       project.actionBar = {
         items: [{ id: "ac", target: { kind: "device", deviceId: "study-lamp" } }],
       };

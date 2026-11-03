@@ -26,7 +26,7 @@ export function WhiteShellDiningChair({
       <RoundedFurniturePanel
         name="oak-chair-seat-mount"
         size={[0.34, 0.02, 0.28]}
-        position={[0, 0.43, 0]}
+        position={[0, 0.42, 0]}
         color="#c7a67b"
         radius={0.002}
         outline={false}

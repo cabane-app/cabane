@@ -57,7 +57,7 @@ export function ConstructionToolCards({
           >
             <EditorIcon name="stairs" />
             <strong>Stairs</strong>
-            <small>{stairsDisabledReason ?? "Link your floors"}</small>
+            <small>{stairsDisabledReason ?? "Link floors or ground"}</small>
           </button>
         )}
         {primary.slice(4).map(card)}

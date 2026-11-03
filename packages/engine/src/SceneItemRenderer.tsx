@@ -11,6 +11,7 @@ import { orbitLightEntity } from "./orbit-light-control";
 import { useOrbitDevicePress } from "./useOrbitDevicePress";
 import { SceneNightContext, sceneLightState } from "./scene-light-state";
 import { deviceVisualStateForSnapshot } from "./devices";
+import { isAuxiliaryEntitySlot } from "./entity-slot-roles";
 import {
   deviceSlotForItem,
   resolveItemTransform,
@@ -224,6 +225,12 @@ function DeviceSceneItem({
             {...omitUndefinedProperties({ color: item.color })}
             slot={binding}
             {...omitUndefinedProperties({ state: state })}
+            readings={binding.entitySlots.filter(isAuxiliaryEntitySlot).map((slot) => ({
+              slot,
+              ...omitUndefinedProperties({
+                state: resolvedDevice.entities.find((entity) => entity.slotId === slot.id)?.state,
+              }),
+            }))}
             {...omitUndefinedProperties({
               liveMedia: primary ? liveMediaByEntityId[primary.entityId] : undefined,
             })}
@@ -390,7 +397,7 @@ export function LegacyDeviceItemRenderer({
 }: {
   resolvedDevice: ResolvedDeviceBinding;
   floor: FloorSpec;
-  definition: DeviceModelDefinition;
+  definition: DeviceModelDefinition | undefined;
   reducedMotion: boolean;
   walkMode: boolean;
   onInteract: (target: ExtensionInteractionTarget) => void;
@@ -409,9 +416,25 @@ export function LegacyDeviceItemRenderer({
       elevationMeters: resolvedDevice.slot.placement.elevationMeters,
       rotationYRadians: resolvedDevice.slot.placement.rotationYRadians ?? 0,
     },
-    size: definition.defaultSize.map((dimension) => dimension * scale) as [number, number, number],
+    size: (definition?.defaultSize ?? [0.25, 0.25, 0.25]).map((dimension) => dimension * scale) as [
+      number,
+      number,
+      number,
+    ],
     entitySlots: resolvedDevice.slot.entitySlots,
   };
+  if (!definition) {
+    const transform = resolveItemTransform(item.placement, floor);
+    return (
+      <group
+        name={`device-${item.id}`}
+        position={transform.position}
+        rotation={[0, transform.rotationYRadians, 0]}
+      >
+        <MissingSceneItemFallback item={item} />
+      </group>
+    );
+  }
   return (
     <DeviceSceneItem
       item={item}

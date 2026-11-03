@@ -10,7 +10,7 @@ import {
 export type CatalogEntry =
   | { key: string; kind: "furnishing"; modelId: string; definition: FurnishingModelDefinition }
   | { key: string; kind: "device"; modelId: string; definition: DeviceModelDefinition };
-export type CatalogRoom = RoomType | "all" | "devices" | "my-models";
+export type CatalogRoom = RoomType | "all" | "devices" | "lights" | "my-models";
 
 export function catalogEntries(
   furnishings: FurnishingModelRegistry,
@@ -47,8 +47,14 @@ export function filterCatalog(entries: readonly CatalogEntry[], room: CatalogRoo
     if (room === "my-models" && !entry.modelId.startsWith("custom:")) return false;
     if (room === "devices" && entry.kind !== "device") return false;
     if (
+      room === "lights" &&
+      (entry.kind !== "device" || !entry.definition.supportedDomains.includes("light"))
+    )
+      return false;
+    if (
       room !== "all" &&
       room !== "devices" &&
+      room !== "lights" &&
       room !== "my-models" &&
       entry.definition.defaultRoomType !== room
     )

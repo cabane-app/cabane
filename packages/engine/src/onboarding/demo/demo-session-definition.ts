@@ -64,7 +64,7 @@ export function deriveDemoSessionDefinition(
     runtime: {
       status: "connected",
       configured: false,
-      canMutate: slots.some((slot) => !["sensor", "binary_sensor"].includes(slot.domain)),
+      canMutate: slots.some((slot) => !["sensor", "binary_sensor", "event"].includes(slot.domain)),
       origin: null,
       error: null,
       areas: [...activeRooms.values()].map(({ room, areaId }) => ({

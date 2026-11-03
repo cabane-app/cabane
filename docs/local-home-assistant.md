@@ -10,7 +10,8 @@ npm run dev
 ```
 
 The first run downloads the pinned HA image and Cabane integration source, then
-builds the native panel from this checkout. It can take several minutes. Git,
+builds the native panel from this checkout and installs the synthetic Solstice
+fixture in the persistent volume. It can take several minutes. Git,
 Node and installed npm dependencies are required in addition to Docker.
 `ha:up` waits for the HTTP server to become healthy. Open
 <http://127.0.0.1:8123> and complete HA onboarding with a **local test account**.
@@ -42,8 +43,9 @@ entity identifiers or credentials.
 Without HA mappings, they are useful for visual, catalog and editor work;
 importing the design alone does not connect its device controls.
 
-After starting the local HA server and completing onboarding, install the
-optional synthetic showcase entities from the repository root:
+`ha:up` installs the synthetic showcase entities automatically. After completing
+onboarding, use the optional installer to apply an ignored runtime plan or
+refresh the fixture without rebuilding the panel:
 
 ```sh
 node dev/home-assistant/showcase/install.mjs

@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { Shape } from "three";
 import { Outlines, ToonMaterial } from "@cabane/engine";
 
+const extrusion = { depth: 0.16, steps: 1, bevelEnabled: false, curveSegments: 16 };
+
 /** A bent oak backrest: a solid curved strip in plan, extruded vertically. */
 export function CurvedChairBack() {
   const shape = useMemo(() => {
@@ -21,9 +23,7 @@ export function CurvedChairBack() {
       castShadow
       receiveShadow
     >
-      <extrudeGeometry
-        args={[shape, { depth: 0.16, steps: 1, bevelEnabled: false, curveSegments: 16 }]}
-      />
+      <extrudeGeometry args={[shape, extrusion]} />
       <ToonMaterial color="#d5b17e" />
       <Outlines color="#82694b" thickness={0.0015} screenspace={false} />
     </mesh>

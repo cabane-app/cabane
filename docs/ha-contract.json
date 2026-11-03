@@ -1,9 +1,9 @@
 {
-  "revision": 23,
-  "fingerprint": "bd7617e7f1158ea789f88e9dc38bda808b730f34f1c7b7fc937f25d581b9c8c2",
-  "summary": "Conditional state visibility on models",
+  "revision": 33,
+  "fingerprint": "380926c2e6b4c889a7f82bc6fc982f88e2d98e541fcef0df391c4c7a752f88cf",
+  "summary": "Add per-face wall tiles, wallpaper and custom images",
   "breakingChanges": [
-    "Update older Cabane clients and the Home Assistant integration before opening projects using if-present map visibility. Existing boolean visibility settings remain supported."
+    "Projects using optional wall faceFinishes require the matching frontend and Home Assistant panel. Existing paint-only projects and adaptive lighting from revision 32 remain supported. Optimized custom images travel inside the existing workspace document without an asset or backend migration; older clients retain unsupported-data protection."
   ],
   "history": [
     {
@@ -158,6 +158,76 @@
       "summary": "Allow eligible manual connections before room area setup",
       "breakingChanges": [
         "No saved fields, slot IDs or schema versions change. Every eligible manual function and reading can now map across Home Assistant areas or before its room has an area association. Older clients may report these mappings as unmapped until their frontend or panel is updated; no migration or device command is involved."
+      ]
+    },
+    {
+      "revision": 23,
+      "summary": "Conditional state visibility on models",
+      "breakingChanges": [
+        "Update older Cabane clients and the Home Assistant integration before opening projects using if-present map visibility. Existing boolean visibility settings remain supported."
+      ]
+    },
+    {
+      "revision": 24,
+      "summary": "Keep homes usable when catalog models are unavailable",
+      "breakingChanges": [
+        "Unavailable models now render as placeholders while preserving item IDs, placements and connections. Update Cabane in HACS, restart Home Assistant and reload to get this recovery behavior. Structural errors remain blocked; no saved fields or schema versions change."
+      ]
+    },
+    {
+      "revision": 25,
+      "summary": "Add optional display names for walls, doors, windows and passages; preserve architectural and binding identities.",
+      "breakingChanges": [
+        "Older Cabane clients reject projects containing wall or opening name fields. Update the Home Assistant integration and reload all clients before opening a renamed project."
+      ]
+    },
+    {
+      "revision": 26,
+      "summary": "Add sloped terrain with home-wide corner heights",
+      "breakingChanges": [
+        "Existing homes retain flat terrain. Homes saved with home.terrain require the updated frontend and matching Home Assistant panel. Older clients retain unsupported-field protection. No floor, asset or binding migration is required."
+      ]
+    },
+    {
+      "revision": 27,
+      "summary": "Warn about disconnected terrain exits and stabilize terrace clipping",
+      "breakingChanges": [
+        "No saved fields or migrations change. Terrain exit diagnostics are warning-only and do not block Save. Update the frontend and matching Home Assistant panel for these warnings and the terrace/basement clipping fix."
+      ]
+    },
+    {
+      "revision": 28,
+      "summary": "Allow shortcuts to devices outside rooms",
+      "breakingChanges": [
+        "No saved fields change. Outside-room device shortcuts now validate and open device controls directly. Older panels reject these targets as lacking a room sheet and require the matching update before using them."
+      ]
+    },
+    {
+      "revision": 29,
+      "summary": "Connect stairs directly to terrain",
+      "breakingChanges": [
+        "Existing floor-to-floor stairs remain compatible. Terrain stairs store one floor and a terrain endpoint and require the matching panel update. Their rise, landing validation and Walk route follow the current terrain without adding a storey."
+      ]
+    },
+    {
+      "revision": 30,
+      "summary": "Connect stairs to terrain and add masonry stair styles",
+      "breakingChanges": [
+        "Existing floor-to-floor stairs and omitted styles remain compatible. Terrain connections and Concrete or Stone styles require the matching frontend and Home Assistant panel. Terrain rise, landing validation and Walk follow the current grade without adding a storey. No migration is required."
+      ]
+    },
+    {
+      "revision": 31,
+      "summary": "Support read-only event readings and live device feedback",
+      "breakingChanges": [
+        "Event slots, Event personal-model profiles and optional event readings require the matching frontend and Home Assistant panel. Existing homes, lighting, terrain and apartment floors remain supported without migration. Runtime activity is transient and changes no saved fields."
+      ]
+    },
+    {
+      "revision": 32,
+      "summary": "Adapt linear model lighting to transformed instance length",
+      "breakingChanges": [
+        "Adaptive maxSpacingMeters on strip sources requires the matching frontend and Home Assistant panel. Existing fixed-sample strips remain supported without migration."
       ]
     }
   ],

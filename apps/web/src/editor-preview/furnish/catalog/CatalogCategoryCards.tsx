@@ -1,11 +1,12 @@
 import { ROOM_TYPES } from "@cabane/engine";
 import { useMemo } from "react";
 import { EditorIcon, type EditorIconName } from "../../../editor-chrome/EditorIcon";
-import type { CatalogEntry, CatalogRoom } from "./catalog";
+import { filterCatalog, type CatalogEntry, type CatalogRoom } from "./catalog";
 
 const icons: Record<CatalogRoom, EditorIconName> = {
   all: "grid",
   devices: "devices",
+  lights: "lighting",
   "my-models": "cube",
   "living-room": "furnish",
   kitchen: "kitchen",
@@ -18,10 +19,14 @@ const icons: Record<CatalogRoom, EditorIconName> = {
   laundry: "laundry",
   outdoor: "outdoor",
 };
+const catalogCategories = [
+  { id: "devices" as const, label: "Devices" },
+  { id: "lights" as const, label: "Lights" },
+  ...ROOM_TYPES,
+];
 export const catalogFilters = [
   { id: "all" as const, label: "All items" },
-  ...ROOM_TYPES,
-  { id: "devices" as const, label: "Devices" },
+  ...catalogCategories,
   { id: "my-models" as const, label: "My models" },
 ];
 
@@ -33,14 +38,12 @@ export function CatalogCategoryCards({
   onChoose: (room: CatalogRoom) => void;
 }) {
   const counts = useMemo(() => {
-    const result: Partial<Record<CatalogRoom, number>> = { all: entries.length };
-    for (const entry of entries) {
-      const room = entry.definition.defaultRoomType;
-      if (room) result[room] = (result[room] ?? 0) + 1;
-      if (entry.kind === "device") result.devices = (result.devices ?? 0) + 1;
-      if (entry.modelId.startsWith("custom:")) result["my-models"] = (result["my-models"] ?? 0) + 1;
-    }
-    return result;
+    return Object.fromEntries(
+      catalogCategories.map((category) => [
+        category.id,
+        filterCatalog(entries, category.id, "").length,
+      ]),
+    );
   }, [entries]);
   return (
     <nav className="catalog-categories" aria-label="Catalog categories">
@@ -59,9 +62,9 @@ export function CatalogCategoryCards({
             </button>
           ))}
       </div>
-      <h3>Browse by room</h3>
+      <h3>Browse by category</h3>
       <div className="catalog-category-grid">
-        {ROOM_TYPES.map((room) => (
+        {catalogCategories.map((room) => (
           <button
             key={room.id}
             type="button"

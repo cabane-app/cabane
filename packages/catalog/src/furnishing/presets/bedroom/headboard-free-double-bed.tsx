@@ -6,8 +6,10 @@ export const HEADBOARD_FREE_DOUBLE_BED_SIZE = [1.64, 0.66, 2.04] as const;
 /** Generic photo-derived proportions; no manufacturer dimensions are claimed. */
 export function HeadboardFreeDoubleBed({
   size = HEADBOARD_FREE_DOUBLE_BED_SIZE,
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
 }) {
   return (
     <group
@@ -33,7 +35,7 @@ export function HeadboardFreeDoubleBed({
       <RoundedFurniturePanel
         size={[1.64, 0.09, 1.55]}
         position={[0, 0.565, 0.245]}
-        color="#ded9cd"
+        color={color ?? "#ded9cd"}
         radius={0.04}
       />
       {[-0.4, 0.4].map((x) => (
@@ -41,7 +43,7 @@ export function HeadboardFreeDoubleBed({
           key={x}
           size={[0.69, 0.1, 0.43]}
           position={[x, 0.61, -0.72]}
-          color="#e7e2d6"
+          color={color ?? "#e7e2d6"}
           radius={0.04}
         />
       ))}

@@ -6,7 +6,7 @@ import { CanopyRoof } from "./canopy-roof";
 import { GuardRail } from "./guard-rail";
 import { WOOD, WOOD_DARK, BLUSH_LIGHT } from "./cabin-bed-finish";
 
-export function CabinBed() {
+export function CabinBed({ color }: { color?: string | undefined } = {}) {
   const halfWidth = 0.55;
   const halfLength = 1.18;
   const eaveHeight = 1.12;
@@ -23,12 +23,12 @@ export function CabinBed() {
       </mesh>
       <mesh position={[0, 0.28, 0]} castShadow>
         <boxGeometry args={[1.01, 0.14, 2.25, 4, 2, 8]} />
-        <ToonMaterial color="#e9bcb9" />
+        <ToonMaterial color={color ?? "#e9bcb9"} />
         <Outlines thickness={0.006} color="#785b58" screenspace={false} />
       </mesh>
       <mesh position={[0, 0.37, 0]} castShadow>
         <boxGeometry args={[0.96, 0.035, 2.16, 4, 1, 8]} />
-        <ToonMaterial color="#f0d0ca" />
+        <ToonMaterial color={color ?? "#f0d0ca"} />
       </mesh>
 
       {[-halfWidth, halfWidth].flatMap((postX) =>
@@ -73,11 +73,11 @@ export function CabinBed() {
         )),
       )}
 
-      <CanopyRoof side={-1} roofAngle={roofAngle} roofBeamLength={roofBeamLength} />
-      <CanopyRoof side={1} roofAngle={roofAngle} roofBeamLength={roofBeamLength} />
+      <CanopyRoof side={-1} roofAngle={roofAngle} roofBeamLength={roofBeamLength} color={color} />
+      <CanopyRoof side={1} roofAngle={roofAngle} roofBeamLength={roofBeamLength} color={color} />
       <mesh position={[halfWidth - 0.015, 0.69, 0.03]} castShadow>
         <boxGeometry args={[0.018, 0.82, 2.18, 1, 5, 12]} />
-        <ToonMaterial color={BLUSH_LIGHT} side={2} />
+        <ToonMaterial color={color ?? BLUSH_LIGHT} side={2} />
       </mesh>
       {[-0.83, 0.83].map((z, index) => (
         <mesh
@@ -87,7 +87,7 @@ export function CabinBed() {
           castShadow
         >
           <boxGeometry args={[0.018, 0.78, 0.58, 1, 6, 5]} />
-          <ToonMaterial color={BLUSH_LIGHT} side={2} />
+          <ToonMaterial color={color ?? BLUSH_LIGHT} side={2} />
           <Outlines color="#a36f70" thickness={0.003} screenspace={false} />
         </mesh>
       ))}

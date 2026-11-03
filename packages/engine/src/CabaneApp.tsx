@@ -70,12 +70,24 @@ export function CabaneApp({
     [activeManifest, deviceModels],
   );
   const [homeAssistantUrl, setHomeAssistantUrl] = useState(initialStoredUrl);
+  const exportBrowserData = () => {
+    if (typeof window === "undefined") return;
+    const contents = exportCabaneBrowserData(window.localStorage, activeManifest);
+    const href = URL.createObjectURL(new Blob([contents], { type: "application/json" }));
+    const anchor = document.createElement("a");
+    anchor.href = href;
+    anchor.download = `${activeManifest.home.id}-cabane-browser-data.json`;
+    anchor.click();
+    URL.revokeObjectURL(href);
+  };
   if (!validation.canRender || !validation.manifest) {
     return (
       <CabaneDashboard
         manifest={manifest}
         architectureModels={architectureModels}
         deviceModels={deviceModels}
+        onWorkspaces={onWorkspaces}
+        onExportBrowserData={exportBrowserData}
       />
     );
   }
@@ -109,16 +121,7 @@ export function CabaneApp({
           }
           return result;
         }}
-        onExportBrowserData={() => {
-          if (typeof window === "undefined") return;
-          const contents = exportCabaneBrowserData(window.localStorage, activeManifest);
-          const href = URL.createObjectURL(new Blob([contents], { type: "application/json" }));
-          const anchor = document.createElement("a");
-          anchor.href = href;
-          anchor.download = `${activeManifest.home.id}-cabane-browser-data.json`;
-          anchor.click();
-          URL.revokeObjectURL(href);
-        }}
+        onExportBrowserData={exportBrowserData}
       />
     </HomeAssistantRuntimeProvider>
   );

@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-03T15:16:17.298Z",
+  "label": "solstice-dev-ha-night-cloudy-ios-simulator",
+  "source": {
+    "commit": "db5a7ea8bc60a32829f35d5375a2e8e0117fab0d",
+    "dirty": false,
+    "homeHash": "69fd427fbaf102e41c1ff7d8833d2712482f66952c7eabaacab4a0f605f3dafb"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "orbit-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "Europe/Paris",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 402,
+      "height": 714
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 502,
+      "height": 892,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [39.09400000000001, 45.57200000000002, 45.76400000000001],
+      "quaternion": [-0.358292317380367, 0.32880300089291614, 0.136498903900185, 0.86306619163542],
+      "target": [9, 0.2, 12],
+      "zoom": 9.41011235955056
+    },
+    "workload": {
+      "scenario": "solstice-ha-night-cloudy-v1",
+      "home": "home/showcase/furnished.project.json",
+      "sceneItems": 239,
+      "lighting": "night",
+      "weather": "cloudy",
+      "weatherSource": "Home Assistant",
+      "mappedLights": 27,
+      "lightsOn": 10,
+      "fixtureHash": "fef844bd1dad6405e8b649d0c69fa267903bc1cebace5001ed97f762a791146e"
+    },
+    "profile": "ios-simulator",
+    "simulatorRuntime": "iOS 26.1 (23B86)"
+  },
+  "scene": {
+    "activePointLights": 10
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Mobile/15E148 Safari/604.1",
+    "platform": "iPhone",
+    "hardwareConcurrency": 8,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Apple Inc.",
+      "renderer": "Apple GPU",
+      "multiDraw": true
+    },
+    "execution": "ios-simulator",
+    "simulatorDevice": "iPhone 17 Pro",
+    "cpu": "Apple M5 Pro",
+    "hostPlatform": "darwin 25.6.0",
+    "headless": false
+  },
+  "summary": {
+    "fps": 44.64196544492159,
+    "frameMsP50": 22,
+    "frameMsP95": 26,
+    "frameMsP99": 29,
+    "over33MsPercent": 0.22371364653243847,
+    "over50MsPercent": 0.22371364653243847,
+    "cpuSubmitMsP95": 5.000000000007276,
+    "callsMedian": 299,
+    "callsMax": 299,
+    "trianglesMedian": 418022,
+    "trianglesMax": 436524
+  },
+  "rawReport": "test-results/performance/2026-11-03-solstice-ha-night-cloudy-ios-simulator.json",
+  "runSummaries": [
+    {
+      "frames": 447,
+      "durationMs": 10013.000000000004,
+      "summary": {
+        "fps": 44.64196544492159,
+        "frameMsP50": 22,
+        "frameMsP95": 26,
+        "frameMsP99": 29,
+        "over33MsPercent": 0.22371364653243847,
+        "over50MsPercent": 0.22371364653243847,
+        "cpuSubmitMsP95": 5.000000000003638,
+        "callsMedian": 299,
+        "callsMax": 299,
+        "trianglesMedian": 418022,
+        "trianglesMax": 436524
+      }
+    },
+    {
+      "frames": 425,
+      "durationMs": 10007,
+      "summary": {
+        "fps": 42.470270810432694,
+        "frameMsP50": 22,
+        "frameMsP95": 26,
+        "frameMsP99": 36.000000000007276,
+        "over33MsPercent": 1.1764705882352942,
+        "over50MsPercent": 0.7058823529411765,
+        "cpuSubmitMsP95": 5.000000000007276,
+        "callsMedian": 299,
+        "callsMax": 299,
+        "trianglesMedian": 418022,
+        "trianglesMax": 2144085
+      }
+    },
+    {
+      "frames": 448,
+      "durationMs": 10013.000000000007,
+      "summary": {
+        "fps": 44.74183561370216,
+        "frameMsP50": 22,
+        "frameMsP95": 26,
+        "frameMsP99": 28,
+        "over33MsPercent": 0.22321428571428573,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 5.000000000007276,
+        "callsMedian": 298,
+        "callsMax": 299,
+        "trianglesMedian": 418022,
+        "trianglesMax": 436524
+      }
+    }
+  ]
+}

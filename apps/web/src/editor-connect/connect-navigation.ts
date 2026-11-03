@@ -16,7 +16,8 @@ export interface EditorCameraState {
 export interface EditorOpenRequest {
   floorId?: string;
   mode: "construct" | "furnish" | "connect";
-  panel?: "action-bar" | "home-assistant";
+  panel?: "action-bar" | "home-assistant" | "settings";
+  settingsSection?: import("../editor-settings/settings-sections").SettingsSection;
   destination?: "sync" | "dashboard" | "device";
   view?: "rooms" | "devices";
   roomId?: string | null;

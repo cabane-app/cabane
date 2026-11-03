@@ -270,7 +270,7 @@ export const validateSceneItemsAndSupports = (
         issues,
         "project.model-missing",
         `${itemPath}.modelId`,
-        `Model “${item.modelId}” is not registered; a generic placeholder will be shown until it is imported.`,
+        `Model “${item.modelId}” is unavailable. A placeholder is shown. Its placement and connections are kept.`,
       );
     } else {
       const lightingWarning =
@@ -285,7 +285,10 @@ export const validateSceneItemsAndSupports = (
           lightingWarning.message,
         );
       else if (definition.lighting) {
-        const execution = modelLightingExecution(definition.lighting);
+        const scale = definition.defaultSize.map(
+          (dimension, axis) => item.size[axis] / dimension,
+        ) as [number, number, number];
+        const execution = modelLightingExecution(definition.lighting, scale);
         if (execution.approximated)
           addProjectWarning(
             issues,

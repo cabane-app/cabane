@@ -15,7 +15,7 @@ export function SelectedStairControls({
 }: {
   flight: StairFlight;
   destinationName: string;
-  onGoToFloor: () => void;
+  onGoToFloor?: (() => void) | undefined;
   onDelete: () => void;
 }) {
   const { camera, gl, size, invalidate } = useThree();
@@ -85,12 +85,16 @@ export function SelectedStairControls({
     >
       <div ref={overlay} className="selected-item-controls">
         <SelectionActionBar ref={toolbar} mode="construct" label="Selected stair actions">
-          <EditorActionButton
-            icon="floor"
-            label={`Go to ${destinationName}`}
-            onClick={onGoToFloor}
-          />
-          <span className="selected-item-actions__separator" aria-hidden="true" />
+          {onGoToFloor && (
+            <>
+              <EditorActionButton
+                icon="floor"
+                label={`Go to ${destinationName}`}
+                onClick={onGoToFloor}
+              />
+              <span className="selected-item-actions__separator" aria-hidden="true" />
+            </>
+          )}
           <EditorActionButton icon="delete" label="Delete stairs" onClick={onDelete} />
         </SelectionActionBar>
       </div>

@@ -7,6 +7,7 @@ import {
 } from "../presets/outdoor";
 export const teakLoungeDefinitions = {
   "teak-lounge-sofa": defineFurnishingModel({
+    defaultColor: "#e8ddc7",
     component: TeakLoungeSofa,
     label: "Teak lounge sofa",
     category: "Outdoor",
@@ -23,6 +24,7 @@ export const teakLoungeDefinitions = {
     ],
   }),
   "teak-lounge-chair": defineFurnishingModel({
+    defaultColor: "#e8ddc7",
     component: TeakLoungeChair,
     label: "Teak lounge chair",
     category: "Outdoor",

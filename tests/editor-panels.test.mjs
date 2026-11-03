@@ -7,9 +7,33 @@ import { withModules } from "./test-server.mjs";
 import { connectedRuntimeFixture } from "./fixtures/home-assistant.mjs";
 
 await withModules(async (load) => {
-  const { useEditorPanels, editorPanelSelection } = await load(
+  const { useEditorPanels, editorPanelSelection, editorPanelsBusy } = await load(
     "/apps/web/src/editor-workspace/useEditorPanels.ts",
   );
+  test("stair placement keeps mobile tools reachable between pointer gestures", () => {
+    const controller = {
+      unsettled: true,
+      stairPlacement: { id: "placing-stairs" },
+      dragging: false,
+      marqueeSelecting: false,
+      constructEditor: { drawStart: null },
+    };
+    assert.equal(
+      editorPanelsBusy(controller),
+      false,
+      "the connection and shape chooser can reopen",
+    );
+    assert.equal(
+      editorPanelsBusy({ ...controller, dragging: true }),
+      true,
+      "an active drag still owns the canvas",
+    );
+    assert.equal(
+      editorPanelsBusy({ ...controller, stairPlacement: null }),
+      true,
+      "other unfinished edits still lock panels",
+    );
+  });
   const { EditorSelectionDetails } = await load(
     "/apps/web/src/editor-workspace/EditorSelectionDetails.tsx",
   );

@@ -1,5 +1,6 @@
 import { resolveProjectModels } from "../imported-models/resolve-models";
 import { validateStairs } from "../stairs/stair-validation";
+import { validateTerrainExits } from "../terrain/terrain-exits";
 import { validateLayoutFloorSpec } from "../home-editor/construct/layout-validation";
 import type { ProjectModelRegistries } from "../types";
 import { validateGlobalProjectIds } from "./cross-references";
@@ -68,7 +69,7 @@ export const validateHomeProject = (
       ),
     );
   });
-  validateStairs(project, registries).forEach((issue) =>
+  [...validateStairs(project, registries), ...validateTerrainExits(project)].forEach((issue) =>
     issues.push({ ...issue, severity: issue.severity === "warning" ? "warning" : "error" }),
   );
   validateProfileReferencesAndSlots(project, issues);

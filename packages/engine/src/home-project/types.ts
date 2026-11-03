@@ -16,6 +16,7 @@ import type {
 import type { StairSpec } from "../stairs/types";
 import type { RoofSettings } from "../roof/roof-settings";
 import type { ActionBarConfiguration } from "../action-bar/action-bar-config";
+import type { TerrainSettings } from "../terrain/terrain-settings";
 import { migrateLegacyProject } from "./migrations";
 
 export type LayoutRoomSpec = Omit<RoomSpec, "furnishings" | "dashboardSlots" | "devices"> & {
@@ -76,7 +77,7 @@ interface SceneItemBase {
   lightSlotId?: string;
   /** Local scene appearance only; this never sends Home Assistant commands. */
   lightState?: "always-off" | "always-on" | "night-only" | "connected";
-  /** Optional six-digit hex fabric override; omitted preserves the model palette. */
+  /** Optional six-digit hex color override; omitted preserves the model palette. */
   color?: string;
   /** Omitted values use the model's first variant. */
   variant?: string;
@@ -119,6 +120,7 @@ export interface HomeProject {
   schemaVersion: 2;
   seedRevision: string;
   home: {
+    terrain?: TerrainSettings;
     /** Decorative storeys below the modeled home; zero preserves the original appearance. */
     apartmentFloor?: number;
     walkStart?: { floorId: string; at: PlanPoint };

@@ -1,4 +1,4 @@
-import type { ModelVector } from "@cabane/engine";
+import { formatLength, useMeasurementUnits, type ModelVector } from "@cabane/engine";
 import { EditorButton } from "../editor-chrome/EditorButton";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
 import { LengthInput } from "../editor-chrome/LengthInput";
@@ -16,6 +16,7 @@ export function LightingCoordinates({
   onStep: (step: number) => void;
   onChange: (position: ModelVector) => void;
 }) {
+  const units = useMeasurementUnits();
   const move = (index: number, value: number) =>
     onChange(
       position.map((n, axis) => (axis === index ? Number(value.toFixed(6)) : n)) as [
@@ -34,9 +35,13 @@ export function LightingCoordinates({
           value={step}
           onChange={(event) => onStep(Number(event.target.value))}
         >
-          <option value={0.001}>1 mm</option>
-          <option value={0.01}>1 cm</option>
-          <option value={0.1}>10 cm</option>
+          {([0.001, 0.01, 0.1] as const).map((value, index) => (
+            <option key={value} value={value}>
+              {units === "imperial"
+                ? formatLength(value, units, 4)
+                : ["1 mm", "1 cm", "10 cm"][index]}
+            </option>
+          ))}
         </select>
       </label>
       <div className="lighting-coordinates">

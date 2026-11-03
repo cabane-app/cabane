@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-02T16:12:07.682Z",
+  "label": "initial-mobile-cpu4",
+  "source": {
+    "commit": "6e260f2f148abe4c4dcf5040870a402e7a5d113f",
+    "dirty": false,
+    "homeHash": "bf2f18c6b77cdd64b52ad278b30749eb53931b1a157318c7554d4e1c36d71a89"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "orbit-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 487,
+      "height": 1055,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [36.86466999999999, 43.36800000000001, 45.21599999999998],
+      "quaternion": [
+        -0.3590179500159098, 0.3286881016121575, 0.13677534873190778, 0.8627645955903815
+      ],
+      "target": [8.328669999999999, 0.2, 13.2],
+      "zoom": 9.726290083715924
+    },
+    "profile": "mobile",
+    "cpuRate": 4
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 4,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "summary": {
+    "fps": 37.80171553959705,
+    "frameMsP50": 25.90000009536743,
+    "frameMsP95": 30.59999990463257,
+    "frameMsP99": 34,
+    "over33MsPercent": 1.0554089709762533,
+    "over50MsPercent": 0,
+    "cpuSubmitMsP95": 10.100000143051147,
+    "callsMedian": 286,
+    "callsMax": 286,
+    "trianglesMedian": 168681,
+    "trianglesMax": 176570
+  },
+  "rawReport": "test-results/performance/2026-11-02-mobile-cpu4.json",
+  "runSummaries": [
+    {
+      "frames": 375,
+      "durationMs": 10004.600000143051,
+      "summary": {
+        "fps": 37.48275793081563,
+        "frameMsP50": 26.299999952316284,
+        "frameMsP95": 30.59999990463257,
+        "frameMsP99": 33.30000019073486,
+        "over33MsPercent": 0.8,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 10.199999809265137,
+        "callsMedian": 286,
+        "callsMax": 286,
+        "trianglesMedian": 168681,
+        "trianglesMax": 176570
+      }
+    },
+    {
+      "frames": 379,
+      "durationMs": 10009.799999952316,
+      "summary": {
+        "fps": 37.862894363704115,
+        "frameMsP50": 25.90000009536743,
+        "frameMsP95": 30.100000143051147,
+        "frameMsP99": 34,
+        "over33MsPercent": 1.0554089709762533,
+        "over50MsPercent": 0.2638522427440633,
+        "cpuSubmitMsP95": 9.800000190734863,
+        "callsMedian": 286,
+        "callsMax": 286,
+        "trianglesMedian": 168681,
+        "trianglesMax": 176570
+      }
+    },
+    {
+      "frames": 379,
+      "durationMs": 10026,
+      "summary": {
+        "fps": 37.80171553959705,
+        "frameMsP50": 25.799999952316284,
+        "frameMsP95": 31.799999952316284,
+        "frameMsP99": 36.09999990463257,
+        "over33MsPercent": 2.638522427440633,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 10.100000143051147,
+        "callsMedian": 286,
+        "callsMax": 286,
+        "trianglesMedian": 168681,
+        "trianglesMax": 176570
+      }
+    }
+  ]
+}

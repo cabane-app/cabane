@@ -7,6 +7,7 @@ import {
   type BuildingGeometry,
   type FloorSpec,
   type StairSpec,
+  type StairStyle,
 } from "@cabane/engine";
 import type { ModelPreviewEntry } from "../editor-preview/furnish/catalog/model-preview-entry";
 
@@ -81,11 +82,12 @@ const presets: { label: string; stair: StairSpec }[] = [
 ];
 
 /** Preview the same procedural geometry used by the building, without aperture guards. */
-export const stairPreviewEntries = presets.map(({ label, stair }) => {
+function previewEntry(label: string, stair: StairSpec, style: StairStyle) {
+  stair = { ...stair, style };
   const flight = deriveStairFlight(building, stair)!;
   const points = [...flight.footprintWorld, ...flight.upperLanding];
   const entry: ModelPreviewEntry = {
-    key: `stair-preview-v1:${stair.shape}`,
+    key: `stair-preview-v2:${stair.shape}:${style}`,
     kind: "procedural",
     definition: {
       bounds: {
@@ -113,4 +115,10 @@ export const stairPreviewEntries = presets.map(({ label, stair }) => {
     },
   };
   return { shape: stair.shape!, label, entry };
-});
+}
+const previews = {
+  open: presets.map(({ label, stair }) => previewEntry(label, stair, "open")),
+  concrete: presets.map(({ label, stair }) => previewEntry(label, stair, "concrete")),
+  stone: presets.map(({ label, stair }) => previewEntry(label, stair, "stone")),
+};
+export const stairPreviewEntriesForStyle = (style: StairStyle) => previews[style];

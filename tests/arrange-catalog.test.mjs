@@ -492,6 +492,7 @@ await withModules(async (load) => {
         "compact-car",
         "deciduous-tree",
         "electric-sedan",
+        "external-ac-unit",
         "flower-pot",
         "garden-bench",
         "garden-birdbath",
@@ -502,6 +503,7 @@ await withModules(async (load) => {
         "garden-shrub",
         "garden-trellis",
         "low-garden-lantern",
+        "mini-van",
         "olive-tree",
         "outdoor-bbq",
         "outdoor-dining-chair",
@@ -524,6 +526,8 @@ await withModules(async (load) => {
         "teak-lounge-chair",
         "teak-lounge-sofa",
         "terracotta-planter",
+        "us-mailbox",
+        "wallbox",
         "watering-can",
         "wheelie-bin",
         "wooden-garden-swing",
@@ -642,6 +646,12 @@ await withModules(async (load) => {
         .length,
     );
     assert.ok(filterCatalog(entries, "devices", "").every((entry) => entry.kind === "device"));
+    const kitchenLight = get("under-cabinet-led-strip");
+    for (const category of ["devices", "lights", "kitchen"]) {
+      assert.ok(filterCatalog(entries, category, "").includes(kitchenLight));
+    }
+    assert.ok(filterCatalog(entries, "lights", "floor lamp").includes(get("floor-lamp")));
+    assert.deepEqual(filterCatalog(entries, "lights", "television"), []);
     assert.deepEqual(filterCatalog(entries, "devices", "sectional furniture"), []);
     assert.deepEqual(filterCatalog(entries, "bedroom", "floor lamp"), []);
     assert.equal(filterCatalog(entries, "living-room", "floor lamp")[0].kind, "device");
@@ -668,7 +678,16 @@ await withModules(async (load) => {
     assert.equal(filterCatalog(entries, "all", "sectional furniture")[0].kind, "furnishing");
     assert.deepEqual(
       filterCatalog(entries, "office", "").map((entry) => entry.modelId),
-      ["ergonomic-office-chair", "oak-bookshelf", "oak-desk", "smart-power-strip", "table-fan"],
+      [
+        "printer-3d",
+        "adjustable-desk-lamp",
+        "ergonomic-office-chair",
+        "oak-bookshelf",
+        "oak-desk",
+        "paper-printer",
+        "smart-power-strip",
+        "table-fan",
+      ],
     );
     const kitchenCabinetResults = new Set(
       filterCatalog(entries, "kitchen", "kitchen cabinet").map((entry) => entry.modelId),
@@ -699,7 +718,7 @@ await withModules(async (load) => {
     );
     assert.deepEqual(
       filterCatalog(entries, "laundry", "appliances device").map((entry) => entry.modelId),
-      ["tumble-dryer", "washing-machine", "water-heater"],
+      ["clothes-iron", "tumble-dryer", "washing-machine", "water-heater"],
     );
     assert.deepEqual(
       filterCatalog(entries, "kitchen", "appliances device").map((entry) => entry.modelId),
@@ -987,11 +1006,32 @@ await withModules(async (load) => {
     assert.equal(filterCatalog(entries, "all", "camera screen").length, 1);
   });
 
-  test("appliances added in Arrange resolve exact switch or sensor bindings through the runtime", () => {
-    for (const modelId of ["washing-machine", "tumble-dryer", "dishwasher", "oven"]) {
+  test("devices added in Arrange resolve exact alternative primary bindings through the runtime", () => {
+    const cases = [
+      ...["washing-machine", "tumble-dryer", "dishwasher", "oven"].map((modelId) => [
+        modelId,
+        ["switch.demo_coffee", "sensor.demo_temperature"],
+      ]),
+      ...[
+        "french-wall-mailbox",
+        "us-mailbox",
+        "electrical-panel",
+        "kitchen-hood",
+        "external-ac-unit",
+      ].map((modelId) => [modelId, ["switch.demo_coffee", "binary_sensor.demo_window"]]),
+    ];
+    for (const [modelId, entityIds] of cases) {
       const entry = get(modelId);
-      const { placement } = placementCandidate(entry, floor, { at: [2, 2] });
+      assert.equal(entries.filter((candidate) => candidate.modelId === modelId).length, 1);
+      const placement = {
+        kind: "absolute",
+        at: [2, 2],
+        elevationMeters: 0,
+        rotationYRadians: 0,
+      };
       const item = createCatalogItem(entry, placement, []);
+      assert.equal(item.kind, "device");
+      assert.equal(item.entitySlots[0].autoMap, "manual");
       const room = floor.rooms[0];
       const device = engine.deviceSlotForItem(item, floor);
       const manifest = {
@@ -1005,7 +1045,7 @@ await withModules(async (load) => {
         entityIdsBySlotId: {},
       };
       const runtime = connectedRuntimeFixture();
-      for (const entityId of ["switch.demo_coffee", "sensor.demo_temperature"]) {
+      for (const entityId of entityIds) {
         profile.entityIdsBySlotId[item.entitySlots[0].id] = entityId;
         const resolved = engine.resolveHomeAssistantBindings(
           manifest,
@@ -1045,6 +1085,7 @@ await withModules(async (load) => {
       "light",
       "switch",
       "input_boolean",
+      "event",
     ]);
     const towelRail = createCatalogItem(get("heated-towel-rail"), placement, []);
     assert.deepEqual(towelRail.entitySlots[0].compatibleDomains, ["climate", "switch"]);

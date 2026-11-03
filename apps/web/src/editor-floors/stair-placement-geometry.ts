@@ -1,7 +1,10 @@
 import { omitUndefinedProperties } from "@cabane/engine";
 import {
   deriveStairFlight,
-  planPointToWorld,
+  connectStairToTerrain,
+  reverseStairRoute,
+  stairRouteEnd,
+  resolveStairConnection,
   worldPointToPlan,
   type FloorCoordinates,
   type StairSpec,
@@ -122,17 +125,26 @@ export function convertStairShape(
   shape: StairShape,
 ): StairSpec {
   if ((stair.shape ?? "straight") === shape) return stair;
+  if (stair.terrain?.end === "lower") {
+    const reversed = reverseStairRoute(stair, building.coordinates);
+    if (!reversed.terrain) return stair;
+    const source = { ...reversed, terrain: { ...stair.terrain, end: "upper" as const } };
+    return connectStairToTerrain(building, convertStairShape(building, source, shape));
+  }
   const flight = deriveStairFlight(building, stair);
-  const entrance = flight?.startWorld ?? planPointToWorld(stair.at, building.coordinates);
+  const start = stairRouteEnd(stair, building.coordinates, false);
+  const entrance = flight?.startWorld ?? [start.x, start.z];
   const base = {
     id: stair.id,
     railings: stair.railings,
-    lowerFloorId: stair.lowerFloorId,
-    upperFloorId: stair.upperFloorId,
+    style: stair.style,
+    ...(stair.terrain
+      ? { terrain: stair.terrain }
+      : { lowerFloorId: stair.lowerFloorId, upperFloorId: stair.upperFloorId }),
     at: worldPointToPlan({ x: entrance[0], z: entrance[1] }, building.coordinates),
     rotationYRadians: stair.rotationYRadians,
   };
-  const rise = building.floors.find((f) => f.id === stair.lowerFloorId)!.floorToFloorHeightMeters;
+  const rise = Math.abs(resolveStairConnection(building, stair)?.riseMeters ?? 1);
   if (shape === "spiral")
     return omitUndefinedProperties({
       ...base,

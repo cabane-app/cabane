@@ -1,7 +1,7 @@
 # Home-generation agent workflow
 
 Read before setting up, generating, or equipping an owner home. Product
-development uses the engineering map and product contracts instead.
+development uses the [architecture guide](product/architecture.md) and product contracts instead.
 
 ## Choose the authoring target
 
@@ -43,6 +43,10 @@ provide to project users for building their own homes. Invoke them only when
 helping a user set up, build, or equip their home with Cabane. Do not invoke
 these skills when developing, debugging, or improving the Cabane product
 itself, even when the task involves setup, architecture, furniture, or devices.
+
+For disposable homes needed during product development, use
+[`home-building-harness`](../.agents/skills/home-building-harness/SKILL.md). It prepares a local
+editor through agent commands for feature testing or bug reproduction.
 
 For user home-building tasks only:
 

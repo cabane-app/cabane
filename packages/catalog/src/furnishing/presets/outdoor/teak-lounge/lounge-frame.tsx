@@ -6,10 +6,12 @@ export function TeakLoungeFrame({
   width,
   seats,
   variant,
+  color,
 }: {
   width: number;
   seats: number;
   variant: string;
+  color?: string | undefined;
 }) {
   const inner = width - 0.16;
   const seatWidth = inner / seats - 0.015;
@@ -72,14 +74,14 @@ export function TeakLoungeFrame({
               size={[seatWidth, 0.13, 0.65]}
               position={[x, 0.425, 0.035]}
               radius={0.045}
-              color="#e8ddc7"
+              color={color ?? "#e8ddc7"}
               outlineColor="#b1a48c"
             />
             <RoundedFurniturePanel
               size={[seatWidth, 0.39, 0.13]}
               position={[x, 0.645, -0.255]}
               radius={0.045}
-              color="#e8ddc7"
+              color={color ?? "#e8ddc7"}
               outlineColor="#b1a48c"
             />
             {seats > 1 && i !== 1 && (

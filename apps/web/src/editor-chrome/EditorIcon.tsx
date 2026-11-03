@@ -208,6 +208,8 @@ const paths = {
   plus: <path d="M12 5v14M5 12h14" />,
   chevronLeft: <path d="m15 5-7 7 7 7" />,
   chevron: <path d="m9 5 7 7-7 7" />,
+  arrowUp: <path d="M12 20V4m-6 6 6-6 6 6" />,
+  arrowDown: <path d="M12 4v16m-6-6 6 6 6-6" />,
 } as const;
 
 export type EditorIconName = keyof typeof paths | EditorMode;

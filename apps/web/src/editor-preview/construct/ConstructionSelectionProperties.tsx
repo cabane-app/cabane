@@ -1,4 +1,5 @@
 import { formatLength, formatArea, useMeasurementUnits } from "@cabane/engine";
+import { CommittedTextInput } from "./CommittedTextInput";
 import { LengthInput } from "../../editor-chrome/LengthInput";
 import { useMemo } from "react";
 import {
@@ -109,11 +110,14 @@ export function ConstructionSelectionProperties({
     multiple: `${deletionCount} elements selected`,
     opening: "Opening",
   };
-  const title = kind ? names[kind] : "Properties";
+  const typeLabel = kind ? names[kind] : "Properties";
+  const title = selectedWall?.name || typeLabel;
   return (
     <SelectionDetailsPanel
       title={title}
-      subtitle={editor.previewFloor.name}
+      subtitle={
+        selectedWall?.name ? `${typeLabel} · ${editor.previewFloor.name}` : editor.previewFloor.name
+      }
       label="Construction properties"
       mode="construct"
       onClose={onClose}
@@ -208,6 +212,16 @@ export function ConstructionSelectionProperties({
                 This boundary separates rooms without blocking the view or walking.
               </p>
             )}
+            <fieldset>
+              <legend>Name</legend>
+              <CommittedTextInput
+                key={selectedWall.id}
+                label="Wall name"
+                value={selectedWall.name ?? ""}
+                placeholder={selectedWall.id}
+                onCommit={(name) => editor.updateSelectedWallMetadata({ name: name || undefined })}
+              />
+            </fieldset>
             {!selectedWall.virtual && (
               <>
                 <fieldset>

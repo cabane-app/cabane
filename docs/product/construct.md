@@ -16,6 +16,18 @@ the scene immediately. Sizes that do not fit report an error; leaving the field
 restores the accepted value. These edits use the ordinary
 preview, undo/redo, autosave, and Apply flow.
 
+Doors, windows, passages, and walls (including invisible walls) expose a Name field
+above Dimensions in Properties. Unnamed items display their existing identifier.
+Enter or leaving the field commits a trimmed name; Escape cancels the edit.
+Clearing the field restores the identifier fallback. Names persist through history,
+reopening, export/import and Apply. Custom names identify walls and openings in
+Properties headings, an opening's supporting-wall field, Arrange's Fit to window
+choices (including sliding glass doors), Issues rows and their Locate actions,
+door/window connection labels and garage interaction prompts. Unnamed fields and choices retain their identifier fallback;
+Properties headings and interaction prompts retain their type fallback. Renaming
+or clearing a name refreshes these labels without changing architectural identifiers,
+binding slots or existing mappings.
+
 Add floor above/below opens a dialog with an empty-plan default and a
 “Duplicate this floor” option for the selected floor. Copies are appended above
 the top floor or below the lowest basement, and retain the source floor's height,
@@ -68,6 +80,25 @@ history, autosave, export/import, and Apply flow. After Apply, Home's Show roof
 action displays the result. Pitch, thickness, and flush overhang are automatic;
 per-section controls and roof drawing are not exposed.
 
+The Terrain disclosure sets four corner heights around the home's ground and
+basement footprint in the unrotated 2D plan. Negative heights lower a side to a
+garage or basement entrance; heights blend across the home and stay level beyond
+its bounds. Fields support the measurement-unit preference, explicit unit suffixes,
+and local validation. The four controls match the 2D plan in a two-by-two layout,
+with up/down arrows to raise or lower each corner. They step by 0.1 m in metric
+or one inch in imperial, with Shift multiplying the step by ten. Reset to flat
+ground restores zero at every corner.
+These home-wide edits use ordinary history, autosave, import/export and Save.
+Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
+to edit terrain. Individual terrain zones and earthwork drawing are not exposed.
+When custom terrain leaves an exterior doorway, passage or open platform edge
+without a crossing within Walk's 30 cm step limit, Issues shows a non-blocking
+warning and Locate selects the affected opening or platform. Supporting platforms
+and connected stair landings count as access. Railed edges, windows and interior
+openings are excluded. A downward slope does not require a basement; adding a
+lower floor alone does not connect an existing ground-floor entrance. Adjust the
+grade or model the intended access. Save remains available with these warnings.
+
 Wall drawing snaps to the grid, endpoints, wall segments, and angle references;
 Alt bypasses snapping. Alignment guides match unfinished opposite sides, including
 rotated rectangles. Editing a corner uses fixed neighboring edges for the same
@@ -83,6 +114,9 @@ loop ends the drawing chain. Topology derives
 rooms, interior/exterior wall runs, junctions, footprint regions, and ceilings
 from the editable wall graph while retaining room identities where possible.
 Incomplete shells and ambiguous room merges produce actionable diagnostics.
+Room identity anchors stay strictly inside valid room polygons, including concave
+rooms. Renaming or editing room finishes preserves identities and metadata through
+history, Save and reopening without introducing a false merge.
 Rooms exist only inside wall-enclosed areas, so an open plan with several named
 areas separates them with `virtual` walls. Topology treats a virtual wall like any
 other boundary and preserves the flag through draft creation and re-derivation.
@@ -143,7 +177,7 @@ laurel), or Ivy-covered wall from a thumbnail grid using Arrange’s shared prev
 renderer and cache. New styles use suitable default dimensions; restyling an
 existing hedge retains its height and width. Both dimensions remain editable. Select a
 hedge to move it or drag either endpoint; deletion, undo/redo, project export,
-and Apply preserve boundaries. The picker retains all five hedge styles and adds Picket fence, Privacy fence, Post and rail, Metal fence, and Low masonry wall. Existing `hedges` records, IDs, style IDs and dimensions remain unchanged; new styles use the same record and lifecycle. Restyling retains dimensions. All styles are procedural toon geometry and block walking across their continuous segment envelope, including gaps between rails or bars. Leave explicit segment gaps for entrances; garden and driveway gates are deferred.
+and Apply preserve boundaries. The picker retains all five hedge styles and adds Picket fence, Privacy fence, Post and rail, Metal fence, and Low masonry wall. Existing `hedges` records, IDs, style IDs and dimensions remain unchanged; new styles use the same record and lifecycle. Restyling retains dimensions. All styles are procedural toon geometry and block walking across their continuous segment envelope, including gaps between rails or bars. Ground-floor boundaries outside indoor or platform support follow custom terrain along their full length, including posts and plant roots. Upper-floor boundaries and boundaries on authored indoor/platform support retain that level. The plan view stays flat. Leave explicit segment gaps for entrances; garden and driveway gates are deferred.
 
 Wall, hedge, pool, and custom floor outlines share segment drawing gestures, snapping,
 angle references, and edge measurements. Pool and floor outline editing shares
@@ -195,7 +229,25 @@ either endpoint to change length/direction, or either side handle to resize widt
 symmetrically. Measurements update throughout the gesture. Escape and interrupted
 gestures cancel; each completed gesture is one undoable edit.
 
-Stairs also support L-shaped and spiral connections between adjacent floors. Choose
+Stairs offers **Between floors** and **To ground** connections. Between floors
+links adjacent storeys. To ground links the selected floor or its outdoor platform
+to terrain without requiring another floor. It remains available on the top floor;
+apartment shells must be set to zero first. For a straight flight, draw from the
+floor landing to the ground endpoint. For a turning flight, click the floor landing,
+the turn, then the ground endpoint. Height and step count follow the terrain at
+that endpoint, including after later terrain edits. Landing warnings identify
+unsupported floor connections, pools and terrain that cannot meet the final step.
+Connected terrain stairs resolve the corresponding terrain exit warning and are
+walkable in both directions. They use ordinary undo, autosave, Save and export.
+
+Both connections offer **Open treads**, **Concrete**, and **Stone** styles,
+independent of the four stair shapes. Concrete uses a solid base and closed risers;
+Stone adds contrasting stone tread caps. To ground starts with Concrete, while
+Between floors and existing stairs retain Open treads. Railings remain optional.
+The placement thumbnails show the selected style; selected stair properties can
+change it without altering the route or landings.
+
+Stairs also support L-shaped and spiral connections. Choose
 Straight, L-shaped, or Spiral before drawing from the left sidebar's procedural 3D
 preview palette, styled like the door picker, or in the selected stair's properties.
 During placement, the sidebar groups the previews, shape-specific instructions, and
@@ -373,16 +425,44 @@ wall colors do not bleed across their boundary. Overlapping junction ownership
 with different edge finishes retains the general interior finish.
 
 Wall Finish exposes Exterior and Interior for exterior walls. Interior walls use
-one Wall color by default; Different colors on each side reveals independently
+one Wall finish by default; Different finishes on each side reveals independently
 editable faces. Side labels use adjacent room names when unambiguous, otherwise
 Side A / Side B. Hovering or focusing a color control highlights the corresponding
 wall face on the plan. Turning the toggle off copies Side A's color to both faces.
 Reset removes that face's override and restores the home's palette; resetting
 Exterior also removes a pre-existing override on its exterior face. These edits
 use the existing faceColors metadata, undo/redo, autosave and Save/import/export.
-The two-sided disclosure is editor state; differing stored face colors reopen it.
+The two-sided disclosure is editor state; differing stored face colors or patterns reopen it.
 Interior walls with differing faces use the general interior finish for Auto edges,
 even if an old exteriorColor value remains from their drawing history.
+
+Wall faces can also use Square tiles, Rectangular tiles, Striped wallpaper or
+Dotted wallpaper. Each face retains its paint color when switching to a pattern
+and back. Pattern color and repeat size (0.1–5 meters per complete repeat) are
+editable in the same Finish group. Interior walls share a finish until split;
+merging sides copies Side A's finish. Patterns wrap neither caps nor opening
+reveals and retain door, window and niche cutouts. They are generated locally,
+without remote textures.
+
+Custom image in the same selector accepts a local PNG, JPG or WebP of up to
+10 MiB and 32 megapixels. Choosing or replacing an image shows a preview and
+filename. Image width (0.1–20 meters) sets the horizontal repeat; the vertical
+repeat preserves the image's proportions and both dimensions are shown in the
+selected measurement units. Invalid replacements leave the previous finish intact.
+Preparation happens entirely in the browser: images are resized to at most 1024
+pixels per edge, flattened onto white and saved as JPEG with metadata removed,
+within 192 KiB per image. Transparent images therefore have a white background.
+Choosing Paint or a generated pattern removes the image from that face through
+ordinary undo/redo. The image repeats across the whole face and respects the same
+caps, reveals and cutouts as generated patterns.
+
+Optional `WallSpec.faceFinishes.left/right` overrides the selected face's paint
+without deleting it. Optimized custom images are embedded in that JSON metadata,
+so history, publication, JSON/`.cabane` backups and HA storage preserve them without
+changing the separate GLB asset protocol. The existing workspace document size
+limit still applies. Custom images and generated patterns require a matching
+updated frontend on every client. Older clients reject unsupported finish data
+instead of stripping it. Existing projects need no migration.
 
 The Construct floor menu places **Setup apartment floor** directly below **Add floor below**.
 Its dialog sets the storey where the lowest modeled floor starts (0–100, with 0

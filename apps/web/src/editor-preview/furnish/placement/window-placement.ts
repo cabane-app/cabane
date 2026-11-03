@@ -26,6 +26,7 @@ const isWindowFitOpening = (
 
 export interface WindowPlacement {
   openingId: string;
+  openingLabel: string;
   roomName: string;
   placement: Extract<ItemPlacement, { kind: "wall" }>;
   size: SceneItemSize;
@@ -82,7 +83,7 @@ export function windowPlacements(
       });
       if (candidate.placement?.kind !== "wall") continue;
       const exteriorCandidate = exterior
-        ? exteriorWindowPlacement(candidate.placement, opening, floor, size, fit.depthOffsetMeters)
+        ? exteriorWindowPlacement(candidate.placement, opening, floor, fit.depthOffsetMeters)
         : null;
       if (exterior && !exteriorCandidate) continue;
       const placement = exteriorCandidate?.placement ?? {
@@ -100,6 +101,7 @@ export function windowPlacements(
         "Window";
       candidates.push({
         openingId: opening.id,
+        openingLabel: opening.name || opening.id,
         roomName,
         placement,
         size,

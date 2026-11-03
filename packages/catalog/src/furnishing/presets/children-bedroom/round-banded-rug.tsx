@@ -1,6 +1,6 @@
 import type { SceneModelProps } from "@cabane/engine";
 import { ToonMaterial } from "@cabane/engine";
-export function RoundBandedRug({ size }: SceneModelProps) {
+export function RoundBandedRug({ size, color }: SceneModelProps) {
   return (
     <group
       name="round-banded-rug"
@@ -9,7 +9,7 @@ export function RoundBandedRug({ size }: SceneModelProps) {
     >
       <mesh position={[0, 0.002, 0]}>
         <cylinderGeometry args={[0.6, 0.6, 0.004, 64]} />
-        <ToonMaterial color="#dec9bb" />
+        <ToonMaterial color={color ?? "#dec9bb"} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.006, 0]}>
         <ringGeometry args={[0.49, 0.54, 64]} />

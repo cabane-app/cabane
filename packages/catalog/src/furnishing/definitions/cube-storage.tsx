@@ -2,10 +2,11 @@ import { defineFurnishingModel } from "@cabane/engine";
 import { CubeStorage } from "../presets/children-bedroom/cube-storage";
 
 export const cubeStorageDefinition = defineFurnishingModel({
+  defaultColor: "#a95f59",
   defaultRoomType: "bedroom",
-  component: ({ size }) => (
+  component: ({ size, color }) => (
     <group scale={[size[0] / 0.85, size[1] / 1.202, size[2] / 0.412]}>
-      <CubeStorage />
+      <CubeStorage color={color} />
     </group>
   ),
   label: "Cube storage",

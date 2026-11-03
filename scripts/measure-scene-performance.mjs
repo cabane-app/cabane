@@ -190,7 +190,7 @@ async function run(options) {
     } else await page.clock.setFixedTime(new Date(configuration.fixedTime));
     await page.goto(serverOrigin(server));
     console.log("Opening the bundled demo…");
-    await page.getByRole("button", { name: "Explore the demo" }).click();
+    await page.getByRole("button", { name: /^Explore the demo/ }).click();
     await page.getByRole("button", { name: "Walk mode", exact: true }).waitFor();
     const capture = async (id, selector, expectedObject) => {
       console.log(`Measuring ${id}…`);

@@ -8,6 +8,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 await withModules(async (load) => {
   const engine = await load("/packages/engine/src/index.ts");
+  const { SceneOpeningRenderer } = await load("/packages/engine/src/SceneOpeningRenderer.tsx");
   const { DOOR_PRESETS, DoorModel } = await load("/packages/catalog/src/architecture/index.ts");
   const { ownerHomeProject, ownerProjectManifest } = await load("/tests/fixtures/bundled-home.ts");
   const { deriveDemoSessionDefinition } = await load(
@@ -28,6 +29,39 @@ await withModules(async (load) => {
   );
   const floor = ownerProjectManifest.floors[0];
   const wall = floor.walls.find((wall) => wall.id === garage.wallId);
+
+  test("garage interaction labels follow custom names without changing the target or slot", async () => {
+    const props = {
+      floor,
+      wall,
+      opening: garage,
+      model: () => createElement("group"),
+      position: 0,
+      reducedMotion: true,
+      onInteract() {},
+    };
+    const renderer = await create(createElement(SceneOpeningRenderer, props));
+    try {
+      for (const name of [undefined, "Driveway entrance", "Side garage", undefined]) {
+        await renderer.update(
+          createElement(SceneOpeningRenderer, {
+            ...props,
+            opening: { ...garage, name },
+          }),
+        );
+        const targets = [];
+        renderer.scene.instance.traverse((object) => {
+          if (object.userData.walkDeviceInteraction)
+            targets.push(object.userData.walkDeviceInteraction);
+        });
+        assert.deepEqual(targets, [
+          { id: garage.id, slotId: garage.coverSlot.id, label: name ?? "Garage door" },
+        ]);
+      }
+    } finally {
+      await renderer.unmount();
+    }
+  });
 
   test("catalog presets round-trip at non-unit scale and placement/history use the configured dimensions", () => {
     assert.deepEqual(

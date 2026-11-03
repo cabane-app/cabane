@@ -10,21 +10,21 @@ type ColorfulRugVariant = keyof typeof COLORFUL_RUG_VARIANTS;
 const isColorfulRugVariant = (variant: string): variant is ColorfulRugVariant =>
   Object.hasOwn(COLORFUL_RUG_VARIANTS, variant);
 
-function NeutralRugLayers() {
+function NeutralRugLayers({ color }: { color?: string | undefined }) {
   return (
     <>
       <RoundedFurniturePanel
         name="area-rug-field"
         size={[2, 0.01, 3]}
         position={[0, 0.005, 0]}
-        color="#d8cfbd"
+        color={color ?? "#d8cfbd"}
         radius={0.015}
         outlineColor="#9b907e"
       />
       {/* Border tops at 12 mm; bands top at 15 mm, avoiding coplanar faces. */}
       <mesh name="area-rug-border" position={[0, 0.011, 0]} receiveShadow>
         <boxGeometry args={[1.91, 0.002, 2.91]} />
-        <ToonMaterial color="#c5b79f" />
+        <ToonMaterial color={color ?? "#c5b79f"} />
       </mesh>
       {[-0.54, 0, 0.54].map((x) => (
         <mesh key={x} name="area-rug-band" position={[x, 0.013, 0]} receiveShadow>
@@ -36,7 +36,13 @@ function NeutralRugLayers() {
   );
 }
 
-function ColorfulRugLayers({ variant }: { variant: ColorfulRugVariant }) {
+function ColorfulRugLayers({
+  variant,
+  color,
+}: {
+  variant: ColorfulRugVariant;
+  color?: string | undefined;
+}) {
   const style = COLORFUL_RUG_VARIANTS[variant];
   return (
     <>
@@ -45,7 +51,7 @@ function ColorfulRugLayers({ variant }: { variant: ColorfulRugVariant }) {
         name="area-rug-field"
         size={[2, 0.013, 3]}
         position={[0, 0.0065, 0]}
-        color={style.field}
+        color={color ?? style.field}
         radius={0.015}
         outline={false}
       />
@@ -81,18 +87,20 @@ function ColorfulRugLayers({ variant }: { variant: ColorfulRugVariant }) {
 export function NeutralAreaRug({
   size = NEUTRAL_AREA_RUG_SIZE,
   variant = "default",
+  color,
 }: {
   size?: SceneItemSize;
+  color?: string | undefined;
   variant?: string;
 }) {
   return (
     <group name="neutral-area-rug" scale={[size[0] / 2, size[1] / 0.015, size[2] / 3]}>
       {variant === "fluffy" ? (
-        <FluffyRugLayers />
+        <FluffyRugLayers color={color} />
       ) : isColorfulRugVariant(variant) ? (
-        <ColorfulRugLayers variant={variant} />
+        <ColorfulRugLayers variant={variant} color={color} />
       ) : (
-        <NeutralRugLayers />
+        <NeutralRugLayers color={color} />
       )}
     </group>
   );

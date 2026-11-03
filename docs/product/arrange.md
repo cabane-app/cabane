@@ -95,8 +95,10 @@ the supporting wall. The same derived assignment groups placed items, Connect,
 dashboard state and device shortcuts, including beside outdoor room platforms.
 Only a unique indoor wall side is used; roomless or ambiguous openings cannot be
 automatically fitted. There is no saved room override. Free placement uses actual
-position. Closed opening clearance can move the assembly forward on shallow
-walls; window edits use the ordinary refit workflow. Dragging previews a
+position. Fitting follows the window frame independently of wall thickness and
+clears closed frames, handles and outlines; window edits use the ordinary refit
+workflow. App composition includes the catalog descriptors in editor previews,
+Connect and the published home so these views share room assignment. Dragging previews a
 transaction; release commits it, cancel restores it, and history records the
 finished operation. Cmd-drag (Mac) or Ctrl-drag (Windows/Linux) draws a selection rectangle in either view and selects
 items whose placement anchors lie inside it. Shift-drag remains available for

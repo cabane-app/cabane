@@ -1,0 +1,15 @@
+.terrain-settings fieldset.terrain-settings__corners {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.terrain-settings__corner {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.terrain-settings__corners .terrain-settings__corner > label {
+  display: block;
+}
+.terrain-settings__reset {
+  grid-column: 1 / -1;
+  justify-self: start;
+}

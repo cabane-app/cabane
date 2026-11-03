@@ -1,4 +1,4 @@
-import { defineDeviceModel } from "@cabane/engine";
+import { DEFAULT_STRIP_MAX_SPACING_METERS, defineDeviceModel } from "@cabane/engine";
 import {
   UnderCabinetLedStripModel,
   UNDER_CABINET_LED_STRIP_SIZE,
@@ -16,7 +16,21 @@ export const underCabinetLedStripDefinition = defineDeviceModel({
   supportedDomains: ["light"],
   mountKind: "surface",
   outlineContact: false,
-  sceneLight: { position: [0, 0.002, 0], color: "#ffd99b", maxIntensity: 3, distance: 2.5 },
+  lighting: {
+    position: [0, 0.002, 0],
+    color: "#ffd99b",
+    maxIntensity: 3,
+    distance: 2.5,
+    sources: [
+      {
+        kind: "strip",
+        start: [-0.492, 0.002, 0],
+        end: [0.492, 0.002, 0],
+        samples: 2,
+        maxSpacingMeters: DEFAULT_STRIP_MAX_SPACING_METERS,
+      },
+    ],
+  },
   interaction,
   complexity: { visibleMeshes: 2, triangles: 24 },
 });

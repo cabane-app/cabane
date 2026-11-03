@@ -300,7 +300,7 @@ export const FloorScene = memo(function FloorScene({
                 deviceModels,
                 manifest.extensions.deviceModels,
               );
-              if (!resolvedDevice || !definition) return [];
+              if (!resolvedDevice) return [];
               return [
                 <LegacyDeviceItemRenderer
                   key={`device-${binding.id}`}

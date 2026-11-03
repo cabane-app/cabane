@@ -5,7 +5,7 @@ panel. The Cabane integration relays commands to that editor over HA's existing
 authenticated WebSocket connection. The editor remains the owner of the draft,
 validation, history, browser storage and authenticated device connections.
 
-Agent pairing is available only in the HA panel. There is no localhost server,
+Shipped agent pairing is available only in the HA panel. There is no localhost server,
 browser-to-loopback request, CORS configuration or separate HA login for the agent.
 The browser and agent may run on different devices that can reach the same HA.
 Both the frontend and integration must include relay protocol version 3. An older
@@ -101,3 +101,33 @@ Tests cover pairing, scope, expiry, disconnect races, bounded requests, command
 parity, history and persistence. The local HA stack accepts
 `npm run ha:refresh -- --integration-source /path/to/integration-checkout` to test
 matching frontend/backend changes without changing a household installation.
+
+## Local development
+
+Product development can use `npm run agent:dev -- start` to create a disposable
+home without pairing, importing a workspace or driving editor controls. Add
+`--room 6x4` to build and validate a starter room through four ordinary wall
+commands. The
+[`home-building-harness` skill](../../.agents/skills/home-building-harness/SKILL.md) describes
+commands and fixture preparation. This is opt-in development tooling, separate
+from the shipped HA relay. It requires the installed pinned Chromium.
+
+The runner starts its own loopback Vite server and isolated Chromium context,
+creates a blank workspace through `createWorkspaceRepository.createBlank`, then
+opens the normal editor. Its development-only bridge calls `executeAgentRequest`
+on that editor's controller. The bridge requires both a development build and
+`VITE_CABANE_DEV_AGENT=1`, which the runner supplies to its own Vite instance.
+Production builds omit the bridge. Ordinary `npm run dev` leaves it disabled.
+
+The CLI's loopback HTTP endpoints require a random token held in an owner-only,
+ignored session file. They reject browser Origin/fetch-metadata headers and
+unexpected Host headers. There is no HA connection or household storage access.
+Requests and batches execute one at a time. A batch stops on its first failure;
+prior edits remain applied, and no mutation is retried automatically. Compact
+mutation responses omit the repeated home inspection; explicit reads remain full.
+Draft persistence, history and validation use the same editor owners as the HA
+relay. Stopping removes the session file, browser context and Vite cache. It does
+not retain the synthetic home across runner sessions. Screenshots and optional
+headed interaction use the same isolated page, whose storage is separate from
+other browsers. This workflow prepares fixtures; it does not replace checking
+the actual feature or bug.

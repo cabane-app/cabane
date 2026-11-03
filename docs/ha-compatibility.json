@@ -19,7 +19,7 @@
     }
   },
   "semantics": {
-    "validationRevision": 7,
+    "validationRevision": 12,
     "migrationRevision": 1,
     "archiveRevision": 1
   },
@@ -420,6 +420,12 @@
                                       "const": "strip"
                                     }
                                   },
+                                  "maxSpacingMeters": {
+                                    "optional": true,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
                                   "samples": {
                                     "optional": false,
                                     "schema": {
@@ -495,6 +501,12 @@
                                   }
                                 ],
                                 "elementFlags": [1, 1, 1]
+                              }
+                            },
+                            "maxSpacingMeters": {
+                              "optional": true,
+                              "schema": {
+                                "type": "number"
                               }
                             },
                             "samples": {
@@ -657,6 +669,9 @@
                       },
                       {
                         "const": "cover"
+                      },
+                      {
+                        "const": "event"
                       },
                       {
                         "const": "fan"
@@ -1199,6 +1214,12 @@
                                 "const": "passage"
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1319,6 +1340,12 @@
                                     "const": 2
                                   }
                                 ]
+                              }
+                            },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
                               }
                             },
                             "offsetFromWallStartPlanUnits": {
@@ -1477,6 +1504,12 @@
                                 ]
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1633,6 +1666,12 @@
                                 "const": "door"
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1761,6 +1800,12 @@
                                 }
                               }
                             },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "offsetFromWallStartPlanUnits": {
                               "optional": false,
                               "schema": {
@@ -1866,6 +1911,12 @@
                               "optional": false,
                               "schema": {
                                 "const": "passage"
+                              }
+                            },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
                               }
                             },
                             "offsetFromWallStartPlanUnits": {
@@ -2768,6 +2819,203 @@
                             }
                           }
                         },
+                        "faceFinishes": {
+                          "optional": true,
+                          "schema": {
+                            "properties": {
+                              "left": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "properties": {
+                                        "color": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "#ffffff"
+                                          }
+                                        },
+                                        "image": {
+                                          "optional": false,
+                                          "schema": {
+                                            "properties": {
+                                              "dataUrl": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "height": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              },
+                                              "name": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "width": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "pattern": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "custom-image"
+                                          }
+                                        },
+                                        "repeatMeters": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "properties": {
+                                        "color": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "pattern": {
+                                          "optional": false,
+                                          "schema": {
+                                            "anyOf": [
+                                              {
+                                                "const": "dotted-wallpaper"
+                                              },
+                                              {
+                                                "const": "square-tile"
+                                              },
+                                              {
+                                                "const": "striped-wallpaper"
+                                              },
+                                              {
+                                                "const": "subway-tile"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "repeatMeters": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "right": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "properties": {
+                                        "color": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "#ffffff"
+                                          }
+                                        },
+                                        "image": {
+                                          "optional": false,
+                                          "schema": {
+                                            "properties": {
+                                              "dataUrl": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "height": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              },
+                                              "name": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "width": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "pattern": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "custom-image"
+                                          }
+                                        },
+                                        "repeatMeters": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "properties": {
+                                        "color": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "pattern": {
+                                          "optional": false,
+                                          "schema": {
+                                            "anyOf": [
+                                              {
+                                                "const": "dotted-wallpaper"
+                                              },
+                                              {
+                                                "const": "square-tile"
+                                              },
+                                              {
+                                                "const": "striped-wallpaper"
+                                              },
+                                              {
+                                                "const": "subway-tile"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "repeatMeters": {
+                                          "optional": false,
+                                          "schema": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
                         "from": {
                           "optional": false,
                           "schema": {
@@ -2790,6 +3038,12 @@
                         },
                         "id": {
                           "optional": false,
+                          "schema": {
+                            "type": "string"
+                          }
+                        },
+                        "name": {
+                          "optional": true,
                           "schema": {
                             "type": "string"
                           }
@@ -3013,6 +3267,37 @@
                   }
                 }
               },
+              "terrain": {
+                "optional": true,
+                "schema": {
+                  "properties": {
+                    "bottomLeftMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "bottomRightMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "topLeftMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "topRightMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
               "walkStart": {
                 "optional": true,
                 "schema": {
@@ -3164,6 +3449,12 @@
                                     "const": "strip"
                                   }
                                 },
+                                "maxSpacingMeters": {
+                                  "optional": true,
+                                  "schema": {
+                                    "type": "number"
+                                  }
+                                },
                                 "samples": {
                                   "optional": false,
                                   "schema": {
@@ -3239,6 +3530,12 @@
                                 }
                               ],
                               "elementFlags": [1, 1, 1]
+                            }
+                          },
+                          "maxSpacingMeters": {
+                            "optional": true,
+                            "schema": {
+                              "type": "number"
                             }
                           },
                           "samples": {
@@ -3406,6 +3703,9 @@
                                 },
                                 {
                                   "const": "cover"
+                                },
+                                {
+                                  "const": "event"
                                 },
                                 {
                                   "const": "fan"
@@ -3647,6 +3947,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"
@@ -4110,6 +4413,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"
@@ -4687,6 +4993,22 @@
                         "const": "spiral"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "totalTurnDegrees": {
                       "optional": false,
                       "schema": {
@@ -4697,6 +5019,128 @@
                       "optional": false,
                       "schema": {
                         "type": "string"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "diameterMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "direction": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "clockwise"
+                          },
+                          {
+                            "const": "counterclockwise"
+                          }
+                        ]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "spiral"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalTurnDegrees": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
                       }
                     }
                   }
@@ -4764,6 +5208,22 @@
                       "optional": false,
                       "schema": {
                         "const": "l-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
                       }
                     },
                     "turn": {
@@ -4864,6 +5324,22 @@
                         "const": "u-shaped"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "turn": {
                       "optional": false,
                       "schema": {
@@ -4962,10 +5438,391 @@
                         "const": "straight"
                       }
                     },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
                     "upperFloorId": {
                       "optional": false,
                       "schema": {
                         "type": "string"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "lowerRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "l-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "turn": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "upperRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "lowerRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": false,
+                      "schema": {
+                        "const": "u-shaped"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "turn": {
+                      "optional": false,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "upperRunMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "widthMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "at": {
+                      "optional": false,
+                      "schema": {
+                        "tuple": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "elementFlags": [1, 1]
+                      }
+                    },
+                    "id": {
+                      "optional": false,
+                      "schema": {
+                        "type": "string"
+                      }
+                    },
+                    "railings": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "both"
+                          },
+                          {
+                            "const": "left"
+                          },
+                          {
+                            "const": "none"
+                          },
+                          {
+                            "const": "right"
+                          }
+                        ]
+                      }
+                    },
+                    "rotationYRadians": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "runMeters": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "shape": {
+                      "optional": true,
+                      "schema": {
+                        "const": "straight"
+                      }
+                    },
+                    "style": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": "concrete"
+                          },
+                          {
+                            "const": "open"
+                          },
+                          {
+                            "const": "stone"
+                          }
+                        ]
+                      }
+                    },
+                    "terrain": {
+                      "optional": false,
+                      "schema": {
+                        "properties": {
+                          "end": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "lower"
+                                },
+                                {
+                                  "const": "upper"
+                                }
+                              ]
+                            }
+                          },
+                          "floorId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        }
                       }
                     },
                     "widthMeters": {
@@ -5535,6 +6392,12 @@
                               "const": "passage"
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -5655,6 +6518,12 @@
                                   "const": 2
                                 }
                               ]
+                            }
+                          },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
                             }
                           },
                           "offsetFromWallStartPlanUnits": {
@@ -5813,6 +6682,12 @@
                               ]
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -5969,6 +6844,12 @@
                               "const": "door"
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -6097,6 +6978,12 @@
                               }
                             }
                           },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "offsetFromWallStartPlanUnits": {
                             "optional": false,
                             "schema": {
@@ -6202,6 +7089,12 @@
                             "optional": false,
                             "schema": {
                               "const": "passage"
+                            }
+                          },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
                             }
                           },
                           "offsetFromWallStartPlanUnits": {
@@ -7104,6 +7997,203 @@
                           }
                         }
                       },
+                      "faceFinishes": {
+                        "optional": true,
+                        "schema": {
+                          "properties": {
+                            "left": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "properties": {
+                                      "color": {
+                                        "optional": false,
+                                        "schema": {
+                                          "const": "#ffffff"
+                                        }
+                                      },
+                                      "image": {
+                                        "optional": false,
+                                        "schema": {
+                                          "properties": {
+                                            "dataUrl": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "height": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "name": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "width": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "number"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "pattern": {
+                                        "optional": false,
+                                        "schema": {
+                                          "const": "custom-image"
+                                        }
+                                      },
+                                      "repeatMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "properties": {
+                                      "color": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "pattern": {
+                                        "optional": false,
+                                        "schema": {
+                                          "anyOf": [
+                                            {
+                                              "const": "dotted-wallpaper"
+                                            },
+                                            {
+                                              "const": "square-tile"
+                                            },
+                                            {
+                                              "const": "striped-wallpaper"
+                                            },
+                                            {
+                                              "const": "subway-tile"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "repeatMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            "right": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "properties": {
+                                      "color": {
+                                        "optional": false,
+                                        "schema": {
+                                          "const": "#ffffff"
+                                        }
+                                      },
+                                      "image": {
+                                        "optional": false,
+                                        "schema": {
+                                          "properties": {
+                                            "dataUrl": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "height": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "name": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "width": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "number"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "pattern": {
+                                        "optional": false,
+                                        "schema": {
+                                          "const": "custom-image"
+                                        }
+                                      },
+                                      "repeatMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "properties": {
+                                      "color": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "pattern": {
+                                        "optional": false,
+                                        "schema": {
+                                          "anyOf": [
+                                            {
+                                              "const": "dotted-wallpaper"
+                                            },
+                                            {
+                                              "const": "square-tile"
+                                            },
+                                            {
+                                              "const": "striped-wallpaper"
+                                            },
+                                            {
+                                              "const": "subway-tile"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "repeatMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      },
                       "from": {
                         "optional": false,
                         "schema": {
@@ -7126,6 +8216,12 @@
                       },
                       "id": {
                         "optional": false,
+                        "schema": {
+                          "type": "string"
+                        }
+                      },
+                      "name": {
+                        "optional": true,
                         "schema": {
                           "type": "string"
                         }
@@ -7327,6 +8423,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"
@@ -7790,6 +8889,9 @@
                                     },
                                     {
                                       "const": "cover"
+                                    },
+                                    {
+                                      "const": "event"
                                     },
                                     {
                                       "const": "fan"

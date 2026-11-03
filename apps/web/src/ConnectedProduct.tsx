@@ -1,6 +1,5 @@
 import { useWorkspaceToolStorage } from "./workspaces/useWorkspaceToolStorage";
 import { installedWalkTools } from "./walk-tools";
-import { HomeAssistantPage } from "./workspaces/HomeAssistantPage";
 import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router";
 import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
@@ -18,7 +17,7 @@ import {
 } from "@cabane/engine";
 import { composeOwnerProjectManifest, ownerProjectRegistries } from "./project-runtime";
 import type { EditorOpenRequest } from "./editor-connect/useConnectEditor";
-import { downloadConnectData } from "./editor-connect/profile-transfer";
+import { downloadWorkspaceArchive } from "./workspaces/download-workspace-archive";
 import { CONNECT_RETURN_KEY, readEditorReturn } from "./editor-connect/connect-navigation";
 import { editorPath, editorRoutes, workspaceHomePath } from "./editor-routes";
 import { exportWorkspaceBackup } from "./workspaces/workspace-transfer";
@@ -114,6 +113,10 @@ export function ConnectedProduct({
       recoveryMessage={recovery.message}
       recoveryRaw={recovery.raw}
       homeAssistantUrl={homeAssistantUrl}
+      isDemo={onboarding?.isDemo ?? false}
+      onCreatePersonal={() => {
+        void onboarding?.start("connect");
+      }}
       onPrepareOrigin={async (current, url) => {
         const next = await onHomeAssistantUrlChange(url, current);
         const updated = next ?? current;
@@ -156,9 +159,12 @@ export function ConnectedProduct({
                   ),
                 );
             }}
-            onHomeAssistantSettings={() =>
-              void navigate(`${workspaceHomePath(record.homeId)}/home-assistant`)
-            }
+            onOpenSettings={() => {
+              void openEditor({ mode: "construct", panel: "settings" });
+            }}
+            onHomeAssistantSettings={() => {
+              void openEditor({ mode: "construct", panel: "home-assistant" });
+            }}
             onWorkspaces={() => void navigate("/workspaces")}
             renderActionBarDeviceIcon={(modelId) => (
               <ShortcutDeviceIcon modelId={modelId} models={publishedDeviceModels} />
@@ -179,7 +185,7 @@ export function ConnectedProduct({
               });
             }}
             onExportBrowserData={() =>
-              downloadConnectData(
+              downloadWorkspaceArchive(
                 exportWorkspaceBackup(
                   {
                     name: record.draft.home.name,
@@ -188,15 +194,24 @@ export function ConnectedProduct({
                   },
                   record,
                 ),
-                `${record.homeId}-private-workspace.json`,
-              )
+                `${record.homeId}-backup.cabane`,
+              ).catch((cause) => {
+                setConnectionError(
+                  cause instanceof Error
+                    ? cause.message
+                    : "Could not download the backup. Try again.",
+                );
+              })
             }
           />
         </ShortcutThumbnailSurface>
       </WalkToolStorageProvider>
     );
   return (
-    <FloorNavigationProvider key={record.homeId}>
+    <FloorNavigationProvider
+      key={record.homeId}
+      storageKey={`cabane:selected-floor:${record.homeId}`}
+    >
       {connectionError && (
         <div className="workspace-connection-error" role="alert">
           {connectionError}
@@ -209,25 +224,6 @@ export function ConnectedProduct({
         <Route path="/welcome" element={home} />
         <Route path="/demo" element={home} />
         <Route path="/workspaces/:workspaceId" element={home} />
-        <Route
-          path="/workspaces/:workspaceId/home-assistant"
-          element={
-            <HomeAssistantPage
-              record={record}
-              lifecycle={lifecycle}
-              origin={homeAssistantUrl}
-              onChangeOrigin={async (url) => {
-                const next = await onHomeAssistantUrlChange(url, record);
-                if (next) setRecord(next);
-              }}
-              onRecordChange={setRecord}
-              isDemo={onboarding?.isDemo ?? false}
-              onCreatePersonal={() => {
-                void onboarding?.start("connect");
-              }}
-            />
-          }
-        />
         <Route
           path="/workspaces/:workspaceId/mobile-editor"
           element={

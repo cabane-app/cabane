@@ -10,7 +10,7 @@ import { FLOOR_EDITOR_EPSILON, FloorTopologyInput, FloorTopologyResult } from ".
 import { footprintForFaces } from "./topology-footprint";
 import { buildGraph, connected, traverseFaces } from "./topology-graph";
 import { deriveJunctions } from "./topology-junctions";
-import { centroid, containsPoint, issue, length, round } from "./topology-plan-math";
+import { containsPoint, issue, length, round } from "./topology-plan-math";
 import { normalizeWallRuns } from "./topology-wall-runs";
 
 export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyResult => {
@@ -225,6 +225,7 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
   const ceilingHeight = input.defaultCeilingHeightMeters ?? 2.5;
   const walls: WallSpec[] = normalizedWallRuns.map(({ wall, classification }) => ({
     id: wall.id,
+    ...(wall.name ? { name: wall.name } : {}),
     from: wall.from,
     to: wall.to,
     classification,
@@ -238,6 +239,7 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
     ...(wall.exteriorColor ? { exteriorColor: wall.exteriorColor } : {}),
     ...(wall.edgeColor ? { edgeColor: wall.edgeColor } : {}),
     ...(wall.faceColors ? { faceColors: { ...wall.faceColors } } : {}),
+    ...(wall.faceFinishes ? { faceFinishes: structuredClone(wall.faceFinishes) } : {}),
     ...(wall.niches ? { niches: wall.niches.map((niche) => ({ ...niche })) } : {}),
   }));
   const openings: OpeningSpec[] = input.openings.flatMap((opening, index): OpeningSpec[] => {
@@ -245,6 +247,7 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
     if (!ownerRun) return [];
     const shared = {
       id: opening.id,
+      ...(opening.name ? { name: opening.name } : {}),
       wallId: ownerRun.wallId,
       offsetFromWallStartPlanUnits: round(opening.offsetPlanUnits - ownerRun.startOffsetPlanUnits),
       widthPlanUnits: round(opening.widthPlanUnits),
@@ -340,7 +343,7 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
   return { floor, issues, faces, classifications, wallRuns };
 };
 
-export const roomAnchorForPolygon = centroid;
+export { roomAnchorForPolygon } from "./topology-plan-math";
 export { FLOOR_EDITOR_EPSILON } from "./topology-contract";
 export type {
   DerivedWallRun,

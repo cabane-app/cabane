@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
 
 import {
@@ -142,7 +143,9 @@ export function EditorCompletionDialogs({
                   >
                     <span>{issue.severity === "error" ? "×" : "!"}</span>
                     <div>
-                      <strong>{issue.message}</strong>
+                      <strong>
+                        <MeasurementText>{issue.message}</MeasurementText>
+                      </strong>
                       <small>{issue.path}</small>
                     </div>
                   </li>
@@ -151,7 +154,7 @@ export function EditorCompletionDialogs({
             )}
             {publishMessage && (
               <div className="direction-publish-dialog__result" role="status">
-                {publishMessage}
+                <MeasurementText>{publishMessage}</MeasurementText>
               </div>
             )}
             <footer>

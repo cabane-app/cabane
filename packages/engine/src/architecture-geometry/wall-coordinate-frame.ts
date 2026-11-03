@@ -1,6 +1,6 @@
 import { planPointToWorld, pointInsidePolygon, worldPointToPlan } from "../geometry";
 
-import type { FloorSpec, PlanPoint, WallJunctionSpec, WallSpec } from "../types";
+import type { FloorSpec, PlanPoint, WallJunctionSpec, WallSpec, WallSurfaceFinish } from "../types";
 import { Horizontal, WallPlanFloor } from "./architecture-geometry-contract";
 
 export const normalize = ([x, z]: Horizontal): Horizontal => {
@@ -19,6 +19,20 @@ export const wallFrame = (wall: WallSpec, floor: WallPlanFloor) => {
     normal: [-direction[1], direction[0]] as Horizontal,
     length: Math.hypot(to[0] - from[0], to[1] - from[1]),
   };
+};
+
+/** Uploaded artwork reads left to right when looking at either visible wall face. */
+export const wallSurfaceU = (
+  point: Horizontal,
+  frame: ReturnType<typeof wallFrame>,
+  finish: WallSurfaceFinish | undefined,
+  side: "left" | "right",
+) => {
+  const distance =
+    (point[0] - frame.from[0]) * frame.direction[0] +
+    (point[1] - frame.from[1]) * frame.direction[1];
+  const direction = finish?.pattern === "custom-image" && side === "right" ? -1 : 1;
+  return (distance * direction) / (finish?.repeatMeters ?? 1);
 };
 
 export const pointInsideFloorFootprint = (candidate: PlanPoint, floor: WallPlanFloor) =>
@@ -41,8 +55,15 @@ export const wallExteriorNormal = (wall: WallSpec, floor: WallPlanFloor): Horizo
   );
   const plusInside = pointInsideFloorFootprint(plus, floor);
   const minusInside = pointInsideFloorFootprint(minus, floor);
-  if (plusInside === minusInside) return null;
-  return plusInside ? [-frame.normal[0], -frame.normal[1]] : frame.normal;
+  if (plusInside !== minusInside)
+    return plusInside ? [-frame.normal[0], -frame.normal[1]] : frame.normal;
+  if (plusInside) return null;
+  // Outside the building, use the platform perimeter to orient parapets and side walls.
+  const onPlatform = (point: PlanPoint) =>
+    (floor.outdoorPlatforms ?? []).some((platform) => pointInsidePolygon(point, platform.polygon));
+  const plusOnPlatform = onPlatform(plus);
+  if (plusOnPlatform === onPlatform(minus)) return null;
+  return plusOnPlatform ? [-frame.normal[0], -frame.normal[1]] : frame.normal;
 };
 
 export const junctionArmHalfLength = (junction: WallJunctionSpec, floor: FloorSpec) => {

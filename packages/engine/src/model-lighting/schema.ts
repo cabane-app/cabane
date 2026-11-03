@@ -48,10 +48,15 @@ export function validateModelLighting(value: unknown, path: string, issues: Home
       if (light.points !== undefined) error("strip", "Choose points or a strip, not both.");
       const strip = record(light.strip, `${path}.strip`, issues);
       if (strip) {
-        keys(strip, ["end", "samples"], `${path}.strip`, issues);
+        keys(strip, ["end", "samples", "maxSpacingMeters"], `${path}.strip`, issues);
         vector(strip.end, `${path}.strip.end`, issues);
         if (!Number.isSafeInteger(strip.samples) || Number(strip.samples) < 2)
           error("strip.samples", "A strip needs a whole number of at least two samples.");
+        if (strip.maxSpacingMeters !== undefined) {
+          finite(strip.maxSpacingMeters, `${path}.strip.maxSpacingMeters`, issues);
+          if (Number(strip.maxSpacingMeters) <= 0)
+            error("strip.maxSpacingMeters", "Adaptive strip spacing must be greater than zero.");
+        }
         if (
           Array.isArray(strip.end) &&
           Array.isArray(light.position) &&
@@ -71,7 +76,7 @@ export function validateModelLighting(value: unknown, path: string, issues: Home
           keys(source, ["kind", "position"], sourcePath, issues);
           vector(source.position, `${sourcePath}.position`, issues);
         } else if (source.kind === "strip") {
-          keys(source, ["kind", "start", "end", "samples"], sourcePath, issues);
+          keys(source, ["kind", "start", "end", "samples", "maxSpacingMeters"], sourcePath, issues);
           vector(source.start, `${sourcePath}.start`, issues);
           vector(source.end, `${sourcePath}.end`, issues);
           if (!Number.isSafeInteger(source.samples) || Number(source.samples) < 2)
@@ -79,6 +84,14 @@ export function validateModelLighting(value: unknown, path: string, issues: Home
               `sources[${index}].samples`,
               "A strip needs a whole number of at least two samples.",
             );
+          if (source.maxSpacingMeters !== undefined) {
+            finite(source.maxSpacingMeters, `${sourcePath}.maxSpacingMeters`, issues);
+            if (Number(source.maxSpacingMeters) <= 0)
+              error(
+                `sources[${index}].maxSpacingMeters`,
+                "Adaptive strip spacing must be greater than zero.",
+              );
+          }
           if (
             Array.isArray(source.start) &&
             Array.isArray(source.end) &&

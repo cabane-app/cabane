@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import type { ManifestIssue } from "@cabane/engine";
 import "./stair-diagnostics.css";
 
@@ -17,7 +18,9 @@ export function StairWarnings({
   const messages = (
     <ul>
       {warnings.map((message) => (
-        <li key={message}>{message}</li>
+        <li key={message}>
+          <MeasurementText>{message}</MeasurementText>
+        </li>
       ))}
     </ul>
   );

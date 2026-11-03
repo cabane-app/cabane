@@ -83,6 +83,12 @@ transfer precedes the revision-checked document write; see
 Arrange → My models can exchange a model-only ZIP pack (`manifest.json` plus
 `assets/<sha256>.glb`) independently of a workspace JSON or `.cabane` backup.
 
+Custom wall images are optimized JPEG data embedded directly in the optional
+wall-face finish metadata. They follow draft/published records, undo/redo,
+duplication, JSON and `.cabane` backups, and HA document transfer. No companion
+image asset or external URL is required. Images share the existing 5 MiB workspace
+document limit; image preparation is bounded separately to 192 KiB per image.
+
 Construct and Arrange use a shared panel layout. The left sidebar holds tools,
 placement choices, catalog and home settings. Selecting architecture, stairs,
 furniture or devices on desktop opens the same right Properties inspector automatically,
@@ -107,7 +113,7 @@ dock. Canvas selection does not open a mobile panel automatically. Choosing a
 construction tool, starting a canvas task, successfully adding an item or locating
 an issue returns to the canvas. Failed catalog placements retain the open panel
 and their recovery message. The same full-screen pattern applies in phone landscape.
-Connect and Shortcuts retain their existing compact surfaces. Panel changes wait
+Connect retains its existing compact surface. Settings keeps section navigation visible, with a horizontally scrolling menu on phones. Panel changes wait
 for active drawing, dragging and marquee gestures to settle. Panel state is
 presentation-only and is not exported or added to history.
 
@@ -127,16 +133,18 @@ Autosave preserves schema-valid intermediate drafts. Geometry or semantic issues
 can remain visible while editing. Item removal clears its primary, reading and
 independent lighting draft connections even when another floor is unfinished,
 preserving published mappings and Undo. The shared validation panel stays available in
-Construct, Arrange, Connect, and Shortcuts whenever the draft has visible issues.
+Construct, Arrange, Connect, and Settings whenever the draft has visible issues.
 Locate selects and focuses the affected editable object, switching floor and mode
 when needed; attachment errors select the attachment rather than its supporting
 wall or diagnostic marker. Workspace history spans construction,
 arrangement, and connections; pending gestures are settled before committing.
-Shortcuts is an editor tab beside Construct, Arrange, and Connect. It keeps the workspace sidebar with guidance for adding, editing, and applying shortcuts, and displays
+Settings is an editor tab beside Construct, Arrange, and Connect, with a distinct violet accent shared by its selected sidebar item. Its sidebar navigates Home Assistant, Shortcuts, Backups, Orbital view, Editor, and Explore. The Home menu opens this same Settings screen instead of a Preferences dialog. Home Assistant contains connection and cross-device storage controls. Backups exports the live draft as a portable design or full private archive and restores same-home files into shared undo history after downloading a safety backup. Import never publishes. Orbital view contains visual style, room overlays, lighting, and weather source. Editor contains measurement units; Explore contains Invert Y axis. Device preferences retain their existing browser storage keys and apply immediately. Weather sources retain their origin-scoped revision-checked save in draft and published profiles. Section changes preserve the current draft and history; legacy Home Assistant and Shortcuts URLs still open the corresponding section.
+
+Settings → Shortcuts displays
 the draft action bar with the same slot visuals and overflow as Home. Hovering, focusing,
 or selecting a slot exposes actions to add a built-in action, room, modeled device, HA scene, or HA script;
 filled slots can also be replaced, moved, or removed. A searchable grid fills the canvas
-for each choice. Room icons use the mapped Home Assistant photo when available, then
+for each choice. Device choices include an Outside rooms group for each floor, and those shortcuts open device controls directly without selecting an architectural room. Edit controls wrap within the Settings content area instead of extending beyond its edges. Room icons use the mapped Home Assistant photo when available, then
 initials; device icons use cached procedural previews. These edits use the same history and autosave as other
 draft changes. Missing room or device targets are shown in the panel and block Apply
 until repaired. The published Home bar changes only after Apply. Portable exports,
@@ -233,7 +241,7 @@ Shift+1, Shift+2, and Shift+3 hints on desktop. Construct keeps 3D visible but
 disabled and 2D selected. Shift+1/2 returns from Explore to the corresponding
 available editor view; Shift+3 uses the same pointer-lock flow as the Explore
 button. These shortcuts ignore typing, repeated/composing keys, additional
-modifiers, unfinished gestures, other dialogs, Connect, and the Shortcuts tab.
+modifiers, unfinished gestures, other dialogs, Connect, and Settings.
 
 Reference plans are browser-only editor assets in the separate
 `cabane-reference-plans-v1` IndexedDB database. Image blobs are keyed by home and
@@ -271,6 +279,14 @@ They must form a contiguous prefix with at least one non-basement (ground) floor
 Omitted classification preserves existing projects. Import/export, drafts, and
 undo/redo retain this flag; derived negative preview elevations are not persisted.
 
+Optional `home.terrain` stores `topLeftMeters`, `topRightMeters`,
+`bottomLeftMeters` and `bottomRightMeters`, each finite and within −100 to 100 m.
+Heights are offsets from the ground-floor datum, with the existing 5 cm outdoor
+drop retained. Corners follow the unrotated plan's building bounds. Drafts,
+publication, workspace sync, import/export and undo/redo retain the settings.
+Omission or four zeros preserves flat terrain; older clients reject the new
+field until updated. Architectural floor elevations and `belowGround` stay unchanged.
+
 Optional `toolState` is namespaced pure JSON in each home project. Tool packages own
 its versioned contents and validation; the engine only exposes the injected
 `WalkToolStorage` interface. Live tool changes save to both draft and published
@@ -289,10 +305,14 @@ undo/redo and import/export preserve explicit overrides.
 
 ### Measurement units
 
-Home menu → Preferences → Units selects Metric (m, m²) or Imperial (ft, ft²).
+Settings → Editor → Units selects Metric (m, m²) or Imperial (ft, ft²).
 The browser-local preference applies immediately to editor lengths and areas,
 including construction guides and copied measurements, room/pool/platform areas,
 properties, stairs, object placement, reference calibration and model imports.
+Diagnostic messages, their accessible labels, reference-plan errors and model-lighting
+movement labels also follow this preference immediately. Diagnostics are formatted
+at the display boundary, including ranges and small clearances; validation output,
+quoted object names and technical paths retain their original values.
 Lengths accept decimal commas or points and explicit m, cm, mm, ft, in, or feet
 and inches (for example `5' 6"`). Bare numbers use the selected unit. Imperial
 length adjustments use one inch, with Shift multiplying by ten. Angles, counts,
@@ -304,4 +324,4 @@ retains the preference for the current session.
 
 Furniture may declare optional `entitySlots` containing manual, non-required secondary sensor or binary sensor attachments. Devices retain exactly one primary control; optional read-only attachments are validated independently of the model’s control domains. `presentation.showInScene` is opt-in map visibility. Older documents omit both fields and keep their prior behavior. Older panels reject documents containing the new fields; preserve that rejection and update the matching HACS panel before transfer.
 
-Leaving the editor for Home Assistant settings or another page saves the draft first. A failed save cancels that navigation attempt so a later click can retry. Storage errors show their reason and an explicit retry. Revision conflicts keep both the newer saved record and the current in-memory draft intact, and offer a complete `.cabane` draft backup containing the current project, private mappings and verified imported GLBs, including staged imports, before the user reopens the saved workspace. Backup failures retain the draft and show a retryable error.
+Leaving the editor for Home, Workspaces or another workspace saves the draft first. Home Assistant settings now stays within the editor session. A failed save cancels that navigation attempt so a later click can retry. Storage errors show their reason and an explicit retry. Revision conflicts keep both the newer saved record and the current in-memory draft intact, and offer a complete `.cabane` draft backup containing the current project, private mappings and verified imported GLBs, including staged imports, before the user reopens the saved workspace. Backup failures retain the draft and show a retryable error.

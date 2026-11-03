@@ -1,0 +1,66 @@
+.editor-length-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.editor-length-input[data-steppers] {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+.editor-length-input > input {
+  min-width: 0;
+  width: 100%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.direction-preview .editor-length-input > input:focus-visible {
+  outline-offset: -2px;
+}
+.editor-length-input__unit {
+  color: var(--preview-muted);
+  font-size: var(--editor-text-caption, 0.75rem);
+  white-space: nowrap;
+}
+.editor-length-input .editor-length-input__steppers {
+  display: grid;
+  gap: 2px;
+}
+.editor-length-input .editor-length-input__steppers button {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 26px;
+  padding: 4px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--preview-ink);
+  background: transparent;
+  cursor: pointer;
+}
+.editor-length-input .editor-length-input__steppers button:hover:not(:disabled) {
+  background: #e0e2d5;
+}
+.editor-length-input .editor-length-input__steppers button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.editor-length-input .editor-length-input__steppers button:focus-visible {
+  outline: 2px solid var(--editor-panel-accent, #934c2e);
+  outline-offset: -2px;
+}
+.editor-length-input__steppers svg {
+  width: 16px;
+  height: 16px;
+}
+.editor-length-input__error {
+  grid-column: 1 / -1;
+  color: #9a342a;
+  font-size: var(--editor-text-caption, 0.75rem);
+}
+@media (pointer: coarse) {
+  .editor-length-input .editor-length-input__steppers button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

@@ -5,7 +5,12 @@ import { BlindFabric } from "./blind-fabric";
 
 export const MOTORIZED_BLIND_SIZE = [1.2, 1.6, 0.12] as const;
 
-export function MotorizedBlindModel({ state, visualState, reducedMotion }: HomeDeviceModelProps) {
+export function MotorizedBlindModel({
+  state,
+  visualState,
+  reducedMotion,
+  color,
+}: HomeDeviceModelProps) {
   const position =
     visualState === "disconnected" || visualState === "unavailable" ? null : coverPosition(state);
   return (
@@ -27,7 +32,7 @@ export function MotorizedBlindModel({ state, visualState, reducedMotion }: HomeD
           <ToonMaterial color="#bac0b7" />
         </mesh>
       ))}
-      <BlindFabric position={position} reducedMotion={reducedMotion} />
+      <BlindFabric position={position} reducedMotion={reducedMotion} color={color} />
       <StatusBeacon visualState={visualState} position={[0.52, 1.54, 0.106]} scale={0.4} />
     </group>
   );

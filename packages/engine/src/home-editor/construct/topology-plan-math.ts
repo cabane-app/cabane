@@ -102,6 +102,45 @@ export const centroid = (polygon: Polygon): PlanPoint => {
   return point(x / (3 * factorTotal), y / (3 * factorTotal));
 };
 
+export const roomAnchorForPolygon = (polygon: Polygon): PlanPoint => {
+  const center = centroid(polygon);
+  if (
+    pointInsidePolygon(center, polygon) &&
+    !polygon.some((from, index) =>
+      pointOnSegment(center, { from, to: polygon[(index + 1) % polygon.length] }),
+    )
+  )
+    return center;
+
+  // Between consecutive vertex heights, sorted crossings form interior pairs.
+  // Their midpoints avoid edges, even when the area centroid is outside the room.
+  const heights = [...new Set(polygon.map((value) => value[1]))].sort((a, b) => a - b);
+  let anchor = center;
+  let bestClearance = 0;
+  for (let row = 1; row < heights.length; row += 1) {
+    const height = heights[row] - heights[row - 1];
+    const y = heights[row - 1] + height / 2;
+    const crossings: number[] = [];
+    for (let index = 0; index < polygon.length; index += 1) {
+      const a = polygon[index];
+      const b = polygon[(index + 1) % polygon.length];
+      if (a[1] > y === b[1] > y) continue;
+      const [low, high] = a[1] < b[1] ? [a, b] : [b, a];
+      crossings.push(low[0] + ((y - low[1]) * (high[0] - low[0])) / (high[1] - low[1]));
+    }
+    crossings.sort((a, b) => a - b);
+    for (let index = 1; index < crossings.length; index += 2) {
+      const width = crossings[index] - crossings[index - 1];
+      const clearance = Math.min(width, height);
+      if (clearance <= bestClearance) continue;
+      bestClearance = clearance;
+      // Do not round: rounding can put a narrow room's midpoint back on an edge.
+      anchor = [crossings[index - 1] + width / 2, y];
+    }
+  }
+  return anchor;
+};
+
 export const containsPoint = (candidate: PlanPoint, polygon: Polygon) =>
   pointInsidePolygon(candidate, polygon) ||
   polygon.some((value, index) =>

@@ -1,0 +1,39 @@
+{
+  "kind": "simulator-input-calibration",
+  "measuredOn": "2026-11-03",
+  "environment": {
+    "device": "iPhone 17 Pro simulator",
+    "runtime": "iOS 26.1 (23B86)",
+    "host": "Apple M5 Pro",
+    "gestures": "60 horizontal native drag pairs"
+  },
+  "viewport": {
+    "width": 402,
+    "height": 714
+  },
+  "canvas": {
+    "width": 502,
+    "height": 892
+  },
+  "method": "WebGL2 gl.clear on every animation frame; 3s warmup then 10s capture; no application, scene, picking or Home Assistant",
+  "source": {
+    "path": "test-results/performance/diagnostics/input-control.html",
+    "sha256": "1bc2a85aed01c27ecc62dec059be4105096fa7129b9237783988d979d947ad8d"
+  },
+  "idle": {
+    "fps": 60,
+    "p95": 17.000000000029104,
+    "p99": 18,
+    "max": 20.000000000029104,
+    "over33Percent": 0
+  },
+  "nativeDrags": {
+    "fps": 60,
+    "p95": 24,
+    "p99": 25.000000000003638,
+    "max": 27,
+    "over33Percent": 0,
+    "pointerMoves": 105
+  },
+  "interpretation": "Native automated dragging increases frame-interval p95 even in an empty page. Do not attribute the full native-gesture p95 to Cabane or use it as physical-phone acceptance."
+}

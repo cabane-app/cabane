@@ -23,10 +23,12 @@ no rerun. Report the result, checks, and material uncertainty briefly.
 
 ## References when needed
 
-- Unclear ownership or cross-file behavior: [engineering map](docs/engineering-map.md)
-  and the relevant product contract. `PRODUCT_SPEC.md` and `docs/product/` remain
-  authoritative; maintain affected map entries when their routing changes.
+- Unclear ownership or cross-file behavior: [architecture](docs/product/architecture.md)
+  points to the main code areas and their product contracts. Update affected paths
+  when ownership moves; `PRODUCT_SPEC.md` and `docs/product/` define behavior.
 - Home generation: [generation workflow](docs/agent-home-generation.md).
+- Editor features, fixes and verification needing a test scene:
+  [home-building-harness](.agents/skills/home-building-harness/SKILL.md).
 - Review or model authoring: [coding standards](CODING_STANDARDS.md).
 - Test changes or flaky tests: [test guidelines](docs/test-guidelines.md).
 - Setup, execution permissions, CI, or release details:

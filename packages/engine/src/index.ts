@@ -1,3 +1,4 @@
+export { SceneActivityPulse } from "./SceneActivityPulse";
 export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";
 export * from "./types";
@@ -6,6 +7,7 @@ export * from "./walk-tools";
 export * from "./action-bar/action-bar-config";
 export * from "./action-bar/ha-action-shortcuts";
 export { DEFAULT_ROOF_SETTINGS, type RoofSettings } from "./roof/roof-settings";
+export { FLAT_TERRAIN, type TerrainSettings } from "./terrain/terrain-settings";
 export * from "./room-types";
 export * from "./devices";
 export * from "./geometry";
@@ -132,6 +134,7 @@ export { sha256Hex } from "./sha256-digest";
 
 export { DEFAULT_WALL_COLORS } from "./wall-colors";
 
+export { ScenePreferences } from "./ScenePreferences";
 export type { WeatherSource, WeatherPreview } from "./weather";
 export {
   useMeasurementUnits,
@@ -143,6 +146,15 @@ export {
   formatArea,
   parseLength,
 } from "./measurement-units";
+export { formatMeasurementText } from "./measurement-text";
+export { MeasurementText } from "./MeasurementText";
+export { WALL_IMAGE_LIMITS, wallImageDimensions, wallSurfaceImageError } from "./wall-image";
+export {
+  wallSurfaceRepeatHeight,
+  type WallImageFinish,
+  type WallPatternFinish,
+  type WallSurfaceImage,
+} from "./wall-types";
 
 export { MAX_ORTHOGRAPHIC_ZOOM, MIN_EDITOR_ZOOM } from "./navigation/camera-zoom";
 
@@ -155,7 +167,11 @@ export {
   modelLightingPointCount,
 } from "./model-lighting/settings";
 export { editModelLighting } from "./model-lighting/edit";
-export { SCENE_LIGHT_BUDGET, modelLightingExecution } from "./model-lighting/execution";
+export {
+  DEFAULT_STRIP_MAX_SPACING_METERS,
+  SCENE_LIGHT_BUDGET,
+  modelLightingExecution,
+} from "./model-lighting/execution";
 
 export {
   modelLightingSurfaces,

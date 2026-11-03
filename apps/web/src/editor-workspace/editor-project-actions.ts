@@ -19,7 +19,9 @@ export type EditorProjectAction =
   | { type: "remove-floor"; floorId: string }
   | {
       type: "update-home-settings";
-      changes: Partial<Pick<HomeProject["home"], "roof" | "northAngleDegrees" | "apartmentFloor">>;
+      changes: Partial<
+        Pick<HomeProject["home"], "roof" | "northAngleDegrees" | "apartmentFloor" | "terrain">
+      >;
     }
   | { type: "set-walk-start"; walkStart: HomeProject["home"]["walkStart"] | null }
   | { type: "add-stair" | "update-stair"; stair: StairSpec }

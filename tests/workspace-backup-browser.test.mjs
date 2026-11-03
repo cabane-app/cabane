@@ -1,4 +1,5 @@
 import { withBrowserDiagnostics } from "./browser-test-diagnostics.mjs";
+import { waitForAsyncCondition } from "./async-condition.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { getBrowserTestServer, createBrowserTestSession } from "./browser-test-environment.mjs";
@@ -12,6 +13,10 @@ test(
       browser = await createBrowserTestSession();
       const page = await browser.newPage();
       page.on("dialog", (dialog) => dialog.accept());
+      // This fixture server has no app Vite defines; the editor imports thumbnail caching.
+      await page.addInitScript(() => {
+        globalThis.__THUMBNAIL_REVISION__ = "test";
+      });
       await page.goto(server.resolvedUrls.local[0]);
       const imported = await page.evaluate(async () => {
         const harness = await import("/tests/fixtures/ha-storage-harness.tsx");
@@ -32,8 +37,15 @@ test(
         buffer: Buffer.from(imported.json),
       });
       await page
-        .getByText("Backup imported into the draft. Open the editor to review and save it.")
+        .getByText("Backup imported into the draft. Review it here before saving.")
         .waitFor();
+      await waitForAsyncCondition(async () =>
+        page.evaluate(
+          async () =>
+            (await window.haHarness.repository.read(window.haHarness.id)).record.draft.home.name ===
+            "Restored draft",
+        ),
+      );
       const saved = await page.evaluate(
         async () => (await window.haHarness.repository.read(window.haHarness.id)).record,
       );

@@ -1,9 +1,16 @@
+import type { EntityStateSnapshot } from "./entity-state";
+export type { EntityStateSnapshot } from "./entity-state";
+import type { WallSpec, WallJunctionSpec } from "./wall-types";
+export type { WallSpec, WallJunctionSpec, WallNicheSpec, WallSurfaceFinish } from "./wall-types";
+export { WALL_SURFACE_PATTERNS } from "./wall-types";
 import type { StableDeviceModelId } from "./stable-device-model-id";
 export type { StableDeviceModelId } from "./stable-device-model-id";
 import type { ComponentType } from "react";
 import type { RoomType } from "./room-types";
 import type { HomeProject, SceneItemSpec } from "./home-project/types";
 import type { ActionBarConfiguration } from "./action-bar/action-bar-config";
+import type { HomeDeviceModelProps } from "./device-model-props";
+export type { DeviceModelReading, HomeDeviceModelProps } from "./device-model-props";
 
 export type PlanPoint = readonly [x: number, y: number];
 export type Polygon = readonly [PlanPoint, PlanPoint, PlanPoint, ...PlanPoint[]];
@@ -29,9 +36,13 @@ export type DeviceDomain =
   | "button"
   | "camera"
   | "sensor"
-  | "binary_sensor";
+  | "binary_sensor"
+  | "event";
 
-export type ControllableDeviceDomain = Exclude<DeviceDomain, "camera" | "sensor" | "binary_sensor">;
+export type ControllableDeviceDomain = Exclude<
+  DeviceDomain,
+  "camera" | "sensor" | "binary_sensor" | "event"
+>;
 
 export interface Assumption {
   id: string;
@@ -150,46 +161,6 @@ export interface RoomSpec {
 }
 
 /** A rectangular blind recess owned by one directed wall face. */
-export interface WallNicheSpec {
-  id: string;
-  side: "left" | "right";
-  offsetFromWallStartPlanUnits: number;
-  widthPlanUnits: number;
-  bottomMeters: number;
-  heightMeters: number;
-  depthMeters: number;
-  /** Shelf bottom heights measured upward from the niche bottom. White wall finish. */
-  shelfHeightsMeters?: readonly number[];
-  shelfThicknessMeters?: number;
-}
-
-export interface WallSpec {
-  id: string;
-  from: PlanPoint;
-  to: PlanPoint;
-  classification: "interior" | "exterior";
-  thicknessMeters: number;
-  /**
-   * A virtual wall only divides rooms: it has no geometry, collision, shadow or
-   * openings, and renders and collides as open floor.
-   */
-  virtual?: boolean;
-  niches?: readonly WallNicheSpec[];
-  heightMeters?: number;
-  exteriorColor?: string;
-  edgeColor?: string;
-  faceColors?: {
-    left?: string;
-    right?: string;
-  };
-}
-
-export interface WallJunctionSpec {
-  id: string;
-  at: PlanPoint;
-  wallIds: readonly [string, string, ...string[]];
-}
-
 export interface OpeningContactSlotSpec {
   id: string;
   compatibleDeviceClasses: readonly ("door" | "window" | "opening")[];
@@ -199,6 +170,7 @@ export interface OpeningContactSlotSpec {
 
 export interface OpeningBaseSpec {
   id: string;
+  name?: string;
   wallId: string;
   offsetFromWallStartPlanUnits: number;
   widthPlanUnits: number;
@@ -438,17 +410,6 @@ export interface ShortcutSpec {
   order: number;
 }
 
-export interface EntityStateSnapshot {
-  entityId: EntityId;
-  state: string;
-  attributes: Readonly<Record<string, unknown>>;
-  available: boolean;
-  stale: boolean;
-  lastConfirmedAt?: string;
-  lastChanged?: string;
-  lastUpdated?: string;
-}
-
 export type HomeAssistantConnectionStatus =
   | "unconfigured"
   | "disconnected"
@@ -619,18 +580,6 @@ export interface RoomFurnishingsProps {
   onInteract: (target: ExtensionInteractionTarget) => void;
 }
 
-export interface HomeDeviceModelProps {
-  color?: string;
-  variant?: string;
-  slot: DeviceSlotSpec;
-  state?: EntityStateSnapshot;
-  liveMedia?: DeviceLiveMedia;
-  visualState: DeviceVisualState;
-  reducedMotion: boolean;
-  walkMode: boolean;
-  onInteract: (target: ExtensionInteractionTarget) => void;
-}
-
 export interface ArchitectureModelProps<Opening extends OpeningSpec = OpeningSpec> {
   wall: WallSpec;
   opening: Opening;
@@ -704,7 +653,7 @@ export interface SceneModelEditorDescriptor {
   lighting?: import("./imported-models/contracts").CustomModelLight;
   lightingCustomized?: boolean;
   lightingDisabled?: boolean;
-  /** Enables the fabric color picker; omission keeps a model's original palette. */
+  /** Enables the item color picker; omission keeps a model's original palette. */
   defaultColor?: string;
   /** Ordered choices sharing size, placement, and bindings. First is the default. */
   variants?: readonly SceneModelVariant[];

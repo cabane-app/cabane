@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { WorkspaceOpenContent } from "../../apps/web/src/workspaces/WorkspaceOpenPage";
 import { MemoryRouter } from "react-router";
-import { HomeAssistantPage } from "../../apps/web/src/workspaces/HomeAssistantPage";
+import { HomeEditor } from "../../apps/web/src/HomeEditor";
 import { createBrowserHomeProjectLifecycle } from "../../apps/web/src/project-runtime";
 import { createRoot } from "react-dom/client";
 import { HomeAssistantRuntimeValueProvider, createWorkspaceRepository } from "@cabane/engine";
@@ -75,12 +75,12 @@ export async function mountHaStorageHarness(
         origin="https://ha.test"
         repository={repository}
       >
-        <HomeAssistantPage
-          record={record}
+        <HomeEditor
+          initialRecord={record}
+          initialRequest={{ mode: "construct", panel: "settings", settingsSection: "backups" }}
           lifecycle={createBrowserHomeProjectLifecycle(indexedDB, entry.metadata.id)}
-          origin="https://ha.test"
-          onRecordChange={setRecord}
-          onChangeOrigin={async () => {}}
+          homeAssistantUrl="https://ha.test"
+          onClose={setRecord}
           isDemo={false}
           onCreatePersonal={() => {}}
         />

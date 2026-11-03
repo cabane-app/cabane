@@ -1,3 +1,4 @@
+import { MeasurementText } from "@cabane/engine";
 import { LengthInput } from "../editor-chrome/LengthInput";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
@@ -304,7 +305,7 @@ export function ModelImportDialog({
         )}
         {lightError && (
           <p role="alert" className="catalog-add-error">
-            {lightError}
+            <MeasurementText>{lightError}</MeasurementText>
           </p>
         )}
         {loaded && (
@@ -345,7 +346,7 @@ export function ModelImportDialog({
         )}
         {error && (
           <p role="alert" className="catalog-add-error">
-            {error}
+            <MeasurementText>{error}</MeasurementText>
           </p>
         )}
         <footer>

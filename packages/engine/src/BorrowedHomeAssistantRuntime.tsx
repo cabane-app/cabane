@@ -214,13 +214,9 @@ export function BorrowedHomeAssistantRuntime({
     });
     subscriptions.add(
       client.subscribeEntities(connection, (states) => {
-        if (attachment.active)
-          setState((previous) => ({
-            ...previous,
-            entityStates: !transportReady
-              ? markEntityStatesStale(normalizeEntityStates(states))
-              : normalizeEntityStates(states),
-          }));
+        if (!attachment.active) return;
+        const entityStates = normalizeEntityStates(states, !transportReady);
+        setState((previous) => ({ ...previous, entityStates }));
       }),
     );
     const registrySubscriptions = Promise.all(

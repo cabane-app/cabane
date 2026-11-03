@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-03T17:37:16.221Z",
+  "label": "early-rejection-masked",
+  "source": {
+    "commit": "5d82e4b80b4a2a9021da0d790af6856348864f8d",
+    "dirty": false,
+    "homeHash": "69fd427fbaf102e41c1ff7d8833d2712482f66952c7eabaacab4a0f605f3dafb"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "touch-orbit-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 487,
+      "height": 1055,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [39.09400000000001, 45.572, 45.76400000000001],
+      "quaternion": [
+        -0.35829231738036693, 0.3288030008929161, 0.13649890390018493, 0.86306619163542
+      ],
+      "target": [9, 0.2, 12],
+      "zoom": 9.129213483146065
+    },
+    "workload": {
+      "scenario": "solstice-ha-night-cloudy-v1",
+      "home": "home/showcase/furnished.project.json",
+      "sceneItems": 239,
+      "lighting": "night",
+      "weather": "cloudy",
+      "weatherSource": "Home Assistant",
+      "mappedLights": 27,
+      "lightsOn": 10,
+      "fixtureHash": "fef844bd1dad6405e8b649d0c69fa267903bc1cebace5001ed97f762a791146e"
+    },
+    "profile": "mobile",
+    "cpuRate": 4
+  },
+  "scene": {
+    "activePointLights": 10,
+    "objects": 2878,
+    "meshes": 1938,
+    "materials": 1938,
+    "geometries": 1922
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 4,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "summary": {
+    "fps": 38.53221886354774,
+    "frameMsP50": 24.899999856948853,
+    "frameMsP95": 31.200000047683716,
+    "frameMsP99": 48.10000014305115,
+    "over33MsPercent": 3.8461538461538463,
+    "over50MsPercent": 0.5249343832020997,
+    "cpuSubmitMsP95": 6.900000095367432,
+    "callsMedian": 267,
+    "callsMax": 299,
+    "trianglesMedian": 142336,
+    "trianglesMax": 260170
+  },
+  "comparison": {
+    "fps": {
+      "before": 32.62303047099017,
+      "after": 38.53221886354774,
+      "delta": 5.909188392557567,
+      "percent": 18.11354833454935
+    },
+    "frameMsP50": {
+      "before": 28.90000009536743,
+      "after": 24.899999856948853,
+      "delta": -4.000000238418579,
+      "percent": -13.84083122913126
+    },
+    "frameMsP95": {
+      "before": 40.90000009536743,
+      "after": 31.200000047683716,
+      "delta": -9.700000047683716,
+      "percent": -23.716381479379002
+    },
+    "frameMsP99": {
+      "before": 47.40000009536743,
+      "after": 48.10000014305115,
+      "delta": 0.7000000476837158,
+      "percent": 1.4767933465724385
+    },
+    "over33MsPercent": {
+      "before": 21.779141104294478,
+      "after": 3.8461538461538463,
+      "delta": -17.93298725814063,
+      "percent": -82.34019501625134
+    },
+    "over50MsPercent": {
+      "before": 0.60790273556231,
+      "after": 0.5249343832020997,
+      "delta": -0.08296835236021027,
+      "percent": -13.64829396325459
+    },
+    "cpuSubmitMsP95": {
+      "before": 11.5,
+      "after": 6.900000095367432,
+      "delta": -4.599999904632568,
+      "percent": -39.999999170717984
+    },
+    "callsMedian": {
+      "before": 268,
+      "after": 267,
+      "delta": -1,
+      "percent": -0.3731343283582089
+    },
+    "callsMax": {
+      "before": 299,
+      "after": 299,
+      "delta": 0,
+      "percent": 0
+    },
+    "trianglesMedian": {
+      "before": 140646,
+      "after": 142336,
+      "delta": 1690,
+      "percent": 1.2015983390924734
+    },
+    "trianglesMax": {
+      "before": 255010,
+      "after": 260170,
+      "delta": 5160,
+      "percent": 2.02345006078193
+    }
+  },
+  "rawReport": "test-results/performance/2026-11-03-early-rejection-masked-cpu4.json",
+  "runSummaries": [
+    {
+      "frames": 390,
+      "movingFrames": 390,
+      "durationMs": 10121.399999856949,
+      "frameMsMax": 64.70000004768372,
+      "over100MsCount": 0,
+      "summary": {
+        "fps": 38.53221886354774,
+        "frameMsP50": 24.899999856948853,
+        "frameMsP95": 31.200000047683716,
+        "frameMsP99": 55.5,
+        "over33MsPercent": 3.8461538461538463,
+        "over50MsPercent": 1.5384615384615385,
+        "cpuSubmitMsP95": 6.900000095367432,
+        "callsMedian": 267,
+        "callsMax": 299,
+        "trianglesMedian": 140608,
+        "trianglesMax": 432879
+      }
+    },
+    {
+      "frames": 381,
+      "movingFrames": 381,
+      "durationMs": 10098.099999904633,
+      "frameMsMax": 58.30000019073486,
+      "over100MsCount": 0,
+      "summary": {
+        "fps": 37.72986997589628,
+        "frameMsP50": 25.399999856948853,
+        "frameMsP95": 34.5,
+        "frameMsP99": 48.10000014305115,
+        "over33MsPercent": 7.349081364829396,
+        "over50MsPercent": 0.5249343832020997,
+        "cpuSubmitMsP95": 7.199999809265137,
+        "callsMedian": 267,
+        "callsMax": 299,
+        "trianglesMedian": 142336,
+        "trianglesMax": 260170
+      }
+    },
+    {
+      "frames": 391,
+      "movingFrames": 391,
+      "durationMs": 10051.899999856949,
+      "frameMsMax": 137.10000014305115,
+      "over100MsCount": 1,
+      "summary": {
+        "fps": 38.8981187641704,
+        "frameMsP50": 24.5,
+        "frameMsP95": 31.200000047683716,
+        "frameMsP99": 47.5,
+        "over33MsPercent": 3.3248081841432224,
+        "over50MsPercent": 0.5115089514066496,
+        "cpuSubmitMsP95": 6.800000190734863,
+        "callsMedian": 268,
+        "callsMax": 301,
+        "trianglesMedian": 142336,
+        "trianglesMax": 260170
+      }
+    }
+  ]
+}
