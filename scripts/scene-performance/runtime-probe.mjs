@@ -5,6 +5,7 @@ export async function captureRuntime({
   addAfterEffect,
   seconds,
   warmupSeconds = 3,
+  motion = true,
   driveInput,
   isValid = () => true,
 }) {
@@ -29,7 +30,16 @@ export async function captureRuntime({
     dpr: gl.getPixelRatio(),
   });
   const resolution = canvas();
-  const result = { frameIntervalsMs: [], cpuSubmitMs: [], calls: [], triangles: [] };
+  const result = {
+    frameIntervalsMs: [],
+    cpuSubmitMs: [],
+    calls: [],
+    triangles: [],
+    newBatchBuffers: [],
+  };
+  const batchBuffers = new Set();
+  const inputController = new AbortController();
+  let newBatchBuffers = 0;
   const lastPosition = camera.position.clone(),
     lastQuaternion = camera.quaternion.clone();
   let lastZoom = camera.zoom,
@@ -53,6 +63,15 @@ export async function captureRuntime({
   gl.render = function () {
     const start = performance.now();
     try {
+      // Batches are temporarily attached directly to the scene before submission.
+      // Observe their shared buffers without traversing or instrumenting source meshes.
+      if (arguments[0] === state.scene)
+        for (const object of state.scene.children) {
+          if (object.isBatchedMesh && !batchBuffers.has(object.geometry.uuid)) {
+            batchBuffers.add(object.geometry.uuid);
+            newBatchBuffers++;
+          }
+        }
       return original.render.apply(this, arguments);
     } finally {
       submitMs += performance.now() - start;
@@ -79,6 +98,7 @@ export async function captureRuntime({
               started = frameStart;
             }
             submitMs = 0;
+            newBatchBuffers = 0;
             rendered = false;
             gl.info.reset();
           },
@@ -88,7 +108,7 @@ export async function captureRuntime({
       );
       // StylizedScene already owns priority 1. Move after controls, before LOD,
       // culling, shadows and postprocessing all see the same camera.
-      if (!driveInput)
+      if (!driveInput && motion)
         removeMove = state.internal.subscribe(
           {
             current: () => {
@@ -129,6 +149,7 @@ export async function captureRuntime({
             result.cpuSubmitMs.push(submitMs);
             result.calls.push(gl.info.render.calls);
             result.triangles.push(gl.info.render.triangles);
+            result.newBatchBuffers.push(newBatchBuffers);
           }
           lastFrame = frameStart;
           if (frameStart - started >= seconds * 1000) {
@@ -145,13 +166,20 @@ export async function captureRuntime({
       });
       state.invalidate();
     });
-    await Promise.all([capture, driveInput?.({ seconds: warmupSeconds + seconds })]);
+    await Promise.all([
+      capture,
+      driveInput?.({ seconds: warmupSeconds + seconds, signal: inputController.signal }),
+    ]);
     if (driveInput && !movingFrames)
       throw new Error("No camera movement recorded. Keep dragging/pinching during capture.");
+    if (!motion && movingFrames)
+      throw new Error("Camera moved during the stationary benchmark. Discard this run.");
     result.cameraTravel = cameraTravel;
     result.movingFrames = movingFrames;
+    result.batchBuffersCreated = result.newBatchBuffers.reduce((sum, value) => sum + value, 0);
     return result;
   } finally {
+    inputController.abort();
     clearTimeout(timer);
     removeBefore?.();
     removeMove?.();

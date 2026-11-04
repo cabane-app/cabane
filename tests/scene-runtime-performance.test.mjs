@@ -195,6 +195,7 @@ test("runtime HTML is standalone, escaped, and includes comparison and frame evi
   const current = report();
   current.label = '</title><script>alert("title")</script>';
   current.environment.gpu.renderer = '<img src=x onerror="alert(1)">';
+  current.runs[0].batchBuffersCreated = 3;
   current.comparison = compareRuntimeReports(current, current);
   const html = renderRuntimeReport(current);
   assert.ok(html.startsWith("<!doctype html>"));
@@ -208,6 +209,7 @@ test("runtime HTML is standalone, escaped, and includes comparison and frame evi
   assert.equal((html.match(/<svg /g) || []).length, 3);
   assert.ok(html.includes("Run 3"));
   assert.ok(html.includes("not confirmed display presentation"));
+  assert.ok(html.includes("3 new batch buffers observed during capture"));
   delete current.comparison;
   assert.ok(!renderRuntimeReport(current).includes('<th scope="col">Before</th>'));
   delete current.configuration.profile;

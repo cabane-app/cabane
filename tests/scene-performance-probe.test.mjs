@@ -160,12 +160,13 @@ for (const motion of [false, true])
     },
   );
 
-for (const [interrupted, touch] of [
+for (const [interrupted, touch, motion = true] of [
   [false, false],
   [true, false],
   [false, true],
+  [false, false, false],
 ])
-  test(`runtime capture accumulates passes and restores state (hidden=${interrupted}, touch=${touch})`, async (t) => {
+  test(`runtime capture accumulates passes and restores state (hidden=${interrupted}, touch=${touch}, motion=${motion})`, async (t) => {
     const after = new Set(),
       subscribers = new Map();
     const document = Object.assign(new EventTarget(), { visibilityState: "visible" });
@@ -185,6 +186,7 @@ for (const [interrupted, touch] of [
       quaternion: camera.quaternion.clone(),
       zoom: camera.zoom,
     };
+    const scene = { children: [{ isBatchedMesh: true, geometry: { uuid: "initial-buffer" } }] };
     const gl = {
       domElement: canvas,
       getPixelRatio: () => 1,
@@ -194,11 +196,11 @@ for (const [interrupted, touch] of [
           this.render = { calls: 0, triangles: 0 };
         },
       },
-      render(triangles) {
+      render(sceneOrTriangles) {
         clock += 5; // Each submitted pass takes 5 ms.
         if (this.info.autoReset) this.info.reset();
         this.info.render.calls++;
-        this.info.render.triangles += triangles;
+        this.info.render.triangles += sceneOrTriangles === scene ? 120 : sceneOrTriangles;
       },
     };
     const originalRender = gl.render;
@@ -206,6 +208,7 @@ for (const [interrupted, touch] of [
       frames = 0;
     const state = {
       gl,
+      scene,
       camera,
       controls: { target: new Vector3(), enabled: true, enableDamping: true, update() {} },
       internal: {
@@ -226,7 +229,9 @@ for (const [interrupted, touch] of [
           performance.now();
           for (const [ref] of [...subscribers].sort((a, b) => a[1] - b[1])) ref.current();
           if (touch) camera.zoom += 0.01;
-          gl.render(120); // beauty (including submitted shadow triangles)
+          if (frames === 2)
+            scene.children = [{ isBatchedMesh: true, geometry: { uuid: "replacement-buffer" } }];
+          gl.render(scene); // beauty (including submitted shadow triangles)
           gl.render(2); // contour postprocessing
           frames++;
           if (interrupted && frames === 2) {
@@ -245,6 +250,7 @@ for (const [interrupted, touch] of [
       },
       seconds: 0.08,
       warmupSeconds: 0,
+      motion,
       ...(touch
         ? {
             driveInput: async () => {
@@ -273,6 +279,12 @@ for (const [interrupted, touch] of [
         result.cpuSubmitMs.map(() => 10),
       );
       assert.ok(result.frameIntervalsMs.every((value) => value === 25));
+      assert.equal(result.batchBuffersCreated, 1, "replacement buffers count once across passes");
+      assert.equal(result.newBatchBuffers.length, result.frameIntervalsMs.length);
+      if (!motion) {
+        assert.equal(result.movingFrames, 0);
+        assert.equal(result.cameraTravel, 0);
+      }
     }
     assert.equal(subscribers.size + after.size, 0);
     assert.equal(gl.render, originalRender);

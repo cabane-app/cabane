@@ -1,5 +1,77 @@
 # Performance measurements
 
+## 2026-11-04: issue 106, apartment room transitions and native bundle
+
+[Issue 106](https://github.com/cabane-app/cabane/issues/106) includes stationary
+LOD switching, room-switching stalls and an AI analysis of an older panel build.
+All five attached images and the linked analysis were reviewed. The screenshots
+show FPS overlays, not the underlying trace; its timing attribution and 29-second
+startup remain unverified.
+
+The reported v0.3.25 panel uses `5c40fd1`. Released
+[v0.3.26](https://github.com/cabane-app/cabane-home-assistant/blob/v0.3.26/custom_components/cabane/frontend/manifest.json)
+uses `e5d6066`, including the earlier incremental-LOD and stable-constructor fixes.
+A differential Node reproduction fails with the old LOD implementation: preparing
+one unrelated mesh restores settled furniture to full detail. Current code keeps
+its selected geometry and buffer family across repeated worker waves. The existing
+LOD regression now composes the actual LOD and batcher wrappers to protect this.
+
+The new synthetic `apartment` scenario has 12 small rooms and 96 catalog furniture
+items. Current idle/orbit captures did not reproduce sustained stutters. The new
+`rooms-v1` button replay did reveal hundreds of batch-buffer replacements: room
+emphasis animates merged wall vertex colors, invalidating their static batch on
+each frame. Wall colors now use dynamic attributes and keep their ordinary draw;
+static furniture stays batched. The real wall-emphasis/batcher regression failed
+with 23 wall buffers before the fix and passes while checking the submitted colors
+still animate.
+
+Captures below use `e5d6066` plus the new harness; candidates add the dynamic-wall
+fix. Host: Apple M5 Pro CPU/ANGLE Metal GPU, Darwin 25.6.0, Chromium 151.0.7922.34,
+headless and native GPU. Each run warms up for 3 seconds and captures 10 seconds.
+Desktop is 1440×960 with an 1800×1200 drawing buffer. The mobile viewport is
+390×844, device DPR 3, effective drawing buffer 487×1055 at DPR 1.25, CPU ×4.
+No physical phone was measured.
+
+| Room-button replay                          | Before      | Candidate |
+| ------------------------------------------- | ----------- | --------- |
+| Desktop, new batch buffers per run (3 runs) | 495/493/493 | 0/0/0     |
+| Desktop, median frame p95                   | 9.0 ms      | 8.5 ms    |
+| Desktop, median callback FPS                | 120         | 120       |
+| Desktop, median/max draw calls              | 43/54       | 46/62     |
+| Mobile CPU ×4, new batch buffers (1 run)    | 399         | 0         |
+| Mobile CPU ×4, frame p95                    | 12.3 ms     | 10.7 ms   |
+| Mobile CPU ×4, average callback FPS         | 108.0       | 114.7     |
+| Mobile CPU ×4, CPU render submission p95    | 2.5 ms      | 2.1 ms    |
+| Mobile CPU ×4, median/max draw calls        | 24/33       | 27/42     |
+
+No room-replay interval exceeded 33.3 ms in either version. Eliminated buffer
+replacement is the strong result. The desktop is already at its 120 Hz cadence;
+its small p95 difference is not evidence of a stable speedup. The single throttled
+pair is directional timing evidence. Direct wall draws increase calls but preserve
+the highlight and avoid geometry repacking. The scenario has no live HA or rainy
+weather, so it does not establish acceptance of the reporter's original apartment.
+
+The native panel had a separate build problem: Vite ES-library mode preserved
+formatted output and embedded large PNGs into JavaScript. Building the custom
+element as an app retains its public entry/CSS names and emits images separately.
+Same-source artifact comparison, including the entry script and worker:
+
+| Native panel artifact                       | Before           | Candidate        |
+| ------------------------------------------- | ---------------- | ---------------- |
+| All JavaScript                              | 16,001,838 bytes | 4,167,727 bytes  |
+| Main shared chunk                           | 5,797,534 bytes  | 2,518,557 bytes  |
+| All JavaScript, individually gzipped        | 8,491,155 bytes  | 1,171,959 bytes  |
+| Complete file inventory, before compression | 17,784,076 bytes | 13,535,381 bytes |
+
+This is a 74% JavaScript-byte reduction, not a measured startup-latency claim.
+The panel verifier rejects large embedded image data URLs and runs the existing
+nested-path native-host smoke. The old bundle fails the new artifact check; the
+application build passes. No release or deployment was performed for these changes.
+
+Raw captures, HTML comparisons, native artifact inventories and screenshots stay
+under ignored `test-results/`. Compact room-replay reports are retained in
+`docs/performance-baselines/2026-11-04-issue106-*`.
+
 ## Resume here
 
 The harness and first rendering fixes are ready to ship; mobile smoothness is

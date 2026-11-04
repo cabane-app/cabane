@@ -7,6 +7,14 @@ import { chromium } from "playwright-core";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const bundle = resolve(root, process.env.CABANE_PANEL_BUNDLE ?? "apps/web/dist-panel");
+const manifest = JSON.parse(await readFile(resolve(bundle, "manifest.json"), "utf8"));
+for (const name of Object.keys(manifest.files).filter((name) => name.endsWith(".js"))) {
+  const source = await readFile(resolve(bundle, name), "utf8");
+  assert.ok(
+    !/data:image\/[^;,]+;base64,[A-Za-z0-9+/=]{8192}/.test(source),
+    `${name}: large imported images must remain separate assets, outside JavaScript`,
+  );
+}
 // The documented weather texture is pinned; its CDN redirects to the same GitHub asset.
 const hostedAssets = new Set([
   "https://rawcdn.githack.com/pmndrs/drei-assets/9225a9f1fbd449d9411125c2f419b843d0308c9f/cloud.png",

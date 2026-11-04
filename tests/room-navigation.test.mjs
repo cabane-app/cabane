@@ -3,7 +3,7 @@ import test from "node:test";
 import { act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { create } from "@react-three/test-renderer";
-import { OrthographicCamera, Vector3 } from "three";
+import { BoxGeometry, Mesh, MeshToonMaterial, OrthographicCamera, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 import { withStorageDom } from "./dom-test-environment.mjs";
 
@@ -21,6 +21,15 @@ await withModules(async (load) => {
   );
   const { buildArchitecturalWallGeometries } = await load(
     "/packages/engine/src/architecture-geometry.ts",
+  );
+  const { RoomWallEmphasis } = await load(
+    "/packages/engine/src/room-navigation/RoomWallEmphasis.tsx",
+  );
+  const { SceneRoomSelection } = await load(
+    "/packages/engine/src/building/RoomSelectionSurfaces.tsx",
+  );
+  const { SceneToonBatcher } = await load(
+    "/packages/engine/src/scene-batching/SceneToonBatcher.ts",
   );
   const { planPointToWorld } = await load("/packages/engine/src/geometry.ts");
   const floor = neutralDemoManifest.floors[0];
@@ -237,6 +246,88 @@ await withModules(async (load) => {
       );
     } finally {
       groups.forEach(({ geometry }) => geometry.dispose());
+    }
+  });
+
+  test("room focus animates submitted wall colors without repacking static batches every frame", async () => {
+    const groups = buildArchitecturalWallGeometries(floor);
+    const walls = groups.map(
+      ({ geometry }) => new Mesh(geometry, new MeshToonMaterial({ vertexColors: true })),
+    );
+    walls.forEach((mesh) => {
+      mesh.castShadow = true;
+    });
+    const stableGeometry = new BoxGeometry();
+    const stable = [
+      new Mesh(stableGeometry, new MeshToonMaterial()),
+      new Mesh(stableGeometry, new MeshToonMaterial()),
+    ];
+    const tree = (selectedId) =>
+      createElement(
+        SceneRoomSelection.Provider,
+        { value: selectedId },
+        ...walls.map((mesh, index) =>
+          createElement(
+            "primitive",
+            { key: index, object: mesh },
+            createElement(RoomWallEmphasis, {
+              geometry: mesh.geometry,
+              floor,
+              enabled: true,
+              reducedMotion: false,
+            }),
+          ),
+        ),
+        ...stable.map((mesh, index) =>
+          createElement("primitive", { key: `stable-${index}`, object: mesh }),
+        ),
+      );
+    const renderer = await create(tree(null), options);
+    const batcher = new SceneToonBatcher();
+    const camera = new OrthographicCamera();
+    const wallBuffers = new Set(),
+      stableBuffers = new Set(),
+      submittedColors = [];
+    const draw = {
+      extensions: { has: () => true },
+      localClippingEnabled: false,
+      clippingPlanes: [],
+      render(scene) {
+        const batches = scene.children.filter((object) => object.isBatchedMesh);
+        const stableBatch = batches.find((batch) => !batch.castShadow);
+        assert.ok(stableBatch, "unrelated static meshes retain batching");
+        stableBuffers.add(stableBatch.geometry);
+        const wallBatch = batches.find((batch) => batch.castShadow);
+        if (wallBatch) wallBuffers.add(wallBatch.geometry);
+        const source = walls[0];
+        const actual = source.layers.test(camera.layers)
+          ? source.geometry.getAttribute("color").getX(0)
+          : wallBatch.geometry.getAttribute("color").getX(0);
+        const expected = source.geometry.getAttribute("color").getX(0);
+        assert.ok(Math.abs(actual - expected) < 1e-6, "submitted colors follow the emphasis");
+        submittedColors.push(actual);
+      },
+    };
+    const render = () => batcher.render(draw, renderer.scene.instance, camera);
+    try {
+      await tick(renderer, 60);
+      render();
+      const overview = submittedColors.at(-1);
+      await renderer.update(tree(room.id));
+      for (let frame = 0; frame < 60; frame++) {
+        await tick(renderer, 1);
+        render();
+      }
+      assert.notEqual(submittedColors[1], overview, "focus begins animating the visible colors");
+      assert.notEqual(submittedColors[1], submittedColors.at(-1), "emphasis animates over time");
+      assert.equal(stableBuffers.size, 1, "unrelated furniture retains its GPU buffers");
+      assert.ok(wallBuffers.size <= 2, `room focus created ${wallBuffers.size} wall batches`);
+    } finally {
+      batcher.dispose();
+      await renderer.unmount();
+      groups.forEach(({ geometry }) => geometry.dispose());
+      stableGeometry.dispose();
+      [...walls, ...stable].forEach((mesh) => mesh.material.dispose());
     }
   });
 

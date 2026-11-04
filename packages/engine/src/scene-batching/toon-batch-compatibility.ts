@@ -7,6 +7,7 @@ import {
   type InstancedMesh,
   NormalBlending,
   Object3D,
+  StaticDrawUsage,
 } from "three";
 import { sceneLightMaterialHooks } from "../scene-light-wall-mask";
 
@@ -110,6 +111,7 @@ export function isToonBatchCompatible(
       !(attribute instanceof BufferAttribute) ||
       attribute.itemSize !== 3 ||
       !(attribute.array instanceof Float32Array) ||
+      attribute.usage !== StaticDrawUsage ||
       attribute.normalized
     )
       return false;

@@ -38,6 +38,9 @@ policy does not broaden the accepted upload format or allow executable user code
 Orbit room focus animates floor material colors and existing wall vertex colors.
 Merged wall triangles are associated once with the room on their visible side;
 selection does not regenerate their geometry, add draw calls or change live lights.
+Their animated vertex colors use dynamic buffers on the existing merged walls;
+static toon batching excludes dynamic attributes so focus transitions do not
+repack wall batches every frame. Furniture keeps its persistent static batches.
 Walk and editor finishes retain their authored colors. See
 [room navigation](dashboard-and-cameras.md) for framing and interaction behavior.
 

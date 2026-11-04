@@ -244,6 +244,9 @@ The native panel has a separate build: `npm run build:panel` produces
 and `manifest.json` with the source commit and SHA-256 file inventory. Release
 builds require a clean committed tree. `CABANE_PANEL_ALLOW_DIRTY=1` permits local
 development builds and marks the manifest as development-only.
+The custom-element entry uses an application build with minified ES chunks and
+separate imported images. Vite's ES-library mode preserves formatting and embeds
+large images in JavaScript, so it is unsuitable for this deployed panel.
 
 After building, `node scripts/verify-panel.mjs` serves the production artifact
 under a nested local asset path and opens a synthetic Home Assistant host in
