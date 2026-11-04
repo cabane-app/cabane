@@ -90,10 +90,11 @@ function CameraStreamSource({
     previous?.close();
     sessionRef.current = null;
 
-    if (!client || !origin || !documentVisible || !requirement.available) {
+    const sourceAvailable = Boolean(client && (origin || client.openLocalStream));
+    if (!client || !sourceAvailable || !documentVisible || !requirement.available) {
       setMedia({
         ...initialMedia(posterRef.current),
-        state: client && origin && documentVisible ? "unavailable" : "idle",
+        state: sourceAvailable && documentVisible ? "unavailable" : "idle",
       });
       return () => {
         cancelled = true;
@@ -128,59 +129,70 @@ function CameraStreamSource({
 
     const connect = async () => {
       try {
-        const capabilities = await runCameraAttempt(
-          (signal) =>
-            waitWithSignal(
-              client.sendMessagePromise<CameraCapabilities>({
-                type: "camera/capabilities",
-                entity_id: requirement.entityId,
-              }),
-              signal,
-            ),
-          CAMERA_FIRST_FRAME_TIMEOUT_MS,
-          lifecycle.signal,
-        );
-        const preferHls = preferHlsForRemoteAppleClient(
-          window.location.href,
-          origin,
-          window.navigator.userAgent,
-        );
-        const transports = cameraTransportCandidates(
-          capabilities.frontend_stream_types,
-          preferHls,
-          typeof RTCPeerConnection !== "undefined",
-        );
-        const session = await runCameraTransportRace(
-          transports,
-          (transport, signal) =>
-            runCameraAttempt(
-              (attemptSignal) =>
-                transport === "webrtc"
-                  ? openWebRtcSession(
-                      client,
-                      requirement.entityId,
-                      disconnected,
-                      presentConnectingVideo,
-                      attemptSignal,
-                      container,
-                    )
-                  : openHlsSession(
-                      client,
-                      requirement.entityId,
-                      origin,
-                      disconnected,
-                      presentConnectingVideo,
-                      attemptSignal,
-                      container,
-                    ),
-              transport === "hls"
-                ? CAMERA_HLS_FIRST_FRAME_TIMEOUT_MS
-                : CAMERA_FIRST_FRAME_TIMEOUT_MS,
-              signal,
-            ),
-          undefined,
-          lifecycle.signal,
-        );
+        const openRemoteStream = async () => {
+          if (!origin) throw new Error("No camera origin is available.");
+          const capabilities = await runCameraAttempt(
+            (signal) =>
+              waitWithSignal(
+                client.sendMessagePromise<CameraCapabilities>({
+                  type: "camera/capabilities",
+                  entity_id: requirement.entityId,
+                }),
+                signal,
+              ),
+            CAMERA_FIRST_FRAME_TIMEOUT_MS,
+            lifecycle.signal,
+          );
+          const preferHls = preferHlsForRemoteAppleClient(
+            window.location.href,
+            origin,
+            window.navigator.userAgent,
+          );
+          const transports = cameraTransportCandidates(
+            capabilities.frontend_stream_types,
+            preferHls,
+            typeof RTCPeerConnection !== "undefined",
+          );
+          return runCameraTransportRace(
+            transports,
+            (transport, signal) =>
+              runCameraAttempt(
+                (attemptSignal) =>
+                  transport === "webrtc"
+                    ? openWebRtcSession(
+                        client,
+                        requirement.entityId,
+                        disconnected,
+                        presentConnectingVideo,
+                        attemptSignal,
+                        container,
+                      )
+                    : openHlsSession(
+                        client,
+                        requirement.entityId,
+                        origin,
+                        disconnected,
+                        presentConnectingVideo,
+                        attemptSignal,
+                        container,
+                      ),
+                transport === "hls"
+                  ? CAMERA_HLS_FIRST_FRAME_TIMEOUT_MS
+                  : CAMERA_FIRST_FRAME_TIMEOUT_MS,
+                signal,
+              ),
+            undefined,
+            lifecycle.signal,
+          );
+        };
+        const openLocalStream = client.openLocalStream;
+        const session = openLocalStream
+          ? await runCameraAttempt(
+              (signal) => openLocalStream({ entityId: requirement.entityId, signal, container }),
+              CAMERA_FIRST_FRAME_TIMEOUT_MS,
+              lifecycle.signal,
+            )
+          : await openRemoteStream();
         if (cancelled) {
           session.close();
           return;

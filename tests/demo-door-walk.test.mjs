@@ -34,7 +34,9 @@ await withModules(async (load) => {
         .map((binding) => binding.openingId),
     );
     for (const floor of homeManifest.floors) {
-      for (const door of floor.openings.filter((opening) => opening.kind === "door")) {
+      for (const door of floor.openings.filter(
+        (opening) => opening.kind === "door" && !opening.coverSlot,
+      )) {
         const wall = floor.walls.find((wall) => wall.id === door.wallId);
         const placement = openingWorldPlacement(wall, door, floor.coordinates);
         const poseRef = {

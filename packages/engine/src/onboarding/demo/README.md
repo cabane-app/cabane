@@ -19,6 +19,10 @@ Changing the manifest or remounting the provider resets the memory-only state.
 | climate             | Target temperature, heat/cool/off; current temperature stays fixed                                    |
 | sensor              | Fixed temperature, humidity, battery, illuminance, power, energy, CO₂, pressure based on device class |
 | lock                | Lock/unlock in memory                                                                                 |
+| humidifier          | On/off, target humidity and auto/normal/sleep modes; ambient humidity stays fixed                     |
+| water_heater        | On/off, target temperature, eco/electric/off operation and away mode; tank reading stays fixed        |
+| button              | Press updates a synthetic timestamp, with no automations or real actions                              |
+| camera              | Labelled local garden animation shared by the normal 3D display and camera viewer                     |
 | alarm_control_panel | Arm home/away and disarm without a code                                                               |
 | binary_sensor       | Fixed closed/off or occupied/connected state based on device class                                    |
 | media_player        | Starts playing the demo playlist; power, play/pause and volume controls update in memory              |
@@ -27,9 +31,12 @@ Classless status sensors start idle; unknown sensor classes show unknown; unsupp
 adapter prefers fan and valve domains over a switch fallback, so sprinklers use
 their valve controls. Active states drive the existing catalog animations and
 respect reduced motion.
-The
-adapter does not simulate cameras, history, discovery protocols, physical thermal
-behavior, audio output, or HA authentication. Integration acceptance still needs real HA.
+The adapter does not simulate history, discovery protocols, physical thermal
+behavior, audio output, or HA authentication. Camera video is a local 640 × 360
+canvas stream at 8 fps with a permanent “SIMULATED DEMO” label; it makes no media
+requests. The normal coordinator opens only requested streams and stops tracks,
+painting and video elements on hide, source removal or unmount. Browsers without
+canvas capture retain the normal unavailable-feed state. Integration acceptance still needs real HA.
 
 The definition module derives IDs and initial bindings, including outdoor devices without a room or area. The state module contains
 pure service validation and immutable updates. The provider owns React state and
@@ -44,3 +51,8 @@ simulation behavior here, never as `isDemo` branches in controls or models.
 Fan power and valve open/close commands also update only in memory.
 
 Event profiles use a fixed synthetic last-event timestamp and `short_release` type, with no commands.
+
+Door contacts stay unbound for proximity walking. Explicit door cover slots,
+including garage doors, are simulated; Walk proximity overrides their display
+locally and departure restores the selected cover position. Air-quality and
+vehicle-distance readings use fixed illustrative defaults.

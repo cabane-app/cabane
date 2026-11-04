@@ -85,3 +85,11 @@ furnishings introduce no new device slots.
 The new presets are available in this checkout's Arrange catalog. Importing this
 revision elsewhere requires a Cabane build containing those catalog entries.
 The original twenty-room layout and generated wallpapers are retained.
+
+## Public demo
+
+This portable project is also the fresh-browser demo seed. The in-browser
+adapter supplies synthetic device bindings and camera feeds; public visitors
+need no HA server, account or credentials. Existing browser workspaces are not
+automatically replaced. See `packages/engine/src/onboarding/demo/README.md` for
+the simulated controls and their limits.

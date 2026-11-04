@@ -10,6 +10,9 @@ test("native initialization never reads or migrates legacy connection storage", 
       const { initializeWorkspaces } = await load(
         "/apps/web/src/workspaces/initialize-workspaces.ts",
       );
+      const { demoHomeProject, ownerHomeProject } = await load("/home/src/index.ts");
+      const { createWorkspaceRepository } = await load("/packages/engine/src/index.ts");
+      const { ownerProjectRegistries } = await load("/apps/web/src/project-runtime.ts");
       const accesses = [];
       const trap = Object.fromEntries(
         ["getItem", "setItem", "removeItem"].map((operation) => [
@@ -22,6 +25,17 @@ test("native initialization never reads or migrates legacy connection storage", 
       );
       const native = await initializeWorkspaces(indexedDB, trap, { skipLegacyMigration: true });
       const entries = await native.repository.list();
+      assert.equal(entries[0].record.published.home.id, demoHomeProject.home.id);
+      assert.equal(entries[0].record.published.floors.length, 3);
+      const oldDatabase = new IDBFactory();
+      const oldRepository = createWorkspaceRepository(oldDatabase, ownerProjectRegistries);
+      await oldRepository.initialize(ownerHomeProject);
+      const oldEntry = await oldRepository.read(ownerHomeProject.home.id);
+      const returning = await initializeWorkspaces(oldDatabase, trap, {
+        skipLegacyMigration: true,
+      });
+      assert.deepEqual(await returning.repository.read(ownerHomeProject.home.id), oldEntry);
+      assert.equal((await returning.repository.list()).length, 1);
       const nativeResult = {
         accesses: [...accesses],
         error: native.migrationError ?? null,

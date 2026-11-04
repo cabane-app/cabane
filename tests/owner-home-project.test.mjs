@@ -58,7 +58,9 @@ await withModules(async (load) => {
 
   test("portable import and full workspace backup use the same project without losing slots", () => {
     const portable = parseWorkspaceImport(
-      execFileSync(process.execPath, ["scripts/export-bundled-home.mjs"], { encoding: "utf8" }),
+      execFileSync(process.execPath, ["scripts/export-bundled-home.mjs", "--legacy"], {
+        encoding: "utf8",
+      }),
       registries,
     );
     assert.deepEqual(portable.record.draft, ownerHomeProject);

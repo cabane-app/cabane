@@ -34,7 +34,7 @@ const help = `Usage: npm run perf -- [options]
   --output PATH       JSON report (default: test-results/performance/NAME-TIMESTAMP.json)
   --baseline PATH     Compare with a report from the same machine and configuration
   --profile NAME      mobile (390x844, DPR 3, touch) or desktop (1440x960, DPR 1)
-  --scenario NAME     dev-home (default, live local HA) or demo (old disconnected fixture)
+  --scenario NAME     dev-home (default, live local HA) or demo (bundled simulated home)
   --path NAME         orbit-v1 (direct camera) or touch-orbit-v1 (native touch drag)
   --cpu-rate N        Chromium CPU slowdown multiplier (default: 1, unthrottled)
   --seconds N         Measured motion per run, excluding warmup (default: 10)
@@ -219,11 +219,7 @@ async function sourceMetadata(scenario) {
   const homeFiles =
     scenario === "dev-home"
       ? [await readFile(resolve(repository, "home/showcase/furnished.project.json"), "utf8")]
-      : await Promise.all(
-          ["project", "layout", "items"].map((name) =>
-            readFile(resolve(repository, `home/src/${name}.json`), "utf8"),
-          ),
-        );
+      : [await readFile(resolve(repository, "home/showcase/atelier.project.json"), "utf8")];
   return {
     commit: execFileSync("git", ["rev-parse", "HEAD"], {
       cwd: repository,

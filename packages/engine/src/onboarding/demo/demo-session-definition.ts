@@ -30,9 +30,9 @@ export function deriveDemoSessionDefinition(
     ),
   );
   const slots = collectBindingSlots(manifest).flatMap((descriptor) => {
-    // Demo doors use local proximity without simulated contact/cover controls.
+    // Ordinary doors use proximity. Explicit motorized covers remain controllable.
     if (
-      (descriptor.kind === "opening-contact" || descriptor.kind === "opening-cover") &&
+      descriptor.kind === "opening-contact" &&
       descriptor.openingId &&
       doorIds.has(descriptor.openingId)
     )

@@ -208,7 +208,9 @@ export function CameraViewer({
               ? "Home Assistant · HLS"
               : media?.transport === "webrtc"
                 ? "Home Assistant · WebRTC"
-                : "Home Assistant live camera"}
+                : media?.transport === "local"
+                  ? "Local simulated camera"
+                  : "Home Assistant live camera"}
           </span>
           {media?.previewState === "cors-blocked" && <small>{media.error}</small>}
         </div>

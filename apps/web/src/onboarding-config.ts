@@ -6,4 +6,4 @@ export const onboardingLinks = {
 };
 
 /** Content hint for the bundled villa; selection falls back when this room is absent. */
-export const onboardingDemoRoomId = "open-plan-living";
+export const onboardingDemoRoomId = "living";

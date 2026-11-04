@@ -34,6 +34,10 @@ const demoValueImports = new Map([
   ["react", null],
   ["packages/engine/src/HomeAssistantRuntime", new Set(["HomeAssistantRuntimeValueProvider"])],
   ["packages/engine/src/binding-slot-descriptors", new Set(["collectBindingSlots"])],
+  [
+    "packages/engine/src/camera-sessions/camera-video-lifecycle",
+    new Set(["makeVideo", "closeVideo", "waitForFirstFrame", "throwIfAborted"]),
+  ],
 ]);
 const files = (
   await Promise.all(sourceRoots.map((sourceRoot) => filesBelow(join(root, sourceRoot))))
@@ -71,6 +75,7 @@ for (const file of files) {
       "packages/engine/src/types",
       "packages/engine/src/RuntimeBindingSetup",
       "packages/engine/src/home-assistant-controls",
+      "packages/engine/src/camera-runtime",
     ];
     if (typeOnly && contractTypes.includes(target)) continue;
     const allowed = demoValueImports.get(target);

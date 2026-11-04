@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-04T20:57:03.979Z",
+  "label": "atelier-demo",
+  "source": {
+    "commit": "5f3fdc3b72187e707593812cbe66618818c598a6",
+    "dirty": true,
+    "homeHash": "f311f493a2e8c25dfb0b13539bdce3f456a054dc1d32e23b13bbf8a66653805d"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "touch-orbit-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 487,
+      "height": 1055,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [39.09400000000001, 45.372, 45.76400000000001],
+      "quaternion": [
+        -0.35829231738036693, 0.3288030008929161, 0.13649890390018493, 0.86306619163542
+      ],
+      "target": [9, 0, 12],
+      "zoom": 8
+    },
+    "profile": "mobile",
+    "cpuRate": 4
+  },
+  "scene": {
+    "activePointLights": 0,
+    "objects": 4717,
+    "meshes": 3202,
+    "materials": 3202,
+    "geometries": 3177
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 4,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "runs": [
+    {
+      "durationMs": 10074.700000047684,
+      "cameraTravel": 32.21061862543548,
+      "movingFrames": 167,
+      "summary": {
+        "fps": 16.57617596545898,
+        "frameMsP50": 58.60000014305115,
+        "frameMsP95": 72.70000004768372,
+        "frameMsP99": 87.39999985694885,
+        "over33MsPercent": 100,
+        "over50MsPercent": 100,
+        "cpuSubmitMsP95": 21.299999952316284,
+        "callsMedian": 415,
+        "callsMax": 419,
+        "trianglesMedian": 337408,
+        "trianglesMax": 338700
+      }
+    },
+    {
+      "durationMs": 10092.200000047684,
+      "cameraTravel": 24.37056764706496,
+      "movingFrames": 163,
+      "summary": {
+        "fps": 16.151086977985955,
+        "frameMsP50": 60.59999990463257,
+        "frameMsP95": 73.40000009536743,
+        "frameMsP99": 84.09999990463257,
+        "over33MsPercent": 100,
+        "over50MsPercent": 100,
+        "cpuSubmitMsP95": 19.399999856948853,
+        "callsMedian": 415,
+        "callsMax": 423,
+        "trianglesMedian": 335904,
+        "trianglesMax": 337560
+      }
+    },
+    {
+      "durationMs": 10103.599999904633,
+      "cameraTravel": 32.56631645224343,
+      "movingFrames": 166,
+      "summary": {
+        "fps": 16.429787402665077,
+        "frameMsP50": 58.30000019073486,
+        "frameMsP95": 82.10000014305115,
+        "frameMsP99": 104.20000004768372,
+        "over33MsPercent": 100,
+        "over50MsPercent": 100,
+        "cpuSubmitMsP95": 20.90000009536743,
+        "callsMedian": 415,
+        "callsMax": 419,
+        "trianglesMedian": 336704,
+        "trianglesMax": 337620
+      }
+    }
+  ],
+  "summary": {
+    "fps": 16.429787402665077,
+    "frameMsP50": 58.60000014305115,
+    "frameMsP95": 73.40000009536743,
+    "frameMsP99": 87.39999985694885,
+    "over33MsPercent": 100,
+    "over50MsPercent": 100,
+    "cpuSubmitMsP95": 20.90000009536743,
+    "callsMedian": 415,
+    "callsMax": 419,
+    "trianglesMedian": 336704,
+    "trianglesMax": 337620
+  },
+  "acceptance": {
+    "physicalPhone": false,
+    "scope": "Production app, fresh simulated demo, ground-floor default view, daylight, mobile touch replay. CPU slowdown is a stress proxy, not a phone GPU."
+  }
+}

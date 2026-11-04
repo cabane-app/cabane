@@ -352,3 +352,42 @@ and GPU, device power/thermal state, what changed, visual tradeoffs, and whether
 the same phone confirmed the improvement. Keep CPU-throttled results in a
 separate comparison series. Do not claim a win from a difference smaller than
 the variation between repeated runs.
+
+## 2026-11-04 · Solstice Atelier public demo readiness
+
+The fresh-browser demo changes from the previous 165-item villa to the 363-item,
+three-floor Atelier showcase. Its in-browser adapter maps the added devices and
+provides local synthetic camera video. No furnishings or visual details were
+removed for these measurements.
+
+The production app was measured on the same Apple M5 Pro / Darwin host, Chromium
+with ANGLE Metal and multi-draw, a 390 × 844 touch viewport, device DPR 3 and actual
+canvas DPR 1.25. Each report contains three ten-second touch replays after
+three-second warmups. Both homes start in their default ground-floor overview,
+daylight, with no active point lights. Different home hashes and camera framing
+are intentional: this compares the new demo's cost, not a renderer optimization.
+The source commit is `5f3fdc3` plus the demo implementation recorded as a dirty
+working tree. Power and thermal state were not recorded.
+
+| Scenario              |  FPS | Frame p95 | Frame p99 | Above 33.3 ms |
+| --------------------- | ---: | --------: | --------: | ------------: |
+| Previous demo, CPU ×4 | 40.1 |   30.5 ms |   34.7 ms |          1.7% |
+| Atelier demo, CPU ×4  | 16.4 |   73.4 ms |   87.4 ms |          100% |
+| Atelier demo, CPU ×1  | 72.7 |   20.0 ms |   24.0 ms |            0% |
+
+The unthrottled run passes the harness's working smoothness check. The CPU ×4
+stress case regresses substantially: scene mesh count rises from 1,437 to 3,202,
+median calls from 286 to 415 and median submitted triangles from 176,570 to 336,704.
+This is a known performance limit for slower CPUs, not mobile acceptance. A real
+phone was not measured; phone GPU, battery, thermal limits, first load, every
+floor, night lighting and all editor gestures remain outside these results.
+
+Commands: `npm run perf -- --scenario demo --path touch-orbit-v1 --cpu-rate 4`
+and the same command at `--cpu-rate 1 --check`. Compact reports:
+
+- [Previous demo CPU ×4](performance-baselines/2026-11-04-legacy-demo-touch-cpu4.json)
+- [Atelier CPU ×4](performance-baselines/2026-11-04-atelier-demo-touch-cpu4.json)
+- [Atelier CPU ×1](performance-baselines/2026-11-04-atelier-demo-touch.json)
+
+Raw frame samples and HTML reports remain in ignored
+`test-results/solstice-atelier/performance-{before,after,unthrottled}.{json,html}`.

@@ -112,7 +112,7 @@ npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label touch-baseline
 npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label touch-candidate --check
 npm run perf -- --path touch-orbit-v1 --runs 1 --label diagnostic --cpu-profile
 npm run perf -- --label candidate --output test-results/performance/candidate.json
-npm run perf -- --scenario demo --label old-demo
+npm run perf -- --scenario demo --label bundled-demo
 ```
 
 `--check` is an opt-in check against the working 60 Hz targets above. It saves the
@@ -266,3 +266,9 @@ This harness adds measurement, not a new rendering optimization. For each future
 iteration, save baseline/candidate reports, log the result and visual tradeoff,
 and check the promising change on the affected phone. Expand the scenario only
 when a specific interaction or view is not represented by the orbit benchmark.
+
+The `demo` scenario now uses the Solstice Atelier seed and in-browser simulated
+HA devices. Its source hash follows `home/showcase/atelier.project.json`. The
+[November 4 readiness check](performance-log.md#2026-11-04--solstice-atelier-public-demo-readiness)
+records both unthrottled and CPU-stress results; it does not establish physical
+phone acceptance.

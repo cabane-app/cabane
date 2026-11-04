@@ -559,7 +559,7 @@ export type DeviceInteractionIntent = "device-dashboard" | "camera-viewer";
 
 export type CameraStreamState = "idle" | "connecting" | "playing" | "unavailable" | "error";
 
-export type CameraTransport = "webrtc" | "hls";
+export type CameraTransport = "webrtc" | "hls" | "local";
 
 export type CameraPreviewState = "live" | "poster" | "cors-blocked";
 

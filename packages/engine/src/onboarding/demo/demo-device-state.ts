@@ -15,6 +15,10 @@ const supportedDomains = [
   "media_player",
   "lock",
   "alarm_control_panel",
+  "humidifier",
+  "water_heater",
+  "button",
+  "camera",
 ] as const;
 export type DemoDomain = (typeof supportedDomains)[number];
 export function demoDomain(slot: EntityBindingSlotSpec): DemoDomain | null {
@@ -29,6 +33,10 @@ const sensorDefaults: Readonly<Record<string, readonly [string, string]>> = {
   energy: ["3.2", "kWh"],
   carbon_dioxide: ["620", "ppm"],
   pressure: ["1013", "hPa"],
+  aqi: ["28", ""],
+  pm25: ["6", "µg/m³"],
+  volatile_organic_compounds: ["90", "µg/m³"],
+  distance: ["320", "km"],
 };
 export function createDemoDeviceState(
   entityId: EntityId,
@@ -43,6 +51,39 @@ export function createDemoDeviceState(
   };
   let state = "off";
   switch (domain) {
+    case "humidifier":
+      state = "on";
+      Object.assign(attributes, {
+        humidity: 45,
+        current_humidity: 42,
+        min_humidity: 30,
+        max_humidity: 70,
+        available_modes: ["auto", "normal", "sleep"],
+        mode: "auto",
+        supported_features: 1,
+      });
+      break;
+    case "water_heater":
+      state = "eco";
+      Object.assign(attributes, {
+        temperature: 55,
+        current_temperature: 52,
+        min_temp: 40,
+        max_temp: 80,
+        temperature_unit: "°C",
+        target_temp_step: 1,
+        operation_list: ["off", "eco", "electric"],
+        operation_mode: "eco",
+        away_mode: "off",
+        supported_features: 15,
+      });
+      break;
+    case "button":
+      state = "2026-01-01T12:00:00.000+00:00";
+      break;
+    case "camera":
+      state = "idle";
+      break;
     case "vacuum":
       state = "docked";
       Object.assign(attributes, { supported_features: 16384 | 8192 | 4096 | 16 | 8 | 4 });
@@ -135,6 +176,43 @@ export function applyDemoServiceCall(
   let next = state.state;
   let allowed: readonly string[] = [];
   switch (call.domain) {
+    case "humidifier":
+      if (call.service === "turn_on") next = "on";
+      else if (call.service === "turn_off") next = "off";
+      else if (call.service === "set_humidity") {
+        allowed = ["humidity"];
+        attributes.humidity = Math.round(number(data.humidity, 30, 70));
+      } else if (call.service === "set_mode") {
+        allowed = ["mode"];
+        if (typeof data.mode !== "string" || !["auto", "normal", "sleep"].includes(data.mode))
+          return invalid();
+        attributes.mode = data.mode;
+      } else return invalid();
+      break;
+    case "water_heater":
+      if (call.service === "turn_on") next = "eco";
+      else if (call.service === "turn_off") next = "off";
+      else if (call.service === "set_temperature") {
+        allowed = ["temperature"];
+        attributes.temperature = Math.round(number(data.temperature, 40, 80));
+      } else if (call.service === "set_operation_mode") {
+        allowed = ["operation_mode"];
+        if (
+          typeof data.operation_mode !== "string" ||
+          !["off", "eco", "electric"].includes(data.operation_mode)
+        )
+          return invalid();
+        next = data.operation_mode;
+      } else if (call.service === "set_away_mode") {
+        allowed = ["away_mode"];
+        if (typeof data.away_mode !== "boolean") return invalid();
+        attributes.away_mode = data.away_mode ? "on" : "off";
+      } else return invalid();
+      attributes.operation_mode = next;
+      break;
+    case "button":
+      if (call.service !== "press") return invalid();
+      break;
     case "vacuum":
       if (call.service === "clean_area") {
         allowed = ["cleaning_area_id"];
@@ -261,8 +339,13 @@ export function applyDemoServiceCall(
   if (Object.keys(data).some((key) => !allowed.includes(key))) return invalid();
   const previous = Date.parse(state.lastConfirmedAt ?? "");
   const timestamp = new Date(
-    Math.max(Date.now(), Number.isFinite(previous) ? previous + 1 : 0),
+    Math.max(
+      Date.now(),
+      Number.isFinite(previous) ? previous + 1 : 0,
+      call.domain === "button" ? (Date.parse(state.state) || 0) + 1 : 0,
+    ),
   ).toISOString();
+  if (call.domain === "button") next = timestamp;
   return { ...state, state: next, attributes, lastConfirmedAt: timestamp, lastUpdated: timestamp };
 }
 export function applyDemoServiceToStates(

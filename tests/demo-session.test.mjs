@@ -25,6 +25,21 @@ await withModules(async (load) => {
   const { deviceVisualStateForSnapshot } = await load("/packages/engine/src/devices.ts");
   const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
 
+  const { demoHomeProject, homeExtensions } = await load("/home/src/index.ts");
+  const { composeHomeManifest, validateHomeProject } = await load("/packages/engine/src/index.ts");
+  const { stableFurnishingRegistry } = await load("/packages/catalog/src/furnishing/index.ts");
+  const { validateRuntimeBindingProfile } = await load(
+    "/packages/engine/src/runtime-binding-profile.ts",
+  );
+  const { resolveHomeAssistantBindings } = await load(
+    "/packages/engine/src/home-assistant-resolver.ts",
+  );
+  const { resolveOpeningPositions } = await load("/packages/engine/src/opening-pose.ts");
+  const { createDemoDeviceState } = await load(
+    "/packages/engine/src/onboarding/demo/demo-device-state.ts",
+  );
+  const controls = await load("/packages/engine/src/home-assistant-controls.ts");
+
   test("bundled fan and sprinkler animate from demo state and stop through normal controls", async () => {
     const definition = deriveDemoSessionDefinition(homeManifest);
     for (const [modelId, domain, stop, start, rotorName, axis] of [
@@ -158,13 +173,150 @@ await withModules(async (load) => {
     for (const slot of collectBindingSlots(homeManifest)) {
       if (slot.spec.compatibleDomains.includes("camera")) continue;
       const entityId = definition.profile.entityIdsBySlotId[slot.slotId];
-      if (doorIds.has(slot.openingId)) {
+      if (slot.kind === "opening-contact" && doorIds.has(slot.openingId)) {
         assert.equal(entityId, undefined, `${slot.slotId} must not override proximity opening`);
         continue;
       }
       assert.ok(definition.runtime.entityStates[entityId]?.available, slot.spec.presentation.label);
       assert.notEqual(definition.runtime.entityStates[entityId].state, "unknown");
     }
+  });
+
+  test("Solstice demo maps every device, keeps all rooms interactive and controls its garage", async () => {
+    const manifest = composeHomeManifest(demoHomeProject, homeExtensions);
+    assert.equal(demoHomeProject.floors.length, 3);
+    assert.deepEqual(
+      validateHomeProject(demoHomeProject, {
+        furnishingModels: stableFurnishingRegistry,
+        deviceModels: stableDeviceRegistry,
+      }).issues,
+      [],
+    );
+    const definition = deriveDemoSessionDefinition(manifest);
+    assert.equal(
+      validateRuntimeBindingProfile(definition.profile, manifest, definition.runtime).valid,
+      true,
+    );
+    const slots = collectBindingSlots(manifest);
+    const states = definition.runtime.entityStates;
+    for (const slot of slots) {
+      if (
+        slot.kind === "opening-contact" &&
+        manifest.floors.some((f) =>
+          f.openings.some((o) => o.id === slot.openingId && o.kind === "door"),
+        )
+      )
+        continue;
+      const state = states[definition.profile.entityIdsBySlotId[slot.slotId]];
+      assert.ok(state?.available, slot.spec.presentation.label);
+      assert.notEqual(state.state, "unknown");
+    }
+    for (const room of manifest.floors.flatMap((f) => f.rooms)) {
+      assert.ok(
+        slots.some(
+          (s) =>
+            s.roomIds.includes(room.id) &&
+            /^(light|switch|fan|climate|media_player|vacuum)\./.test(
+              definition.profile.entityIdsBySlotId[s.slotId] ?? "",
+            ),
+        ),
+        room.name,
+      );
+    }
+    const garage = manifest.floors
+      .flatMap((f) => f.openings)
+      .find((o) => o.operation === "roll-up");
+    const entityId = definition.profile.entityIdsBySlotId[garage.coverSlot.id];
+    assert.ok(entityId.startsWith("cover."));
+    const closed = applyDemoServiceToStates(states, {
+      domain: "cover",
+      service: "close_cover",
+      target: { entity_id: entityId },
+    });
+    const bindings = resolveHomeAssistantBindings(manifest, definition.profile, {
+      ...definition.runtime,
+      entityStates: closed,
+    });
+    assert.equal(resolveOpeningPositions(new Set(), bindings.openings, new Map())[garage.id], 0);
+    const opened = applyDemoServiceToStates(closed, {
+      domain: "cover",
+      service: "open_cover",
+      target: { entity_id: entityId },
+    });
+    const openBindings = resolveHomeAssistantBindings(manifest, definition.profile, {
+      ...definition.runtime,
+      entityStates: opened,
+    });
+    assert.equal(
+      resolveOpeningPositions(new Set(), openBindings.openings, new Map())[garage.id],
+      1,
+    );
+  });
+
+  test("new demo controls accept normal HA calls, validate values and keep batch updates atomic", async () => {
+    const spec = { presentation: { label: "Demo device" } };
+    const make = (domain) => createDemoDeviceState(`${domain}.test`, domain, spec);
+    let humidifier = make("humidifier"),
+      heater = make("water_heater"),
+      button = make("button");
+    const humidity = controls.humidifierHumidityCall(humidifier, 55);
+    humidifier = applyDemoServiceCall(humidifier, humidity);
+    assert.equal(humidifier.attributes.humidity, 55);
+    assert.equal(humidifier.attributes.current_humidity, 42);
+    humidifier = applyDemoServiceCall(humidifier, controls.humidifierModeCall(humidifier, "sleep"));
+    assert.equal(humidifier.attributes.mode, "sleep");
+    humidifier = applyDemoServiceCall(humidifier, controls.humidifierPowerCall(humidifier, false));
+    assert.equal(humidifier.state, "off");
+    assert.equal(
+      applyDemoServiceCall(humidifier, controls.humidifierPowerCall(humidifier, true)).state,
+      "on",
+    );
+    heater = applyDemoServiceCall(heater, controls.waterHeaterTemperatureCall(heater, 60));
+    assert.equal(heater.attributes.temperature, 60);
+    heater = applyDemoServiceCall(
+      heater,
+      controls.waterHeaterOperationModeCall(heater, "electric"),
+    );
+    assert.equal(heater.state, "electric");
+    assert.equal(heater.attributes.operation_mode, "electric");
+    heater = applyDemoServiceCall(heater, controls.waterHeaterAwayModeCall(heater, true));
+    assert.equal(heater.attributes.away_mode, "on");
+    heater = applyDemoServiceCall(heater, controls.waterHeaterPowerCall(heater, false));
+    assert.equal(heater.state, "off");
+    assert.equal(
+      applyDemoServiceCall(heater, controls.waterHeaterPowerCall(heater, true)).state,
+      "eco",
+    );
+    const pressed = applyDemoServiceCall(button, controls.buttonPressCall(button));
+    const pressedAgain = applyDemoServiceCall(pressed, controls.buttonPressCall(pressed));
+    assert.ok(Date.parse(pressedAgain.state) > Date.parse(pressed.state));
+    for (const [state, domain, service, data] of [
+      [humidifier, "humidifier", "set_mode", { mode: "invalid" }],
+      [humidifier, "humidifier", "set_humidity", { humidity: NaN }],
+      [heater, "water_heater", "set_operation_mode", { operation_mode: "invalid" }],
+      [heater, "water_heater", "set_away_mode", { away_mode: "on" }],
+      [button, "button", "press", { extra: true }],
+    ])
+      assert.throws(
+        () =>
+          applyDemoServiceCall(state, {
+            domain,
+            service,
+            data,
+            target: { entity_id: state.entityId },
+          }),
+        /demo/i,
+      );
+    const before = { [humidifier.entityId]: humidifier };
+    assert.throws(
+      () =>
+        applyDemoServiceToStates(before, {
+          ...humidity,
+          target: { entity_id: [humidifier.entityId, "humidifier.missing"] },
+        }),
+      /demo/i,
+    );
+    assert.equal(before[humidifier.entityId], humidifier);
   });
 
   test("demo security controls update in memory and reject unsupported actions", () => {

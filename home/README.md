@@ -1,7 +1,15 @@
-# Bundled home
+# Bundled demo and legacy home
 
-The demo is an ordinary `HomeProject`, using the same schema as portable workspace
-import/export. Its checked-in source is split for easier editing:
+The current demo is **Solstice Atelier**, an ordinary `HomeProject` loaded from
+`showcase/atelier.project.json` by `src/demo.ts`. The portable showcase is the
+single source for the three floors, twenty rooms, furnishings and wallpapers.
+Fresh browsers receive this seed; existing saved demos retain their contents.
+Its typed device slots are mapped automatically by the in-browser demo adapter.
+No real HA instance or private binding file is bundled.
+
+The previous home remains available through `ownerHomeProject` and `homeManifest`
+for legacy storage migration, saved custom kitchen models and stable regression
+fixtures. Its checked-in source is split for easier editing:
 
 - `src/layout.json`: building coordinates, floors, rooms, walls, openings, ceilings, and stairs.
 - `src/items.json`: furniture and device instances, with model IDs, sizes, placements, and typed binding slots.
@@ -17,6 +25,8 @@ Create an importable JSON file with:
 
 ```sh
 node scripts/export-bundled-home.mjs > /tmp/cabane-home.json
+# Optional previous seed:
+node scripts/export-bundled-home.mjs --legacy > /tmp/cabane-legacy-home.json
 ```
 
 Import that file through the workspace library. Custom model implementations are

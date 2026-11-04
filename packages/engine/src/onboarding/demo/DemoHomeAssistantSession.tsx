@@ -9,6 +9,7 @@ import type { HomeManifest } from "../../types";
 
 import { deriveDemoSessionDefinition } from "./demo-session-definition";
 import { applyDemoServiceToStates } from "./demo-device-state";
+import { createDemoCameraClient } from "./demo-camera";
 export { deriveDemoSessionDefinition, type DemoSessionDefinition } from "./demo-session-definition";
 export { applyDemoServiceCall } from "./demo-device-state";
 
@@ -84,6 +85,14 @@ export function DemoHomeAssistantSession({
     [definition],
   );
 
+  const cameraClient = useMemo(
+    () =>
+      createDemoCameraClient(
+        definition.runtime.entityStates,
+        () => live.current && current.current.definition === definition,
+      ),
+    [definition],
+  );
   const runtime = useMemo<HomeAssistantRuntimeValue>(
     () => ({
       ...definition.runtime,
@@ -95,10 +104,10 @@ export function DemoHomeAssistantSession({
       refreshError: null,
       refresh: async () => undefined,
       callService,
-      cameraClient: null,
+      cameraClient,
       sendStorageMessage,
     }),
-    [callService, definition, snapshot, sendStorageMessage],
+    [callService, definition, snapshot, sendStorageMessage, cameraClient],
   );
 
   const manager = useMemo<RuntimeBindingProfileManager>(

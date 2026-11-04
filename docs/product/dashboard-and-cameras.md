@@ -178,10 +178,11 @@ entrance opens before the selected floor changes at its threshold. Doors on othe
 storeys remain closed when their height puts them out of range.
 On departure or leaving Walk, the door resumes its bound state. Proximity never
 sends a Home Assistant command. Missing HA data keeps the architectural scene usable.
-The demo leaves door contacts and door covers unbound so doors, including the
-garage door, open on approach and close on departure in Walk. Other supported
-device controls and window contacts retain their simulated bindings. Real HA
-opening bindings use the same local proximity override.
+The demo leaves ordinary door contacts unbound for proximity walking. Explicit
+motorized door covers, including the garage, have simulated controls; departure
+restores their selected cover position. Other supported device controls and
+window contacts retain their simulated bindings. Real HA opening bindings use
+the same local proximity override.
 
 Televisions accept either a primary media-player binding for controls or a camera
 binding for scene video and the camera viewer. Only camera entity bindings request
@@ -193,6 +194,11 @@ supported, with HLS handling in a separate transport implementation. Camera
 screens and the dedicated viewer consume the resulting media. Actual playback
 depends on the HA camera integration, browser capabilities, and network access;
 fixture coverage is not a claim that all household cameras have been accepted.
+
+A host can supply an in-memory local stream through the same coordinator, without
+an HA origin or transport negotiation. The public demo uses this for a small
+synthetic garden feed permanently labelled “SIMULATED DEMO”. It shares normal
+viewer and texture handling and stops media resources when hidden or unmounted.
 
 Implementation: [dashboard](../../packages/engine/src/CabaneDashboard.tsx),
 [room controls](../../packages/engine/src/home-assistant-dashboard/RoomModule.tsx),
