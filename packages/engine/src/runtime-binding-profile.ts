@@ -12,8 +12,7 @@ import {
 } from "./binding-profile-contract";
 import {
   allowsCrossAreaEntityBinding,
-  compatibleDeviceClass,
-  isOpeningContactEntity,
+  bindingDeviceClassMatches,
 } from "./binding-slot-compatibility";
 import { collectBindingSlots } from "./binding-slot-descriptors";
 import type {
@@ -141,11 +140,7 @@ export const validateRuntimeBindingProfile = (
             path,
             `Entity "${entityId}" is not present in the current Home Assistant registry.`,
           );
-        if (
-          !(descriptor.kind === "opening-contact"
-            ? isOpeningContactEntity(entityId, runtime)
-            : compatibleDeviceClass(descriptor.spec, entityId, runtime))
-        ) {
+        if (!bindingDeviceClassMatches(descriptor, entityId, runtime)) {
           add(
             "profile.device-class",
             path,

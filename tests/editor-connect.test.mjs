@@ -125,6 +125,65 @@ await withModules(async (load) => {
     };
   }
 
+  test("Arrange and Connect slot entry can choose classless smart outlets and retain their mappings", async () => {
+    const floor = manifest.floors[0];
+    const room = { ...floor.rooms[0] };
+    const actualManifest = {
+      ...manifest,
+      floors: [{ ...floor, rooms: [room, ...floor.rooms.slice(1)] }, ...manifest.floors.slice(1)],
+    };
+    const source = room.devices[0];
+    room.devices = ["smart-plug", "smart-power-strip"].map((model) => ({
+      ...source,
+      id: `test-${model}`,
+      model,
+      entitySlots: [
+        {
+          id: `test-${model}-outlet`,
+          compatibleDomains: ["switch"],
+          compatibleDeviceClasses: ["outlet"],
+          deviceRole: "primary",
+          required: true,
+          autoMap: "manual",
+          presentation: { label: "Outlet", dashboardRole: "primary" },
+        },
+      ],
+    }));
+    const actualRuntime = structuredClone(snapshot);
+    const entityId = actualRuntime.entityRegistry.find((entry) =>
+      entry.entity_id.startsWith("switch."),
+    ).entity_id;
+    delete actualRuntime.entityStates[entityId].attributes.device_class;
+    const empty = engine.createEmptyRuntimeBindingProfile(manifest.home.id);
+    const harness = await mount(protectedBindings(empty), true);
+    try {
+      await harness.render({ actualManifest, actualRuntime: { ...runtime, ...actualRuntime } });
+      for (const device of room.devices) {
+        const slotId = device.entitySlots[0].id;
+        await act(async () => assert.equal(harness.editor.selectSlot(slotId), true));
+        const button = [...harness.dom.window.document.querySelectorAll(".connection-source")].find(
+          (element) => element.getAttribute("aria-label").includes(entityId),
+        );
+        assert.ok(button, `${device.model} offers the classless switch`);
+        assert.equal(button.disabled, false);
+        await act(async () => button.click());
+        assert.equal(harness.bindings[origin].draft.entityIdsBySlotId[slotId], entityId);
+      }
+      assert.deepEqual(harness.bindings[origin].published, empty);
+      const resolved = engine.resolveHomeAssistantBindings(
+        actualManifest,
+        harness.bindings[origin].draft,
+        actualRuntime,
+      );
+      for (const device of resolved.rooms[room.id].devices) {
+        assert.equal(device.entities[0].entityId, entityId);
+        assert.deepEqual(device.entities[0].issues, []);
+      }
+    } finally {
+      await harness.close();
+    }
+  });
+
   test("outside devices are selectable in Connect without adding architectural rooms", async () => {
     const device = manifest.floors[0].rooms.flatMap((room) => room.devices)[0];
     const actualManifest = {

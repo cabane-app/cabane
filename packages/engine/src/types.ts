@@ -83,6 +83,7 @@ export type DevicePlacement = SurfaceDevicePlacement | WallDevicePlacement;
 export interface EntityBindingSlotSpec {
   id: string;
   compatibleDomains: readonly DeviceDomain[];
+  /** Required for readings and automatic matching; preferences for explicit switch/cover connections. */
   compatibleDeviceClasses?: readonly string[];
   required: boolean;
   autoMap: "unique-compatible" | "manual";

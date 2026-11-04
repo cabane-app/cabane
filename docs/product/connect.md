@@ -76,6 +76,16 @@ Changing a source retains the object and its other mappings.
 Manual candidates use the central domain/device-class compatibility policy. All
 functions and independent readings search all HA areas, even before the room has
 an area mapping.
+For explicit switch and cover connections, device classes such as `outlet`,
+`curtain` or `garage` are preferences, not eligibility requirements. Classless
+entities and other classes in the compatible domain remain selectable, including
+in existing homes with saved class constraints. Matching classes help rank suggestions;
+automatic matching still requires declared classes. Sensor and binary-sensor
+readings and opening contacts retain their semantic class requirements. The
+picker, assignment, profile validation/import and live resolver share this policy.
+Home Assistant documents [switch classes](https://www.home-assistant.io/integrations/switch/#device-class)
+and [cover classes](https://www.home-assistant.io/integrations/cover/#device-class)
+separately from service capabilities.
 Suggestions favor the current HA device and room, followed by one flat eligible list.
 Search covers source names, parent device names, areas and exact entity IDs across
 every candidate. Type filters apply to suggestions and the full list together.
@@ -118,8 +128,8 @@ or garage_door, across all areas including sensors without an assigned area.
 Existing uses of that sensor are preserved. Opening cards and their inspector
 use the shared cached thumbnail renderer with the actual procedural opening model.
 
-Roll-up doors are architectural openings with optional garage-class cover slots
-in addition to optional contacts. Both appear in the Openings mapping group with
+Roll-up doors are architectural openings with optional cover slots that prefer the
+`garage` device class, in addition to optional contacts. Both appear in the Openings mapping group with
 the actual opening preview. Cover selection supports all areas, including entities
 without an assigned area. The cover drives position; a valid contact supplies a
 binary fallback when cover position is unknown. Unmapped opening slots do not

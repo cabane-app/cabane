@@ -1,9 +1,9 @@
 {
-  "revision": 35,
-  "fingerprint": "44dfc7efa62df9d22d6e59f14e3d949f95763834e98b8169909eef840ed4799f",
-  "summary": "Add pool types and adjustable basin height or depth",
+  "revision": 36,
+  "fingerprint": "c2f99daa12cfcff015820c42e74fabce36216ad318dfbce948609cd041f22523",
+  "summary": "Allow explicit switch and cover connections without device-class restrictions",
   "breakingChanges": [
-    "Existing pools keep their in-ground geometry and 1.5 m depth without migration. Projects storing pool type or height settings require the matching frontend and Home Assistant panel."
+    "No saved fields or IDs change. Existing smart plugs, power strips, curtains and garage covers accept compatible entities regardless of optional device class after updating the Home Assistant panel. Older panels can hide or reject these connections; automatic matching and typed sensor requirements remain strict."
   ],
   "history": [
     {
@@ -242,6 +242,13 @@
       "summary": "Support optional named poses for imported GLB models",
       "breakingChanges": [
         "Existing imported models stay static without migration. Projects with custom-model pose mappings require the matching frontend and HA panel. GLB bytes and the asset protocol are unchanged."
+      ]
+    },
+    {
+      "revision": 35,
+      "summary": "Add pool types and adjustable basin height or depth",
+      "breakingChanges": [
+        "Existing pools keep their in-ground geometry and 1.5 m depth without migration. Projects storing pool type or height settings require the matching frontend and Home Assistant panel."
       ]
     }
   ],
