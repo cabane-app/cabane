@@ -253,7 +253,7 @@ preview palette, styled like the door picker, or in the selected stair's propert
 During placement, the sidebar groups the previews, shape-specific instructions, and
 Cancel stairs action; no floating placement panel covers the plan.
 Changing shape retains its ID, connected floors, and lower entrance position.
-Existing stairs without an explicit shape remain straight. Stair properties offer Railings: Both sides (default), Left side, Right side, or None. Sides follow the route while walking upstairs, including turns. Changes use existing autosave and undo. The setting controls flight and landing side rails; guards around an upper-floor opening are derived separately from the supported floor edge.
+Existing stairs without an explicit shape remain straight. Stair properties offer Railings: Both sides (default), Left side, Right side, or None. Sides follow the route while walking upstairs, including turns. Changes use existing autosave and undo. Left and Right control flight and landing side rails; guards around an upper-floor opening follow the supported floor edge. None removes all railings, including the upper-opening guards.
 
 Multiple staircases may connect the same adjacent floors. The Stairs tool always
 starts a new placement; select an existing staircase to edit it. Each connection
