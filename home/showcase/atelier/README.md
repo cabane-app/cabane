@@ -8,7 +8,7 @@ is needed. The original furnished Solstice remains available alongside it.
 
 ## Design
 
-Three floors contain twenty rooms and 338 scene items. The existing two floors
+Three floors contain twenty rooms and 363 scene items. The existing two floors
 retain their architectural identities, openings and original device slots.
 
 - The new 252 m² basement is a private retreat: two-row cinema, listening bar
@@ -67,3 +67,21 @@ These checks cover disconnected editor rendering and portable schema validity.
 Live HA device operation and a complete interactive walk/collision traversal
 were not exercised. Treat the dimensions and furnishings as an authored showcase,
 not construction drawings.
+
+## Furnishing completion
+
+The second revision adds eight reusable native catalog presets. Six individual
+cinema recliners and eight acoustic panels replace the cinema's two sofas; its
+side tables sit between the seats. The Palm Club gains an eighteen-bottle wine
+cabinet, a barware tray and a low travertine table. The living room gains the same
+stone-table family, a magazine rack and an accent cushion.
+
+Towel towers equip the basement bathing suite, wellness lounge and family
+bathroom. A full-width upholstered bench replaces the primary suite's small
+ottoman. Bronze loop sculptures finish the sideboards and gallery console, while
+barware trays complete the kitchen island and upstairs cart. Added static
+furnishings introduce no new device slots.
+
+The new presets are available in this checkout's Arrange catalog. Importing this
+revision elsewhere requires a Cabane build containing those catalog entries.
+The original twenty-room layout and generated wallpapers are retained.

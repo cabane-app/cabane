@@ -1147,3 +1147,49 @@ override and restores the selected variant's original palette.
 The wheelie bin uses the same field for its body, lid and molded front foot.
 Its wheels and rear handle keep their dark finish. No additional color channels
 or project fields are introduced.
+
+## Cinema, entertaining and spa furnishings
+
+Eight generic procedural presets complete leisure spaces. All dimensions below
+are inferred **width × height × depth in metres**, not manufacturer measurements.
+They are static furnishings, independently placeable in Arrange and All items;
+they create no HA slots or simulated appliance controls.
+
+| Model ID                  | Public component        | Dimensions        | Arrange room / category |
+| ------------------------- | ----------------------- | ----------------- | ----------------------- |
+| `cinema-recliner`         | `CinemaRecliner`        | .96 × 1.08 × 1.08 | Living room / Seating   |
+| `wine-display-cabinet`    | `WineDisplayCabinet`    | 1.6 × 2.1 × .45   | Dining room / Storage   |
+| `travertine-coffee-table` | `TravertineCoffeeTable` | 1.4 × .36 × .8    | Living room / Tables    |
+| `spa-towel-tower`         | `SpaTowelTower`         | .6 × 1.6 × .4     | Bathroom / Storage      |
+| `upholstered-bed-bench`   | `UpholsteredBedBench`   | 1.5 × .46 × .45   | Bedroom / Seating       |
+| `abstract-loop-sculpture` | `AbstractLoopSculpture` | .36 × .5 × .18    | Living room / Decor     |
+| `acoustic-slat-panel`     | `AcousticSlatPanel`     | .6 × 2.4 × .055   | Living room / Decor     |
+| `barware-tray`            | `BarwareTray`           | .48 × .3 × .3     | Dining room / Decor     |
+
+Matching upper-case `*_SIZE` constants are exported with each component from
+`@cabane/catalog/furnishing`. Floor and tabletop objects have Y=0 at their
+underside, centered X/Z footprints and fronts toward +Z. The acoustic panel has
+its back at Z=0 and bottom at Y=0; use wall placement and set its elevation.
+Set sculpture and tray elevation to their supporting furniture's top.
+
+The recliner has an upright padded back and headrest, connected armrests,
+a closed footrest and two inset cup holders. Its pose is static. The wine cabinet
+has two closed lower doors and three open bottle-display shelves holding eighteen
+bottles. Its handles attach to recessed door faces; the back panel is recessed
+from the frame to avoid coplanar surfaces. Bottles and glassware use opaque toon
+materials. The acoustic panel has ten walnut slats over a dark backing; it does
+not change sound or room behavior.
+
+The travertine table has a softened slab on two connected stone supports.
+The towel tower includes a basket and six rolled towels on open timber shelves.
+The upholstered bench has a padded seat on four walnut legs. The bronze loop
+sculpture rests on a stone plinth. The tray includes one bottle and two stemmed
+cups; all are part of that portable tabletop composition.
+
+The table, bench and acoustic panel support independent axis resizing. The other
+five presets resize proportionally. Color changes the recliner/bench upholstery,
+towels, sculpture or panel slats; the cabinet, stone table and barware retain their
+material palettes. Numeric checks cover full bounds, material ownership,
+complexity budgets and coplanar surfaces. Model geometry includes the small
+construction overlaps needed for connected supports; surface details sit clear
+of their exposed supporting faces.

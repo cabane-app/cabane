@@ -347,14 +347,6 @@
       ]
     },
     {
-      "ceilings": [
-        {
-          "heightMeters": 3,
-          "id": "ground-ceiling",
-          "kind": "flat",
-          "roomIds": ["garage", "laundry", "kitchen", "hall", "office", "living", "salon"]
-        }
-      ],
       "coordinates": {
         "metersPerPlanUnit": 1,
         "origin": [0, 0],
@@ -732,8 +724,6 @@
       "rooms": [
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "limestone"
@@ -745,12 +735,12 @@
             [6, 0],
             [6, 6],
             [0, 6]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "terrazzo"
@@ -762,12 +752,12 @@
             [6, 0],
             [9, 0],
             [9, 6]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "limestone"
@@ -781,12 +771,12 @@
             [9, 8],
             [9, 14],
             [0, 14]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "limestone"
@@ -800,12 +790,12 @@
             [12, 6],
             [12, 8],
             [9, 8]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "dark-walnut"
@@ -817,12 +807,12 @@
             [12, 0],
             [18, 0],
             [18, 6]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "light-oak"
@@ -835,12 +825,12 @@
             [18, 6],
             [18, 14],
             [12, 14]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "limestone"
@@ -852,7 +842,9 @@
             [12, 8],
             [12, 14],
             [9, 14]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         }
       ],
       "wallJunctions": [
@@ -1180,26 +1172,17 @@
           "thicknessMeters": 0.3,
           "to": [12, 14]
         }
-      ]
-    },
-    {
+      ],
       "ceilings": [
         {
           "heightMeters": 3,
-          "id": "upper-ceiling",
+          "id": "ground-ceiling",
           "kind": "flat",
-          "roomIds": [
-            "bed-primary",
-            "gallery",
-            "bath-primary",
-            "dressing",
-            "bed-guest",
-            "bed-junior",
-            "bath-family",
-            "bed-twin"
-          ]
+          "roomIds": ["garage", "laundry", "kitchen", "hall", "office", "living", "salon"]
         }
-      ],
+      ]
+    },
+    {
       "coordinates": {
         "metersPerPlanUnit": 1,
         "origin": [0, 0],
@@ -1501,8 +1484,6 @@
       "rooms": [
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "light-oak"
@@ -1515,12 +1496,12 @@
             [7, 6],
             [4, 6],
             [0, 6]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "limestone"
@@ -1536,12 +1517,12 @@
             [12, 14],
             [7, 14],
             [7, 9]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "limestone"
@@ -1553,12 +1534,12 @@
             [4, 6],
             [4, 9],
             [0, 9]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "dark-walnut"
@@ -1570,12 +1551,12 @@
             [7, 6],
             [7, 9],
             [4, 9]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "light-oak"
@@ -1588,12 +1569,12 @@
             [7, 9],
             [7, 14],
             [0, 14]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "light-oak"
@@ -1605,12 +1586,12 @@
             [12, 0],
             [18, 0],
             [18, 5]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "limestone"
@@ -1622,12 +1603,12 @@
             [12, 5],
             [18, 5],
             [18, 9]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         },
         {
           "accent": "#b78e70",
-          "dashboardSlots": [],
-          "devices": [],
           "floorFinish": {
             "kind": "preset",
             "preset": "light-oak"
@@ -1639,7 +1620,9 @@
             [12, 9],
             [18, 9],
             [18, 14]
-          ]
+          ],
+          "dashboardSlots": [],
+          "devices": []
         }
       ],
       "wallJunctions": [
@@ -2023,6 +2006,23 @@
           "thicknessMeters": 0.3,
           "to": [18, 14]
         }
+      ],
+      "ceilings": [
+        {
+          "heightMeters": 3,
+          "id": "upper-ceiling",
+          "kind": "flat",
+          "roomIds": [
+            "bed-primary",
+            "gallery",
+            "bath-primary",
+            "dressing",
+            "bed-guest",
+            "bed-junior",
+            "bath-family",
+            "bed-twin"
+          ]
+        }
       ]
     }
   ],
@@ -2188,25 +2188,12 @@
       "kind": "furnishing",
       "modelId": "curved-three-seat-sofa",
       "placement": {
-        "at": [15, 11.6],
-        "elevationMeters": 0.001,
         "kind": "absolute",
+        "at": [15, 11.6],
+        "elevationMeters": 0.027,
         "rotationYRadians": 3.141592653589793
       },
       "size": [3.2, 0.88, 1.15]
-    },
-    {
-      "floorId": "ground",
-      "id": "solstice-rectangular-coffee-table-3",
-      "kind": "furnishing",
-      "modelId": "rectangular-coffee-table",
-      "placement": {
-        "at": [15, 10],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [1.5, 0.38, 0.75]
     },
     {
       "floorId": "ground",
@@ -2214,9 +2201,9 @@
       "kind": "furnishing",
       "modelId": "sage-tub-armchair",
       "placement": {
-        "at": [16.8, 9.8],
-        "elevationMeters": 0.001,
         "kind": "absolute",
+        "at": [16.8, 9.8],
+        "elevationMeters": 0.027,
         "rotationYRadians": -1.1
       },
       "size": [0.78, 0.86, 0.8]
@@ -2227,9 +2214,9 @@
       "kind": "furnishing",
       "modelId": "pedestal-side-table",
       "placement": {
-        "at": [16.7, 10.8],
-        "elevationMeters": 0.001,
         "kind": "absolute",
+        "at": [16.7, 10.8],
+        "elevationMeters": 0.027,
         "rotationYRadians": 0
       },
       "size": [0.5, 0.55, 0.5]
@@ -3585,19 +3572,6 @@
         "rotationYRadians": 0
       },
       "size": [0.847, 0.58, 0.86]
-    },
-    {
-      "floorId": "upper",
-      "id": "solstice-upholstered-ottoman-68",
-      "kind": "furnishing",
-      "modelId": "upholstered-ottoman",
-      "placement": {
-        "at": [3.5, 3.3],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.7, 0.42, 0.55]
     },
     {
       "entitySlots": [
@@ -6310,28 +6284,13 @@
       "variant": "sisal"
     },
     {
-      "color": "#b5a58c",
-      "floorId": "atelier-basement",
-      "id": "907c547f-f39c-4832-a5d8-6f62501a376e",
-      "kind": "furnishing",
-      "modelId": "curved-three-seat-sofa",
-      "placement": {
-        "at": [4.5, 3.2],
-        "elevationMeters": 0.027,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [3.6, 0.9, 1.1],
-      "variant": "default"
-    },
-    {
       "floorId": "atelier-basement",
       "id": "191bc6ee-6166-43f7-a293-6163706a0200",
       "kind": "furnishing",
       "modelId": "pedestal-side-table",
       "placement": {
         "kind": "absolute",
-        "at": [2.25, 3.2],
+        "at": [3.65, 3.1],
         "elevationMeters": 0.027,
         "rotationYRadians": 0
       },
@@ -6345,26 +6304,11 @@
       "modelId": "pedestal-side-table",
       "placement": {
         "kind": "absolute",
-        "at": [6.75, 3.2],
+        "at": [5.35, 3.1],
         "elevationMeters": 0.027,
         "rotationYRadians": 0
       },
       "size": [0.5, 0.55, 0.5],
-      "variant": "default"
-    },
-    {
-      "color": "#b5a58c",
-      "floorId": "atelier-basement",
-      "id": "160eae1b-2d41-4846-adc8-71a71f704bbd",
-      "kind": "furnishing",
-      "modelId": "curved-three-seat-sofa",
-      "placement": {
-        "at": [4.5, 5.4],
-        "elevationMeters": 0.027,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [3.6, 0.9, 1.1],
       "variant": "default"
     },
     {
@@ -6374,7 +6318,7 @@
       "modelId": "pedestal-side-table",
       "placement": {
         "kind": "absolute",
-        "at": [2.25, 5.4],
+        "at": [3.65, 5.2],
         "elevationMeters": 0.027,
         "rotationYRadians": 0
       },
@@ -6388,7 +6332,7 @@
       "modelId": "pedestal-side-table",
       "placement": {
         "kind": "absolute",
-        "at": [6.75, 5.4],
+        "at": [5.35, 5.2],
         "elevationMeters": 0.027,
         "rotationYRadians": 0
       },
@@ -6734,27 +6678,13 @@
     },
     {
       "floorId": "atelier-basement",
-      "id": "e2966f28-3a7d-4375-9a47-f4f53528203a",
-      "kind": "furnishing",
-      "modelId": "round-coffee-table",
-      "placement": {
-        "at": [6.7, 10.6],
-        "elevationMeters": 0.022,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [1, 0.4, 0.9],
-      "variant": "default"
-    },
-    {
-      "floorId": "atelier-basement",
       "id": "7b1e472f-075f-4705-aa3f-37b3665c7cc7",
       "kind": "furnishing",
       "modelId": "tabletop-candle",
       "placement": {
-        "at": [6.7, 10.6],
-        "elevationMeters": 0.424,
         "kind": "absolute",
+        "at": [6.7, 10.6],
+        "elevationMeters": 0.384,
         "rotationYRadians": 0
       },
       "size": [0.12, 0.18, 0.12],
@@ -6835,9 +6765,9 @@
       "kind": "furnishing",
       "modelId": "freestanding-bathtub",
       "placement": {
-        "kind": "absolute",
         "at": [17.3, 1.7],
         "elevationMeters": 0.001,
+        "kind": "absolute",
         "rotationYRadians": 1.5707963267948966
       },
       "size": [2, 0.65, 0.95],
@@ -7014,9 +6944,9 @@
       "kind": "furnishing",
       "modelId": "leafy-planter",
       "placement": {
-        "kind": "absolute",
         "at": [14.8, 0.8],
         "elevationMeters": 0.001,
+        "kind": "absolute",
         "rotationYRadians": 0
       },
       "size": [0.8, 1.25, 0.8],
@@ -7753,7 +7683,7 @@
       "modelId": "book-row",
       "placement": {
         "at": [15.1, 10],
-        "elevationMeters": 0.383,
+        "elevationMeters": 0.389,
         "kind": "absolute",
         "rotationYRadians": 0
       },
@@ -7767,7 +7697,7 @@
       "modelId": "tabletop-candle",
       "placement": {
         "at": [15.5, 10],
-        "elevationMeters": 0.383,
+        "elevationMeters": 0.389,
         "kind": "absolute",
         "rotationYRadians": 0
       },
@@ -8170,6 +8100,450 @@
       },
       "size": [0.2, 0.4, 0.26],
       "variant": "default"
+    },
+    {
+      "variant": "default",
+      "id": "a6c7399b-f31c-484b-9916-aae090fc77b9",
+      "floorId": "atelier-basement",
+      "modelId": "cinema-recliner",
+      "placement": {
+        "kind": "absolute",
+        "at": [2.8, 3.1],
+        "elevationMeters": 0.027,
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.96, 1.08, 1.08],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "d37c9304-a9e3-440b-b454-8987315a98ad",
+      "floorId": "atelier-basement",
+      "modelId": "cinema-recliner",
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 3.1],
+        "elevationMeters": 0.027,
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.96, 1.08, 1.08],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "01070421-c954-4351-a03f-8189e9420f96",
+      "floorId": "atelier-basement",
+      "modelId": "cinema-recliner",
+      "placement": {
+        "kind": "absolute",
+        "at": [6.2, 3.1],
+        "elevationMeters": 0.027,
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.96, 1.08, 1.08],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "7dec19c9-481c-4354-93bf-ebed395214b5",
+      "floorId": "atelier-basement",
+      "modelId": "cinema-recliner",
+      "placement": {
+        "kind": "absolute",
+        "at": [2.8, 5.2],
+        "elevationMeters": 0.027,
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.96, 1.08, 1.08],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "a9793ded-6976-4604-936e-7ffcf9dd0bd9",
+      "floorId": "atelier-basement",
+      "modelId": "cinema-recliner",
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 5.2],
+        "elevationMeters": 0.027,
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.96, 1.08, 1.08],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "5cbd3eb7-18e5-4fef-a294-b1ee53215925",
+      "floorId": "atelier-basement",
+      "modelId": "cinema-recliner",
+      "placement": {
+        "kind": "absolute",
+        "at": [6.2, 5.2],
+        "elevationMeters": 0.027,
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.96, 1.08, 1.08],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "eb96b6a0-2f51-4786-b5d9-7d1cf0527074",
+      "floorId": "atelier-basement",
+      "modelId": "acoustic-slat-panel",
+      "placement": {
+        "kind": "wall",
+        "wallId": "atelier-basement:wall-1",
+        "face": "right",
+        "offsetFromWallStartPlanUnits": 0.6,
+        "elevationMeters": 0.25,
+        "depthOffsetMeters": 0.004,
+        "rotationOffsetRadians": 0
+      },
+      "size": [0.6, 2.4, 0.055],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "8c4a10e7-6c45-4eb2-8345-b8b17f20e0e0",
+      "floorId": "atelier-basement",
+      "modelId": "acoustic-slat-panel",
+      "placement": {
+        "kind": "wall",
+        "wallId": "atelier-basement:wall-1",
+        "face": "right",
+        "offsetFromWallStartPlanUnits": 1.3,
+        "elevationMeters": 0.25,
+        "depthOffsetMeters": 0.004,
+        "rotationOffsetRadians": 0
+      },
+      "size": [0.6, 2.4, 0.055],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "2d35576f-1c45-4960-8570-c3c51dd49827",
+      "floorId": "atelier-basement",
+      "modelId": "acoustic-slat-panel",
+      "placement": {
+        "kind": "wall",
+        "wallId": "atelier-basement:wall-1",
+        "face": "right",
+        "offsetFromWallStartPlanUnits": 2,
+        "elevationMeters": 0.25,
+        "depthOffsetMeters": 0.004,
+        "rotationOffsetRadians": 0
+      },
+      "size": [0.6, 2.4, 0.055],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "66a1828c-e9a4-475d-89a3-2cdacbd3c3c9",
+      "floorId": "atelier-basement",
+      "modelId": "acoustic-slat-panel",
+      "placement": {
+        "kind": "wall",
+        "wallId": "atelier-basement:wall-1",
+        "face": "right",
+        "offsetFromWallStartPlanUnits": 2.7,
+        "elevationMeters": 0.25,
+        "depthOffsetMeters": 0.004,
+        "rotationOffsetRadians": 0
+      },
+      "size": [0.6, 2.4, 0.055],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "cddae2d1-e55e-4bc5-9761-1bf748ccdd2f",
+      "floorId": "atelier-basement",
+      "modelId": "acoustic-slat-panel",
+      "placement": {
+        "kind": "wall",
+        "wallId": "atelier-basement:wall-1",
+        "face": "right",
+        "offsetFromWallStartPlanUnits": 6.3,
+        "elevationMeters": 0.25,
+        "depthOffsetMeters": 0.004,
+        "rotationOffsetRadians": 0
+      },
+      "size": [0.6, 2.4, 0.055],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "769a176d-aa1f-498c-ac91-167d3d27cf9c",
+      "floorId": "atelier-basement",
+      "modelId": "acoustic-slat-panel",
+      "placement": {
+        "kind": "wall",
+        "wallId": "atelier-basement:wall-1",
+        "face": "right",
+        "offsetFromWallStartPlanUnits": 7,
+        "elevationMeters": 0.25,
+        "depthOffsetMeters": 0.004,
+        "rotationOffsetRadians": 0
+      },
+      "size": [0.6, 2.4, 0.055],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "65c29948-c925-45c6-97dd-9526bc6e2497",
+      "floorId": "atelier-basement",
+      "modelId": "acoustic-slat-panel",
+      "placement": {
+        "kind": "wall",
+        "wallId": "atelier-basement:wall-1",
+        "face": "right",
+        "offsetFromWallStartPlanUnits": 7.7,
+        "elevationMeters": 0.25,
+        "depthOffsetMeters": 0.004,
+        "rotationOffsetRadians": 0
+      },
+      "size": [0.6, 2.4, 0.055],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "738a55ca-c529-405a-a8f5-f9c0752a7bdd",
+      "floorId": "atelier-basement",
+      "modelId": "acoustic-slat-panel",
+      "placement": {
+        "kind": "wall",
+        "wallId": "atelier-basement:wall-1",
+        "face": "right",
+        "offsetFromWallStartPlanUnits": 8.4,
+        "elevationMeters": 0.25,
+        "depthOffsetMeters": 0.004,
+        "rotationOffsetRadians": 0
+      },
+      "size": [0.6, 2.4, 0.055],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "ecc0504c-e4ab-4f7f-b670-23af74ef9ad3",
+      "floorId": "atelier-basement",
+      "modelId": "wine-display-cabinet",
+      "placement": {
+        "kind": "absolute",
+        "at": [0.34, 9.7],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      },
+      "size": [1.6, 2.1, 0.45],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "620edf22-69cb-4a60-b8a9-d0bf4dddbddd",
+      "floorId": "atelier-basement",
+      "modelId": "barware-tray",
+      "placement": {
+        "kind": "absolute",
+        "at": [2.6, 11.6],
+        "elevationMeters": 1.053,
+        "rotationYRadians": 0
+      },
+      "size": [0.48, 0.3, 0.3],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "11d2da87-21bb-4a52-ba55-5f4854395b85",
+      "floorId": "atelier-basement",
+      "modelId": "spa-towel-tower",
+      "placement": {
+        "kind": "absolute",
+        "at": [12.5, 1.2],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      },
+      "size": [0.6, 1.6, 0.4],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "8913f14c-584f-4cf9-858b-af946bcef780",
+      "floorId": "atelier-basement",
+      "modelId": "spa-towel-tower",
+      "placement": {
+        "kind": "absolute",
+        "at": [17.45, 11.8],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      },
+      "size": [0.6, 1.6, 0.4],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "sisal",
+      "id": "e615664c-035a-43cf-889a-ced17f59b9d0",
+      "floorId": "atelier-basement",
+      "modelId": "neutral-area-rug",
+      "placement": {
+        "kind": "absolute",
+        "at": [16.25, 1.7],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      },
+      "size": [1.5, 0.015, 0.7],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "4ebf75ff-02d9-47b9-8485-d49221c8db00",
+      "floorId": "atelier-basement",
+      "modelId": "travertine-coffee-table",
+      "placement": {
+        "kind": "absolute",
+        "at": [6.7, 10.6],
+        "elevationMeters": 0.022,
+        "rotationYRadians": 0
+      },
+      "size": [1.2, 0.36, 0.7],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "1c95517b-af10-4866-b7c0-e2ee595ebd51",
+      "floorId": "atelier-basement",
+      "modelId": "abstract-loop-sculpture",
+      "placement": {
+        "kind": "absolute",
+        "at": [15.5, 13.6],
+        "elevationMeters": 0.743,
+        "rotationYRadians": 0
+      },
+      "size": [0.36, 0.5, 0.18],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "5de992a2-5871-435f-ab05-3c4be69a43ad",
+      "floorId": "ground",
+      "modelId": "travertine-coffee-table",
+      "placement": {
+        "kind": "absolute",
+        "at": [15, 10],
+        "elevationMeters": 0.027,
+        "rotationYRadians": 0
+      },
+      "size": [1.5, 0.36, 0.8],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "e1e71168-c53b-498f-8d30-8330e3473572",
+      "floorId": "ground",
+      "modelId": "abstract-loop-sculpture",
+      "placement": {
+        "kind": "absolute",
+        "at": [8.69, 13.1],
+        "elevationMeters": 0.823,
+        "rotationYRadians": -1.5707963267948966
+      },
+      "size": [0.36, 0.5, 0.18],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "827e7043-ba65-4cc8-82ee-5ba9a22f2d10",
+      "floorId": "ground",
+      "modelId": "barware-tray",
+      "placement": {
+        "kind": "absolute",
+        "at": [3.3, 8.9],
+        "elevationMeters": 0.923,
+        "rotationYRadians": 0
+      },
+      "size": [0.48, 0.3, 0.3],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "ea074d54-0b77-4b98-918e-61170d3137bb",
+      "floorId": "ground",
+      "modelId": "floor-magazine-rack",
+      "placement": {
+        "kind": "absolute",
+        "at": [16.1, 12.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      },
+      "size": [0.42, 0.45, 0.3],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "sage",
+      "id": "4bafc3cd-e51f-4747-8633-cfab01e4d06f",
+      "floorId": "ground",
+      "modelId": "loose-throw-cushion",
+      "placement": {
+        "kind": "absolute",
+        "at": [14.2, 11.5],
+        "elevationMeters": 0.549,
+        "rotationYRadians": 0
+      },
+      "size": [0.45, 0.16, 0.45],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "8898227c-9131-47d6-993e-49b11c5f7c56",
+      "floorId": "upper",
+      "modelId": "upholstered-bed-bench",
+      "placement": {
+        "kind": "absolute",
+        "at": [3.5, 3.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      },
+      "size": [1.5, 0.46, 0.45],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "814d0f76-40df-40d7-831b-061f9f7244ca",
+      "floorId": "upper",
+      "modelId": "spa-towel-tower",
+      "placement": {
+        "kind": "absolute",
+        "at": [15, 8.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.6, 1.6, 0.4],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "91d13132-554a-45f1-a83b-1bb883a39ff7",
+      "floorId": "upper",
+      "modelId": "abstract-loop-sculpture",
+      "placement": {
+        "kind": "absolute",
+        "at": [7.26, 5.68],
+        "elevationMeters": 0.803,
+        "rotationYRadians": 1.5707963267948966
+      },
+      "size": [0.36, 0.5, 0.18],
+      "kind": "furnishing"
+    },
+    {
+      "variant": "default",
+      "id": "bab58747-9301-40ff-a6ce-ca8f44354e1b",
+      "floorId": "upper",
+      "modelId": "barware-tray",
+      "placement": {
+        "kind": "absolute",
+        "at": [11.4, 10.3],
+        "elevationMeters": 0.803,
+        "rotationYRadians": 0
+      },
+      "size": [0.48, 0.3, 0.3],
+      "kind": "furnishing"
     }
   ],
   "schemaVersion": 2,
