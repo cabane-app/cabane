@@ -18,6 +18,8 @@ async function main() {
   batch --file requests.json [--full]
   inspect | validate
   screenshot [--output test-results/dev-agent/screenshot.png]
+  frame [--item ID | --object NAME] [--floor ID] [--view front-right] [--params JSON]
+  capture [--item ID | --object NAME] [--floor ID] [--views front-right,back-left,top,low-front] [--output DIRECTORY] [--params JSON]
   stop
 All commands accept --session-file PATH. Start stays running until stop or Ctrl+C.
 Batches run serially and stop on the first error; earlier edits remain applied.
@@ -40,7 +42,11 @@ Mutation results are compact by default; --full includes their complete inspecti
     });
     return;
   }
-  if (!["request", "batch", "inspect", "validate", "screenshot", "stop"].includes(command))
+  if (
+    !["request", "batch", "inspect", "validate", "screenshot", "frame", "capture", "stop"].includes(
+      command,
+    )
+  )
     throw new Error(`Unknown command: ${command}. Use --help.`);
   const session = JSON.parse(await readFile(sessionFile, "utf8"));
   const url = new URL(session.url);
@@ -61,15 +67,33 @@ Mutation results are compact by default; --full includes their complete inspecti
     if (!method) throw new Error("request requires --method METHOD.");
     requests = { method, params: JSON.parse(option(args, "--params") ?? "{}") };
   }
-  const operation = command === "stop" || command === "screenshot" ? command : "request";
+  let options;
+  if (command === "frame" || command === "capture") {
+    options = JSON.parse(option(args, "--params") ?? "{}");
+    for (const [flag, key] of [
+      ["--item", "itemId"],
+      ["--object", "objectName"],
+      ["--floor", "floorId"],
+      ["--view", "view"],
+      ["--output", "directory"],
+    ]) {
+      const value = option(args, flag);
+      if (value !== undefined) options[key] = value;
+    }
+    const views = option(args, "--views");
+    if (views !== undefined) options.views = views.split(",");
+  }
+  const operation = ["stop", "screenshot", "frame", "capture"].includes(command)
+    ? command
+    : "request";
   let response;
   try {
     response = await fetch(`${url.origin}/__dev-agent/${operation}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${session.token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ requests, full: args.includes("--full") }),
+      body: JSON.stringify({ requests, options, full: args.includes("--full") }),
       redirect: "error",
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(command === "frame" || command === "capture" ? 75_000 : 60_000),
     });
   } catch (error) {
     throw new Error(`${error.message}. Inspect the draft before repeating a mutation.`, {

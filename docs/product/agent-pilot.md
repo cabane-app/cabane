@@ -196,3 +196,48 @@ They serialize with CLI requests through the runner's busy check; a concurrent
 request is rejected. Errors carry `completed` and `results` so callers can inspect
 partial progress before deciding how to continue. The returned `page` remains
 available for testing editor controls and rendered appearance.
+
+### Local camera and capture
+
+The dev runner can frame an item or save multiple rendered views without agent
+browser control:
+
+```sh
+node scripts/dev-agent.mjs frame --item ITEM_ID --view front-right
+node scripts/dev-agent.mjs capture --item ITEM_ID --views front-right,back-left,top,low-front
+node scripts/dev-agent.mjs capture --object pool-POOL_ID --output test-results/pool-review
+```
+
+The equivalent script calls are `runner.frame({itemId, view: "front-right"})` and
+`runner.capture({itemId})`. These operations select the item's floor, enter 3D
+Arrange and clear the selection overlay. Omit the target for the active floor,
+or pass `floorId` explicitly. `objectName` targets an existing named scene group,
+including `pool-<id>`. Supplying an item on a different explicit floor is rejected.
+
+Framing uses the target's rendered world bounds and the existing orthographic
+camera/controls. Captures wait for tracked assets, geometry LOD preparation and
+completed main-canvas frames after each camera change. Pixels are read from that
+completed frame over the editor's background color, so PNGs exclude DOM overlays
+and sidebars. This does not freeze
+model animations or remove surrounding objects; review the images for occlusion,
+appearance and angle-dependent defects.
+
+The default capture views are `front-right`, `back-left`, `top` and `low-front`.
+Other presets are `front`, `right`, `back`, `left`, `back-right` and `front-left`.
+Angles refer to world axes: front looks from +Z, right from +X, and top from above.
+Scripts can supply `views: [{name: "grazing", azimuth: 60, elevation: 8}]` in degrees,
+or one custom `view` for `frame`. CLI `--params JSON` accepts the same options.
+`padding` defaults to 1.2 (range 1.05–3), and `timeoutMs` defaults to 30000
+(range 1000–60000) for readiness across the sequence. Camera restoration has a
+separate five-second allowance.
+
+`capture` returns PNG paths, bounds, camera poses and a `capture.json` manifest
+under a unique ignored `test-results/dev-agent/captures/` directory by default.
+`directory` selects another output location. It restores the previous camera pose
+and limits after the sequence, including on failure; `restore: false` leaves the
+last view. `frame` leaves the fitted pose and inspection zoom limits active.
+The chosen floor, Arrange mode and cleared selection remain active. Neither
+operation changes the saved home or adds undo entries. Failures retain completed
+capture paths on the error. The existing local token and busy checks protect the
+HTTP endpoints and serialize them with scene edits. These helpers are dev-only,
+separate from the Home Assistant agent protocol.

@@ -13,7 +13,7 @@ import { GeometryLodWorker } from "./GeometryLodWorker";
 import { forgetGeometryLods, registerGeometryLods } from "./geometry-lod-family";
 
 const scenes = new WeakMap<Scene, SceneGeometryLod>();
-/** Benchmark synchronization: excludes one-time geometry preparation from steady frames. */
+/** Synchronize deferred geometry before measurements or rendered evidence capture. */
 export async function waitForSceneGeometryLods(scene: Scene) {
   await scenes.get(scene)?.ready;
 }

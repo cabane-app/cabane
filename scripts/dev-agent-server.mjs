@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
 import { chromium } from "playwright-core";
+import { captureDevAgent } from "./dev-agent-capture.mjs";
 import {
   authorizeDevAgent,
   devAgentRoomRequests,
@@ -39,7 +40,7 @@ export async function startDevAgent({
     page.waitForFunction(() => typeof window.cabaneDevAgent === "function", undefined, {
       timeout: 60_000,
     });
-  const batch = async (requests, options) => {
+  const exclusive = async (operation) => {
     if (busy || closing)
       throw Object.assign(
         new Error("A request is in progress or the session is closing. Inspect before retrying."),
@@ -47,11 +48,15 @@ export async function startDevAgent({
       );
     busy = true;
     try {
-      return await executeDevAgentBatch(requests, execute, options);
+      return await operation();
     } finally {
       busy = false;
     }
   };
+  const batch = (requests, options) =>
+    exclusive(() => executeDevAgentBatch(requests, execute, options));
+  const capture = (options, multiple) =>
+    captureDevAgent({ page, execute, root }, options, multiple);
   const close = async () => {
     if (closing) return;
     closing = true;
@@ -101,19 +106,29 @@ export async function startDevAgent({
           response.end(png);
           return;
         }
-        if (path !== "/__dev-agent/request") throw new Error("Unknown development operation.");
+        if (!["/__dev-agent/request", "/__dev-agent/frame", "/__dev-agent/capture"].includes(path))
+          throw new Error("Unknown development operation.");
         let body = "";
         for await (const chunk of request) {
           body += chunk;
           if (Buffer.byteLength(body) > 1_048_576) throw new Error("Request exceeds 1 MiB.");
         }
         const input = JSON.parse(body);
+        if (path !== "/__dev-agent/request") {
+          json(response, 200, await capture(input.options, path === "/__dev-agent/capture"));
+          return;
+        }
         const result = await executeDevAgentBatch(input.requests, execute, {
           full: input.full === true,
         });
         json(response, result.error ? 400 : 200, result);
       } catch (error) {
-        json(response, 400, { error: error.message, completed: 0, results: [] });
+        json(response, 400, {
+          error: error.message,
+          completed: 0,
+          results: [],
+          ...(error.captures ? { captures: error.captures } : {}),
+        });
       } finally {
         busy = false;
       }
@@ -173,6 +188,8 @@ export async function startDevAgent({
       close,
       page,
       server,
+      frame: (options) => exclusive(() => capture(options, false)),
+      capture: (options) => exclusive(() => capture(options, true)),
       async batch(requests, options) {
         const result = await batch(requests, options);
         if (result.error) throw Object.assign(new Error(result.error), result);

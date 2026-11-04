@@ -38,14 +38,29 @@ LLM call, HA pairing, workspace import or UI navigation.
    scoped to one batch. A [worked example](../../../docs/product/agent-pilot.md#local-batches)
    shows creation and configuration together.
 
-4. **Verify** the feature or bug on the prepared scene. For visual or UI work,
-   import
+4. **Verify** rendering through commands:
+
+   ```sh
+   node scripts/dev-agent.mjs capture --item ITEM_ID
+   node scripts/dev-agent.mjs frame --item ITEM_ID --view low-front
+   ```
+
+   `capture` fits the rendered bounds and saves front-right, back-left, top and low
+   views as clean canvas PNGs plus a JSON manifest. Review the images. Use
+   `--views front,right,back,left` or `--output DIRECTORY` when useful. For pools or
+   other named geometry, use `--object pool-POOL_ID`; omit the target to frame the
+   active floor. An item's floor is selected automatically. Capture restores the
+   prior camera pose; `frame` leaves it ready for interactive review. The helper
+   waits for tracked assets, deferred geometry and completed render frames.
+
+   For UI checks, import
    `startDevAgent` from the absolute `scripts/dev-agent-server.mjs` path and call
    `await startDevAgent({room: "6x4"})` in a persistent Node REPL when available,
    or an ignored `.mjs` script. The returned `request(method, params)` and
    `batch(requests)` send commands directly, with the same compact results and
-   references as the CLI. Use the returned `page` for UI checks and `close()` for
-   cleanup. `screenshot` in the CLI also captures the
+   references as the CLI. `frame(options)` and `capture(options)` provide the same
+   camera workflow without page scripting. Use the returned `page` for UI checks
+   and `close()` for cleanup. `screenshot` in the CLI also captures the
    same editor to an ignored PNG; review it for visual checks. Browser control is
    available when testing actual UI behavior. Fixture creation alone is not proof
    of the fix.
