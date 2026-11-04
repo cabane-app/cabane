@@ -37,14 +37,19 @@ const result = await build({
     sourcemap: false,
     cssCodeSplit: false,
     minify: true,
-    lib: {
-      entry: join(web, "src/panel/main.tsx"),
-      formats: ["es"],
-      fileName: () => "cabane-panel.js",
-      cssFileName: "cabane-panel",
-    },
+    // The custom element is a deployed app. Library mode preserves formatting
+    // and embeds every imported image in JavaScript, even multi-megabyte assets.
     rolldownOptions: {
-      output: { chunkFileNames: "assets/[name]-[hash].js", assetFileNames: "[name][extname]" },
+      input: join(web, "src/panel/main.tsx"),
+      output: {
+        format: "es",
+        entryFileNames: "cabane-panel.js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: (asset) =>
+          asset.names.some((name) => name.endsWith(".css"))
+            ? "cabane-panel.css"
+            : "assets/[name]-[hash][extname]",
+      },
     },
   },
 });

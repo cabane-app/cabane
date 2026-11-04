@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-04T08:24:11.561Z",
+  "label": "issue106-mobile-rooms-before",
+  "source": {
+    "commit": "e5d6066633e9f69140142591ff5e49723ef2e260",
+    "dirty": true,
+    "homeHash": "754d30605096f9ac424de97b65cf78df103c52a58ff992c516b85046e1862952"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "rooms-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 1,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 3,
+    "canvas": {
+      "width": 487,
+      "height": 1055,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [15.840000000000003, 16.919999999999998, 15.540000000000004],
+      "quaternion": [
+        -0.38386446758380766, 0.3245872631502729, 0.14624114592943535, 0.8520004145330335
+      ],
+      "target": [6, 0.2, 4.5],
+      "zoom": 20.312499999999996
+    },
+    "workload": {
+      "fixture": "synthetic-apartment-v1",
+      "rooms": 12,
+      "sceneItems": 96
+    },
+    "profile": "mobile",
+    "cpuRate": 4
+  },
+  "scene": {
+    "activePointLights": 0,
+    "objects": 1359,
+    "meshes": 889,
+    "materials": 889,
+    "geometries": 877
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": true,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 4,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "runs": [
+    {
+      "durationMs": 10007,
+      "cameraTravel": 18.427151490655756,
+      "movingFrames": 1081,
+      "batchBuffersCreated": 399,
+      "summary": {
+        "fps": 108.02438293194764,
+        "frameMsP50": 8.800000190734863,
+        "frameMsP95": 12.300000190734863,
+        "frameMsP99": 15.899999856948853,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 2.5,
+        "callsMedian": 24,
+        "callsMax": 33,
+        "trianglesMedian": 39933,
+        "trianglesMax": 95347
+      }
+    }
+  ],
+  "summary": {
+    "fps": 108.02438293194764,
+    "frameMsP50": 8.800000190734863,
+    "frameMsP95": 12.300000190734863,
+    "frameMsP99": 15.899999856948853,
+    "over33MsPercent": 0,
+    "over50MsPercent": 0,
+    "cpuSubmitMsP95": 2.5,
+    "callsMedian": 24,
+    "callsMax": 33,
+    "trianglesMedian": 39933,
+    "trianglesMax": 95347
+  },
+  "experiment": "e5d6066 plus issue-106 harness"
+}

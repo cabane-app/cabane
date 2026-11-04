@@ -192,7 +192,10 @@ export function renderRuntimeReport(report) {
       const motion = Number.isFinite(run.movingFrames)
         ? ` · camera moved in ${number((100 * run.movingFrames) / run.frameIntervalsMs.length)}% of sampled frames`
         : "";
-      return `<article><h3>Run ${index + 1}</h3><p>${run.frameIntervalsMs.length} intervals · ${escape(metricValue("fps", summary.fps))} · p95 ${escape(metricValue("frameMsP95", summary.frameMsP95))} · ${escape(metricValue("over33MsPercent", summary.over33MsPercent))} over 33.3 ms${motion}</p>${frameChart(run, index, ceiling)}</article>`;
+      const buffers = Number.isFinite(run.batchBuffersCreated)
+        ? ` · ${number(run.batchBuffersCreated, 0)} new batch buffers observed during capture`
+        : "";
+      return `<article><h3>Run ${index + 1}</h3><p>${run.frameIntervalsMs.length} intervals · ${escape(metricValue("fps", summary.fps))} · p95 ${escape(metricValue("frameMsP95", summary.frameMsP95))} · ${escape(metricValue("over33MsPercent", summary.over33MsPercent))} over 33.3 ms${motion}${buffers}</p>${frameChart(run, index, ceiling)}</article>`;
     })
     .join("");
   const context = JSON.stringify(

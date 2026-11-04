@@ -47,14 +47,18 @@ globalThis.Date = new Proxy(NativeDate, {
 });
 const devHome =
   __PERFORMANCE_SCENARIO__ === "dev-home" ? await import("./performance-dev-home.mjs") : null;
-const preparedHome = devHome ? await devHome.prepareDevelopmentHome() : null;
+const preparedHome = devHome
+  ? await devHome.prepareDevelopmentHome()
+  : __PERFORMANCE_SCENARIO__ === "apartment"
+    ? await (await import("./performance-apartment.mjs")).prepareApartment()
+    : null;
 await import("../apps/web/src/main.tsx");
 
 const panel = document.createElement("aside");
 panel.className = "perf-panel";
 panel.setAttribute("aria-label", "Performance benchmark");
 panel.innerHTML = `<strong>Performance benchmark</strong>
-  <p>${devHome ? "Repo home · live dev HA · night · cloudy · 10 lights on." : "Open <b>Explore the demo</b>."} Keep Orbit view and this tab visible.</p>
+  <p>${devHome ? "Repo home · live dev HA · night · cloudy · 10 lights on." : preparedHome ? "Synthetic apartment · 12 small rooms · catalog furniture." : "Open <b>Explore the demo</b>."} Keep Orbit view and this tab visible.</p>
   <label>Device / experiment <input id="perf-label" value="manual" maxlength="100"></label>
   <button id="perf-run">Run benchmark · 3 × 10s</button>
   <button id="perf-gestures">Record my gestures · 10s</button>
@@ -95,6 +99,41 @@ const download = (name, type, content) => {
   downloads.append(link);
 };
 
+async function replayRooms({ seconds, signal }) {
+  const nav = document.querySelector('nav[aria-label="Rooms on this floor"]');
+  const floor = nav?.querySelector(".room-navigation__floor");
+  const rooms = [...(nav?.querySelectorAll(".room-navigation__rooms button[title]") ?? [])];
+  if (!rooms.length || floor?.getAttribute("aria-pressed") !== "true")
+    throw new Error("Return to the floor overview before replaying room selection.");
+  const end = performance.now() + seconds * 1000;
+  const wait = (milliseconds) =>
+    new Promise((resolve) => {
+      if (signal.aborted) return resolve();
+      const done = () => {
+        clearTimeout(timer);
+        signal.removeEventListener("abort", done);
+        resolve();
+      };
+      const timer = setTimeout(done, Math.max(0, milliseconds));
+      signal.addEventListener("abort", done, { once: true });
+    });
+  let index = 0;
+  while (!signal.aborted && performance.now() < end - 1000) {
+    // Ordinary room buttons drive React state, wall fading, and camera animation.
+    rooms[(index++ * 5) % rooms.length].click();
+    await wait(Math.min(1000, end - 1000 - performance.now()));
+  }
+  if (signal.aborted || !floor.isConnected) return;
+  floor.click();
+  // The overview button opens the floor picker; selecting the current floor
+  // closes it through its normal handler and leaves the overview selected.
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  nav.querySelector('.room-navigation__floors button[aria-pressed="true"]')?.click();
+  await wait(end - performance.now());
+  if (!signal.aborted && floor.getAttribute("aria-pressed") !== "true")
+    throw new Error("Room replay did not restore the floor overview.");
+}
+
 async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1" } = {}) {
   if (running) throw new Error("A benchmark is already running.");
   if (
@@ -107,7 +146,7 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
   )
     throw new Error("Use 1–60 seconds and 1–10 runs.");
   if (!ready()) throw new Error("Open the benchmark home in Orbit view.");
-  if (!["orbit-v1", "touch-orbit-v1", "manual-gestures-v1"].includes(path))
+  if (!["orbit-v1", "idle-v1", "rooms-v1", "touch-orbit-v1", "manual-gestures-v1"].includes(path))
     throw new Error("Unknown camera path.");
   if (path === "touch-orbit-v1" && !window.__cabanePerfTouch)
     throw new Error("Touch replay requires the Chromium CLI driver.");
@@ -151,7 +190,9 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
     }
     const gl = state.gl.getContext();
     const debug = gl.getExtension("WEBGL_debug_renderer_info");
-    const workload = devHome ? (await devHome.readDevelopmentHome()).workload : null;
+    const workload = devHome
+      ? (await devHome.readDevelopmentHome()).workload
+      : (preparedHome?.workload ?? null);
     const configuration = {
       build: "production",
       path,
@@ -181,8 +222,10 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
           root,
           addAfterEffect,
           seconds,
+          motion: path !== "idle-v1",
           isValid: ready,
           ...(path === "touch-orbit-v1" ? { driveInput: window.__cabanePerfTouch } : {}),
+          ...(path === "rooms-v1" ? { driveInput: replayRooms } : {}),
           ...(path === "manual-gestures-v1"
             ? {
                 driveInput: ({ seconds }) =>

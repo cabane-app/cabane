@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-04T08:22:07.362Z",
+  "label": "issue106-rooms",
+  "source": {
+    "commit": "e5d6066633e9f69140142591ff5e49723ef2e260",
+    "dirty": true,
+    "homeHash": "754d30605096f9ac424de97b65cf78df103c52a58ff992c516b85046e1862952"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "rooms-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "deviceScaleFactor": 1,
+    "canvas": {
+      "width": 1800,
+      "height": 1200,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [15.840000000000003, 16.919999999999998, 15.540000000000004],
+      "quaternion": [
+        -0.38386446758380766, 0.3245872631502729, 0.14624114592943535, 0.8520004145330335
+      ],
+      "target": [6, 0.2, 4.5],
+      "zoom": 68.81720430107526
+    },
+    "workload": {
+      "fixture": "synthetic-apartment-v1",
+      "rooms": 12,
+      "sceneItems": 96
+    },
+    "profile": "desktop",
+    "cpuRate": 1
+  },
+  "scene": {
+    "activePointLights": 0,
+    "objects": 1359,
+    "meshes": 889,
+    "materials": 889,
+    "geometries": 877
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": false,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 1,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "runs": [
+    {
+      "durationMs": 10004,
+      "cameraTravel": 17.61613923150072,
+      "movingFrames": 1202,
+      "batchBuffersCreated": 495,
+      "summary": {
+        "fps": 120.15193922431028,
+        "frameMsP50": 8.299999952316284,
+        "frameMsP95": 9.099999904632568,
+        "frameMsP99": 9.399999856948853,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 0.8999998569488525,
+        "callsMedian": 36,
+        "callsMax": 51,
+        "trianglesMedian": 77039,
+        "trianglesMax": 180517
+      }
+    },
+    {
+      "durationMs": 10008.099999904633,
+      "cameraTravel": 17.61614943189551,
+      "movingFrames": 1201,
+      "batchBuffersCreated": 493,
+      "summary": {
+        "fps": 120.0027977349791,
+        "frameMsP50": 8.299999952316284,
+        "frameMsP95": 8.799999952316284,
+        "frameMsP99": 9.299999952316284,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 0.7999999523162842,
+        "callsMedian": 43,
+        "callsMax": 54,
+        "trianglesMedian": 77047,
+        "trianglesMax": 180469
+      }
+    },
+    {
+      "durationMs": 10008,
+      "cameraTravel": 17.616149431891778,
+      "movingFrames": 1201,
+      "batchBuffersCreated": 493,
+      "summary": {
+        "fps": 120.00399680255795,
+        "frameMsP50": 8.300000190734863,
+        "frameMsP95": 9,
+        "frameMsP99": 9.399999856948853,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 0.8000001907348633,
+        "callsMedian": 43,
+        "callsMax": 54,
+        "trianglesMedian": 77047,
+        "trianglesMax": 181007
+      }
+    }
+  ],
+  "summary": {
+    "fps": 120.00399680255795,
+    "frameMsP50": 8.299999952316284,
+    "frameMsP95": 9,
+    "frameMsP99": 9.399999856948853,
+    "over33MsPercent": 0,
+    "over50MsPercent": 0,
+    "cpuSubmitMsP95": 0.8000001907348633,
+    "callsMedian": 43,
+    "callsMax": 54,
+    "trianglesMedian": 77047,
+    "trianglesMax": 180517
+  },
+  "experiment": "e5d6066 plus issue-106 harness"
+}

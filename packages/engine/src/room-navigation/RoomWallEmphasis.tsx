@@ -1,6 +1,6 @@
-import { useContext, useEffect, useMemo, useRef } from "react";
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import type { BufferGeometry } from "three";
+import { BufferAttribute, DynamicDrawUsage, type BufferGeometry } from "three";
 import { SceneRoomSelection } from "../building/RoomSelectionSurfaces";
 import type { FloorSpec } from "../types";
 import { roomSurfaceEmphasis, wallFaceRoomIds } from "./room-surface-emphasis";
@@ -22,12 +22,16 @@ export function RoomWallEmphasis({
   const base = useMemo(() => Float32Array.from(geometry.getAttribute("color").array), [geometry]);
   const levels = useRef(new Float32Array(faces.length).fill(1));
   const changing = useRef(true);
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const colors = geometry.getAttribute("color");
+    const usage = colors instanceof BufferAttribute ? colors.usage : undefined;
+    // These merged walls animate in place; static batches must not bake their colors.
+    if (colors instanceof BufferAttribute) colors.setUsage(DynamicDrawUsage);
     levels.current = new Float32Array(faces.length).fill(1);
     return () => {
-      const colors = geometry.getAttribute("color");
       colors.array.set(base);
       colors.needsUpdate = true;
+      if (colors instanceof BufferAttribute && usage !== undefined) colors.setUsage(usage);
     };
   }, [base, faces, geometry]);
   useEffect(() => {
