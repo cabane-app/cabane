@@ -1,9 +1,8 @@
 import { showEntityStateInScene } from "./entity-slot-visibility";
 import { omitUndefinedProperties } from "./defined-properties";
 import { coverPosition } from "./cover-state";
-import { bindingDomainMatchRank } from "./binding-slot-compatibility";
+import { bindingDeviceClassMatches, bindingDomainMatchRank } from "./binding-slot-compatibility";
 import { deviceMappingRooms } from "./outside-room-devices";
-import { isOpeningContactEntity } from "./binding-slot-compatibility";
 import {
   allowsCrossAreaEntityBinding,
   collectBindingSlots,
@@ -175,27 +174,21 @@ const resolveEntity = ({
       }),
     );
   }
-  if (descriptor.spec.compatibleDeviceClasses?.length) {
+  if (!bindingDeviceClassMatches(descriptor, entityId, runtime)) {
     const deviceClass = state?.attributes.device_class;
-    if (
-      descriptor.kind === "opening-contact"
-        ? !isOpeningContactEntity(entityId, runtime)
-        : !descriptor.spec.compatibleDeviceClasses.includes(String(deviceClass))
-    ) {
-      issues.push(
-        issue({
-          code: "binding.device-class-incompatible",
-          path,
-          entityId,
-          roomId: room.id,
-          slotId: descriptor.slotId,
-          message:
-            typeof deviceClass === "string"
-              ? `Mapped entity "${entityId}" uses device class "${deviceClass}", not ${descriptor.spec.compatibleDeviceClasses.join(", ")}.`
-              : `Mapped entity "${entityId}" is missing a compatible device class (${descriptor.spec.compatibleDeviceClasses.join(", ")}).`,
-        }),
-      );
-    }
+    issues.push(
+      issue({
+        code: "binding.device-class-incompatible",
+        path,
+        entityId,
+        roomId: room.id,
+        slotId: descriptor.slotId,
+        message:
+          typeof deviceClass === "string"
+            ? `Mapped entity "${entityId}" uses device class "${deviceClass}", not ${descriptor.spec.compatibleDeviceClasses?.join(", ")}.`
+            : `Mapped entity "${entityId}" is missing a compatible device class (${descriptor.spec.compatibleDeviceClasses?.join(", ")}).`,
+      }),
+    );
   }
   if (hasContext && state && !state.available) {
     issues.push(
