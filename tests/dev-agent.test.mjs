@@ -5,6 +5,7 @@ import {
   compactDevAgentResult,
   devAgentRoomRequests,
   devAgentRequests,
+  executeDevAgentBatch,
 } from "../scripts/dev-agent-protocol.mjs";
 
 test("development requests reject malformed batches before any action is run", () => {
@@ -92,4 +93,71 @@ test("development endpoint requires the session token and exact loopback host, r
     { "sec-fetch-site": "cross-site" },
   ])
     assert.equal(authorized(changes), false);
+});
+
+test("named batch results configure newly created items without a workspace inspection", async () => {
+  const seen = [];
+  const requests = [
+    { method: "execute_action", as: "chair", params: { action: { type: "add-item" } } },
+    {
+      method: "execute_action",
+      params: {
+        expectedRevision: { $ref: "chair.draftRevision" },
+        action: { type: "update-item", itemId: { $ref: "chair.created.items.0" } },
+      },
+    },
+    { method: "validate_draft" },
+  ];
+  const result = await executeDevAgentBatch(requests, async (request) => {
+    seen.push(request);
+    await Promise.resolve();
+    return seen.length === 1
+      ? {
+          changed: true,
+          created: { items: ["new-chair"] },
+          inspection: { draftRevision: 1, activeFloorId: "ground", validation: [] },
+        }
+      : { valid: true };
+  });
+  assert.equal(result.results.length, 3);
+  assert.deepEqual(seen[1].params, {
+    expectedRevision: 1,
+    action: { type: "update-item", itemId: "new-chair" },
+  });
+  assert.equal(result.results[0].inspection, undefined);
+  assert.deepEqual(result.results[0].created, { items: ["new-chair"] });
+});
+
+test("batches validate aliases before editing and retain partial results after runtime failures", async () => {
+  const add = { method: "execute_action", as: "chair" };
+  let calls = 0;
+  for (const input of [
+    [add, add],
+    [{ ...add, as: "bad.name" }],
+    [add, { method: "execute_action", params: { itemId: { $ref: "unknown.created.items.0" } } }],
+    [{ method: "execute_action", params: { itemId: { $ref: "chair.created.items.0" } } }, add],
+    [add, { method: "execute_action", params: { itemId: { $ref: "chair", extra: true } } }],
+  ]) {
+    const result = await executeDevAgentBatch(input, async () => calls++);
+    assert.ok(result.error);
+    assert.equal(result.completed, 0);
+  }
+  assert.equal(calls, 0);
+  const result = await executeDevAgentBatch(
+    [add, { method: "execute_action", params: { itemId: { $ref: "chair.created.items.0" } } }],
+    async () => {
+      calls++;
+      return { changed: false };
+    },
+  );
+  assert.equal(calls, 1);
+  assert.equal(result.completed, 1);
+  assert.deepEqual(result.results, [{ changed: false }]);
+  assert.match(result.error, /chair.created.items.0/);
+  const inherited = await executeDevAgentBatch(
+    [add, { method: "execute_action", params: { itemId: { $ref: "chair.constructor" } } }],
+    async () => ({}),
+  );
+  assert.equal(inherited.completed, 1);
+  assert.match(inherited.error, /chair.constructor/);
 });

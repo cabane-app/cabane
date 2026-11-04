@@ -10,6 +10,7 @@ import {
 } from "./agent-command-support";
 import { executeAction } from "./agent-action-executor";
 import { listBindingSlots, listCatalog } from "./agent-command-operations";
+import { createdAgentElements } from "./agent-created-elements";
 
 export type { AgentRequest } from "./agent-command-support";
 
@@ -56,7 +57,11 @@ export async function executeAgentRequest(
   }
   if (request.method === "list_catalog") return listCatalog(controller);
   if (request.method === "list_binding_slots") return listBindingSlots(controller);
-  if (request.method === "execute_action")
-    return executeAction(workspaceId, controllerRef, objectParams(request.params));
+  if (request.method === "execute_action") {
+    const before = controller.editorProject;
+    const result = await executeAction(workspaceId, controllerRef, objectParams(request.params));
+    const created = createdAgentElements(before, result.inspection.project);
+    return { ...result, ...(Object.keys(created).length ? { created } : {}) };
+  }
   throw new Error(`Unsupported agent method: ${request.method}`);
 }

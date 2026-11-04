@@ -21,6 +21,7 @@ async function main() {
   stop
 All commands accept --session-file PATH. Start stays running until stop or Ctrl+C.
 Batches run serially and stop on the first error; earlier edits remain applied.
+Name a batch result with as; later params can use {"$ref":"name.created.items.0"}.
 Mutation results are compact by default; --full includes their complete inspection.`);
     return;
   }

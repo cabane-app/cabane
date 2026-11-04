@@ -78,10 +78,15 @@ The revision includes unsaved edits. Stale requests and edits while the editor i
 busy or unsettled are rejected. Commands run serially, use shared UI actions and
 flush accepted edits through ordinary workspace autosave. They decode wire input
 without implementing parallel geometry, placement, model or mapping rules.
+Successful creation results include `created`, with nonempty arrays of saved IDs
+by kind: `floors`, `walls`, `rooms`, `openings`, `ceilings`, `hedges`, `pools`,
+`outdoorPlatforms`, `floorZones`, `groundZones`, `stairs`, `items` and `groups`.
+These describe identities newly present after the action, including duplicates
+and derived rooms. Updates omit `created` when no identities were added.
 
 Construct includes walls and invisible walls, openings and orientation, room
 metadata/merges/finishes, floor zones, pools and platforms, floor duplication,
-stairs, building settings and walk start points. Arrange includes atomic item and
+stairs, building/terrain settings and walk start points. Arrange includes atomic item and
 multiple-item edits, groups, duplication/removal, placement repair, linked slots,
 model metadata and lighting. File import/export and camera/tool gestures remain
 UI operations. Mapping changes use the normal Connect helpers; room-area changes
@@ -131,3 +136,63 @@ not retain the synthetic home across runner sessions. Screenshots and optional
 headed interaction use the same isolated page, whose storage is separate from
 other browsers. This workflow prepares fixtures; it does not replace checking
 the actual feature or bug.
+
+### Local batches
+
+Batch requests may name a result with `as` and reference its compact fields from
+later parameters using an object containing only `$ref`. Dot-separated paths
+include array indices. Names must be unique within the batch and references must
+point to an earlier request. Invalid names/references are checked before editing;
+a missing result field stops execution at that request and preserves earlier edits.
+References use compact results even with `--full`. They do not persist across batches.
+This is a local development transport feature; HA requests use the returned IDs directly.
+
+For example, save this JSON under ignored `test-results/dev-agent/changes.json`,
+then run `node scripts/dev-agent.mjs batch --file test-results/dev-agent/changes.json`
+in a running room:
+
+```json
+[
+  {
+    "method": "execute_action",
+    "as": "bin",
+    "params": { "action": { "type": "add-item", "modelId": "indoor-bin", "at": [2, 2] } }
+  },
+  {
+    "method": "execute_action",
+    "params": {
+      "expectedRevision": { "$ref": "bin.draftRevision" },
+      "action": {
+        "type": "update-item",
+        "itemId": { "$ref": "bin.created.items.0" },
+        "patch": { "variant": "office", "color": "#728b99" }
+      }
+    }
+  },
+  { "method": "validate_draft" }
+]
+```
+
+Scripts can use the same path without HTTP or browser-control boilerplate:
+
+```js
+import { startDevAgent } from "./scripts/dev-agent-server.mjs";
+
+const runner = await startDevAgent({ room: "6x4" });
+try {
+  const added = await runner.request("execute_action", {
+    action: { type: "add-item", modelId: "white-shell-dining-chair", at: [2, 2] },
+  });
+  console.log(added.created.items[0]);
+  console.log(await runner.request("validate_draft"));
+} finally {
+  await runner.close();
+}
+```
+
+`runner.batch(requests)` returns the result array and supports the same named
+references. Both helpers accept `{full: true}` as their final options argument.
+They serialize with CLI requests through the runner's busy check; a concurrent
+request is rejected. Errors carry `completed` and `results` so callers can inspect
+partial progress before deciding how to continue. The returned `page` remains
+available for testing editor controls and rendered appearance.

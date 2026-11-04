@@ -124,6 +124,7 @@ await withModules(async (load) => {
       assert.equal(result.changed, true);
       assert.equal(result.persisted, true);
       const item = h.controller.editorProject.sceneItems[0];
+      assert.deepEqual(result.created, { items: [item.id] });
       assert.deepEqual(item.placement, uiItem.placement);
       assert.deepEqual(item.size, uiItem.size);
       const stored = await h.read();
@@ -161,6 +162,30 @@ await withModules(async (load) => {
         [],
         "no partial patch added an undo entry",
       );
+    });
+  });
+
+  test("construction results return saved pool identities for subsequent configuration", async () => {
+    await withEditor(makeThreeFloorProject(), async (h) => {
+      const result = await h.command({
+        type: "add-pool",
+        polygon: [
+          [6, 0],
+          [9, 0],
+          [9, 3],
+          [6, 3],
+        ],
+      });
+      const poolId = result.created.pools[0];
+      assert.equal((await h.read()).draft.floors[0].pools[0].id, poolId);
+      const configured = await h.command({
+        type: "configure-pool",
+        poolId,
+        poolType: "above-ground-wood",
+        heightMeters: 1.2,
+      });
+      assert.equal(configured.created, undefined, "updates do not report existing elements as new");
+      assert.equal((await h.read()).draft.floors[0].pools[0].heightMeters, 1.2);
     });
   });
 
@@ -204,14 +229,20 @@ await withModules(async (load) => {
       await h.command({ type: "undo" });
       assert.deepEqual(h.controller.editorProject.sceneItems, beforeMove);
       await h.ui((controller) => controller.furnishingEditor.select(null));
-      await h.command({ type: "group-items", itemIds: ids });
+      const groupResult = await h.command({ type: "group-items", itemIds: ids });
       const grouped = structuredClone(h.controller.editorProject.sceneItems);
       const groupId = grouped[0].group.id;
       assert.ok(groupId);
+      assert.deepEqual(groupResult.created, { groups: [groupId] });
       assert.ok(grouped.every((item) => item.group.id === groupId));
-      await h.command({ type: "duplicate-items", itemIds: [ids[0]] });
+      const duplicateResult = await h.command({ type: "duplicate-items", itemIds: [ids[0]] });
       const copies = h.controller.editorProject.sceneItems.filter((item) => !ids.includes(item.id));
       assert.equal(copies.length, 2, "duplicating one group member duplicates the whole group");
+      assert.deepEqual(
+        duplicateResult.created.items,
+        copies.map((item) => item.id),
+      );
+      assert.deepEqual(duplicateResult.created.groups, [copies[0].group.id]);
       assert.equal(copies[0].group.id, copies[1].group.id);
       assert.notEqual(copies[0].group.id, groupId);
       assert.equal(new Set(h.controller.editorProject.sceneItems.map((item) => item.id)).size, 4);
@@ -252,7 +283,29 @@ await withModules(async (load) => {
       assert.equal(h.controller.editorProject.stairs[0].widthMeters, 1.1);
       await h.command({ type: "update-home-settings", changes: { northAngleDegrees: 45 } });
       assert.equal(h.controller.editorProject.home.northAngleDegrees, 45);
-      await h.command({ type: "add-floor-above", id: "loft" });
+      const terrain = {
+        topLeftMeters: -1,
+        topRightMeters: 0,
+        bottomLeftMeters: -1,
+        bottomRightMeters: 0,
+      };
+      await h.command({ type: "update-home-settings", changes: { terrain } });
+      assert.deepEqual((await h.read()).draft.home.terrain, terrain);
+      const terrainRevision = h.controller.workspace.getEditRevision();
+      await assert.rejects(
+        h.command({
+          type: "update-home-settings",
+          changes: { terrain: { ...terrain, topLeftMeters: "invalid" } },
+        }),
+        /finite number/i,
+      );
+      assert.equal(h.controller.workspace.getEditRevision(), terrainRevision);
+      await h.command({ type: "undo" });
+      assert.equal((await h.read()).draft.home.terrain, undefined);
+      await h.command({ type: "redo" });
+      assert.deepEqual((await h.read()).draft.home.terrain, terrain);
+      const floorResult = await h.command({ type: "add-floor-above", id: "loft" });
+      assert.deepEqual(floorResult.created, { floors: ["loft"] });
       assert.equal(h.controller.activeFloorId, "loft");
       assert.equal(h.controller.constructEditor.draft.floorId, "loft");
       assert.equal(h.controller.editorProject.floors.length, 4);

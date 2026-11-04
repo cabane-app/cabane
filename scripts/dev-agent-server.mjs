@@ -7,9 +7,8 @@ import { createServer } from "vite";
 import { chromium } from "playwright-core";
 import {
   authorizeDevAgent,
-  compactDevAgentResult,
   devAgentRoomRequests,
-  devAgentRequests,
+  executeDevAgentBatch,
 } from "./dev-agent-protocol.mjs";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
@@ -40,6 +39,19 @@ export async function startDevAgent({
     page.waitForFunction(() => typeof window.cabaneDevAgent === "function", undefined, {
       timeout: 60_000,
     });
+  const batch = async (requests, options) => {
+    if (busy || closing)
+      throw Object.assign(
+        new Error("A request is in progress or the session is closing. Inspect before retrying."),
+        { completed: 0, results: [] },
+      );
+    busy = true;
+    try {
+      return await executeDevAgentBatch(requests, execute, options);
+    } finally {
+      busy = false;
+    }
+  };
   const close = async () => {
     if (closing) return;
     closing = true;
@@ -77,7 +89,6 @@ export async function startDevAgent({
         return;
       }
       busy = true;
-      const results = [];
       try {
         if (path === "/__dev-agent/stop") {
           response.once("finish", () => void close());
@@ -97,14 +108,12 @@ export async function startDevAgent({
           if (Buffer.byteLength(body) > 1_048_576) throw new Error("Request exceeds 1 MiB.");
         }
         const input = JSON.parse(body);
-        const requests = devAgentRequests(input.requests);
-        for (const command of requests) {
-          const result = await execute(command);
-          results.push(input.full ? result : compactDevAgentResult(result));
-        }
-        json(response, 200, { results });
+        const result = await executeDevAgentBatch(input.requests, execute, {
+          full: input.full === true,
+        });
+        json(response, result.error ? 400 : 200, result);
       } catch (error) {
-        json(response, 400, { error: error.message, completed: results.length, results });
+        json(response, 400, { error: error.message, completed: 0, results: [] });
       } finally {
         busy = false;
       }
@@ -160,7 +169,21 @@ export async function startDevAgent({
     process.once("SIGINT", () => void close());
     process.once("SIGTERM", () => void close());
     console.log(JSON.stringify({ ready: true, url: page.url(), workspaceId, sessionFile, headed }));
-    return { close, page, server };
+    return {
+      close,
+      page,
+      server,
+      async batch(requests, options) {
+        const result = await batch(requests, options);
+        if (result.error) throw Object.assign(new Error(result.error), result);
+        return result.results;
+      },
+      async request(method, params = {}, options) {
+        const result = await batch({ method, params }, options);
+        if (result.error) throw Object.assign(new Error(result.error), result);
+        return result.results[0];
+      },
+    };
   } catch (error) {
     await close();
     throw error;
