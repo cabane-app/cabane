@@ -37,7 +37,7 @@
           "id": "atelier-basement:door-9",
           "kind": "door",
           "leafCount": 1,
-          "offsetFromWallStartPlanUnits": 5.5,
+          "offsetFromWallStartPlanUnits": 1.8,
           "openingHeightMeters": 2.04,
           "operation": "hinged",
           "sillHeightMeters": 0,
@@ -2311,8 +2311,8 @@
       "kind": "device",
       "modelId": "speaker",
       "placement": {
-        "at": [13, 7],
-        "elevationMeters": 0.001,
+        "at": [14.1, 6.31],
+        "elevationMeters": 0.503,
         "kind": "absolute",
         "rotationYRadians": 0
       },
@@ -2337,7 +2337,7 @@
       "kind": "device",
       "modelId": "floor-lamp",
       "placement": {
-        "at": [17.3, 12.9],
+        "at": [17.45, 13.45],
         "elevationMeters": 0.001,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -2350,7 +2350,7 @@
       "kind": "furnishing",
       "modelId": "tall-ficus",
       "placement": {
-        "at": [13, 12.8],
+        "at": [12.56, 13.55],
         "elevationMeters": 0.001,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -2792,7 +2792,7 @@
       "modelId": "terracotta-pendant",
       "placement": {
         "at": [4.8, 12.2],
-        "dropMeters": 0.05,
+        "dropMeters": 0.645,
         "kind": "ceiling",
         "roomId": "kitchen",
         "rotationYRadians": 0
@@ -2945,7 +2945,7 @@
       "modelId": "terracotta-pendant",
       "placement": {
         "at": [10.5, 1.5],
-        "dropMeters": 0.05,
+        "dropMeters": 0.645,
         "kind": "ceiling",
         "roomId": "hall",
         "rotationYRadians": 0
@@ -3806,7 +3806,7 @@
       "kind": "furnishing",
       "modelId": "leafy-planter",
       "placement": {
-        "at": [16.9, 1.4],
+        "at": [17.45, 0.65],
         "elevationMeters": 0.001,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -4166,7 +4166,7 @@
       "modelId": "terracotta-pendant",
       "placement": {
         "at": [9, 10.5],
-        "dropMeters": 0.05,
+        "dropMeters": 0.645,
         "kind": "ceiling",
         "roomId": "gallery",
         "rotationYRadians": 0
@@ -4192,10 +4192,10 @@
       "kind": "furnishing",
       "modelId": "compact-toilet",
       "placement": {
-        "at": [3.4, 8.615],
+        "at": [3.58, 8.615],
         "elevationMeters": 0.001,
         "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
+        "rotationYRadians": 0
       },
       "size": [0.39, 0.724, 0.6]
     },
@@ -4218,7 +4218,7 @@
       "kind": "furnishing",
       "modelId": "wicker-towel-basket",
       "placement": {
-        "at": [3.4, 6.7],
+        "at": [2.65, 6.27],
         "elevationMeters": 0.001,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -4301,10 +4301,10 @@
       "kind": "furnishing",
       "modelId": "compact-toilet",
       "placement": {
-        "at": [17.4, 8.615],
+        "at": [17.5, 8.615],
         "elevationMeters": 0.001,
         "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
+        "rotationYRadians": 0
       },
       "size": [0.39, 0.724, 0.6]
     },
@@ -4327,7 +4327,7 @@
       "kind": "furnishing",
       "modelId": "wicker-towel-basket",
       "placement": {
-        "at": [17.4, 5.7],
+        "at": [15.65, 8.7],
         "elevationMeters": 0.001,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -5211,7 +5211,7 @@
       "kind": "furnishing",
       "modelId": "garden-compost-bin",
       "placement": {
-        "at": [20, 0],
+        "at": [19.5, 1.35],
         "elevationMeters": -0.049,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -5511,10 +5511,10 @@
       "kind": "device",
       "modelId": "pedestal-fan",
       "placement": {
-        "at": [16.7, 4.7],
+        "at": [16.4, 4.8],
         "elevationMeters": 0.001,
         "kind": "absolute",
-        "rotationYRadians": 0
+        "rotationYRadians": -2.7342858617823436
       },
       "size": [0.45, 1.35, 0.4]
     },
@@ -6041,7 +6041,7 @@
       "kind": "furnishing",
       "modelId": "leafy-planter",
       "placement": {
-        "at": [10.9, 12.3],
+        "at": [11.55, 13.4],
         "elevationMeters": 0.001,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -7604,64 +7604,6 @@
       "variant": "sisal"
     },
     {
-      "color": "#8e9a82",
-      "floorId": "ground",
-      "id": "c3ff7dd2-15f9-4811-ac42-f88994eac258",
-      "kind": "furnishing",
-      "modelId": "two-seat-loveseat",
-      "placement": {
-        "at": [9.6, 11],
-        "elevationMeters": 0.022,
-        "kind": "absolute",
-        "rotationYRadians": 1.5707963267948966
-      },
-      "size": [1.7, 0.82, 0.85],
-      "variant": "default"
-    },
-    {
-      "color": "#c6ae8a",
-      "floorId": "ground",
-      "id": "e8deb0c2-4724-4e4a-b011-c4f6b79ce800",
-      "kind": "furnishing",
-      "modelId": "sage-tub-armchair",
-      "placement": {
-        "at": [11.4, 10],
-        "elevationMeters": 0.022,
-        "kind": "absolute",
-        "rotationYRadians": -1.5707963267948966
-      },
-      "size": [0.78, 0.86, 0.8],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground",
-      "id": "e7625514-855f-4fbf-8909-c9cc29806b7d",
-      "kind": "furnishing",
-      "modelId": "round-coffee-table",
-      "placement": {
-        "at": [10.55, 11],
-        "elevationMeters": 0.022,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.7, 0.4, 0.7],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground",
-      "id": "c3bd8028-2d14-4515-8cff-3e6d31246266",
-      "kind": "furnishing",
-      "modelId": "tabletop-candle",
-      "placement": {
-        "at": [10.55, 11],
-        "elevationMeters": 0.424,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.12, 0.18, 0.12],
-      "variant": "ivory"
-    },
-    {
       "color": "#b4a17f",
       "floorId": "ground",
       "id": "a3704051-d216-4f66-b86e-d5321f053490",
@@ -7918,10 +7860,10 @@
       "kind": "furnishing",
       "modelId": "double-arched-bookcase",
       "placement": {
-        "at": [14.2, 0.34],
+        "at": [12.265, 4.4],
         "elevationMeters": 0.001,
         "kind": "absolute",
-        "rotationYRadians": 0
+        "rotationYRadians": 1.5707963267948966
       },
       "size": [1, 1.73, 0.36],
       "variant": "default"
@@ -7990,10 +7932,10 @@
       "kind": "furnishing",
       "modelId": "indoor-chaise-longue",
       "placement": {
-        "at": [5.8, 4.5],
+        "at": [1.3, 3.2],
         "elevationMeters": 0.001,
         "kind": "absolute",
-        "rotationYRadians": 1.5707963267948966
+        "rotationYRadians": 0
       },
       "size": [0.8, 0.8, 1.65],
       "variant": "default"
@@ -8004,7 +7946,7 @@
       "kind": "furnishing",
       "modelId": "pedestal-side-table",
       "placement": {
-        "at": [5.6, 5.45],
+        "at": [2.05, 3.7],
         "elevationMeters": 0.001,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -8018,7 +7960,7 @@
       "kind": "furnishing",
       "modelId": "tabletop-candle",
       "placement": {
-        "at": [5.6, 5.45],
+        "at": [2.05, 3.7],
         "elevationMeters": 0.553,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -8468,8 +8410,8 @@
       "modelId": "floor-magazine-rack",
       "placement": {
         "kind": "absolute",
-        "at": [16.1, 12.6],
-        "elevationMeters": 0.001,
+        "at": [16.95, 11.9],
+        "elevationMeters": 0.027,
         "rotationYRadians": 0
       },
       "size": [0.42, 0.45, 0.3],
@@ -8544,10 +8486,68 @@
       },
       "size": [0.48, 0.3, 0.3],
       "kind": "furnishing"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDomains": ["light"],
+          "deviceRole": "primary",
+          "id": "solstice-retreat-gallery-north-light-state",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Retreat gallery north downlight"
+          },
+          "required": true
+        }
+      ],
+      "floorId": "atelier-basement",
+      "id": "solstice-retreat-gallery-north-light",
+      "kind": "device",
+      "lightState": "always-on",
+      "modelId": "recessed-downlight",
+      "placement": {
+        "at": [10.5, 1.5],
+        "dropMeters": 0.05,
+        "kind": "ceiling",
+        "roomId": "atelier-basement:room-2",
+        "rotationYRadians": 0
+      },
+      "size": [0.1, 0.04, 0.1],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDomains": ["light"],
+          "deviceRole": "primary",
+          "id": "solstice-retreat-gallery-stair-light-state",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Retreat gallery stair downlight"
+          },
+          "required": true
+        }
+      ],
+      "floorId": "atelier-basement",
+      "id": "solstice-retreat-gallery-stair-light",
+      "kind": "device",
+      "lightState": "always-on",
+      "modelId": "recessed-downlight",
+      "placement": {
+        "at": [11.5, 5.3],
+        "dropMeters": 0.05,
+        "kind": "ceiling",
+        "roomId": "atelier-basement:room-2",
+        "rotationYRadians": 0
+      },
+      "size": [0.1, 0.04, 0.1],
+      "variant": "default"
     }
   ],
   "schemaVersion": 2,
-  "seedRevision": "solstice-atelier-v1",
+  "seedRevision": "solstice-atelier-v3",
   "shortcuts": [
     {
       "action": "construct-mode",

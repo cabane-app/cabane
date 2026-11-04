@@ -8,7 +8,7 @@ is needed. The original furnished Solstice remains available alongside it.
 
 ## Design
 
-Three floors contain twenty rooms and 363 scene items. The existing two floors
+Three floors contain twenty rooms and 361 scene items. The existing two floors
 retain their architectural identities, openings and original device slots.
 
 - The new 252 m² basement is a private retreat: two-row cinema, listening bar
@@ -22,7 +22,7 @@ retain their architectural identities, openings and original device slots.
   a library wall and reading chaise; the primary suite gains a reading corner.
 - The front garden falls gently by up to 24 cm. The rear pool terrace stays
   level. Ground-mounted landscape items follow the new grade.
-- Ninety-six modeled devices include lighting, media, air quality, climate,
+- Ninety-eight modeled devices include lighting, media, air quality, climate,
   humidity, leak sensing and existing security, appliance and garden devices.
   New devices have local binding slots, ready for Connect. No live HA mappings
   or household identifiers are included. Basement accent lights use always-on
@@ -93,3 +93,17 @@ adapter supplies synthetic device bindings and camera feeds; public visitors
 need no HA server, account or credentials. Existing browser workspaces are not
 automatically replaced. See `packages/engine/src/onboarding/demo/README.md` for
 the simulated controls and their limits.
+
+## Circulation corrections
+
+The Garden passage is now a clear connection rather than a furnished lounge.
+The cinema door sits north of the basement stair run; two additional downlights
+brighten the Retreat Gallery. Pendant drops keep the entire terracotta shade
+below the ground-floor ceiling. The compost has clear space away from shrubs.
+
+Loose accessories now sit on supporting furniture or at room edges. Bedroom
+plants and the primary reading nook leave doors and passage routes clear. The
+studio bookcase stands against the west wall away from the desk; its pedestal
+fan faces the work area. Bathroom baskets sit in dry positions, and both toilets
+face into their rooms with cisterns backed against the south wall. Freestanding
+baths use the rebuilt continuous oval ceramic shell with an open basin.

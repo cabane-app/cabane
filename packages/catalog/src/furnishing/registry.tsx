@@ -913,7 +913,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 8, triangles: 4_500 },
+    complexity: { visibleMeshes: 3, triangles: 3_000 },
   }),
   "dark-oak-vessel-vanity": defineFurnishingModel({
     component: DarkOakVesselVanity,
