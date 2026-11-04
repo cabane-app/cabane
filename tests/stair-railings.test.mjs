@@ -67,7 +67,7 @@ await withModules(async (load) => {
     for (const rail of rails)
       for (const p of [rail.from, rail.to]) assert.ok(p[2] >= 4 - 1e-8 && p[2] <= 5 + 1e-8);
   });
-  test("every shape partitions flight rails by ascending side and preserves legacy defaults", () => {
+  test("every shape partitions flight rails by ascending side and None also removes upper opening guards", () => {
     const project = makeStairProject(),
       base = project.stairs[0];
     for (const spec of [
@@ -89,16 +89,22 @@ await withModules(async (load) => {
         totalTurnDegrees: 360,
       })),
     ]) {
-      const guards = (railings) =>
+      const guards = (railings, upper = false) =>
         deriveStairGuardSegments(
           deriveStairFlight(project, { ...spec, railings }),
           project.coordinates,
+          upper,
         );
       const both = guards("both"),
         left = guards("left"),
         right = guards("right");
       assert.deepEqual(guards(undefined), both);
       assert.deepEqual(guards("none"), []);
+      assert.equal(guards("none", true).length, 0, `${spec.shape ?? "straight"}: no upper guards`);
+      const upper = guards("both", true);
+      assert.ok(upper.length > 0, "the supported upper opening has guards by default");
+      for (const railings of [undefined, "left", "right"])
+        assert.deepEqual(guards(railings, true), upper);
       assert.ok(left.length > 0 && right.length > 0);
       assert.equal(left.length + right.length, both.length);
       assert.deepEqual(

@@ -322,7 +322,7 @@ floors cover their actual indoor and outdoor support footprints. Explicit low
 exterior walls retain their height when another floor exists, while full-height
 facades continue across the real inter-floor slab.
 
-Stair `railings` optionally selects `both`, `left`, `right`, or `none`, relative to ascent; omission preserves both sides. Spiral stairs retain their central support and apply side selection to the outer rail and exit bridge. Upper-opening guards are clipped to actual floor/platform support outside the opening, including partial and disconnected floor regions; exterior flights never acquire floating opening guards. All stair shapes share this guard geometry.
+Stair `railings` optionally selects `both`, `left`, `right`, or `none`, relative to ascent; omission preserves both sides. `none` removes flight, landing, and upper-opening guards. Spiral stairs retain their central support and apply side selection to the outer rail and exit bridge. When enabled, upper-opening guards are clipped to actual floor/platform support outside the opening, including partial and disconnected floor regions; exterior flights never acquire floating opening guards. All stair shapes share this guard geometry.
 
 Solar lighting reads Home Assistant's available, fresh `sun.sun` azimuth and elevation.
 Geographic azimuth is clockwise from north; home-wide `northAngleDegrees` rotates
