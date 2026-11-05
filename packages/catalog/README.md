@@ -447,7 +447,7 @@ they do not claim to reproduce a particular manufacturer. Dimensions are
 | `kitchen-base-cabinet`     | 60 × 63 × 90            | Off-white modular case, oak worktop, drawer, two doors and plinth                                                 | Kitchen      |
 | `kitchen-sink-cabinet`     | 60 × 63 × 112           | Off-white two-door base, pale worktop, inset basin, drain and 112 cm-high faucet envelope                         | Kitchen      |
 | `kitchen-wall-cabinet`     | 60 × 35 × 80            | Off-white wall case with two doors and low pulls                                                                  | Kitchen      |
-| `freestanding-bathtub`     | 170 × 78 × 60           | Warm-white continuous oval shell, rolled rim, sloping empty basin, drain and overflow                                                 | Bathroom     |
+| `freestanding-bathtub`     | 170 × 78 × 60           | Warm-white continuous oval shell, rolled rim, sloping empty basin, drain and overflow                             | Bathroom     |
 | `dark-oak-vessel-vanity`   | 80 × 52 × 123 overall   | Dark oak two-door vanity, white vessel basin and tall matte-black faucet                                          | Bathroom     |
 | `shower-assembly`          | 202 × 91 × 230 overall  | Walk-in tray, partial frameless glass screen with stabilizer and clamps, wall-mounted rain shower and hand shower | Bathroom     |
 | `white-corner-wardrobe`    | 180 × 120 × 235 overall | White L-shaped floor-to-ceiling storage, three long-run doors and one return door                                 | Bedroom      |
