@@ -112,10 +112,13 @@ export async function serveHarness(options) {
 }
 
 export async function sourceMetadata(scenario) {
-  const homeFiles =
-    scenario === "dev-home"
-      ? [await readFile(resolve(repository, "home/showcase/furnished.project.json"), "utf8")]
-      : [await readFile(resolve(repository, "home/showcase/atelier.project.json"), "utf8")];
+  const sourcePath =
+    scenario === "apartment"
+      ? "tests/fixtures/performance-apartment.ts"
+      : scenario === "dev-home"
+        ? "home/showcase/furnished.project.json"
+        : "home/showcase/atelier.project.json";
+  const homeSource = await readFile(resolve(repository, sourcePath), "utf8");
   return {
     commit: execFileSync("git", ["rev-parse", "HEAD"], {
       cwd: repository,
@@ -127,6 +130,6 @@ export async function sourceMetadata(scenario) {
         encoding: "utf8",
       }).trim(),
     ),
-    homeHash: createHash("sha256").update(homeFiles.join("\n")).digest("hex"),
+    homeHash: createHash("sha256").update(homeSource).digest("hex"),
   };
 }

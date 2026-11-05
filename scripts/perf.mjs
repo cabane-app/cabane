@@ -18,8 +18,8 @@ const help = `Usage: npm run perf -- [options]
   --output PATH       JSON report (default: test-results/performance/NAME-TIMESTAMP.json)
   --baseline PATH     Compare with a report from the same machine and configuration
   --profile NAME      mobile (390x844, DPR 3, touch) or desktop (1440x960, DPR 1)
-  --scenario NAME     dev-home (default, live local HA) or demo (bundled simulated home)
-  --path NAME         orbit-v1 (direct camera) or touch-orbit-v1 (native touch drag)
+  --scenario NAME     dev-home (default, live local HA), demo (Solstice Atelier), or apartment (synthetic 12 rooms)
+  --path NAME         orbit-v1, idle-v1, rooms-v1 (room buttons), or touch-orbit-v1
   --cpu-rate N        Chromium CPU slowdown multiplier (default: 1, unthrottled)
   --seconds N         Measured motion per run, excluding warmup (default: 10)
   --runs N            Repetitions (default: 3)
@@ -93,10 +93,10 @@ function parseOptions(args) {
   }
   if (!Object.hasOwn(profiles, options.profile))
     throw new Error("--profile must be mobile or desktop.");
-  if (!["dev-home", "demo"].includes(options.scenario))
-    throw new Error("--scenario must be dev-home or demo.");
-  if (!["orbit-v1", "touch-orbit-v1"].includes(options.path))
-    throw new Error("--path must be orbit-v1 or touch-orbit-v1.");
+  if (!["dev-home", "demo", "apartment"].includes(options.scenario))
+    throw new Error("--scenario must be dev-home, demo, or apartment.");
+  if (!["orbit-v1", "idle-v1", "rooms-v1", "touch-orbit-v1"].includes(options.path))
+    throw new Error("--path must be orbit-v1, idle-v1, rooms-v1, or touch-orbit-v1.");
   if (options.path === "touch-orbit-v1" && options.profile !== "mobile")
     throw new Error("Touch replay requires --profile mobile.");
   if (options.scenario === "dev-home" && !["127.0.0.1", "localhost", "::1"].includes(options.host))

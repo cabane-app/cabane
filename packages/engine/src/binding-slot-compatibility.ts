@@ -17,11 +17,24 @@ export const compatibleDeviceClass = (
   return typeof deviceClass === "string" && spec.compatibleDeviceClasses.includes(deviceClass);
 };
 
-export const isOpeningContactEntity = (entityId: EntityId, runtime: HomeAssistantRuntimeSnapshot) =>
+const isOpeningContactEntity = (entityId: EntityId, runtime: HomeAssistantRuntimeSnapshot) =>
   entityDomain(entityId) === "binary_sensor" &&
   ["door", "window", "opening", "garage_door"].includes(
     String(runtime.entityStates[entityId]?.attributes.device_class),
   );
+
+/** Switch/cover classes describe appearance, not control compatibility. Keep
+ * declared classes for ranking and strict automatic matching, and preserve
+ * semantic class requirements for readings and opening contacts. */
+export const bindingDeviceClassMatches = (
+  descriptor: BindingSlotDescriptor,
+  entityId: EntityId,
+  runtime: HomeAssistantRuntimeSnapshot,
+) =>
+  descriptor.kind === "opening-contact"
+    ? isOpeningContactEntity(entityId, runtime)
+    : ["switch", "cover"].includes(entityDomain(entityId)) ||
+      compatibleDeviceClass(descriptor.spec, entityId, runtime);
 
 /** Manual alternatives preserve the modeled function; automatic matching stays exact. */
 const MANUAL_DOMAIN_ALTERNATIVES: Readonly<Record<string, readonly string[]>> = {
@@ -56,9 +69,7 @@ export const entityMatchesBindingSlot = (
   runtime: HomeAssistantRuntimeSnapshot,
 ) =>
   bindingDomainMatchRank(descriptor.spec, entityDomain(entityId), descriptor.deviceModel) >= 0 &&
-  (descriptor.kind === "opening-contact"
-    ? isOpeningContactEntity(entityId, runtime)
-    : compatibleDeviceClass(descriptor.spec, entityId, runtime));
+  bindingDeviceClassMatches(descriptor, entityId, runtime);
 
 const SHAREABLE_CAMERA_MODEL_IDS = new Set([
   "camera-screen",

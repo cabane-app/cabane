@@ -113,7 +113,24 @@ npm run perf -- --path touch-orbit-v1 --cpu-rate 4 --label touch-candidate --che
 npm run perf -- --path touch-orbit-v1 --runs 1 --label diagnostic --cpu-profile
 npm run perf -- --label candidate --output test-results/performance/candidate.json
 npm run perf -- --scenario demo --label bundled-demo
+npm run perf -- --scenario apartment --path idle-v1 --profile desktop --label apartment-idle
+npm run perf -- --scenario apartment --path rooms-v1 --profile desktop --label apartment-rooms
 ```
+
+The disconnected `apartment` scenario uses a synthetic 12-room plan with 96 native
+furniture items, including round tables. It needs no HA session or private export.
+`idle-v1` leaves the camera stationary and rejects captures with camera movement.
+`rooms-v1` selects rooms through the normal room-navigation buttons, then returns
+to overview. Keep these paths in separate comparison series. Like `orbit-v1`,
+they warm up after geometry preparation; they do not measure startup or worker
+queue latency. The LOD/batcher regression tests cover preparation across repeated
+worker waves while settled furniture remains stationary.
+
+Each run also records `newBatchBuffers` per sampled interval and their sum,
+`batchBuffersCreated`. These count new batch-buffer identities observed at scene
+submission during capture, excluding warmup. They diagnose repeated replacement
+of GPU batches without instrumenting every mesh. They do not count worker jobs,
+LOD switches, in-place buffer writes, or allocations outside the sampled frames.
 
 `--check` is an opt-in check against the working 60 Hz targets above. It saves the
 report even when the target is missed. `--cpu-profile` saves a Chrome `.cpuprofile`

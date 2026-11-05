@@ -18,6 +18,9 @@ await withModules(async (load) => {
     "/packages/engine/src/scene-batching/SceneGeometryLod.ts",
   );
   const { ShadowMapCache } = await load("/packages/engine/src/shadow-map-cache.ts");
+  const { SceneToonBatcher } = await load(
+    "/packages/engine/src/scene-batching/SceneToonBatcher.ts",
+  );
   const { geometryLodFamily } = await load(
     "/packages/engine/src/scene-batching/geometry-lod-family.ts",
   );
@@ -219,44 +222,78 @@ await withModules(async (load) => {
     assert.equal(invalidations, 2);
     lod.dispose();
   });
-  test("a new mesh preparing LODs preserves the detail and batch family of prepared meshes", async () => {
+  test("repeated worker waves preserve stationary detail and GPU buffers of settled meshes", async () => {
     const source = new SphereGeometry(1, 48, 32);
     const low = new SphereGeometry(1, 8, 6);
-    const added = new SphereGeometry(0.5, 24, 16);
-    let finish;
-    const pending = new Promise((resolve) => {
-      finish = resolve;
-    });
+    const sources = [source];
+    const preparations = new Map();
+    let finish, pending;
     const lod = new SceneGeometryLod(
       () => {},
-      async (geometry) => (geometry === source ? [{ geometry: low, error: 0.001 }] : pending),
+      async (geometry) => {
+        preparations.set(geometry, (preparations.get(geometry) ?? 0) + 1);
+        return geometry === source ? [{ geometry: low, error: 0.001 }] : pending;
+      },
     );
+    const batcher = new SceneToonBatcher();
     const scene = new Scene();
-    const mesh = new Mesh(source, new MeshToonMaterial());
-    scene.add(mesh);
+    const meshes = [
+      new Mesh(source, new MeshToonMaterial()),
+      new Mesh(source, new MeshToonMaterial({ color: "blue" })),
+    ];
+    meshes[1].position.x = 3;
+    scene.add(...meshes);
     const camera = new OrthographicCamera(-50, 50, 50, -50, 0.1, 100);
     camera.position.z = 10;
+    let family, buffers;
+    const renderer = {
+      extensions: { has: () => true },
+      localClippingEnabled: false,
+      clippingPlanes: [],
+      render() {
+        if (!family) return;
+        for (const mesh of meshes.slice(0, 2))
+          assert.ok(mesh.geometry === low, "unrelated work must not restore full detail");
+        const batch = scene.children.find((object) => object.isBatchedMesh);
+        assert.ok(batch);
+        if (buffers)
+          assert.ok(batch.geometry === buffers, "unrelated work must not repack settled buffers");
+        buffers = batch.geometry;
+      },
+    };
+    const frame = () =>
+      lod.render(scene, camera, 100, () => batcher.render(renderer, scene, camera));
     try {
-      lod.render(scene, camera, 100, () => {});
+      frame();
       await lod.ready;
-      const family = geometryLodFamily(source);
-      const assertPrepared = () =>
-        assert.ok(mesh.geometry === low, "unrelated work must not restore full detail");
-      lod.render(scene, camera, 100, assertPrepared);
-      scene.add(new Mesh(added, new MeshToonMaterial()));
-      lod.render(scene, camera, 100, assertPrepared);
-      lod.render(scene, camera, 100, assertPrepared);
-      finish([]);
-      await lod.ready;
-      assert.ok(
-        geometryLodFamily(source) === family,
-        "unrelated work must not rebuild existing GPU batches",
-      );
-      lod.render(scene, camera, 100, assertPrepared);
+      family = geometryLodFamily(source);
+      frame();
+      for (let wave = 0; wave < 3; wave++) {
+        pending = new Promise((resolve) => {
+          finish = resolve;
+        });
+        const added = new SphereGeometry(0.5, 24, 16);
+        sources.push(added);
+        // A separate material group leaves the settled batch membership unchanged.
+        const mesh = new Mesh(added, new MeshToonMaterial({ emissiveIntensity: wave + 2 }));
+        meshes.push(mesh);
+        scene.add(mesh);
+        for (let index = 0; index < 3; index++) frame();
+        finish([]);
+        await lod.ready;
+        assert.ok(geometryLodFamily(source) === family, "settled LOD families retain identity");
+        frame();
+      }
+      assert.equal(preparations.size, sources.length);
+      for (const count of preparations.values()) assert.equal(count, 1);
+      assert.ok(meshes.slice(0, 2).every((mesh) => mesh.geometry === source));
     } finally {
-      finish([]);
+      finish?.([]);
       await lod.ready;
+      batcher.dispose();
       lod.dispose();
+      sources.forEach((geometry) => geometry.dispose());
+      meshes.forEach((mesh) => mesh.material.dispose());
     }
   });
 });

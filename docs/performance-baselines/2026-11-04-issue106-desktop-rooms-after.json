@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-04T08:27:57.113Z",
+  "label": "issue106-rooms-after",
+  "source": {
+    "commit": "e5d6066633e9f69140142591ff5e49723ef2e260",
+    "dirty": true,
+    "homeHash": "754d30605096f9ac424de97b65cf78df103c52a58ff992c516b85046e1862952"
+  },
+  "configuration": {
+    "build": "production",
+    "path": "rooms-v1",
+    "fixedTime": "2026-09-23T12:00:00.000Z",
+    "warmupSeconds": 3,
+    "timezone": "UTC",
+    "seconds": 10,
+    "runs": 3,
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "deviceScaleFactor": 1,
+    "canvas": {
+      "width": 1800,
+      "height": 1200,
+      "dpr": 1.25
+    },
+    "cameraStart": {
+      "position": [15.840000000000003, 16.919999999999998, 15.540000000000004],
+      "quaternion": [
+        -0.38386446758380766, 0.3245872631502729, 0.14624114592943535, 0.8520004145330335
+      ],
+      "target": [6, 0.2, 4.5],
+      "zoom": 68.81720430107526
+    },
+    "workload": {
+      "fixture": "synthetic-apartment-v1",
+      "rooms": 12,
+      "sceneItems": 96
+    },
+    "profile": "desktop",
+    "cpuRate": 1
+  },
+  "scene": {
+    "activePointLights": 0,
+    "objects": 1359,
+    "meshes": 889,
+    "materials": 889,
+    "geometries": 877
+  },
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "darwin 25.6.0",
+    "hardwareConcurrency": 15,
+    "coarsePointer": false,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+      "multiDraw": true
+    },
+    "browser": "151.0.7922.34",
+    "cpuRate": 1,
+    "cpu": "Apple M5 Pro",
+    "headless": true
+  },
+  "runs": [
+    {
+      "durationMs": 10005.699999809265,
+      "cameraTravel": 17.616174338888854,
+      "movingFrames": 1201,
+      "batchBuffersCreated": 0,
+      "summary": {
+        "fps": 120.03158200054911,
+        "frameMsP50": 8.299999952316284,
+        "frameMsP95": 8.5,
+        "frameMsP99": 9.299999952316284,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 0.6999998092651367,
+        "callsMedian": 40,
+        "callsMax": 62,
+        "trianglesMedian": 77039,
+        "trianglesMax": 180213
+      }
+    },
+    {
+      "durationMs": 10000.100000143051,
+      "cameraTravel": 17.616149128106507,
+      "movingFrames": 1200,
+      "batchBuffersCreated": 0,
+      "summary": {
+        "fps": 119.9988000102833,
+        "frameMsP50": 8.299999952316284,
+        "frameMsP95": 8.5,
+        "frameMsP99": 9.300000190734863,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 0.7000000476837158,
+        "callsMedian": 46,
+        "callsMax": 62,
+        "trianglesMedian": 77047,
+        "trianglesMax": 181213
+      }
+    },
+    {
+      "durationMs": 10007.200000047684,
+      "cameraTravel": 17.616149431895508,
+      "movingFrames": 1201,
+      "batchBuffersCreated": 0,
+      "summary": {
+        "fps": 120.01359021447331,
+        "frameMsP50": 8.299999952316284,
+        "frameMsP95": 8.599999904632568,
+        "frameMsP99": 9.299999952316284,
+        "over33MsPercent": 0,
+        "over50MsPercent": 0,
+        "cpuSubmitMsP95": 0.7000000476837158,
+        "callsMedian": 46,
+        "callsMax": 62,
+        "trianglesMedian": 77047,
+        "trianglesMax": 180213
+      }
+    }
+  ],
+  "summary": {
+    "fps": 120.01359021447331,
+    "frameMsP50": 8.299999952316284,
+    "frameMsP95": 8.5,
+    "frameMsP99": 9.299999952316284,
+    "over33MsPercent": 0,
+    "over50MsPercent": 0,
+    "cpuSubmitMsP95": 0.7000000476837158,
+    "callsMedian": 46,
+    "callsMax": 62,
+    "trianglesMedian": 77047,
+    "trianglesMax": 180213
+  },
+  "comparison": {
+    "fps": {
+      "before": 120.00399680255795,
+      "after": 120.01359021447331,
+      "delta": 0.009593411915361116,
+      "percent": 0.007994243667688097
+    },
+    "frameMsP50": {
+      "before": 8.299999952316284,
+      "after": 8.299999952316284,
+      "delta": 0,
+      "percent": 0
+    },
+    "frameMsP95": {
+      "before": 9,
+      "after": 8.5,
+      "delta": -0.5,
+      "percent": -5.555555555555555
+    },
+    "frameMsP99": {
+      "before": 9.399999856948853,
+      "after": 9.299999952316284,
+      "delta": -0.09999990463256836,
+      "percent": -1.0638287888764644
+    },
+    "over33MsPercent": {
+      "before": 0,
+      "after": 0,
+      "delta": 0,
+      "percent": null
+    },
+    "over50MsPercent": {
+      "before": 0,
+      "after": 0,
+      "delta": 0,
+      "percent": null
+    },
+    "cpuSubmitMsP95": {
+      "before": 0.8000001907348633,
+      "after": 0.7000000476837158,
+      "delta": -0.10000014305114746,
+      "percent": -12.500014901157641
+    },
+    "callsMedian": {
+      "before": 43,
+      "after": 46,
+      "delta": 3,
+      "percent": 6.976744186046512
+    },
+    "callsMax": {
+      "before": 54,
+      "after": 62,
+      "delta": 8,
+      "percent": 14.814814814814813
+    },
+    "trianglesMedian": {
+      "before": 77047,
+      "after": 77047,
+      "delta": 0,
+      "percent": 0
+    },
+    "trianglesMax": {
+      "before": 180517,
+      "after": 180213,
+      "delta": -304,
+      "percent": -0.16840519175479318
+    }
+  },
+  "experiment": "e5d6066 plus issue-106 harness and dynamic wall attributes"
+}

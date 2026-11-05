@@ -15,6 +15,7 @@ export function deriveStairGuardSegments(
   coordinates: FloorCoordinates,
   upper = false,
 ): StairGuardSegment[] {
+  if (flight.spec.railings === "none") return [];
   const result: StairGuardSegment[] = [];
   const spec = flight.spec;
   const enabled = (
@@ -23,7 +24,6 @@ export function deriveStairGuardSegments(
     side?: "left" | "right",
   ) => {
     if (upper || spec.railings === undefined || spec.railings === "both") return true;
-    if (spec.railings === "none") return false;
     if (side) return spec.railings === side;
     const point = { x: (a[0] + b[0]) / 2, z: (a[1] + b[1]) / 2 };
     const projected = projectStairPath(flight, point);
