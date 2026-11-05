@@ -23,7 +23,7 @@ export * from "./SceneLighting";
 export * from "./HomeAssistantSceneLighting";
 export * from "./navigation";
 export * from "./performance";
-export { waitForSceneGeometryLods } from "./scene-batching/SceneGeometryLod";
+export { waitForScenePreparation } from "./scene-batching/scene-preparation";
 export * from "./rendering";
 export * from "./layered-surfaces";
 export * from "./LiveCameraSurface";

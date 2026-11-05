@@ -3,8 +3,8 @@ import test from "node:test";
 import { withBrowserDiagnostics } from "./browser-test-diagnostics.mjs";
 import { getBrowserTestServer, createBrowserTestSession } from "./browser-test-environment.mjs";
 
-// Browser-only risk: canvas capture must produce readable live video, and hiding
-// the dashboard must stop its tracks and remove its parked media element.
+// Browser-only risk: the parked video must stay outside the viewport while
+// decoding frames. Hiding the dashboard must release its tracks and element.
 const fixture = `<!doctype html><div id="root"></div><script type="module">
 import React,{useState} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -12,6 +12,7 @@ import {DemoHomeAssistantSession} from '/packages/engine/src/DemoHomeAssistantSe
 import {useHomeAssistantRuntime} from '/packages/engine/src/HomeAssistantRuntime.tsx';
 import {CameraStreamCoordinator} from '/packages/engine/src/CameraStreamCoordinator.tsx';
 import {neutralDemoManifest} from '/packages/engine/src/demo.ts';
+import '/packages/engine/src/camera-viewer.css';
 const manifest=structuredClone(neutralDemoManifest);
 manifest.floors[0].rooms[0].devices=[{id:'screen',model:'camera-screen',placement:{at:[1,1],elevationMeters:0,support:{kind:'surface'}},entitySlots:[{id:'feed',compatibleDomains:['camera'],presentation:{label:'Garden camera'},deviceRole:'primary',required:true,cardinality:'one'}]}];
 function Probe(){
@@ -39,7 +40,7 @@ test(
           contentType: "text/html",
           body: await server.transformIndexHtml(
             "/demo-camera-fixture",
-            fixture.replaceAll("from '/packages/", `from '/@fs/${process.cwd()}/packages/`),
+            fixture.replaceAll("'/packages/", `'/@fs/${process.cwd()}/packages/`),
           ),
         }),
       );
@@ -56,16 +57,29 @@ test(
       const result = await page.evaluate(() => {
         const { video, transport, previewState } = window.media;
         window.track = video.srcObject.getVideoTracks()[0];
+        const bounds = video.getBoundingClientRect();
         const canvas = document.createElement("canvas");
-        canvas.width = 1;
-        canvas.height = 1;
-        const context = canvas.getContext("2d");
-        context.drawImage(video, 0, 0, 1, 1);
+        canvas.width = 64;
+        canvas.height = 36;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        function readFrame() {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          return context.getImageData(0, 0, canvas.width, canvas.height).data;
+        }
+        const firstFrame = readFrame();
+        window.hasNewFrame = () => readFrame().some((value, index) => value !== firstFrame[index]);
         return {
           transport,
           previewState,
           width: video.videoWidth,
-          readable: context.getImageData(0, 0, 1, 1).data[3] > 0,
+          readable: firstFrame[3] > 0,
+          outsideViewport:
+            bounds.width > 0 &&
+            bounds.height > 0 &&
+            (bounds.right <= 0 ||
+              bounds.left >= innerWidth ||
+              bounds.bottom <= 0 ||
+              bounds.top >= innerHeight),
         };
       });
       assert.deepEqual(result, {
@@ -73,7 +87,9 @@ test(
         previewState: "live",
         width: 640,
         readable: true,
+        outsideViewport: true,
       });
+      await page.waitForFunction(() => window.hasNewFrame());
       await page.evaluate(() => window.hide());
       await page.waitForFunction(
         () => window.track.readyState === "ended" && !document.querySelector("video"),

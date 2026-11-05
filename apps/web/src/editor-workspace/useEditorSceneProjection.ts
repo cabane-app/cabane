@@ -99,11 +99,15 @@ export function useEditorSceneProjection({
         : {
             ...editedManifest,
             sceneItems: [
-              ...editedManifest.sceneItems.filter((item) => item.floorId !== activeFloorId),
+              // Navigation selects its destination before the editors restore.
+              // These items still belong to the editor's actual preview floor.
+              ...editedManifest.sceneItems.filter(
+                (item) => item.floorId !== constructEditorPreviewFloor.id,
+              ),
               ...visualSceneItems,
             ],
           },
-    [activeFloorId, editedManifest, visualSceneItems],
+    [constructEditorPreviewFloor.id, editedManifest, visualSceneItems],
   );
   return {
     furnishingModels,

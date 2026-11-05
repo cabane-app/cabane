@@ -1,19 +1,22 @@
 import {
   BufferAttribute,
   type BufferGeometry,
+  type Matrix4,
   Material,
   Mesh,
   MeshToonMaterial,
   type InstancedMesh,
   NormalBlending,
   Object3D,
+  StaticDrawUsage,
 } from "three";
 import { sceneLightMaterialHooks } from "../scene-light-wall-mask";
 
-function hasBatchableTransform(mesh: Mesh): boolean {
-  if (mesh.matrixWorld.determinant() <= 0) return false;
+export function hasBatchableTransform(input: Mesh | Matrix4): boolean {
+  const matrix = "matrixWorld" in input ? input.matrixWorld : input;
+  if (matrix.determinant() <= 0) return false;
   // Three's batching normal transform supports scale/rotation, not shear.
-  const e = mesh.matrixWorld.elements;
+  const e = matrix.elements;
   for (const [a, b] of [
     [0, 4],
     [0, 8],
@@ -28,14 +31,14 @@ function hasBatchableTransform(mesh: Mesh): boolean {
 }
 
 /** After membership is checked, only fade overrides and transforms can differ. */
-export function canRenderToonBatch(mesh: Mesh): boolean {
+export function canRenderToonBatch(mesh: Mesh, validateTransform = true): boolean {
   const material = mesh.material as MeshToonMaterial;
   return (
     !material.transparent &&
     material.opacity === 1 &&
     material.depthWrite === (material.userData.cameraFadeBaseDepthWrite ?? material.depthWrite) &&
     mesh.castShadow === (mesh.userData.cameraFadeBaseCastShadow ?? mesh.castShadow) &&
-    hasBatchableTransform(mesh)
+    (!validateTransform || hasBatchableTransform(mesh))
   );
 }
 
@@ -110,12 +113,16 @@ export function isToonBatchCompatible(
       !(attribute instanceof BufferAttribute) ||
       attribute.itemSize !== 3 ||
       !(attribute.array instanceof Float32Array) ||
+      attribute.usage !== StaticDrawUsage ||
       attribute.normalized
     )
       return false;
   }
   return true;
 }
+
+type GroupValue = string | number | boolean | null | undefined;
+const groupKeys = new WeakMap<Mesh, { values: GroupValue[]; key: string }>();
 
 /** Only batching needs a serialized material group; LOD needs eligibility alone. */
 export function toonBatchKey(
@@ -131,10 +138,12 @@ export function toonBatchKey(
   const castShadow = cacheMembership
     ? ((mesh.userData.cameraFadeBaseCastShadow as boolean | undefined) ?? mesh.castShadow)
     : mesh.castShadow;
-  return [
+  const values: GroupValue[] = [
     material.gradientMap?.uuid ?? "",
     JSON.stringify(material.defines),
-    material.emissive.getHexString(),
+    material.emissive.r,
+    material.emissive.g,
+    material.emissive.b,
     material.emissiveIntensity,
     material.precision,
     material.vertexColors,
@@ -157,7 +166,17 @@ export function toonBatchKey(
     mesh.layers.mask,
     mesh.renderOrder,
     mesh.frustumCulled,
-  ].join("|");
+  ];
+  const previous = groupKeys.get(mesh);
+  if (previous && values.every((value, index) => value === previous.values[index]))
+    return previous.key;
+  // Direct material edits need no needsUpdate flag. Compare every grouping input
+  // before reusing its string, including define contents and emissive channels.
+  const key = [values[0], values[1], material.emissive.getHexString(), ...values.slice(5)].join(
+    "|",
+  );
+  groupKeys.set(mesh, { values, key });
+  return key;
 }
 
 type Revision = {

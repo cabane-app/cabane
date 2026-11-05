@@ -2,7 +2,7 @@
 import { _roots, addAfterEffect } from "@react-three/fiber";
 import { useProgress } from "@react-three/drei";
 import { Box3 } from "three";
-import { waitForSceneGeometryLods } from "@cabane/engine";
+import { waitForScenePreparation } from "@cabane/engine";
 import { cameraPose, frameCamera, restoreCameraPose } from "./dev-agent-camera.mjs";
 
 export async function captureScene({ operation, target, view, padding, pose, timeoutMs }) {
@@ -68,7 +68,7 @@ export async function captureScene({ operation, target, view, padding, pose, tim
     let timer;
     try {
       await Promise.race([
-        waitForSceneGeometryLods(state.scene),
+        waitForScenePreparation(state.scene),
         new Promise((_, reject) => {
           timer = setTimeout(
             () => reject(new Error("Timed out preparing scene geometry.")),

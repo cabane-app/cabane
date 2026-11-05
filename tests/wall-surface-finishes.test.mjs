@@ -41,6 +41,35 @@ await withModules(async (load) => {
       assumptions: [],
     });
 
+  test("repeated project validation reuses embedded raster checks while rechecking mutable metadata", () => {
+    const prefix = "data:image/jpeg;base64,";
+    const bytes = Buffer.from(image.dataUrl.slice(prefix.length), "base64");
+    const comment = Buffer.from([255, 254, 0, 12, ...Buffer.from("cache-test")]);
+    const dataUrl =
+      prefix +
+      Buffer.concat([bytes.subarray(0, -2), comment, bytes.subarray(-2)]).toString("base64");
+    const candidate = { ...image, dataUrl };
+    const p = project();
+    p.floors[0].walls[0].faceFinishes = { left: { ...custom, image: candidate } };
+    const original = globalThis.atob;
+    let decodes = 0;
+    globalThis.atob = (encoded) => {
+      decodes++;
+      return original(encoded);
+    };
+    try {
+      for (let index = 0; index < 4; index++)
+        assert.equal(e.parseHomeProjectSchema(structuredClone(p)).valid, true);
+      assert.equal(decodes, 1, "unchanged embedded bytes must not be decoded on every edit");
+      assert.ok(e.wallSurfaceImageError({ ...candidate, width: image.width + 1 }));
+      assert.ok(e.wallSurfaceImageError({ ...candidate, name: "" }));
+      assert.ok(e.wallSurfaceImageError({ ...candidate, extra: true }));
+      assert.ok(e.wallSurfaceImageError({ ...candidate, dataUrl: `${prefix}AAAA` }));
+    } finally {
+      globalThis.atob = original;
+    }
+  });
+
   test("wall pattern schema round trips supported finishes and rejects unsafe or unknown input", () => {
     for (const pattern of e.WALL_SURFACE_PATTERNS) {
       const p = project();

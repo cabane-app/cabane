@@ -3,7 +3,7 @@
 export async function measureScene({
   selector,
   moduleUrl,
-  lodModuleUrl,
+  preparationModuleUrl,
   motion = false,
   samples,
   warmupFrames = 8,
@@ -19,7 +19,7 @@ export async function measureScene({
   }
   if (!root?.store.getState().internal.active) throw new Error("Scene root is not ready.");
   const state = root.store.getState();
-  if (lodModuleUrl) {
+  if (preparationModuleUrl) {
     // A mode switch can mount geometry before its first frame registers LOD work.
     await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -33,24 +33,20 @@ export async function measureScene({
       });
       state.invalidate();
     });
-    const { waitForSceneGeometryLods } = await import(lodModuleUrl);
+    const { waitForScenePreparation } = await import(preparationModuleUrl);
     let timeout;
-    const frameloop = state.frameloop;
-    // Do not spend software-GPU frames between deferred CPU preparation slices.
-    state.setFrameloop("never");
     try {
       await Promise.race([
-        waitForSceneGeometryLods(state.scene),
+        waitForScenePreparation(state.scene),
         new Promise((_, reject) => {
           timeout = setTimeout(
-            () => reject(new Error("Geometry LOD preparation timed out after 120 seconds.")),
+            () => reject(new Error("Scene preparation timed out after 120 seconds.")),
             120_000,
           );
         }),
       ]);
     } finally {
       clearTimeout(timeout);
-      state.setFrameloop(frameloop);
       state.invalidate();
     }
   }

@@ -1,6 +1,5 @@
 import { ApartmentFloors } from "./building/ApartmentFloors";
-import { createTerrainSurface } from "./terrain/terrain-surface";
-import { TerrainSurfaceContext } from "./terrain/TerrainSurface";
+import { TerrainSurfaceContext, usePreparedTerrainSurface } from "./terrain/TerrainSurface";
 import { DioramaGround } from "./architecture-scene/DioramaGround";
 import { worldBoundsForFloorScene } from "./pools";
 import type { HomeManifest } from "./types";
@@ -43,6 +42,9 @@ export const ArchitectureScene = memo(function ArchitectureScene({
     manifest.floors.find((floor) => !floor.belowGround)?.id ??
     manifest.floors[0]?.id;
   const view = walkMode ? "walk" : (floorView ?? "cutaway");
+  // Arrange prepares each 3D floor once and retains its unchanged models when
+  // cutaway visibility changes. Plan and runtime keep their existing membership.
+  const retainFloors = props.interactionMode === "editor" && view !== "plan";
   const visible = new Set(
     visibleFloorIds(
       manifest.floors.map((floor) => floor.id),
@@ -50,12 +52,9 @@ export const ArchitectureScene = memo(function ArchitectureScene({
       view,
     ),
   );
-  const terrain = useMemo(
-    () =>
-      manifest.home.apartmentFloor
-        ? null
-        : createTerrainSurface(manifest.home.terrain, manifest.floors),
-    [manifest.home.terrain, manifest.home.apartmentFloor, manifest.floors],
+  const terrain = usePreparedTerrainSurface(
+    manifest.home.apartmentFloor ? undefined : manifest.home.terrain,
+    manifest.floors,
   );
   if (view === "whole" && !terrain)
     manifest.floors
@@ -130,7 +129,11 @@ export const ArchitectureScene = memo(function ArchitectureScene({
   return (
     <SceneRoomSelection.Provider value={selectedRoomId}>
       <TerrainSurfaceContext.Provider value={view === "plan" ? null : terrain}>
-        <group name="architecture-scene" position={[0, offset, 0]}>
+        <group
+          name="architecture-scene"
+          position={[0, offset, 0]}
+          userData={{ toonBatchRoot: true }}
+        >
           {apartmentFloor > 0 && lowest && contextBounds && view !== "plan" && (
             <>
               <ApartmentFloors floor={lowest} count={apartmentFloor} base={base} />
@@ -148,10 +151,11 @@ export const ArchitectureScene = memo(function ArchitectureScene({
           {(view === "whole" || view === "walk") && <BuildingRoof manifest={manifest} />}
           {manifest.floors.map(
             (floor, index) =>
-              visible.has(floor.id) && (
+              (retainFloors || visible.has(floor.id)) && (
                 <group
                   key={floor.id}
                   name={`building-floor-${floor.id}`}
+                  visible={visible.has(floor.id)}
                   position={[0, view === "plan" ? 0 : levels[index].elevationMeters, 0]}
                 >
                   <StairSurfaceApertures.Provider value={aperturesByFloor.get(floor.id)!}>

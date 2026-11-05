@@ -14,6 +14,7 @@ import { RoomHoverProvider } from "./room-status/RoomHover";
 import { OrbitNavigation } from "./OrbitNavigation";
 import { DashboardLocation, useRoomFocusFrame } from "./room-navigation";
 import { safeBuildingSpawn } from "./stairs/stair-navigation";
+import { useWalkFloorAvailability } from "./navigation/useWalkFloorAvailability";
 import { FloorPicker, deriveFloorLevels } from "./building";
 import { StylizedScene } from "./StylizedScene";
 import { PerformanceMonitor } from "@react-three/drei";
@@ -181,6 +182,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
     pendingHaActions,
   );
   const { wholeBuilding, setWholeBuilding } = floorNavigation;
+  const unavailableWalkFloors = useWalkFloorAvailability(manifest, walkMode);
   const floorLevels = deriveFloorLevels(manifest.floors);
   const cameraFloors = manifest.floors
     .map((floor, index) => ({ ...floor, elevationMeters: floorLevels[index].elevationMeters }))
@@ -214,15 +216,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
               <OrbitNavigation controls={orbitView.controls} locked={orbitView.locked} />
             )}
             <FloorPicker
-              unavailable={
-                walkMode
-                  ? Object.fromEntries(
-                      manifest.floors
-                        .filter((f) => !safeBuildingSpawn(manifest, f.id))
-                        .map((f) => [f.id, "No clear walking entry"]),
-                    )
-                  : undefined
-              }
+              unavailable={unavailableWalkFloors}
               floors={manifest.floors}
               selectedId={floor.id}
               onSelect={(id) => {

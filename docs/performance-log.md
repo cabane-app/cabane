@@ -391,3 +391,99 @@ and the same command at `--cpu-rate 1 --check`. Compact reports:
 
 Raw frame samples and HTML reports remain in ignored
 `test-results/solstice-atelier/performance-{before,after,unthrottled}.{json,html}`.
+
+## 2026-11-05 · Atelier interaction checkpoint on the locked desktop
+
+The permanent `npm run perf:interactions` benchmark covers trusted item movement
+and canvas deselection, cold/repeated floor switches, and WASD/mouse Walk input.
+The candidate substantially reduces the editor pauses. **The strict smoothness
+check remains red, and Walk fluidity has not been accepted.**
+
+The [baseline](performance-baselines/2026-11-05-atelier-editor-walk-before.json)
+uses frozen runtime `819001d`. The
+[candidate](performance-baselines/2026-11-05-atelier-editor-walk-after.json)
+records `1afac53` plus working-tree changes. Both use the same Atelier home hash
+`ddc99322…a2fc9`, Chromium 151 on Apple M5 Pro / Darwin 25.6.0 with ANGLE Metal,
+a headless 1440 × 960 desktop viewport, CPU ×1, three repetitions and the original
+450 ms key holds. No profiler ran during these captures. Power and thermal state
+were not recorded.
+
+| Interaction                             |               Baseline |             Candidate |
+| --------------------------------------- | ---------------------: | --------------------: |
+| Arrange entry                           |                3.629 s |               3.834 s |
+| Move item, maximum frame                |     1,566.7–1,567.1 ms |          66.5–66.8 ms |
+| Deselect, maximum frames                | 35.0 / 34.9 / 433.4 ms | 35.1 / 34.6 / 99.9 ms |
+| First floor, cold maximum frame         |             2,166.7 ms |              168.3 ms |
+| Remaining floor switches, maximum frame |     2,099.8–2,233.3 ms |         66.6–100.0 ms |
+| Walk frame p95                          |  66.8 / 66.8 / 66.7 ms | 66.7 / 66.7 / 66.9 ms |
+| Walk callback FPS                       |     26.3 / 26.3 / 19.5 |    26.8 / 26.0 / 25.4 |
+| Walk third repetition, maximum frame    |               733.4 ms |              100.0 ms |
+
+Preparing retained floors makes Arrange entry about **205 ms slower** in this
+comparison. Cold first-use work remains visible separately from repeated floor
+switches. The candidate still records a **153 ms cold-switch task**, a **129 ms
+deferred task after deselection**, and a **127 ms late Walk task**. The probe keeps
+two trailing RAF callbacks so those tasks remain part of the result.
+
+The editor canvas is 1080 × 821 at DPR 1. Walk uses 1800 × 1200 at DPR 1.25.
+Every repetition records stable start/end canvas dimensions. The compact reports
+retain these per-scenario values, workload counters and all result summaries.
+Raw input/frame/task arrays and diagnostic profiles remain in ignored
+`test-results/performance/`.
+
+The [contemporaneous empty WebGL input control](performance-baselines/2026-11-05-desktop-input-control.json)
+records 30.0 FPS and p95 34.7 / 34.9 ms. Application Walk p95 remains about 66.7 ms.
+This checkpoint was taken with the Mac locked. Its cadence is different from
+the unlocked series below; do not compare callback FPS between them.
+
+Full verification passed at this checkpoint, including **1,691 tests**.
+
+## 2026-11-05 · Atelier interactions on the unlocked desktop
+
+Fresh [baseline](performance-baselines/2026-11-05-atelier-editor-walk-unlocked-before.json)
+and [candidate](performance-baselines/2026-11-05-atelier-editor-walk-unlocked-after.json)
+captures use the same scene, Chromium/ANGLE Metal, viewport, CPU rate, stable
+per-scenario canvas sizes and input replay as the locked checkpoint. The
+[empty WebGL controls](performance-baselines/2026-11-05-desktop-input-control-unlocked.json)
+recorded 120 FPS and p95 9.0–9.3 ms before and after the pair.
+No profiler ran during the captures. The candidate is `468525c` plus the engine
+and benchmark changes recorded alongside these reports.
+
+| Interaction                       |           Baseline |    Candidate |
+| --------------------------------- | -----------------: | -----------: |
+| Arrange entry                     |            3.473 s |      3.817 s |
+| Move item, maximum frame          | 1,358.3–1,400.5 ms | 74.2–91.6 ms |
+| Third deselection, maximum frame  |           283.4 ms |      33.3 ms |
+| First floor, cold maximum frame   |         1,699.9 ms |     141.6 ms |
+| Remaining switches, maximum frame | 1,658.4–1,741.7 ms | 75.4–92.1 ms |
+| Walk frame p95                    |            66.7 ms | 25.0–25.1 ms |
+| Walk callback FPS                 |          42.1–47.5 |    55.8–58.0 |
+
+Late LOD packing now advances between geometry jobs with a shared 6 ms budget
+per render. A source keeps its full-detail geometry until its requested LOD is
+ready. Bundled artwork textures initialize when loaded, including on retained
+hidden floors. These changes reduce the stalls while preserving the scene and
+resolution. Arrange entry costs about **344 ms more** in this pair.
+
+Before the camera fix, Walk p95 stayed near 66.7 ms with native foreground
+focus and even with the WebGL renderer reduced to a clear. The Chromium trace
+showed the compositor selecting its 66.7 ms video-conference cadence once
+pointer input subsided. Three parked camera elements each had a one-pixel strip
+inside the viewport. Moving the elements fully outside the viewport keeps them
+available to the 3D screens. In an isolated full-render A/B, Walk p95 fell from
+66.7 to 17.6 ms while all three feeds continued decoding changing pixels and
+both in-scene video textures updated. [Chromium frame interval matcher](https://chromium.googlesource.com/chromium/src.git/+/23a46edb04aea8e8b84d2ef0ba6e033f10ee93ed/components/viz/service/display/frame_interval_matchers.cc)
+
+All 15 replay scenarios matched the baseline workload and canvas. Walk,
+move/deselect and repeat switches meet their budgets. The optional strict check
+still flags the first floor switch at **141.6 ms**, including an 81 ms
+main-thread task. A resource trace found first-use toon shader variants as the
+active floor's light count changed. A frozen-build diagnostic that suppressed
+zero-intensity light slots still recorded a 133 ms cold frame versus 125 ms
+in its own control. These captures used desktop Chromium.
+
+Reproduce the unlocked comparison with:
+
+```sh
+npm run perf:interactions -- --label atelier-candidate --runs 3 --baseline docs/performance-baselines/2026-11-05-atelier-editor-walk-unlocked-before.json --check
+```

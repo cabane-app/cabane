@@ -29,6 +29,7 @@
     "verify:scene-contours": "node scripts/verify-scene-contours.mjs",
     "measure:scene": "node scripts/measure-scene-performance.mjs",
     "perf": "node scripts/perf.mjs",
+    "perf:interactions": "node scripts/measure-demo-interactions.mjs",
     "perf:serve": "node scripts/perf.mjs serve",
     "perf:compare": "node scripts/perf.mjs compare",
     "verify:furnishing-surfaces": "node scripts/verify-furnishing-surfaces.mjs",

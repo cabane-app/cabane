@@ -97,9 +97,9 @@ for (const motion of [false, true])
         },
       };
       const api = {
-        waitForSceneGeometryLods: async () => {
+        waitForScenePreparation: async () => {
           assert.ok(renderedFrames > 0);
-          assert.equal(state.frameloop, "never");
+          assert.equal(state.frameloop, "demand", "batch preparation keeps rendering active");
         },
         roots: new Map([[canvas, { store: { getState: () => state } }]]),
         addEffect: (effect) => {
@@ -125,11 +125,11 @@ for (const motion of [false, true])
           else delete globalThis[key];
         });
       }
-      const lodModuleUrl = `data:text/javascript;base64,${Buffer.from("export const waitForSceneGeometryLods=globalThis.__sceneProbeTest.waitForSceneGeometryLods;").toString("base64")}#motion=${motion}`;
+      const preparationModuleUrl = `data:text/javascript;base64,${Buffer.from("export const waitForScenePreparation=globalThis.__sceneProbeTest.waitForScenePreparation;").toString("base64")}#motion=${motion}`;
       const result = await measureScene({
         selector: "canvas",
         moduleUrl,
-        lodModuleUrl,
+        preparationModuleUrl,
         samples: 4,
         warmupFrames: 2,
         motion,

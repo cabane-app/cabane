@@ -7,6 +7,40 @@ export const WALL_IMAGE_LIMITS = {
   storedBytes: 192 * 1024,
 } as const;
 
+const JPEG_PREFIX = "data:image/jpeg;base64,";
+type RasterCheck = { width: number; height: number } | string;
+// Validation runs during edits, history and autosave. Cache only immutable bytes;
+// names and declared dimensions are checked on every call. Bound retained images.
+const rasterChecks = new Map<string, RasterCheck>();
+
+function storedRaster(dataUrl: string): RasterCheck {
+  const cached = rasterChecks.get(dataUrl);
+  if (cached !== undefined) return cached;
+  const encoded = dataUrl.slice(JPEG_PREFIX.length);
+  let result: RasterCheck;
+  if (encoded.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(encoded))
+    result = "The embedded wall image is not valid base64.";
+  else {
+    const bytes = Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
+    const size = wallImageDimensions(bytes);
+    result =
+      bytes.byteLength > WALL_IMAGE_LIMITS.storedBytes ||
+      bytes[0] !== 255 ||
+      bytes[1] !== 216 ||
+      bytes.at(-2) !== 255 ||
+      bytes.at(-1) !== 217 ||
+      !size
+        ? "The wall image is damaged or does not match its saved dimensions."
+        : size;
+  }
+  if (rasterChecks.size >= 32) {
+    const oldest = rasterChecks.keys().next().value;
+    if (oldest !== undefined) rasterChecks.delete(oldest);
+  }
+  rasterChecks.set(dataUrl, result);
+  return result;
+}
+
 /** Read raster dimensions before the browser allocates a decoded image. */
 export function wallImageDimensions(bytes: Uint8Array): { width: number; height: number } | null {
   const be16 = (at: number) => (bytes[at] << 8) | bytes[at + 1];
@@ -68,28 +102,15 @@ export function wallSurfaceImageError(value: unknown): string | null {
     Math.max(value.width, value.height) > WALL_IMAGE_LIMITS.maxEdge
   )
     return "The wall image dimensions must be between 1 and 1024 pixels.";
-  const prefix = "data:image/jpeg;base64,";
   if (
     typeof value.dataUrl !== "string" ||
-    !value.dataUrl.startsWith(prefix) ||
-    value.dataUrl.length > prefix.length + 4 * Math.ceil(WALL_IMAGE_LIMITS.storedBytes / 3)
+    !value.dataUrl.startsWith(JPEG_PREFIX) ||
+    value.dataUrl.length > JPEG_PREFIX.length + 4 * Math.ceil(WALL_IMAGE_LIMITS.storedBytes / 3)
   )
     return "Choose an optimized embedded wall image of at most 192 KB.";
-  const encoded = value.dataUrl.slice(prefix.length);
-  if (encoded.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(encoded))
-    return "The embedded wall image is not valid base64.";
-  const bytes = Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
-  const size = wallImageDimensions(bytes);
-  if (
-    bytes.byteLength > WALL_IMAGE_LIMITS.storedBytes ||
-    bytes[0] !== 255 ||
-    bytes[1] !== 216 ||
-    bytes.at(-2) !== 255 ||
-    bytes.at(-1) !== 217 ||
-    !size ||
-    size.width !== value.width ||
-    size.height !== value.height
-  )
+  const size = storedRaster(value.dataUrl);
+  if (typeof size === "string") return size;
+  if (size.width !== value.width || size.height !== value.height)
     return "The wall image is damaged or does not match its saved dimensions.";
   return null;
 }

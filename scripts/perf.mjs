@@ -1,34 +1,18 @@
 #!/usr/bin/env node
-import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { cpus, platform, release } from "node:os";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import react from "@vitejs/plugin-react";
 import { chromium } from "playwright-core";
-import { build, preview } from "vite";
 import { compareRuntimeReports, renderRuntimeReport } from "./scene-performance/runtime-report.mjs";
-import { loadDevelopmentHome } from "./scene-performance/development-home.mjs";
 import { replayTouchOrbit } from "./scene-performance/touch-replay.mjs";
+import {
+  buildHarness,
+  serveHarness,
+  sourceMetadata,
+  harnessPath,
+  performanceProfiles as profiles,
+} from "./scene-performance/production-harness.mjs";
 
-const repository = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const buildDirectory = resolve(repository, "test-results/performance/build");
-const harnessPath = "/tests/performance-harness.html";
-const profiles = {
-  mobile: {
-    viewport: { width: 390, height: 844 },
-    deviceScaleFactor: 3,
-    isMobile: true,
-    hasTouch: true,
-  },
-  desktop: {
-    viewport: { width: 1440, height: 960 },
-    deviceScaleFactor: 1,
-    isMobile: false,
-    hasTouch: false,
-  },
-};
 const help = `Usage: npm run perf -- [options]
   --label NAME        Experiment name (default: baseline)
   --output PATH       JSON report (default: test-results/performance/NAME-TIMESTAMP.json)
@@ -136,103 +120,6 @@ function parseOptions(args) {
   if (options.output && options.baseline && resolve(options.output) === resolve(options.baseline))
     throw new Error("Baseline and output must be different files.");
   return options;
-}
-
-async function buildHarness(source, scenario = "dev-home") {
-  source ??= await sourceMetadata(scenario);
-  if (scenario === "dev-home") await loadDevelopmentHome(repository);
-  console.log("Building the production performance harness…");
-  await build({
-    root: repository,
-    configFile: false,
-    envDir: "/tmp/cabane-no-runtime-env",
-    publicDir: resolve(repository, "apps/web/public"),
-    plugins: [react()],
-    define: {
-      __THUMBNAIL_REVISION__: JSON.stringify("performance-harness"),
-      __PERFORMANCE_SOURCE__: JSON.stringify(source),
-      __PERFORMANCE_SCENARIO__: JSON.stringify(scenario),
-    },
-    build: {
-      target: "es2022",
-      outDir: buildDirectory,
-      emptyOutDir: true,
-      chunkSizeWarningLimit: Infinity,
-      sourcemap: true,
-      rollupOptions: { input: resolve(repository, `.${harnessPath}`) },
-    },
-  });
-}
-
-async function serveHarness(options) {
-  return preview({
-    root: repository,
-    configFile: false,
-    envDir: "/tmp/cabane-no-runtime-env",
-    plugins: [
-      {
-        name: "performance-harness-routes",
-        configurePreviewServer(server) {
-          // The fixture enters normal app routes. Reload must return to
-          // this dedicated entry, since this build has no root index.html.
-          server.middlewares.use((request, _response, next) => {
-            if (
-              request.method === "GET" &&
-              /^\/(?:workspaces(?:\/|$)|demo(?:[/?]|$))/.test(request.url ?? "")
-            )
-              request.url = harnessPath;
-            next();
-          });
-          if (options.scenario === "dev-home")
-            server.middlewares.use("/__performance/dev-ha", async (request, response) => {
-              if (
-                request.method !== "GET" ||
-                !/^(127\.0\.0\.1|localhost|\[::1\])(?::\d+)?$/.test(request.headers.host ?? "")
-              ) {
-                response.writeHead(403).end("Loopback benchmark only.");
-                return;
-              }
-              try {
-                const session = await loadDevelopmentHome(repository);
-                response.writeHead(200, {
-                  "Content-Type": "application/json",
-                  "Cache-Control": "no-store",
-                });
-                response.end(JSON.stringify(session));
-              } catch (error) {
-                response.writeHead(503, {
-                  "Content-Type": "text/plain",
-                  "Cache-Control": "no-store",
-                });
-                response.end(error.message);
-              }
-            });
-        },
-      },
-    ],
-    build: { outDir: buildDirectory },
-    preview: { host: options.host, port: options.port, strictPort: true },
-  });
-}
-
-async function sourceMetadata(scenario) {
-  const homeFiles =
-    scenario === "dev-home"
-      ? [await readFile(resolve(repository, "home/showcase/furnished.project.json"), "utf8")]
-      : [await readFile(resolve(repository, "home/showcase/atelier.project.json"), "utf8")];
-  return {
-    commit: execFileSync("git", ["rev-parse", "HEAD"], {
-      cwd: repository,
-      encoding: "utf8",
-    }).trim(),
-    dirty: Boolean(
-      execFileSync("git", ["status", "--porcelain", "--untracked-files=normal"], {
-        cwd: repository,
-        encoding: "utf8",
-      }).trim(),
-    ),
-    homeHash: createHash("sha256").update(homeFiles.join("\n")).digest("hex"),
-  };
 }
 
 async function measure(options) {

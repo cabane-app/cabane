@@ -1,6 +1,7 @@
 .camera-stream-video.is-parked {
   position: fixed;
-  right: -15px;
+  /* Keep decoding without contributing a visible video layer to the page. */
+  left: 100%;
   bottom: 0;
   width: 16px;
   height: 9px;

@@ -212,7 +212,7 @@ async function run(options) {
         selector,
         moduleUrl,
         motion: Boolean(options.motion),
-        lodModuleUrl: `/@fs${process.cwd()}/packages/engine/src/scene-batching/SceneGeometryLod.ts`,
+        preparationModuleUrl: `/@fs${process.cwd()}/packages/engine/src/scene-batching/scene-preparation.ts`,
         samples: options.samples,
         warmupFrames: configuration.warmupFrames,
       });

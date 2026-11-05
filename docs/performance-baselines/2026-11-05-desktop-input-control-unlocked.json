@@ -1,0 +1,172 @@
+{
+  "before": {
+    "schemaVersion": 1,
+    "measuredAt": "2026-11-05T08:09:47.740Z",
+    "label": "atelier-final-control-before",
+    "path": "empty-webgl-animated-walk-input-v2",
+    "configuration": {
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "deviceScaleFactor": 1,
+      "cpuRate": 1,
+      "runs": 2,
+      "walkHoldMs": 450,
+      "settleMs": 300,
+      "captureTailFrames": 2,
+      "animatedClear": true
+    },
+    "environment": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+      "hardwareConcurrency": 15,
+      "gpu": {
+        "vendor": "Google Inc. (Apple)",
+        "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)"
+      },
+      "canvas": {
+        "width": 1440,
+        "height": 960,
+        "dpr": 1
+      },
+      "browser": "151.0.7922.34",
+      "platform": "darwin 25.6.0",
+      "cpu": "Apple M5 Pro",
+      "headless": true
+    },
+    "errors": [],
+    "results": [
+      {
+        "name": "empty-input-1",
+        "durationMs": 2246.5,
+        "frameCount": 269,
+        "fps": 119.9982156399161,
+        "frameMsP50": 8.300000000000011,
+        "frameMsP95": 9.100000000000023,
+        "maxFrameMs": 9.300000000000182,
+        "maxLongTaskMs": 0,
+        "statusBefore": {
+          "visibility": "visible",
+          "focused": true,
+          "pointerLocked": true,
+          "activeElement": "CANVAS"
+        },
+        "statusAfter": {
+          "visibility": "visible",
+          "focused": true,
+          "pointerLocked": true,
+          "activeElement": "CANVAS"
+        }
+      },
+      {
+        "name": "empty-input-2",
+        "durationMs": 2252.2999999523163,
+        "frameCount": 270,
+        "fps": 120,
+        "frameMsP50": 8.300000000000182,
+        "frameMsP95": 9,
+        "maxFrameMs": 9.400000000000546,
+        "maxLongTaskMs": 0,
+        "statusBefore": {
+          "visibility": "visible",
+          "focused": true,
+          "pointerLocked": true,
+          "activeElement": "CANVAS"
+        },
+        "statusAfter": {
+          "visibility": "visible",
+          "focused": true,
+          "pointerLocked": true,
+          "activeElement": "CANVAS"
+        }
+      }
+    ],
+    "rawReport": "test-results/performance/atelier-final-control-before.json"
+  },
+  "after": {
+    "schemaVersion": 1,
+    "measuredAt": "2026-11-05T08:11:25.534Z",
+    "label": "atelier-final-control-after",
+    "path": "empty-webgl-animated-walk-input-v2",
+    "configuration": {
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "deviceScaleFactor": 1,
+      "cpuRate": 1,
+      "runs": 2,
+      "walkHoldMs": 450,
+      "settleMs": 300,
+      "captureTailFrames": 2,
+      "animatedClear": true
+    },
+    "environment": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+      "hardwareConcurrency": 15,
+      "gpu": {
+        "vendor": "Google Inc. (Apple)",
+        "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)"
+      },
+      "canvas": {
+        "width": 1440,
+        "height": 960,
+        "dpr": 1
+      },
+      "browser": "151.0.7922.34",
+      "platform": "darwin 25.6.0",
+      "cpu": "Apple M5 Pro",
+      "headless": true
+    },
+    "errors": [],
+    "results": [
+      {
+        "name": "empty-input-1",
+        "durationMs": 2248.800000190735,
+        "frameCount": 269,
+        "fps": 120.04641199571573,
+        "frameMsP50": 8.300000000000011,
+        "frameMsP95": 9.200000000000273,
+        "maxFrameMs": 9.399999999999977,
+        "maxLongTaskMs": 0,
+        "statusBefore": {
+          "visibility": "visible",
+          "focused": true,
+          "pointerLocked": true,
+          "activeElement": "CANVAS"
+        },
+        "statusAfter": {
+          "visibility": "visible",
+          "focused": true,
+          "pointerLocked": true,
+          "activeElement": "CANVAS"
+        }
+      },
+      {
+        "name": "empty-input-2",
+        "durationMs": 2258.5999999046326,
+        "frameCount": 270,
+        "fps": 120.00533357038093,
+        "frameMsP50": 8.300000000000182,
+        "frameMsP95": 9.299999999999727,
+        "maxFrameMs": 9.400000000000091,
+        "maxLongTaskMs": 0,
+        "statusBefore": {
+          "visibility": "visible",
+          "focused": true,
+          "pointerLocked": true,
+          "activeElement": "CANVAS"
+        },
+        "statusAfter": {
+          "visibility": "visible",
+          "focused": true,
+          "pointerLocked": true,
+          "activeElement": "CANVAS"
+        }
+      }
+    ],
+    "rawReport": "test-results/performance/atelier-final-control-after.json"
+  }
+}

@@ -11,12 +11,7 @@ import { geometryRevision, isToonBatchCompatible } from "./toon-batch-compatibil
 import type { GeometryLod } from "./geometry-lod";
 import { GeometryLodWorker } from "./GeometryLodWorker";
 import { forgetGeometryLods, registerGeometryLods } from "./geometry-lod-family";
-
-const scenes = new WeakMap<Scene, SceneGeometryLod>();
-/** Synchronize deferred geometry before measurements or rendered evidence capture. */
-export async function waitForSceneGeometryLods(scene: Scene) {
-  await scenes.get(scene)?.ready;
-}
+import { registerSceneGeometryLods } from "./scene-preparation";
 
 type Entry = { revision: string; levels: GeometryLod[] };
 /** Cached, error-limited LODs. Original geometry remains the picking surface. */
@@ -68,7 +63,6 @@ export class SceneGeometryLod {
   render(scene: Scene, camera: Camera, viewportHeight: number, draw: () => void) {
     // React StrictMode replays effect cleanup while retaining memoized resources.
     this.disposed = false;
-    scenes.set(scene, this);
     if (scene.overrideMaterial) {
       draw();
       return;
@@ -148,6 +142,7 @@ export class SceneGeometryLod {
     } finally {
       for (const [mesh, geometry] of originals) mesh.geometry = geometry;
       if (this.queue.length && !this.running) this.ready = this.drain();
+      registerSceneGeometryLods(scene, this.ready);
     }
   }
 

@@ -14,7 +14,7 @@ import {
 import { withModules } from "./test-server.mjs";
 await withModules(async (load) => {
   const { createGeometryLods } = await load("/packages/engine/src/scene-batching/geometry-lod.ts");
-  const { SceneGeometryLod, waitForSceneGeometryLods } = await load(
+  const { SceneGeometryLod } = await load(
     "/packages/engine/src/scene-batching/SceneGeometryLod.ts",
   );
   const { ShadowMapCache } = await load("/packages/engine/src/shadow-map-cache.ts");
@@ -191,7 +191,7 @@ await withModules(async (load) => {
       mesh = new Mesh(source, new MeshToonMaterial());
     scene.add(mesh);
     lod.render(scene, camera, 100, () => assert.equal(mesh.geometry, source));
-    await waitForSceneGeometryLods(scene);
+    await lod.ready;
     assert.equal(invalidations, 1);
     lod.render(scene, camera, 100, () =>
       assert.ok(mesh.geometry.index.count < source.index.count / 3),

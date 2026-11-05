@@ -133,6 +133,61 @@ power state, browser visibility, and competing CPU/GPU work consistent too.
 Run the benchmark without tests, builds, screen recording, or other heavy work
 running at the same time. Reuse passing measurements until relevant inputs change.
 
+## Arrange and Walk interaction replay
+
+Run the production Solstice Atelier demo through actual desktop input:
+
+```sh
+npm run perf:interactions -- --label interactions-before
+npm run perf:interactions -- --label interactions-after --baseline test-results/performance/interactions-before-TIMESTAMP.json --check
+npm run perf:interactions -- --label interactions-cpu4 --cpu-rate 4
+npm run perf:interactions -- --label sustained-walk --walk-hold-ms 1500
+npm run perf:interactions -- --label diagnostic --runs 1 --cpu-profile
+# Reuse a frozen production harness without rebuilding or stopping its server:
+npm run perf:interactions -- --origin http://127.0.0.1:4183 --output test-results/performance/interactions.json
+```
+
+The command builds its own demo bundle, serves it on an available loopback port,
+then closes its own browser and server. Build artifacts and reports stay in ignored
+`test-results/performance/`. It needs no HA session. The default profile is
+`desktop` (1440 × 960, DPR 1); mobile input needs a separate replay.
+
+Each repetition selects and moves a real item through its move handle, deselects
+through the canvas, switches between First floor and Ground floor, and moves and
+looks in Walk with trusted WASD/mouse input and pointer lock. Assertions verify
+item placement, selection, selected floors, and camera movement. The default
+450 ms key holds preserve the `demo-editor-walk-v1` replay. Keep sustained holds
+in a separate series and compare matching hold durations, scene hashes, and
+browser/hardware settings. `--baseline` checks that the input path, repetition
+count, key-hold duration, capture tail, CPU slowdown, viewport, scene hash, and
+browser/OS/CPU/GPU/canvas context match. It compares each named result's FPS,
+p50/p95, maximum frame, long task, and feedback time. Code revisions, labels and
+server origins may differ. Incompatible context is recorded in the saved candidate
+report before the command fails; baseline and output paths must differ.
+
+Reports retain raw RAF intervals, input-to-double-RAF feedback, long tasks, CPU
+render submission, main-scene calls/triangles, shadow-refresh requests, camera
+travel, and each result's starting/ending drawing-buffer size and DPR. A capture
+fails if that canvas changes, including transient changes observed during its
+frames or main renders. Baseline comparison also requires matching per-scenario
+canvas metadata; older reports lacking it must be measured again. Frame,
+feedback and submission quantiles use the same nearest-rank convention as
+`npm run perf`; workload medians average the middle pair when the sample count
+is even. FPS comes from the observed RAF cadence, including idle feedback frames;
+Arrange FPS alone can hide a single long pause. Use maximum frame/long-task time
+and feedback for those discrete interactions. `arrangeEntryMs` records editor entry.
+Inspect the **first floor switch separately**: cold GPU uploads/shader compilation
+can differ from repeated switches. Neither phase is silently excluded. After each
+input sequence, captures include a 900 ms settling window (300 ms for Walk) and
+two completed RAF callbacks, so a task ending near the window boundary still
+contributes its trailing frame interval (`captureTailFrames: 2`).
+
+`--check` saves the report before failing on editor frames or long tasks above
+100 ms or Walk frame p95 above 33.4 ms. These interaction heuristics complement the stricter steady
+60 Hz target above. `--cpu-profile` saves a separate diagnostic profile per scenario;
+profiles include scenario setup, so locate the measured input windows before
+attributing startup work to steady movement. Use unprofiled runs for timing claims.
+
 ## Testing a real phone
 
 ### iOS Simulator baseline

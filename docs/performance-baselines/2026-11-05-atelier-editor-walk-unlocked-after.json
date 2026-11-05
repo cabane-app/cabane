@@ -1,0 +1,542 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-05T08:11:20.174Z",
+  "label": "atelier-final-after",
+  "path": "demo-editor-walk-v1",
+  "source": {
+    "commit": "468525c5d0b2735739b8eb00b0d51e906ac3aa86",
+    "dirty": true,
+    "homeHash": "ddc9932212d3d1573471ea48bde3e888685d3dfd24c18eb18d71fa399e2a2fc9"
+  },
+  "configuration": {
+    "origin": "http://127.0.0.1:64169",
+    "profile": "desktop",
+    "scenario": "demo",
+    "cpuRate": 1,
+    "runs": 3,
+    "walkHoldMs": 450,
+    "captureTailFrames": 2,
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "build": "production",
+    "arrangeEntryMs": 3817.098167
+  },
+  "environment": {
+    "browser": "151.0.7922.34",
+    "platform": "darwin 25.6.0",
+    "cpu": "Apple M5 Pro",
+    "headless": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "hardwareConcurrency": 15,
+    "gpu": {
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)"
+    },
+    "canvas": {
+      "width": 1080,
+      "height": 821,
+      "dpr": 1
+    }
+  },
+  "errors": [],
+  "results": [
+    {
+      "name": "arrange-move-1",
+      "durationMs": 1552.8999998569489,
+      "frameCount": 131,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 84.51067673053349,
+      "frameMsP50": 8.399999999999636,
+      "frameMsP95": 25.100000000000364,
+      "maxFrameMs": 91.59999999999945,
+      "over33MsPercent": 3.053435114503817,
+      "feedbackMsP95": 95.59999990463257,
+      "maxFeedbackMs": 95.59999990463257,
+      "maxLongTaskMs": 79,
+      "totalLongTaskMs": 79,
+      "renderCount": 102,
+      "mainRenderCount": 51,
+      "mainCallsMedian": 272,
+      "mainTrianglesMedian": 1321498,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 3.9000000953674316,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-deselect-1",
+      "durationMs": 998.5,
+      "frameCount": 118,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 118,
+      "frameMsP50": 8.300000000001091,
+      "frameMsP95": 8.400000000001455,
+      "maxFrameMs": 25.100000000000364,
+      "over33MsPercent": 0,
+      "feedbackMsP95": 31.09999990463257,
+      "maxFeedbackMs": 31.09999990463257,
+      "maxLongTaskMs": 0,
+      "totalLongTaskMs": 0,
+      "renderCount": 10,
+      "mainRenderCount": 5,
+      "mainCallsMedian": 268,
+      "mainTrianglesMedian": 1321330,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 3.799999952316284,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-move-2",
+      "durationMs": 1535,
+      "frameCount": 144,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 93.85999217833405,
+      "frameMsP50": 8.300000000001091,
+      "frameMsP95": 16.700000000000728,
+      "maxFrameMs": 83.29999999999927,
+      "over33MsPercent": 2.0833333333333335,
+      "feedbackMsP95": 81.90000009536743,
+      "maxFeedbackMs": 81.90000009536743,
+      "maxLongTaskMs": 65,
+      "totalLongTaskMs": 65,
+      "renderCount": 100,
+      "mainRenderCount": 50,
+      "mainCallsMedian": 272,
+      "mainTrianglesMedian": 1321498,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 3.4000000953674316,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-deselect-2",
+      "durationMs": 959.5,
+      "frameCount": 113,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 117.86376617497653,
+      "frameMsP50": 8.300000000001091,
+      "frameMsP95": 8.700000000000728,
+      "maxFrameMs": 24.900000000001455,
+      "over33MsPercent": 0,
+      "feedbackMsP95": 30,
+      "maxFeedbackMs": 30,
+      "maxLongTaskMs": 0,
+      "totalLongTaskMs": 0,
+      "renderCount": 8,
+      "mainRenderCount": 4,
+      "mainCallsMedian": 268,
+      "mainTrianglesMedian": 1321330,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 3.5,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-move-3",
+      "durationMs": 1425,
+      "frameCount": 127,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 89.64494953059935,
+      "frameMsP50": 8.399999999999636,
+      "frameMsP95": 17.200000000000728,
+      "maxFrameMs": 74.20000000000073,
+      "over33MsPercent": 3.1496062992125986,
+      "feedbackMsP95": 80,
+      "maxFeedbackMs": 80,
+      "maxLongTaskMs": 63,
+      "totalLongTaskMs": 63,
+      "renderCount": 92,
+      "mainRenderCount": 46,
+      "mainCallsMedian": 272,
+      "mainTrianglesMedian": 1321498,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 3.5999999046325684,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-deselect-3",
+      "durationMs": 990.2000000476837,
+      "frameCount": 92,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 93.5624936438524,
+      "frameMsP50": 8.300000000001091,
+      "frameMsP95": 25,
+      "maxFrameMs": 33.29999999999927,
+      "over33MsPercent": 0,
+      "feedbackMsP95": 29.5,
+      "maxFeedbackMs": 29.5,
+      "maxLongTaskMs": 0,
+      "totalLongTaskMs": 0,
+      "renderCount": 32,
+      "mainRenderCount": 16,
+      "mainCallsMedian": 268,
+      "mainTrianglesMedian": 986747,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 5.5,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-floor-First floor-1",
+      "durationMs": 1540.8999998569489,
+      "frameCount": 148,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 96.52383747472776,
+      "frameMsP50": 8.300000000001091,
+      "frameMsP95": 9.300000000001091,
+      "maxFrameMs": 141.60000000000036,
+      "over33MsPercent": 2.027027027027027,
+      "feedbackMsP95": 180,
+      "maxFeedbackMs": 180,
+      "maxLongTaskMs": 81,
+      "totalLongTaskMs": 215,
+      "renderCount": 10,
+      "mainRenderCount": 5,
+      "mainCallsMedian": 366,
+      "mainTrianglesMedian": 457843,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 63.40000009536743,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-floor-Ground floor-1",
+      "durationMs": 1157.2999999523163,
+      "frameCount": 117,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 101.73913043478261,
+      "frameMsP50": 8.299999999999272,
+      "frameMsP95": 9.30000000000291,
+      "maxFrameMs": 83.29999999999927,
+      "over33MsPercent": 2.5641025641025643,
+      "feedbackMsP95": 92.90000009536743,
+      "maxFeedbackMs": 92.90000009536743,
+      "maxLongTaskMs": 71,
+      "totalLongTaskMs": 71,
+      "renderCount": 8,
+      "mainRenderCount": 4,
+      "mainCallsMedian": 266,
+      "mainTrianglesMedian": 341198,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 5.200000047683716,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-floor-First floor-2",
+      "durationMs": 1158,
+      "frameCount": 117,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 101.78338408003479,
+      "frameMsP50": 8.299999999999272,
+      "frameMsP95": 9.299999999999272,
+      "maxFrameMs": 75.40000000000146,
+      "over33MsPercent": 2.5641025641025643,
+      "feedbackMsP95": 72.20000004768372,
+      "maxFeedbackMs": 72.20000004768372,
+      "maxLongTaskMs": 60,
+      "totalLongTaskMs": 60,
+      "renderCount": 8,
+      "mainRenderCount": 4,
+      "mainCallsMedian": 366,
+      "mainTrianglesMedian": 457843,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 5.799999952316284,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-floor-Ground floor-2",
+      "durationMs": 1157.6000001430511,
+      "frameCount": 116,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 100.88711080187865,
+      "frameMsP50": 8.299999999999272,
+      "frameMsP95": 9.30000000000291,
+      "maxFrameMs": 92.09999999999854,
+      "over33MsPercent": 2.586206896551724,
+      "feedbackMsP95": 129.89999985694885,
+      "maxFeedbackMs": 129.89999985694885,
+      "maxLongTaskMs": 83,
+      "totalLongTaskMs": 83,
+      "renderCount": 8,
+      "mainRenderCount": 4,
+      "mainCallsMedian": 266,
+      "mainTrianglesMedian": 341198,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 3.8999998569488525,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-floor-First floor-3",
+      "durationMs": 1158.7000000476837,
+      "frameCount": 117,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 101.73913043478261,
+      "frameMsP50": 8.299999999999272,
+      "frameMsP95": 9.30000000000291,
+      "maxFrameMs": 83.79999999999927,
+      "over33MsPercent": 2.5641025641025643,
+      "feedbackMsP95": 72.60000014305115,
+      "maxFeedbackMs": 72.60000014305115,
+      "maxLongTaskMs": 58,
+      "totalLongTaskMs": 108,
+      "renderCount": 8,
+      "mainRenderCount": 4,
+      "mainCallsMedian": 366,
+      "mainTrianglesMedian": 457843,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 5.700000047683716,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "arrange-floor-Ground floor-3",
+      "durationMs": 1166.6000001430511,
+      "frameCount": 116,
+      "canvasStart": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasEnd": {
+        "width": 1080,
+        "height": 821,
+        "dpr": 1
+      },
+      "canvasStable": true,
+      "fps": 100.1640618254035,
+      "frameMsP50": 8.299999999999272,
+      "frameMsP95": 9.399999999997817,
+      "maxFrameMs": 91.70000000000073,
+      "over33MsPercent": 2.586206896551724,
+      "feedbackMsP95": 131.10000014305115,
+      "maxFeedbackMs": 131.10000014305115,
+      "maxLongTaskMs": 82,
+      "totalLongTaskMs": 82,
+      "renderCount": 8,
+      "mainRenderCount": 4,
+      "mainCallsMedian": 266,
+      "mainTrianglesMedian": 341198,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 4.1000001430511475,
+      "cameraTravel": 0,
+      "cameraTurnRadians": 0
+    },
+    {
+      "name": "walk-input-1",
+      "durationMs": 2551.5,
+      "frameCount": 144,
+      "canvasStart": {
+        "width": 1800,
+        "height": 1200,
+        "dpr": 1.25
+      },
+      "canvasEnd": {
+        "width": 1800,
+        "height": 1200,
+        "dpr": 1.25
+      },
+      "canvasStable": true,
+      "fps": 56.842853195436795,
+      "frameMsP50": 16.700000000000728,
+      "frameMsP95": 25.100000000002183,
+      "maxFrameMs": 33.5,
+      "over33MsPercent": 0.6944444444444444,
+      "feedbackMsP95": 39,
+      "maxFeedbackMs": 39,
+      "maxLongTaskMs": 0,
+      "totalLongTaskMs": 0,
+      "renderCount": 290,
+      "mainRenderCount": 145,
+      "mainCallsMedian": 64,
+      "mainTrianglesMedian": 611368,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 3.4000000953674316,
+      "cameraTravel": 1.684375670010382,
+      "cameraTurnRadians": 0.8886932610466923
+    },
+    {
+      "name": "walk-input-2",
+      "durationMs": 2566,
+      "frameCount": 148,
+      "canvasStart": {
+        "width": 1800,
+        "height": 1200,
+        "dpr": 1.25
+      },
+      "canvasEnd": {
+        "width": 1800,
+        "height": 1200,
+        "dpr": 1.25
+      },
+      "canvasStable": true,
+      "fps": 58.04376813867756,
+      "frameMsP50": 16.700000000000728,
+      "frameMsP95": 25,
+      "maxFrameMs": 25.100000000002183,
+      "over33MsPercent": 0,
+      "feedbackMsP95": 41.90000009536743,
+      "maxFeedbackMs": 41.90000009536743,
+      "maxLongTaskMs": 0,
+      "totalLongTaskMs": 0,
+      "renderCount": 298,
+      "mainRenderCount": 149,
+      "mainCallsMedian": 64,
+      "mainTrianglesMedian": 630854,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 2.700000047683716,
+      "cameraTravel": 1.5876535142322428,
+      "cameraTurnRadians": 0.08966940188210448
+    },
+    {
+      "name": "walk-input-3",
+      "durationMs": 2538.7000000476837,
+      "frameCount": 141,
+      "canvasStart": {
+        "width": 1800,
+        "height": 1200,
+        "dpr": 1.25
+      },
+      "canvasEnd": {
+        "width": 1800,
+        "height": 1200,
+        "dpr": 1.25
+      },
+      "canvasStable": true,
+      "fps": 55.84158415841584,
+      "frameMsP50": 16.69999999999709,
+      "frameMsP95": 25.099999999998545,
+      "maxFrameMs": 32.400000000001455,
+      "over33MsPercent": 0,
+      "feedbackMsP95": 39.5,
+      "maxFeedbackMs": 39.5,
+      "maxLongTaskMs": 0,
+      "totalLongTaskMs": 0,
+      "renderCount": 284,
+      "mainRenderCount": 142,
+      "mainCallsMedian": 64,
+      "mainTrianglesMedian": 664695,
+      "mainShadowUpdateFraction": 1,
+      "cpuSubmitMsP95": 3.1000001430511475,
+      "cameraTravel": 1.414384687239168,
+      "cameraTurnRadians": 0.08966940188209953
+    }
+  ],
+  "rawReport": "test-results/performance/atelier-final-after.json"
+}

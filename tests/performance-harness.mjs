@@ -1,7 +1,8 @@
 /* global __PERFORMANCE_SOURCE__, __PERFORMANCE_SCENARIO__ */
 import "fake-indexeddb/auto";
 import { _roots, addAfterEffect } from "@react-three/fiber";
-import { waitForSceneGeometryLods } from "../packages/engine/src/scene-batching/SceneGeometryLod";
+import { Box3, Vector3 } from "three";
+import { waitForScenePreparation } from "../packages/engine/src/scene-batching/scene-preparation";
 import { captureRuntime } from "../scripts/scene-performance/runtime-probe.mjs";
 import {
   summarizeRuns,
@@ -121,7 +122,7 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
   panel.classList.add("perf-running");
   try {
     status.textContent = "Preparing scene geometry…";
-    // Let the first render register its worker jobs, then await completion. This
+    // Let the first render register its worker and batch jobs, then await completion. This
     // explicitly measures warm steady-state, not first-load/LOD preparation cost.
     await new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -138,7 +139,7 @@ async function run({ seconds = 10, runs = 3, label = "manual", path = "orbit-v1"
     let prepareTimer;
     try {
       await Promise.race([
-        waitForSceneGeometryLods(state.scene),
+        waitForScenePreparation(state.scene),
         new Promise((_, reject) => {
           prepareTimer = setTimeout(
             () => reject(new Error("Geometry preparation timed out.")),
@@ -265,4 +266,24 @@ gestureButton.addEventListener("click", () =>
     path: "manual-gestures-v1",
   }).catch(() => {}),
 );
-window.__cabanePerf = { ready, run };
+window.__cabanePerf = {
+  source: __PERFORMANCE_SOURCE__,
+  ready,
+  run,
+  root: () => {
+    const canvas = document.querySelector(".direction-preview__model canvas, .scene-canvas canvas");
+    return _roots.get(canvas)?.store.getState();
+  },
+  itemPoint: (name) => {
+    const state = window.__cabanePerf.root();
+    state.scene.updateMatrixWorld(true);
+    const object = state.scene.getObjectByName(name);
+    if (!object) throw new Error(`Missing scene object ${name}`);
+    const point = new Box3().setFromObject(object).getCenter(new Vector3()).project(state.camera);
+    const rect = state.gl.domElement.getBoundingClientRect();
+    return {
+      x: rect.x + ((point.x + 1) / 2) * rect.width,
+      y: rect.y + ((1 - point.y) / 2) * rect.height,
+    };
+  },
+};

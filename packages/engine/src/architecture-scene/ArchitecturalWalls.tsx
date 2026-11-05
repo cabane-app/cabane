@@ -6,6 +6,7 @@ import { BufferGeometry, Color, Float32BufferAttribute } from "three";
 
 import { useEffect, useMemo } from "react";
 import { useWallRoomSelection } from "./useWallRoomSelection";
+import { useSceneArchitectureNeighbors } from "../scene-architecture-inputs";
 import { RoomWallEmphasis } from "../room-navigation/RoomWallEmphasis";
 
 import {
@@ -132,8 +133,8 @@ export function ArchitecturalWalls({
   fade,
   reducedMotion,
   baseElevationMeters,
-  below,
-  above,
+  below: sourceBelow,
+  above: sourceAbove,
   onSelectRoom,
 }: {
   floor: FloorSpec;
@@ -147,6 +148,7 @@ export function ArchitecturalWalls({
   reducedMotion: boolean;
 }) {
   const selectionHandlers = useWallRoomSelection(floor, onSelectRoom);
+  const { below, above } = useSceneArchitectureNeighbors(sourceBelow, sourceAbove);
   const groups = useMemo(
     () =>
       buildArchitecturalWallGeometries(floor, interiorColor, exteriorColor, baseElevationMeters, {

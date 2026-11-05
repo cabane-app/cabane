@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-05T00:01:13.955Z",
+  "browser": "151.0.7922.34",
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "path": "empty-webgl-walk-input-v1",
+  "results": [
+    {
+      "frameMsP50": 33.30000000000018,
+      "frameMsP95": 34.700000000000045,
+      "maxFrameMs": 34.90000000000009,
+      "fps": 30.018168891697606
+    },
+    {
+      "frameMsP50": 33.30000000000018,
+      "frameMsP95": 34.90000000000009,
+      "maxFrameMs": 35.19999999999982,
+      "fps": 29.982088622381436
+    }
+  ],
+  "rawReport": "test-results/performance/desktop-input-control-final.json",
+  "note": "Contemporaneous empty WebGL input control for the final-v3 headless comparison. This report records browser and viewport only. It is not a Cabane workload or physical-device acceptance."
+}

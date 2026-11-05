@@ -22,7 +22,15 @@ import { SceneLightWallMask, SceneLightWallMaskContext } from "./scene-light-wal
 /** Decorative mesh shells are replaced by a single visible-depth contour pass. */
 export const SceneContourContext = createContext(false);
 
-function SceneContourPass({ antialias, active }: { antialias: boolean; active: boolean }) {
+function SceneContourPass({
+  antialias,
+  active,
+  editing,
+}: {
+  antialias: boolean;
+  active: boolean;
+  editing: boolean;
+}) {
   const style = useSceneStyle();
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
@@ -62,10 +70,10 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
       quad: new FullScreenQuad(material),
       size: new Vector2(),
       shadows: new ShadowMapCache(),
-      batches: new SceneToonBatcher(),
+      batches: new SceneToonBatcher(editing),
       lod: new SceneGeometryLod(invalidate),
     };
-  }, [antialias, invalidate]);
+  }, [antialias, invalidate, editing]);
   useEffect(
     () => () => {
       resources.target.dispose();
@@ -85,9 +93,10 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
     resources.material.uniforms.simsStyle.value = style === "sims";
     invalidate();
   }, [style, resources, invalidate]);
-  // Positive priority owns rendering, but never invalidates a resting demand canvas.
+  // Positive priority owns rendering and requests another frame while batch uploads remain.
   useFrame(({ gl, scene, camera }) => {
     if (!active) {
+      resources.batches.suspend();
       resources.shadows.reset();
       gl.render(scene, camera);
       return;
@@ -110,9 +119,12 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
       gl.autoClear = true;
       gl.setRenderTarget(target);
       resources.shadows.render(gl, scene, camera, () =>
-        resources.lod.render(scene, camera, size.y / gl.getPixelRatio(), () =>
-          resources.batches.render(gl, scene, camera, () => lightWalls.render(gl, scene, camera)),
-        ),
+        resources.lod.render(scene, camera, size.y / gl.getPixelRatio(), () => {
+          if (
+            resources.batches.render(gl, scene, camera, () => lightWalls.render(gl, scene, camera))
+          )
+            invalidate();
+        }),
       );
       material.uniforms.hasImportedModels.value = resources.importedMask.render(
         gl,
@@ -136,12 +148,15 @@ export function StylizedScene({
   enabled = true,
   antialias = true,
   active = true,
+  editing = false,
 }: {
   children: ReactNode;
   enabled?: boolean;
   antialias?: boolean;
   /** Suspend postprocessing without disposing its resources or changing model outlines. */
   active?: boolean;
+  /** Bound GPU buffer rebuilding during item and floor edits. */
+  editing?: boolean;
 }) {
   const style = useSceneStyle();
   const lightWalls = useMemo(() => new SceneLightWallMask(), []);
@@ -152,7 +167,7 @@ export function StylizedScene({
         <SceneStyleContext.Provider value={active ? style : "default"}>
           {children}
         </SceneStyleContext.Provider>
-        {enabled && <SceneContourPass antialias={antialias} active={active} />}
+        {enabled && <SceneContourPass antialias={antialias} active={active} editing={editing} />}
       </SceneContourContext.Provider>
     </SceneLightWallMaskContext.Provider>
   );

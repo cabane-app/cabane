@@ -266,6 +266,82 @@ await withModules(async (load) => {
     near(surface.offsetAt(-4, -24), 0);
   });
 
+  test("terrain geometry survives editor manifest recomposition and floor changes until its shape changes", async () => {
+    const project = makeStairProject();
+    project.home.terrain = { ...terrain };
+    project.floors[0].groundZones = [
+      {
+        id: "driveway",
+        polygon: rectangle(-2, -2, 12, 12),
+        finish: { kind: "solid", color: "#aaa391" },
+      },
+    ];
+    let manifest = api.composeHomeManifest(project, emptyExtensions);
+    const props = {
+      manifest,
+      floorView: "cutaway",
+      activeFloorId: project.floors[0].id,
+      selectedRoomId: null,
+      walkMode: false,
+      wallFadeEnabled: false,
+      reducedMotion: true,
+      resolvedBindings: { rooms: {}, openings: {} },
+      architectureModels: stableArchitectureModelRegistry,
+      deviceModels: {},
+      openingPositions: {},
+      onInteract() {},
+    };
+    const renderer = await create(React.createElement(ArchitectureScene, props));
+    const geometry = (name) => renderer.scene.instance.getObjectByName(name).geometry;
+    const names = ["diorama-base", "diorama-ground", "ground-zone-driveway"];
+    const original = names.map(geometry);
+    const disposed = new Set();
+    original.forEach((geometry) =>
+      geometry.addEventListener("dispose", () => disposed.add(geometry)),
+    );
+    try {
+      assert.ok(original.every((geometry) => geometry.attributes.position.count > 300));
+      for (const activeFloorId of [project.floors[1].id, project.floors[0].id]) {
+        // Item edits and selecting a different editor floor compose fresh
+        // FloorSpecs even though the terrain's architectural inputs are unchanged.
+        manifest = {
+          ...manifest,
+          floors: structuredClone(manifest.floors),
+          sceneItems: [...manifest.sceneItems],
+        };
+        await renderer.update(
+          React.createElement(ArchitectureScene, { ...props, manifest, activeFloorId }),
+        );
+        names.forEach((name, i) =>
+          assert.equal(geometry(name), original[i], `${name} must retain its prepared buffers`),
+        );
+        assert.equal(disposed.size, 0, "reused ground buffers stay alive");
+        assert.ok(
+          renderer.scene.instance.getObjectByName(`building-floor-${project.floors[0].id}`),
+        );
+        assert.equal(
+          Boolean(
+            renderer.scene.instance.getObjectByName(`building-floor-${project.floors[1].id}`),
+          ),
+          activeFloorId === project.floors[1].id,
+        );
+      }
+      // In-place terrain edits still invalidate the surface and all dependants.
+      manifest.home.terrain.topLeftMeters -= 0.2;
+      await renderer.update(
+        React.createElement(ArchitectureScene, {
+          ...props,
+          manifest,
+          activeFloorId: project.floors[1].id,
+        }),
+      );
+      names.forEach((name, i) => assert.notEqual(geometry(name), original[i]));
+      assert.equal(disposed.size, original.length, "replaced ground buffers are disposed");
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("the exterior reveals the garage while terrain, paths and soil retain indoor, pool and stair cutouts", async () => {
     const project = projectWithGarage();
     project.home.terrain = terrain;

@@ -1,39 +1,101 @@
 import {
   BatchedMesh,
-  BufferGeometry,
-  Color,
-  Float32BufferAttribute,
+  type BufferGeometry,
+  LessEqualDepth,
   Matrix4,
   Mesh,
   MeshToonMaterial,
   type Camera,
+  type Object3D,
   type Scene,
   type WebGLRenderer,
 } from "three";
+import { ToonBatchGeometryPacker, type ToonBatchGeometryInput } from "./toon-batch-geometry";
 import { geometryLodFamily } from "./geometry-lod-family";
-import { canRenderToonBatch, geometryRevision, toonBatchKey } from "./toon-batch-compatibility";
+import { registerSceneToonBatches } from "./scene-preparation";
+import {
+  canRenderToonBatch,
+  geometryRevision,
+  hasBatchableTransform,
+  toonBatchKey,
+} from "./toon-batch-compatibility";
 
+type PackedSource = {
+  source: Mesh;
+  family: readonly BufferGeometry[];
+  revisions: string[];
+  input: ToonBatchGeometryInput;
+  geometryIds: Map<BufferGeometry, number>;
+  selectedId: number;
+  worldTransformEligible: boolean;
+};
 type Batch = {
   mesh: BatchedMesh;
-  sources: Mesh[];
-  families: Array<readonly BufferGeometry[]>;
-  revisions: string[][];
-  matrices: Matrix4[];
-  colors: Color[];
-  geometryIds: Array<Map<BufferGeometry, number>>;
-  selectedIds: number[];
+  sources: PackedSource[];
+  rootMatrix: Matrix4;
+  vertices: number;
+  indices: number;
 };
+type SourceGroup = { root: Object3D; sources: Mesh[] };
+type Upload = {
+  key: string;
+  batch: Batch;
+  entry: PackedSource;
+  geometry: BufferGeometry;
+  revision: string;
+};
+
+function sameLinearTransform(left: Matrix4, right: Matrix4) {
+  const a = left.elements,
+    b = right.elements;
+  return [0, 1, 2, 4, 5, 6, 8, 9, 10].every((index) => a[index] === b[index]);
+}
 
 /** Render-only substitution. Original objects/materials remain intact between frames. */
 export class SceneToonBatcher {
   private batches = new Map<string, Batch>();
   private hidden = new MeshToonMaterial({ visible: false });
   private inverse = new Matrix4();
+  private sceneInverse = new Matrix4();
   private matrix = new Matrix4();
+  private ancestors: Object3D[] = [];
+  private identity = new Matrix4();
+  private packer = new ToonBatchGeometryPacker();
+  private uploads: Upload[] = [];
+  private resolveReady: (() => void) | undefined;
+  ready: Promise<void> = Promise.resolve();
 
-  private build(sources: Mesh[]): Batch {
-    const families = sources.map((source) => geometryLodFamily(source.geometry));
-    const revisions = families.map((family) => family.map(geometryRevision));
+  constructor(private partitionLargeScenes = false) {}
+
+  private localMatrix(
+    source: Mesh,
+    root: Object3D,
+    scene: Scene,
+    target: Matrix4,
+    identityRoot: boolean,
+  ) {
+    if (identityRoot) return target.copy(source.matrixWorld);
+    if (root === scene) return target.multiplyMatrices(this.inverse, source.matrixWorld);
+    if (source === root) return target.identity();
+    // Root-local ancestor matrices stay bit-identical when only the root moves;
+    // inverse(root.world) * source.world would introduce cancellation roundoff.
+    this.ancestors.length = 0;
+    for (let object: Object3D | null = source; object && object !== root; object = object.parent) {
+      // A custom world override need not agree with its authored local matrix.
+      if (!object.matrixWorldAutoUpdate) {
+        this.ancestors.length = 0;
+        return target.multiplyMatrices(this.inverse, source.matrixWorld);
+      }
+      this.ancestors.push(object);
+    }
+    target.identity();
+    for (let index = this.ancestors.length - 1; index >= 0; index--)
+      target.multiply(this.ancestors[index].matrix);
+    this.ancestors.length = 0;
+    return target;
+  }
+
+  private build(sources: Mesh[], root: Object3D, scene: Scene): Batch {
     const sourceMaterial = sources[0].material as MeshToonMaterial;
     const material = sourceMaterial.clone();
     material.defines = { ...sourceMaterial.defines };
@@ -47,6 +109,8 @@ export class SceneToonBatcher {
     material.depthWrite =
       (sourceMaterial.userData.cameraFadeBaseDepthWrite as boolean | undefined) ??
       sourceMaterial.depthWrite;
+    const ordinaryDepth =
+      material.depthTest && material.depthWrite && material.depthFunc === LessEqualDepth;
     // Static geometry bakes transforms/tints once. This avoids the matrix,
     // indirect-ID and color texture fetches of the default batching shader.
     material.vertexColors = true;
@@ -57,7 +121,27 @@ export class SceneToonBatcher {
       );
     };
     material.customProgramCacheKey = () => "cabane-static-toon-batch-v1";
-    const geometries = families.flatMap((family) => [...family]);
+    const identityRoot = root.matrixWorld.equals(this.identity);
+    const packedSources = sources.map((source): PackedSource => {
+      const family = geometryLodFamily(source.geometry);
+      const matrix = this.localMatrix(source, root, scene, new Matrix4(), identityRoot);
+      return {
+        source,
+        family,
+        revisions: family.map(geometryRevision),
+        input: {
+          matrix,
+          color: (source.material as MeshToonMaterial).color.clone(),
+          vertexColors: sourceMaterial.vertexColors,
+          transformEligible: hasBatchableTransform(matrix),
+          ordinaryDepth,
+        },
+        geometryIds: new Map(),
+        selectedId: -1,
+        worldTransformEligible: hasBatchableTransform(source),
+      };
+    });
+    const geometries = packedSources.flatMap(({ family }) => [...family]);
     const vertices = geometries.reduce(
       (sum, geometry) => sum + geometry.attributes.position.count,
       0,
@@ -74,54 +158,110 @@ export class SceneToonBatcher {
     mesh.receiveShadow = sources[0].receiveShadow;
     mesh.layers.mask = sources[0].layers.mask;
     mesh.renderOrder = sources[0].renderOrder;
-    mesh.frustumCulled = false; // Individual bounds are culled by BatchedMesh.
+    mesh.frustumCulled = false;
     mesh.perObjectFrustumCulled = sources[0].frustumCulled;
     mesh.raycast = () => {};
-    const geometryIds: Batch["geometryIds"] = [];
-    const matrices = sources.map((source) =>
-      new Matrix4().multiplyMatrices(this.inverse, source.matrixWorld),
-    );
-    sources.forEach((source, instance) => {
-      const ids = new Map<BufferGeometry, number>();
-      const tint = source.material as MeshToonMaterial;
-      for (const geometry of families[instance]) {
-        const packed = new BufferGeometry();
-        packed.setAttribute("position", geometry.attributes.position.clone());
-        packed.setAttribute("normal", geometry.attributes.normal.clone());
-        packed.setIndex(
-          geometry.index ??
-            Array.from({ length: geometry.attributes.position.count }, (_, index) => index),
-        );
-        packed.applyMatrix4(matrices[instance]);
-        const colors = new Float32Array(geometry.attributes.position.count * 3);
-        for (let vertex = 0; vertex < geometry.attributes.position.count; vertex++) {
-          const color = geometry.attributes.color;
-          colors[vertex * 3] = tint.color.r * (tint.vertexColors ? color.getX(vertex) : 1);
-          colors[vertex * 3 + 1] = tint.color.g * (tint.vertexColors ? color.getY(vertex) : 1);
-          colors[vertex * 3 + 2] = tint.color.b * (tint.vertexColors ? color.getZ(vertex) : 1);
-        }
-        packed.setAttribute("color", new Float32BufferAttribute(colors, 3));
-        ids.set(geometry, mesh.addGeometry(packed));
-        packed.dispose();
+    mesh.matrixAutoUpdate = false;
+    try {
+      for (const entry of packedSources) {
+        for (const [level, geometry] of entry.family.entries())
+          entry.geometryIds.set(
+            geometry,
+            this.packer.add(mesh, geometry, entry.revisions[level], entry.input),
+          );
+        entry.selectedId = entry.geometryIds.get(entry.source.geometry)!;
+        mesh.addInstance(entry.selectedId);
       }
-      geometryIds.push(ids);
-      mesh.addInstance(ids.get(source.geometry)!); // Identity: vertices are baked.
-    });
-    return {
-      mesh,
-      sources,
-      families,
-      revisions,
-      matrices,
-      geometryIds,
-      colors: sources.map((source) => (source.material as MeshToonMaterial).color.clone()),
-      selectedIds: sources.map((source, index) => geometryIds[index].get(source.geometry)!),
-    };
+      return {
+        mesh,
+        sources: packedSources,
+        rootMatrix: root.matrixWorld.clone(),
+        vertices,
+        indices,
+      };
+    } catch (error) {
+      mesh.dispose();
+      material.dispose();
+      throw error;
+    }
+  }
+
+  /** Preserve baked originals when deferred LOD preparation only adds levels. */
+  private extendFamilies(key: string, batch: Batch, sources: Mesh[]): boolean {
+    if (batch.sources.length !== sources.length) return false;
+    const extensions: Array<{
+      entry: PackedSource;
+      family: readonly BufferGeometry[];
+      additions: Array<{ geometry: BufferGeometry; revision: string }>;
+    }> = [];
+    for (let index = 0; index < sources.length; index++) {
+      const entry = batch.sources[index];
+      const family = geometryLodFamily(sources[index].geometry);
+      if (entry.source !== sources[index] || family.length < entry.family.length) return false;
+      for (let level = 0; level < entry.family.length; level++)
+        if (
+          family[level] !== entry.family[level] ||
+          geometryRevision(family[level]) !== entry.revisions[level]
+        )
+          return false;
+      if (family.length > entry.family.length)
+        extensions.push({
+          entry,
+          family,
+          additions: family
+            .slice(entry.family.length)
+            .map((geometry) => ({ geometry, revision: geometryRevision(geometry) })),
+        });
+    }
+    if (!extensions.length) return true;
+    for (const { entry, family, additions } of extensions) {
+      for (const { geometry, revision } of additions) {
+        batch.vertices += geometry.attributes.position.count;
+        batch.indices += geometry.index?.count ?? geometry.attributes.position.count;
+        this.uploads.push({ key, batch, entry, geometry, revision });
+      }
+      entry.family = family;
+      entry.revisions.push(...additions.map(({ revision }) => revision));
+    }
+    return true;
   }
 
   private disposeBatch(batch: Batch) {
+    this.uploads = this.uploads.filter((upload) => upload.batch !== batch);
+    this.settleReady();
     batch.mesh.dispose();
     (batch.mesh.material as MeshToonMaterial).dispose();
+  }
+
+  private settleReady() {
+    if (!this.uploads.length) this.suspend();
+  }
+
+  private uploadPending() {
+    if (!this.uploads.length) return;
+    if (!this.resolveReady)
+      this.ready = new Promise<void>((resolve) => (this.resolveReady = resolve));
+    const deadline = performance.now() + 6;
+    // Stop between jobs: one large geometry (including its first exact resize)
+    // remains atomic and can exceed the budget. All batches share this deadline.
+    while (this.uploads.length) {
+      const { key, batch, entry, geometry, revision } = this.uploads.shift()!;
+      try {
+        const { mesh, vertices, indices } = batch;
+        if (
+          mesh.geometry.attributes.position.count < vertices ||
+          (mesh.geometry.index?.count ?? 0) < indices
+        )
+          mesh.setGeometrySize(vertices, indices);
+        entry.geometryIds.set(geometry, this.packer.add(mesh, geometry, revision, entry.input));
+      } catch (error) {
+        this.disposeBatch(batch);
+        this.batches.delete(key);
+        throw error;
+      }
+      if (performance.now() >= deadline) break;
+    }
+    this.settleReady();
   }
 
   render(
@@ -138,68 +278,111 @@ export class SceneToonBatcher {
       renderer.localClippingEnabled ||
       renderer.clippingPlanes.length
     ) {
+      this.suspend();
+      registerSceneToonBatches(scene, this.ready);
       render();
-      return;
+      return false;
     }
     if (scene.matrixWorldAutoUpdate) scene.updateMatrixWorld();
-    const groups = new Map<string, Mesh[]>();
-    scene.traverse((object) => {
+    const materialGroups = new Map<string, SourceGroup>();
+    const collect = (object: Object3D, inheritedRoot: Object3D) => {
+      const root = object.userData.toonBatchRoot === true ? object : inheritedRoot;
       const source = object as Mesh;
-      if (!source.isMesh) return;
-      const key = toonBatchKey(source, false, true);
-      if (key === null) return;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push(source);
-    });
+      if (source.isMesh) {
+        const materialKey = toonBatchKey(source, false, true);
+        if (materialKey !== null) {
+          const key = `${root.id}|${materialKey}`;
+          if (!materialGroups.has(key)) materialGroups.set(key, { root, sources: [] });
+          materialGroups.get(key)!.sources.push(source);
+        }
+      }
+      for (const child of object.children) collect(child, root);
+    };
+    collect(scene, scene);
+    const groups = new Map<string, SourceGroup>();
+    for (const [key, group] of materialGroups) {
+      const { root, sources } = group;
+      if (!this.partitionLargeScenes || sources.length <= 256) {
+        groups.set(key, group);
+        continue;
+      }
+      // Keep a local editor change from repacking thousands of unrelated meshes.
+      // Stable parent buckets retain model parts together without shifting other
+      // sources when an item or an architectural surface is added or removed.
+      for (const source of sources) {
+        const owner = source.parent === root ? source : (source.parent ?? source);
+        const partition = `${key}|partition:${owner.id % 16}`;
+        if (!groups.has(partition)) groups.set(partition, { root, sources: [] });
+        groups.get(partition)!.sources.push(source);
+      }
+    }
     for (const [key, batch] of this.batches) {
-      if ((groups.get(key)?.length ?? 0) < 2) {
+      if ((groups.get(key)?.sources.length ?? 0) < 2) {
         this.disposeBatch(batch);
         this.batches.delete(key);
       }
     }
     const originals: Array<[Mesh, Mesh["material"], number]> = [];
     const attached: BatchedMesh[] = [];
-    this.inverse.copy(scene.matrixWorld).invert();
+    const current: Array<{ root: Object3D; batch: Batch }> = [];
+    this.sceneInverse.copy(scene.matrixWorld).invert();
     try {
-      for (const [key, sources] of groups) {
+      for (const [key, { root, sources }] of groups) {
         if (sources.length < 2) continue;
+        this.inverse.copy(root.matrixWorld).invert();
         let batch = this.batches.get(key);
-        if (
-          !batch ||
-          batch.sources.length !== sources.length ||
-          sources.some((source, index) => {
-            const family = geometryLodFamily(source.geometry);
-            return (
-              source !== batch!.sources[index] ||
-              family !== batch!.families[index] ||
-              family.some(
-                (geometry, level) => geometryRevision(geometry) !== batch!.revisions[index][level],
-              )
-            );
-          })
-        ) {
-          if (batch) this.disposeBatch(batch);
-          batch = this.build(sources);
+        if (batch) {
+          let reusable: boolean;
+          try {
+            reusable = this.extendFamilies(key, batch, sources);
+          } catch (error) {
+            this.disposeBatch(batch);
+            this.batches.delete(key);
+            throw error;
+          }
+          if (!reusable) {
+            this.disposeBatch(batch);
+            this.batches.delete(key);
+            batch = undefined;
+          }
+        }
+        if (!batch) {
+          batch = this.build(sources, root, scene);
           this.batches.set(key, batch);
         }
-        for (let index = 0; index < sources.length; index++) {
-          const source = sources[index];
-          this.matrix.multiplyMatrices(this.inverse, source.matrixWorld);
+        current.push({ root, batch });
+      }
+      // Every family/revision is checked before any queued job can commit.
+      this.uploadPending();
+      for (const { root, batch } of current) {
+        this.inverse.copy(root.matrixWorld).invert();
+        const identityRoot = root.matrixWorld.equals(this.identity);
+        const sameRootLinearTransform = sameLinearTransform(batch.rootMatrix, root.matrixWorld);
+        for (let index = 0; index < batch.sources.length; index++) {
+          const entry = batch.sources[index];
+          const { source, input } = entry;
+          const matrix = this.localMatrix(source, root, scene, this.matrix, identityRoot);
           const material = source.material as MeshToonMaterial;
           // Animation/tint changes draw the original mesh, never rewrite static
           // vertex buffers during a frame. Children remain independently eligible.
           let visible =
-            canRenderToonBatch(source) &&
-            batch.matrices[index].equals(this.matrix) &&
-            batch.colors[index].equals(material.color);
+            input.matrix.equals(matrix) &&
+            input.transformEligible &&
+            input.color.equals(material.color) &&
+            // Equal baked matrices retain the same reflection/shear result.
+            // Root translations retain that linear result; reflection/shear
+            // changes still need world-space validation.
+            (sameRootLinearTransform ? entry.worldTransformEligible : true) &&
+            canRenderToonBatch(source, !sameRootLinearTransform);
           for (let parent: Mesh["parent"] = source; visible && parent; parent = parent.parent)
             visible = parent.visible;
           batch.mesh.setVisibleAt(index, visible);
           if (!visible) continue; // Fading/custom objects keep their ordinary draw.
-          const geometryId = batch.geometryIds[index].get(source.geometry)!;
-          if (batch.selectedIds[index] !== geometryId) {
+          const geometryId =
+            entry.geometryIds.get(source.geometry) ?? entry.geometryIds.get(entry.family[0])!;
+          if (entry.selectedId !== geometryId) {
             batch.mesh.setGeometryIdAt(index, geometryId);
-            batch.selectedIds[index] = geometryId;
+            entry.selectedId = geometryId;
           }
           // Layer rejection precedes frustum tests, geometry uploads and depth
           // sorting in Three. Unlike visible=false, it keeps children drawable.
@@ -210,7 +393,9 @@ export class SceneToonBatcher {
           source.layers.mask = 0;
         }
         scene.add(batch.mesh);
-        batch.mesh.matrixWorld.copy(scene.matrixWorld);
+        if (root === scene) batch.mesh.matrix.identity();
+        else batch.mesh.matrix.multiplyMatrices(this.sceneInverse, root.matrixWorld);
+        batch.mesh.matrixWorld.copy(root.matrixWorld);
         attached.push(batch.mesh);
       }
       render();
@@ -220,12 +405,22 @@ export class SceneToonBatcher {
         source.layers.mask = layers;
       }
       for (const mesh of attached) scene.remove(mesh);
+      registerSceneToonBatches(scene, this.ready);
     }
+    return this.uploads.length > 0;
+  }
+
+  /** Stop waiting for uploads while no batch frames run, retaining work for resumption. */
+  suspend() {
+    this.resolveReady?.();
+    this.resolveReady = undefined;
   }
 
   dispose() {
     for (const batch of this.batches.values()) this.disposeBatch(batch);
     this.batches.clear();
+    this.ancestors.length = 0;
+    this.packer.clear();
     this.hidden.dispose();
   }
 }

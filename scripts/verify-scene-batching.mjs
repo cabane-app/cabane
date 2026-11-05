@@ -113,9 +113,10 @@ try {
       const target = new T.WebGLRenderTarget(128, 128);
       renderer.setRenderTarget(target);
       const batcher = new SceneToonBatcher();
+      let pendingUploads = false;
       const render = (batched) => {
         renderer.shadowMap.needsUpdate = true;
-        if (batched) batcher.render(renderer, scene, camera);
+        if (batched) pendingUploads = batcher.render(renderer, scene, camera);
         else renderer.render(scene, camera);
         const pixels = new Uint8Array(128 * 128 * 4);
         renderer.readRenderTargetPixels(target, 0, 0, 128, 128, pixels);
@@ -141,6 +142,12 @@ try {
       lod.render(scene, camera, 128, () => {
         reduced = render(true);
       });
+      while (pendingUploads) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        lod.render(scene, camera, 128, () => {
+          reduced = render(true);
+        });
+      }
       let lodChanged = 0;
       for (let i = 0; i < before.pixels.length; i += 4) {
         if (

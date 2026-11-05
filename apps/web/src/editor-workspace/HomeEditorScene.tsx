@@ -244,7 +244,7 @@ export function HomeEditorScene({
         >
           <Suspense fallback={null}>
             {referenceCanvas.bridge}
-            <StylizedScene active={mode === "furnish"}>
+            <StylizedScene active={mode === "furnish"} editing>
               {mode !== "construct" && (
                 <>
                   <hemisphereLight args={["#ecf4ff", "#768b93", 0.95]} />
