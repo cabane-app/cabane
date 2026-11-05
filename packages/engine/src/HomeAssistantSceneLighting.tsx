@@ -12,6 +12,7 @@ import {
 import { planPointToWorld, polygonCentroid } from "./geometry";
 import { resolveItemTransform, type SceneItemSpec } from "./home-project";
 import { lightBrightnessRatio, lightColorForSnapshot } from "./home-assistant-controls";
+import { outsideRoomGroupId } from "./outside-room-devices";
 import type { DeviceModelRegistry, FloorSpec, ResolvedHomeBindings, RoomSpec } from "./types";
 
 const defaultRoomLight = (room: RoomSpec, floor: FloorSpec) => {
@@ -48,6 +49,7 @@ const deviceLightPosition = (
 
 export function HomeAssistantSceneLighting({
   floor,
+  outsideRoomId = outsideRoomGroupId(floor.id, [floor]),
   resolvedBindings,
   deviceModels,
   extensionDeviceModels,
@@ -55,6 +57,7 @@ export function HomeAssistantSceneLighting({
   enabled = true,
 }: {
   floor: FloorSpec;
+  outsideRoomId?: string;
   resolvedBindings: ResolvedHomeBindings;
   deviceModels: DeviceModelRegistry;
   extensionDeviceModels: DeviceModelRegistry;
@@ -67,7 +70,7 @@ export function HomeAssistantSceneLighting({
   const resolvedDevices = floor.rooms.flatMap(
     (room) => resolvedBindings.rooms[room.id]?.devices ?? [],
   );
-  resolvedDevices.push(...(resolvedBindings.rooms[`outside-rooms:${floor.id}`]?.devices ?? []));
+  resolvedDevices.push(...(resolvedBindings.rooms[outsideRoomId]?.devices ?? []));
   const resolvedById = new Map(resolvedDevices.map((device) => [device.slot.id, device]));
   // Scene items exist independently of room assignment and HA connectivity.
   const deviceItems = sceneItems.filter(

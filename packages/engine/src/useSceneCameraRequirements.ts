@@ -13,36 +13,8 @@ export function useSceneCameraRequirements(
   resolvedBindings: ResolvedHomeBindings,
   origin: string | null,
 ) {
-  const floor = manifest.floors[0];
-  const liveCameraDeviceIds = useMemo(
-    () =>
-      new Set(
-        floor.rooms.flatMap((room) =>
-          room.devices
-            .filter((device) => {
-              const definition = resolveDeviceModelDefinition(
-                device.model,
-                deviceModels,
-                manifest.extensions.deviceModels,
-              );
-              const resolved = resolvedBindings.rooms[room.id]?.devices.find(
-                (candidate) => candidate.slot.id === device.id,
-              );
-              const primarySlot = device.entitySlots.find((slot) => slot.deviceRole === "primary");
-              const primary = resolved?.entities.find(
-                (entity) => entity.slotId === primarySlot?.id,
-              );
-              return (
-                definition?.liveMedia?.kind === "camera-stream" &&
-                (!primary || primary.entityId.startsWith("camera."))
-              );
-            })
-            .map((device) => device.id),
-        ),
-      ),
-    [deviceModels, floor.rooms, manifest.extensions.deviceModels, resolvedBindings.rooms],
-  );
-  const cameraStreamRequirements = useMemo(() => {
+  return useMemo(() => {
+    const liveCameraDeviceIds = new Set<string>();
     const requirements: CameraStreamRequirement[] = [];
     Object.values(resolvedBindings.rooms).forEach((resolvedRoom) => {
       resolvedRoom.devices.forEach((device) => {
@@ -56,7 +28,9 @@ export function useSceneCameraRequirements(
           (slot) => slot.deviceRole === definition.liveMedia?.slotRole,
         );
         const primary = device.entities.find((entity) => entity.slotId === primarySlot?.id);
-        if (!primary || !primary.entityId.startsWith("camera.")) return;
+        if (primary && !primary.entityId.startsWith("camera.")) return;
+        liveCameraDeviceIds.add(device.slot.id);
+        if (!primary) return;
         requirements.push({
           entityId: primary.entityId,
           available: cameraEntityAvailable(primary.state),
@@ -64,7 +38,9 @@ export function useSceneCameraRequirements(
         });
       });
     });
-    return deduplicateCameraStreamRequirements(requirements);
+    return {
+      liveCameraDeviceIds,
+      cameraStreamRequirements: deduplicateCameraStreamRequirements(requirements),
+    };
   }, [deviceModels, manifest.extensions.deviceModels, resolvedBindings.rooms, origin]);
-  return { liveCameraDeviceIds, cameraStreamRequirements };
 }

@@ -33,6 +33,10 @@ remain navigable. Scroll gutters leave room for pill shadows and focus outlines.
 
 Room pills list only the active floor's rooms with their resolved HA names.
 Pills, room surfaces, status labels and room shortcuts share selection behavior.
+When the active floor has devices outside its rooms, **Outside rooms** opens
+their controls from the same strip on desktop and mobile. The panel uses the
+devices' existing bindings and leaves the camera and room selection in place.
+It shows device controls without a room photo, area status, or Walk inside action.
 The selected pill is exposed to assistive technology and stays visible after
 selection or resize. The strip is absent in Walk, roof view and device overlays,
 which retain their contextual heading. Room details stay on the right on desktop;
@@ -52,7 +56,9 @@ multi-touch camera gestures, cancellation, loss of focus, and leaving Orbit
 cancel the press. Non-dimmable lights retain a simple power toggle. Unmapped or
 unavailable lights and other devices keep their existing control-sheet behavior.
 The same gestures control indoor and outdoor demo lights through the normal
-in-memory runtime. Walk and draft Explore retain their existing interactions.
+in-memory runtime. Device interactions in Orbit and Walk can open controls for
+devices on the active floor, including those outside rooms. Draft Explore keeps
+its existing interaction guards.
 
 Interactive Orbit floors and wall faces use gently subdued base colors. Selecting
 a room lifts its finishes and softens the others, without altering device lighting,
@@ -131,8 +137,9 @@ Room names use the mapped HA area name, falling back to the local modeled name w
 the area is unmapped or unavailable. Those rooms show a broken-chain Connect icon
 in overview labels and the room/walk heading, and a “Not connected” status pill
 alongside temperature and humidity in room heroes.
-On mobile, hide the room selection pills and keep the current floor pill and its
-expandable floor choices. Rooms remain selectable in the scene.
+On mobile, hide the room selection pills and keep the current floor pill, its
+expandable floor choices, and **Outside rooms** when present. Rooms remain
+selectable in the scene.
 
 Room and device controls use content-sized cards with wrapping titles and compact
 sliders, toggles, and thermostat dials. Shared spacing stays compact across all

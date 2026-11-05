@@ -50,10 +50,28 @@ await withModules(async (load) => {
     );
     assert.deepEqual(events, ["leave Walk", "floor upper", "room study", "device study/desk-lamp"]);
   });
-  test("outside-room shortcuts open their device controls and close back to overview", () =>
+  test("outside-room controls open without selecting an architectural room", () =>
     withStorageDom(async (dom) => {
       const project = engine.createEmptyHomeProject("outside-shortcut", "Outdoor shortcut");
-      project.floors = [interactionFloor];
+      const upperFloor = engine.neutralDemoManifest.floors[0];
+      const groundRoomId = `outside-rooms:${interactionFloor.id}`;
+      const upperRoomId = "outside-rooms:upper";
+      project.floors = [
+        {
+          ...interactionFloor,
+          rooms: [{ ...interactionFloor.rooms[0], id: groundRoomId }],
+          ceilings: interactionFloor.ceilings.map((ceiling) => ({
+            ...ceiling,
+            roomIds: [groundRoomId],
+          })),
+        },
+        {
+          ...upperFloor,
+          id: "upper",
+          rooms: [{ ...upperFloor.rooms[0], id: upperRoomId }],
+          ceilings: upperFloor.ceilings.map((ceiling) => ({ ...ceiling, roomIds: [upperRoomId] })),
+        },
+      ];
       project.sceneItems = [
         {
           id: "garden-lamp",
@@ -80,12 +98,11 @@ await withModules(async (load) => {
         openingModels: {},
       });
       const target = { kind: "device", deviceId: "garden-lamp" };
-      const outsideId = `outside-rooms:${interactionFloor.id}`;
-      assert.deepEqual(resolveActionBarDestination(manifest, target), {
-        floorId: interactionFloor.id,
-        roomId: outsideId,
-        deviceId: "garden-lamp",
-      });
+      const destination = resolveActionBarDestination(manifest, target);
+      assert.equal(destination.floorId, interactionFloor.id);
+      assert.equal(destination.deviceId, "garden-lamp");
+      const outsideId = destination.roomId;
+      assert.notEqual(outsideId, groundRoomId);
       const profile = {
         ...engine.createEmptyRuntimeBindingProfile(project.home.id),
         entityIdsBySlotId: { "garden-light": "light.demo_ceiling" },
@@ -123,14 +140,44 @@ await withModules(async (load) => {
         );
         return { unmount: () => root.unmount() };
       });
-      await act(async () => controller.runConfiguredAction({ id: "garden", target }));
-      assert.equal(controller.deviceOverlay, true);
-      assert.equal(controller.controlRoom.id, outsideId);
-      assert.equal(controller.selectedDeviceId, "garden-lamp");
-      assert.equal(controller.mode, "overview");
-      await act(async () => controller.closeDevicePanel());
+      assert.equal(controller.resolvedBindings.rooms[outsideId].devices[0].slot.id, "garden-lamp");
+      assert.deepEqual(controller.resolvedBindings.rooms[groundRoomId].devices, []);
+      for (const [open, deviceId] of [
+        [() => controller.openDevicePanel(outsideId, null), null],
+        [
+          () => controller.handleExtensionInteraction({ id: "garden-lamp", label: "Garden lamp" }),
+          "garden-lamp",
+        ],
+        [() => controller.runConfiguredAction({ id: "garden", target }), "garden-lamp"],
+      ]) {
+        await act(async () => open());
+        assert.equal(controller.deviceOverlay, true);
+        assert.equal(controller.controlRoom.id, outsideId);
+        assert.equal(controller.selectedDeviceId, deviceId);
+        assert.equal(controller.selectedRoomId, null);
+        assert.equal(controller.mode, "overview");
+        await act(async () => controller.closeDevicePanel());
+        assert.equal(controller.deviceOverlay, false);
+      }
+
+      let rejectCall;
+      runtime.callService = () =>
+        new Promise((_resolve, reject) => {
+          rejectCall = reject;
+        });
+      await act(async () =>
+        controller.handleExtensionInteraction({
+          id: "garden-lamp",
+          label: "Garden lamp",
+          intent: "light-toggle",
+        }),
+      );
+      assert.equal(typeof rejectCall, "function");
+      await act(async () => controller.floorNavigation.selectFloor("upper", "picker"));
+      await act(async () => rejectCall(new Error("Service rejected after changing floors")));
+      assert.equal(controller.selectedDeviceId, null);
       assert.equal(controller.deviceOverlay, false);
-      assert.equal(controller.selectedRoomId, null);
-      assert.equal(controller.mode, "overview");
+      assert.equal(controller.resolvedBindings.rooms[upperRoomId].room.id, upperRoomId);
+      assert.equal(controller.outsideRoom, undefined);
     }));
 });

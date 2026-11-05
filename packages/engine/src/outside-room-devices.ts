@@ -1,6 +1,21 @@
 import { bindingDevicesForItem, roomIdForItem } from "./home-project/runtime";
 import type { HomeBindingManifest, RoomSpec } from "./types";
 
+export function outsideRoomGroupId(
+  floorId: string,
+  floors: readonly { rooms: readonly { id: string }[] }[],
+): string {
+  const takenByRoom = (id: string) =>
+    floors.some(({ rooms }) => rooms.some((room) => room.id === id));
+  const regular = `outside-rooms:${floorId}`;
+  if (!takenByRoom(regular)) return regular;
+
+  // A separate namespace and length prefix keep each floor's fallback sequence distinct.
+  let fallback = `outside-rooms-fallback:${floorId.length}:${floorId}`;
+  while (takenByRoom(fallback)) fallback += ":";
+  return fallback;
+}
+
 /** A device-list group only; never added to architectural floor rooms. */
 export function outsideRoomDevices(
   manifest: Pick<HomeBindingManifest, "floors" | "sceneItems" | "extensions">,
@@ -41,7 +56,7 @@ export function outsideRoomDevices(
   });
   return devices.length || dashboardSlots.length
     ? {
-        id: `outside-rooms:${floorId}`,
+        id: outsideRoomGroupId(floorId, manifest.floors),
         name: "Outside rooms",
         // Non-spatial adapter for the existing room-based mapping components.
         polygon: [

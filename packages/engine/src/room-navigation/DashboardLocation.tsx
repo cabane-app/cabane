@@ -1,3 +1,4 @@
+import { useCallback, useRef } from "react";
 import { homePresenceLabel } from "../home-presence/HomePresenceStatus";
 import { SceneRoomContext } from "../SceneRoomContext";
 import { connectionLabel } from "../dashboard-contract";
@@ -16,6 +17,8 @@ export function DashboardLocation({
     setupOpen,
     mappingOpen,
     deviceOverlay,
+    outsideRoom,
+    openDevicePanel,
     floorNavigation,
     floor,
     manifest,
@@ -35,6 +38,12 @@ export function DashboardLocation({
     sessionPresentation,
     demoSession,
   } = dashboard;
+  const restoreOutsideFocus = useRef(false);
+  const outsideButtonRef = useCallback((button: HTMLButtonElement | null) => {
+    if (!button || !restoreOutsideFocus.current) return;
+    restoreOutsideFocus.current = false;
+    button.focus();
+  }, []);
   if (walkthrough) return null;
   const navigation =
     !walkMode && !setupOpen && !mappingOpen && !deviceOverlay && !floorNavigation.wholeBuilding;
@@ -84,6 +93,18 @@ export function DashboardLocation({
       floors={manifest.floors}
       summary={summary}
       rooms={rooms}
+      outsideControls={
+        outsideRoom
+          ? {
+              label: outsideRoom.name,
+              buttonRef: outsideButtonRef,
+              onOpen: () => {
+                restoreOutsideFocus.current = true;
+                openDevicePanel(outsideRoom.id, null);
+              },
+            }
+          : undefined
+      }
       names={roomDisplayNames}
       selectedId={mode === "room" ? selectedRoomId : null}
       onSelect={selectRoom}

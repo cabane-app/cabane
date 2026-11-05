@@ -85,6 +85,7 @@ await withModules(async (load) => {
       const interaction = useDashboardDeviceInteraction({
         manifest,
         floor,
+        outsideRoom: bindings.rooms[engine.outsideRoomGroupId(floor.id, manifest.floors)]?.room,
         runtime: activeRuntime,
         resolvedBindings: bindings,
         deviceModels: stableDeviceRegistry,

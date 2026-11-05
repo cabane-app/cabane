@@ -14,6 +14,7 @@ import { useHomeAssistantRuntime } from "./HomeAssistantRuntime";
 import { allLightsOffCall } from "./home-assistant-controls";
 
 import { resolveHomeAssistantBindings } from "./home-assistant-resolver";
+import { outsideRoomGroupId } from "./outside-room-devices";
 
 import { deriveHomePresence } from "./home-presence/model";
 
@@ -92,11 +93,8 @@ export function useDashboardController({
   const initialSession = useRef(
     readSceneSession(typeof window === "undefined" ? null : window.sessionStorage),
   );
-  const validInitialRoom = floor.rooms.some(
-    (room) => room.id === initialSession.current.selectedRoomId,
-  )
-    ? initialSession.current.selectedRoomId
-    : null;
+  const validInitialRoom =
+    floor.rooms.find((room) => room.id === initialSession.current.selectedRoomId)?.id ?? null;
   const [mode, setMode] = useState<SceneMode>(
     walkthrough || (initialSession.current.mode === "room" && !validInitialRoom)
       ? "overview"
@@ -138,10 +136,13 @@ export function useDashboardController({
     runtime.origin,
   );
   const selectedRoom = floor.rooms.find((room) => room.id === selectedRoomId);
-  const devicePanelRoom = devicePanelRoomId
-    ? resolvedBindings.rooms[devicePanelRoomId]?.room
-    : undefined;
-  const deviceOverlay = selectedDeviceId !== null && devicePanelRoom !== undefined;
+  const outsideGroup = resolvedBindings.rooms[outsideRoomGroupId(floor.id, manifest.floors)];
+  const outsideRoom = outsideGroup?.outsideFloorId === floor.id ? outsideGroup.room : undefined;
+  const devicePanelRoom =
+    floor.rooms.find((room) => room.id === devicePanelRoomId) ??
+    (devicePanelRoomId === outsideRoom?.id ? outsideRoom : undefined);
+  const deviceOverlay =
+    devicePanelRoom !== undefined && (selectedDeviceId !== null || devicePanelRoom === outsideRoom);
   const controlRoom = deviceOverlay ? devicePanelRoom : mode === "room" ? selectedRoom : undefined;
   const walkRoom = floor.rooms.find((room) => room.id === walkRoomId);
   const selectedRoomDisplayName = selectedRoom
@@ -234,17 +235,20 @@ export function useDashboardController({
     closeCameraViewer,
     openCameraViewer,
     closeDevicePanel,
+    openDevicePanel,
     handleExtensionInteraction,
     openWalkDevice,
   } = useDashboardDeviceInteraction({
     manifest,
     floor,
+    outsideRoom,
     runtime,
     resolvedBindings,
     deviceModels,
     onOpenConnect,
     walkthrough,
     walkMode,
+    orbitBlocked: deviceOverlay || mappingOpen || setupOpen,
     coarsePointer,
     equippedToolId,
     walk,
@@ -480,9 +484,12 @@ export function useDashboardController({
     goHome,
     onExportBrowserData,
     controlRoom,
+    outsideRoom,
     selectedDeviceId,
     deviceOverlay,
     closeDevicePanel,
+    openDevicePanel,
+    setDevicePanelRoomId,
     setSelectedDeviceId,
     enterWalkMode,
     onOpenConnect,

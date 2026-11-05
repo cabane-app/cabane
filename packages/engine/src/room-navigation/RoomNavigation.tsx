@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode, type RefCallback } from "react";
 import { useCabaneDom } from "../CabaneDom";
 import type { RoomSpec } from "../types";
 
@@ -8,6 +8,7 @@ export function RoomNavigation({
   summary,
   onSelectFloor,
   rooms,
+  outsideControls,
   names,
   selectedId,
   onSelect,
@@ -19,6 +20,8 @@ export function RoomNavigation({
   summary: ReactNode;
   onSelectFloor: (id: string) => void;
   rooms: readonly RoomSpec[];
+  outsideControls?:
+    { label: string; onOpen: () => void; buttonRef: RefCallback<HTMLButtonElement> } | undefined;
   names: Readonly<Record<string, string>>;
   selectedId: string | null;
   onSelect: (id: string) => void;
@@ -41,9 +44,12 @@ export function RoomNavigation({
   }, [dom, expanded]);
   useEffect(() => {
     const element = strip.current;
-    const selected = element?.querySelector<HTMLElement>("[aria-pressed='true']");
-    if (!element || !selected) return;
+    if (!element) return;
     const reveal = () => {
+      const selected =
+        element.querySelector<HTMLElement>(".room-navigation__outside:focus") ??
+        element.querySelector<HTMLElement>("[aria-pressed='true']");
+      if (!selected) return;
       const left = selected.offsetLeft - (element.clientWidth - selected.offsetWidth) / 2;
       element.scrollTo?.({ left, behavior: reducedMotion ? "instant" : "smooth" });
     };
@@ -55,7 +61,7 @@ export function RoomNavigation({
   return (
     <nav
       className="room-navigation"
-      aria-label="Rooms on this floor"
+      aria-label={outsideControls ? "Rooms and devices on this floor" : "Rooms on this floor"}
       ref={root}
       onKeyDown={(event) => {
         if (event.key === "Escape" && expanded) {
@@ -84,6 +90,20 @@ export function RoomNavigation({
             <path d={expanded ? "m7 14 5-5 5 5" : "m7 10 5 5 5-5"} />
           </svg>
         </button>
+        {outsideControls && (
+          <button
+            ref={outsideControls.buttonRef}
+            type="button"
+            className="room-navigation__outside"
+            aria-haspopup="dialog"
+            onClick={() => {
+              setExpanded(false);
+              outsideControls.onOpen();
+            }}
+          >
+            <span>{outsideControls.label}</span>
+          </button>
+        )}
         {rooms.map((room) => (
           <button
             type="button"

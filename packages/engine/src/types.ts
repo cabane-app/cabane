@@ -514,6 +514,8 @@ export interface ResolvedDeviceBinding {
 export interface ResolvedRoomBindings {
   /** Resolved opted-in map readings, including slots hidden from the dashboard. */
   sceneEntities?: readonly ResolvedEntityBinding[];
+  /** The owning floor when these bindings belong to the nonspatial device group. */
+  outsideFloorId?: string;
   room: RoomSpec;
   displayName: string;
   pictureUrl: string | null;

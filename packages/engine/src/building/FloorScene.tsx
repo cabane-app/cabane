@@ -40,6 +40,7 @@ import { SceneOpeningRenderer } from "../SceneOpeningRenderer";
 import { mergeDeviceModelRegistriesStableFirst, resolveDeviceModelDefinition } from "../devices";
 
 import { roomIdForItem } from "../home-project";
+import { outsideRoomGroupId } from "../outside-room-devices";
 
 import { LegacyDeviceItemRenderer, SceneItemRenderer } from "../SceneItemRenderer";
 
@@ -88,6 +89,10 @@ export const FloorScene = memo(function FloorScene({
   sceneLightingEnabled = true,
 }: FloorSceneProps) {
   const floor = useSceneArchitectureFloor(sourceFloor);
+  const outsideRoomId = useMemo(
+    () => outsideRoomGroupId(floor.id, manifest.floors),
+    [floor.id, manifest.floors],
+  );
   const visualRoot = useRef<Object3D>(null);
   useLayoutEffect(() => {
     if (interactionMode !== "editor" || !visualRoot.current) return;
@@ -168,6 +173,7 @@ export const FloorScene = memo(function FloorScene({
       <RoomSelectionSurfaces
         sourceFloor={sourceFloor}
         floor={floor}
+        outsideRoomId={outsideRoomId}
         manifest={manifest}
         resolvedBindings={resolvedBindings}
         deviceModels={deviceModels}
@@ -253,8 +259,7 @@ export const FloorScene = memo(function FloorScene({
                 : manifest.extensions.furnishingModels
             )[item.modelId];
             const states =
-              roomStates[roomIdForItem(item, floor, definition) ?? `outside-rooms:${floor.id}`] ??
-              EMPTY_STATES;
+              roomStates[roomIdForItem(item, floor, definition) ?? outsideRoomId] ?? EMPTY_STATES;
             return (
               <Fragment key={item.id}>
                 <SceneItemRenderer

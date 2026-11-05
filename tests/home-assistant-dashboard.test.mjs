@@ -1701,14 +1701,21 @@ await withModules(async (load) => {
         ),
       );
 
-      const escapeEvent = new dom.window.KeyboardEvent("keydown", {
-        key: "Escape",
-        cancelable: true,
-      });
-      await act(async () => {
-        dom.window.dispatchEvent(escapeEvent);
-      });
+      const pressEscape = async () => {
+        const event = new dom.window.KeyboardEvent("keydown", { key: "Escape", cancelable: true });
+        await act(async () => {
+          dom.window.dispatchEvent(event);
+        });
+        return event;
+      };
+      const sheet = dom.window.document.querySelector(".room-control-sheet");
+      sheet.inert = true;
+      const backgroundEscape = await pressEscape();
+      assert.equal(escapeCalls, 0);
+      assert.equal(backgroundEscape.defaultPrevented, false);
 
+      sheet.inert = false;
+      const escapeEvent = await pressEscape();
       assert.equal(escapeCalls, 1);
       assert.equal(selectCalls, 0);
       assert.equal(escapeEvent.defaultPrevented, true);

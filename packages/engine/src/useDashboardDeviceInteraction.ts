@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useCabaneDom } from "./CabaneDom";
 import { collectBindingSlots } from "./binding-slot-descriptors";
 import { useDashboardWalk } from "./useDashboardWalk";
@@ -10,19 +10,21 @@ import { useHomeAssistantRuntime } from "./HomeAssistantRuntime";
 import { resolveHomeAssistantBindings } from "./home-assistant-resolver";
 import { orbitLightCall } from "./orbit-light-control";
 
-import type { EntityId, ExtensionInteractionTarget, SceneMode } from "./types";
+import type { EntityId, ExtensionInteractionTarget, RoomSpec, SceneMode } from "./types";
 
 import { ValidatedDashboardProps } from "./validated-dashboard-contract";
 
 type Options = {
   manifest: ValidatedDashboardProps["manifest"];
   floor: ValidatedDashboardProps["manifest"]["floors"][number];
+  outsideRoom?: RoomSpec | undefined;
   runtime: ReturnType<typeof useHomeAssistantRuntime>;
   resolvedBindings: ReturnType<typeof resolveHomeAssistantBindings>;
   deviceModels: ValidatedDashboardProps["deviceModels"];
   onOpenConnect: ValidatedDashboardProps["onOpenConnect"];
   walkthrough: ValidatedDashboardProps["walkthrough"];
   walkMode: boolean;
+  orbitBlocked?: boolean;
   coarsePointer: boolean;
   equippedToolId: string | null;
   walk: ReturnType<typeof useDashboardWalk>;
@@ -38,12 +40,14 @@ type Options = {
 export function useDashboardDeviceInteraction({
   manifest,
   floor,
+  outsideRoom,
   runtime,
   resolvedBindings,
   deviceModels,
   onOpenConnect,
   walkthrough,
   walkMode,
+  orbitBlocked,
   coarsePointer,
   equippedToolId,
   walk,
@@ -95,6 +99,11 @@ export function useDashboardDeviceInteraction({
           return;
         }
         setSelectedCamera(null);
+        if (resolvedRoom?.outsideFloorId !== undefined) {
+          setDevicePanelRoomId(roomId);
+          setSelectedDeviceId(deviceId);
+          return;
+        }
         setSelectedRoomId(roomId);
         setSelectedDeviceId(deviceId);
         setMode("room");
@@ -114,6 +123,7 @@ export function useDashboardDeviceInteraction({
       deviceModels,
       manifest.extensions.deviceModels,
       onOpenConnect,
+      setDevicePanelRoomId,
       setSelectedRoomId,
       setSelectedDeviceId,
       setMode,
@@ -146,7 +156,7 @@ export function useDashboardDeviceInteraction({
     ],
   );
   const openDevicePanel = useCallback(
-    (roomId: string, deviceId: string) => {
+    (roomId: string, deviceId: string | null) => {
       setDevicePanelRoomId(roomId);
       setSelectedDeviceId(deviceId);
       if (!walkMode) return;
@@ -170,24 +180,46 @@ export function useDashboardDeviceInteraction({
       shellRef,
     ],
   );
+  const deviceRooms = useMemo(
+    () => (outsideRoom ? [...floor.rooms, outsideRoom] : floor.rooms),
+    [floor.rooms, outsideRoom],
+  );
+  const orbitEnabled =
+    !walkthrough && !walkMode && !orbitBlocked && !selectedCamera && !selectedDeviceId;
+  const orbitScope = useRef<symbol | null>(null);
+  useLayoutEffect(() => {
+    orbitScope.current = orbitEnabled ? Symbol() : null;
+    return () => {
+      orbitScope.current = null;
+    };
+  }, [floor.id, manifest.home.id, orbitEnabled, runtime.origin]);
+
   const handleExtensionInteraction = useCallback(
     (target: ExtensionInteractionTarget) => {
       if (walkthrough || (walkMode && equippedToolId)) return;
       if (!walkMode && (target.intent === "light-toggle" || target.intent === "light-dim")) {
-        if (!runtime.canMutate || selectedDeviceId) return;
-        const room = Object.values(resolvedBindings.rooms).find((candidate) =>
-          candidate.devices.some((device) => device.slot.id === target.id),
+        if (!runtime.canMutate || !orbitEnabled) return;
+        const room = deviceRooms.find((candidate) =>
+          candidate.devices.some((device) => device.id === target.id),
         );
-        const device = room?.devices.find((candidate) => candidate.slot.id === target.id);
+        const device =
+          room &&
+          resolvedBindings.rooms[room.id]?.devices.find(
+            (candidate) => candidate.slot.id === target.id,
+          );
         const call = device && orbitLightCall(device, target);
-        if (call && room)
-          void runtime.callService(call).catch(() => openDevicePanel(room.room.id, target.id));
+        if (call && room) {
+          const scope = orbitScope.current;
+          void runtime.callService(call).catch(() => {
+            if (scope && orbitScope.current === scope) openDevicePanel(room.id, target.id);
+          });
+        }
         return;
       }
       const openingDescriptor = collectBindingSlots(manifest).find(
         (descriptor) => descriptor.kind === "opening-cover" && descriptor.openingId === target.id,
       );
-      const room = floor.rooms.find(
+      const room = deviceRooms.find(
         (candidate) =>
           openingDescriptor?.roomIds.includes(candidate.id) ||
           candidate.devices.some(
@@ -215,6 +247,7 @@ export function useDashboardDeviceInteraction({
         openDevicePanel(room.id, device.id);
         return;
       }
+      if (room === outsideRoom) return;
       setSelectedRoomId(room.id);
       setSelectedDeviceId(null);
       setDevicePanelRoomId(null);
@@ -225,7 +258,9 @@ export function useDashboardDeviceInteraction({
       walkMode,
       equippedToolId,
       manifest,
-      floor.rooms,
+      deviceRooms,
+      outsideRoom,
+      orbitEnabled,
       setSelectedRoomId,
       setSelectedDeviceId,
       setDevicePanelRoomId,
@@ -234,18 +269,17 @@ export function useDashboardDeviceInteraction({
       openDevicePanel,
       runtime,
       resolvedBindings.rooms,
-      selectedDeviceId,
     ],
   );
   const openWalkDevice = useCallback(() => {
-    if (!walkDeviceTarget) return;
+    if (!walkDeviceTarget || walkthrough || equippedToolId) return;
     if (floor.openings.some((opening) => opening.id === walkDeviceTarget.id && opening.coverSlot)) {
       handleExtensionInteraction(walkDeviceTarget);
       setWalkDeviceTarget(null);
       if (dom.root.pointerLockElement) document.exitPointerLock();
       return;
     }
-    const room = floor.rooms.find((candidate) =>
+    const room = deviceRooms.find((candidate) =>
       candidate.devices.some((device) => device.id === walkDeviceTarget.id),
     );
     if (!room) return;
@@ -254,7 +288,9 @@ export function useDashboardDeviceInteraction({
   }, [
     walkDeviceTarget,
     floor.openings,
-    floor.rooms,
+    deviceRooms,
+    walkthrough,
+    equippedToolId,
     setWalkDeviceTarget,
     openDevicePanel,
     handleExtensionInteraction,
@@ -262,7 +298,15 @@ export function useDashboardDeviceInteraction({
   ]);
 
   useEffect(() => {
-    if (walkthrough || !walkMode || !walkDeviceTarget || coarsePointer || selectedDeviceId) return;
+    if (
+      walkthrough ||
+      !walkMode ||
+      !walkDeviceTarget ||
+      coarsePointer ||
+      equippedToolId ||
+      selectedDeviceId
+    )
+      return;
     const activateWithKeyboard = (event: KeyboardEvent) => {
       if (event.code !== "KeyE" && event.code !== "Enter") return;
       event.preventDefault();
@@ -270,7 +314,6 @@ export function useDashboardDeviceInteraction({
     };
     const activateWithPointer = (event: PointerEvent) => {
       if (
-        equippedToolId ||
         event.defaultPrevented ||
         event.button !== 0 ||
         dom.root.pointerLockElement !== shellRef.current

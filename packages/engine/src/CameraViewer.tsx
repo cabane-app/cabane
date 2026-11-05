@@ -62,7 +62,7 @@ export function CameraViewer({
   label: string;
   media?: DeviceLiveMedia | undefined;
   onClose: () => void;
-  onReviewConnections: () => void;
+  onReviewConnections?: (() => void) | undefined;
 }) {
   const dom = useCabaneDom();
   const viewerRef = useRef<HTMLElement>(null);
@@ -213,7 +213,7 @@ export function CameraViewer({
           {media?.previewState === "cors-blocked" && <small>{media.error}</small>}
         </div>
         <div className="camera-viewer__actions">
-          {!playing && (
+          {!playing && onReviewConnections && (
             <button type="button" className="camera-viewer__review" onClick={onReviewConnections}>
               Review connection
             </button>
