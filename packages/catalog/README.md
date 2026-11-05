@@ -464,6 +464,9 @@ The four bundled wall-art prints share their full-resolution sRGB textures acros
 frames and floor remounts. This finite, application-lifetime cache retains at most
 one texture per bundled print. Custom images keep instance-owned loading, failure
 fallback and texture disposal; no user-image URLs are retained in that cache.
+Each canvas initializes a bundled print's GPU texture when it loads, before
+publishing the image mesh, so hidden floors avoid deferring that upload to a
+floor-switch interaction. This startup work preserves full image resolution.
 
 Freestanding models use a floor-contact origin at Y=0, centered X/Z footprints,
 and face +Z. Wall models use X-centered, bottom-edge Y=0 geometry with their

@@ -14,10 +14,19 @@ export function FramedArtImage({
   width: number;
   height: number;
 }) {
-  const { invalidate } = useThree();
+  const { gl, invalidate } = useThree();
   const [loaded, setLoaded] = useState<{ src: string; texture: Texture } | null>(null);
   useEffect(() => {
     const release = subscribeBundledArtTexture(src, (texture) => {
+      if (texture) {
+        try {
+          // Retained floors can load while hidden. Upload their bundled prints
+          // now rather than in the first interactive frame that reveals them.
+          gl.initTexture(texture);
+        } catch {
+          // Context recovery can still initialize the texture on a normal draw.
+        }
+      }
       setLoaded(texture ? { src, texture } : null);
       invalidate();
     });
@@ -56,7 +65,7 @@ export function FramedArtImage({
       cancelled = true;
       owned?.dispose();
     };
-  }, [src, invalidate]);
+  }, [src, gl, invalidate]);
   const texture = loaded?.src === src ? loaded.texture : null;
   if (!texture) return null;
   const image = texture.image as { width: number; height: number };
