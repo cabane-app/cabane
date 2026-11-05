@@ -17,6 +17,7 @@ import {
   canRenderToonBatch,
   geometryRevision,
   hasBatchableTransform,
+  hasOrderedGroupAncestor,
   toonBatchKey,
 } from "./toon-batch-compatibility";
 
@@ -285,20 +286,32 @@ export class SceneToonBatcher {
     }
     if (scene.matrixWorldAutoUpdate) scene.updateMatrixWorld();
     const materialGroups = new Map<string, SourceGroup>();
-    const collect = (object: Object3D, inheritedRoot: Object3D) => {
-      const root = object.userData.toonBatchRoot === true ? object : inheritedRoot;
+    const collect = (
+      object: Object3D,
+      root: Object3D,
+      groupsByMaterial: Map<string, SourceGroup>,
+    ) => {
+      if (object.userData.toonBatchRoot === true) {
+        root = object;
+        groupsByMaterial = new Map();
+      }
       const source = object as Mesh;
       if (source.isMesh) {
-        const materialKey = toonBatchKey(source, false, true);
+        const materialKey = toonBatchKey(source);
         if (materialKey !== null) {
-          const key = `${root.id}|${materialKey}`;
-          if (!materialGroups.has(key)) materialGroups.set(key, { root, sources: [] });
-          materialGroups.get(key)!.sources.push(source);
+          let group = groupsByMaterial.get(materialKey);
+          if (!group) {
+            group = { root, sources: [] };
+            groupsByMaterial.set(materialKey, group);
+            materialGroups.set(`${root.id}|${materialKey}`, group);
+          }
+          group.sources.push(source);
         }
       }
-      for (const child of object.children) collect(child, root);
+      if (object.type === "Group" && object.renderOrder !== 0) return;
+      for (const child of object.children) collect(child, root, groupsByMaterial);
     };
-    collect(scene, scene);
+    if (!hasOrderedGroupAncestor(scene)) collect(scene, scene, new Map());
     const groups = new Map<string, SourceGroup>();
     for (const [key, group] of materialGroups) {
       const { root, sources } = group;

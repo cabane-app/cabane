@@ -65,6 +65,51 @@ await withModules(async (load) => {
     draw(false);
     f.batcher.dispose();
   });
+  test("ordered ancestors exclude nested batch roots without disturbing siblings", () => {
+    const f = fixture();
+    const ordered = new Group(),
+      root = new Group();
+    root.userData.toonBatchRoot = true;
+    const sources = [f.a, f.b].map((mesh) => new Mesh(mesh.geometry, mesh.material.clone()));
+    const materials = sources.map((mesh) => mesh.material);
+    root.add(...sources);
+    ordered.add(root);
+    f.scene.add(ordered);
+    let siblingBatch;
+    const render = (expectedCount, expectedMask) => {
+      f.batcher.render(f.renderer, f.scene, f.camera, () => {
+        const batches = f.scene.children.filter((object) => object.isBatchedMesh);
+        assert.equal(batches.length, expectedCount);
+        if (expectedCount) {
+          if (siblingBatch) assert.equal(batches[0], siblingBatch);
+          siblingBatch = batches[0];
+        }
+        assert.deepEqual(
+          sources.map((mesh) => mesh.layers.mask),
+          [expectedMask, expectedMask],
+        );
+      });
+      assert.deepEqual(
+        sources.map((mesh) => mesh.material),
+        materials,
+      );
+    };
+    try {
+      render(2, 0);
+      ordered.renderOrder = 2;
+      render(1, 1);
+      ordered.renderOrder = 0;
+      render(2, 0);
+
+      const parent = new Group();
+      parent.renderOrder = 3;
+      parent.add(f.scene);
+      render(0, 1);
+    } finally {
+      f.batcher.dispose();
+      materials.forEach((material) => material.dispose());
+    }
+  });
   test("nonstandard depth batches retain exact native sort centers for rotated asymmetric meshes", () => {
     const f = fixture();
     const geometry = new BufferGeometry();

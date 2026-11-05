@@ -42,15 +42,25 @@ export function canRenderToonBatch(mesh: Mesh, validateTransform = true): boolea
   );
 }
 
+export function hasOrderedGroupAncestor(object: Object3D) {
+  for (let parent = object.parent; parent; parent = parent.parent) {
+    if (parent.type === "Group" && parent.renderOrder !== 0) return true;
+  }
+  return false;
+}
+
 /** Conservative eligibility: preserve custom shaders, transparency and deformation. */
 export function isToonBatchCompatible(
   mesh: Mesh,
   allowInstances = false,
   cacheMembership = false,
 ): boolean {
-  for (let parent = mesh.parent; parent; parent = parent.parent) {
-    if (parent.type === "Group" && parent.renderOrder !== 0) return false;
-  }
+  return (
+    !hasOrderedGroupAncestor(mesh) && isToonBatchCandidate(mesh, allowInstances, cacheMembership)
+  );
+}
+
+function isToonBatchCandidate(mesh: Mesh, allowInstances: boolean, cacheMembership: boolean) {
   const instances = mesh as InstancedMesh;
   if (instances.isInstancedMesh && (!allowInstances || instances.morphTexture)) return false;
   const material = mesh.material as MeshToonMaterial;
@@ -124,20 +134,14 @@ export function isToonBatchCompatible(
 type GroupValue = string | number | boolean | null | undefined;
 const groupKeys = new WeakMap<Mesh, { values: GroupValue[]; key: string }>();
 
-/** Only batching needs a serialized material group; LOD needs eligibility alone. */
-export function toonBatchKey(
-  mesh: Mesh,
-  allowInstances = false,
-  cacheMembership = false,
-): string | null {
-  if (!isToonBatchCompatible(mesh, allowInstances, cacheMembership)) return null;
+/** The batch collector has already excluded sources under ordered groups. */
+export function toonBatchKey(mesh: Mesh): string | null {
+  if (!isToonBatchCandidate(mesh, false, true)) return null;
   const material = mesh.material as MeshToonMaterial;
-  const depthWrite = cacheMembership
-    ? ((material.userData.cameraFadeBaseDepthWrite as boolean | undefined) ?? material.depthWrite)
-    : material.depthWrite;
-  const castShadow = cacheMembership
-    ? ((mesh.userData.cameraFadeBaseCastShadow as boolean | undefined) ?? mesh.castShadow)
-    : mesh.castShadow;
+  const depthWrite =
+    (material.userData.cameraFadeBaseDepthWrite as boolean | undefined) ?? material.depthWrite;
+  const castShadow =
+    (mesh.userData.cameraFadeBaseCastShadow as boolean | undefined) ?? mesh.castShadow;
   const values: GroupValue[] = [
     material.gradientMap?.uuid ?? "",
     JSON.stringify(material.defines),
