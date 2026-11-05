@@ -1,0 +1,5152 @@
+{
+  "schemaVersion": 2,
+  "seedRevision": "dense-courtyard-apartment-v1",
+  "home": {
+    "id": "dense-courtyard-apartment",
+    "name": "Courtyard apartment",
+    "locale": "en",
+    "palette": {
+      "accent": "#ad704e",
+      "secondary": "#778b7d",
+      "exterior": "#d3b79b",
+      "interior": "#e8dfd2",
+      "ground": "#99a779"
+    },
+    "walkStart": {
+      "floorId": "ground-floor",
+      "at": [11.7, 5.48]
+    }
+  },
+  "coordinates": {
+    "origin": [0, 0],
+    "metersPerPlanUnit": 1,
+    "scaleBasis": "measured"
+  },
+  "floors": [
+    {
+      "id": "ground-floor",
+      "name": "Ground floor",
+      "floorToFloorHeightMeters": 2.93,
+      "coordinates": {
+        "origin": [0, 0],
+        "metersPerPlanUnit": 1,
+        "scaleBasis": "measured"
+      },
+      "defaultWallHeightMeters": 2.66,
+      "defaultCeilingHeightMeters": 2.64,
+      "footprint": [
+        [0, 0],
+        [30, 0],
+        [30, 11.15],
+        [0, 11.15]
+      ],
+      "rooms": [
+        {
+          "id": "laundry",
+          "name": "Laundry",
+          "polygon": [
+            [0.072, 0.12],
+            [2.928, 0.12],
+            [2.928, 4.478],
+            [0.072, 4.478]
+          ],
+          "accent": "#d5d4ca",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "square-tile"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "bathroom",
+          "name": "Main bathroom",
+          "polygon": [
+            [3.072, 0.12],
+            [6.528, 0.12],
+            [6.528, 4.478],
+            [3.072, 4.478]
+          ],
+          "accent": "#d8cfbb",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "limestone"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "office",
+          "name": "Home office",
+          "polygon": [
+            [6.672, 0.12],
+            [10.628, 0.12],
+            [10.628, 4.478],
+            [6.672, 4.478]
+          ],
+          "accent": "#b6c3ad",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "dark-walnut"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "living",
+          "name": "Living room",
+          "polygon": [
+            [10.772, 0.12],
+            [16.128, 0.12],
+            [16.128, 4.478],
+            [10.772, 4.478]
+          ],
+          "accent": "#d2b394",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "dining",
+          "name": "Dining room",
+          "polygon": [
+            [16.272, 0.12],
+            [20.328, 0.12],
+            [20.328, 4.478],
+            [16.272, 4.478]
+          ],
+          "accent": "#b6c5b2",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "terrazzo"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "library",
+          "name": "Library",
+          "polygon": [
+            [20.472, 0.12],
+            [23.428, 0.12],
+            [23.428, 4.478],
+            [20.472, 4.478]
+          ],
+          "accent": "#a4b3a3",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "dark-walnut"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "guest-bedroom",
+          "name": "Guest bedroom",
+          "polygon": [
+            [23.572, 0.12],
+            [26.678, 0.12],
+            [26.678, 4.478],
+            [23.572, 4.478]
+          ],
+          "accent": "#c7ae9e",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "dressing",
+          "name": "Dressing room",
+          "polygon": [
+            [26.822, 0.12],
+            [29.928, 0.12],
+            [29.928, 4.478],
+            [26.822, 4.478]
+          ],
+          "accent": "#cabba6",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "bike-store",
+          "name": "Bicycle store",
+          "polygon": [
+            [0.072, 6.472],
+            [3.128, 6.472],
+            [3.128, 11.03],
+            [0.072, 11.03]
+          ],
+          "accent": "#c2c7b5",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "limestone"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "workshop",
+          "name": "Utility workshop",
+          "polygon": [
+            [3.272, 6.472],
+            [6.478, 6.472],
+            [6.478, 11.03],
+            [3.272, 11.03]
+          ],
+          "accent": "#b7b9a8",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "square-tile"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "playroom",
+          "name": "Playroom",
+          "polygon": [
+            [6.622, 6.472],
+            [9.928, 6.472],
+            [9.928, 11.03],
+            [6.622, 11.03]
+          ],
+          "accent": "#d2b69c",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "kitchen",
+          "name": "Kitchen",
+          "polygon": [
+            [10.072, 6.472],
+            [13.578, 6.472],
+            [13.578, 11.03],
+            [10.072, 11.03]
+          ],
+          "accent": "#c1cab6",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "terrazzo"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "music",
+          "name": "Music room",
+          "polygon": [
+            [13.722, 6.472],
+            [17.078, 6.472],
+            [17.078, 11.03],
+            [13.722, 11.03]
+          ],
+          "accent": "#b0a696",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "dark-walnut"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "bedroom",
+          "name": "Main bedroom",
+          "polygon": [
+            [17.222, 6.472],
+            [21.378, 6.472],
+            [21.378, 11.03],
+            [17.222, 11.03]
+          ],
+          "accent": "#c5b5a0",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "junior",
+          "name": "Junior bedroom",
+          "polygon": [
+            [21.522, 6.472],
+            [25.528, 6.472],
+            [25.528, 11.03],
+            [21.522, 11.03]
+          ],
+          "accent": "#b7c6ba",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "lounge",
+          "name": "Guest lounge",
+          "polygon": [
+            [25.672, 6.472],
+            [29.928, 6.472],
+            [29.928, 11.03],
+            [25.672, 11.03]
+          ],
+          "accent": "#c7b394",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "oak-herringbone"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "gallery",
+          "name": "Gallery",
+          "polygon": [
+            [0.12, 4.622],
+            [29.88, 4.622],
+            [29.88, 6.328],
+            [0.12, 6.328]
+          ],
+          "accent": "#d7c6ab",
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "terrazzo"
+          },
+          "dashboardSlots": [],
+          "devices": []
+        }
+      ],
+      "walls": [
+        {
+          "id": "laundry-outer",
+          "from": [0, 0],
+          "to": [3, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "left": "#d5d4ca"
+          }
+        },
+        {
+          "id": "laundry-gallery",
+          "from": [0, 4.55],
+          "to": [3, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#ddd3bf",
+            "right": "#d5d4ca"
+          }
+        },
+        {
+          "id": "bathroom-outer",
+          "from": [3, 0],
+          "to": [6.6, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "left": "#d8cfbb"
+          }
+        },
+        {
+          "id": "bathroom-gallery",
+          "from": [3, 4.55],
+          "to": [6.6, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#ddd3bf",
+            "right": "#d8cfbb"
+          }
+        },
+        {
+          "id": "bathroom-left",
+          "from": [3, 0],
+          "to": [3, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "office-outer",
+          "from": [6.6, 0],
+          "to": [10.7, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "left": "#b6c3ad"
+          }
+        },
+        {
+          "id": "office-gallery",
+          "from": [6.6, 4.55],
+          "to": [10.7, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#ddd3bf",
+            "right": "#b6c3ad"
+          }
+        },
+        {
+          "id": "office-left",
+          "from": [6.6, 0],
+          "to": [6.6, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "living-outer",
+          "from": [10.7, 0],
+          "to": [16.2, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "left": "#d2b394"
+          }
+        },
+        {
+          "id": "living-gallery",
+          "from": [10.7, 4.55],
+          "to": [16.2, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#ddd3bf",
+            "right": "#d2b394"
+          }
+        },
+        {
+          "id": "living-left",
+          "from": [10.7, 0],
+          "to": [10.7, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "dining-outer",
+          "from": [16.2, 0],
+          "to": [20.4, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "left": "#b6c5b2"
+          }
+        },
+        {
+          "id": "dining-gallery",
+          "from": [16.2, 4.55],
+          "to": [20.4, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#ddd3bf",
+            "right": "#b6c5b2"
+          }
+        },
+        {
+          "id": "dining-left",
+          "from": [16.2, 0],
+          "to": [16.2, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "library-outer",
+          "from": [20.4, 0],
+          "to": [23.5, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "left": "#a4b3a3"
+          }
+        },
+        {
+          "id": "library-gallery",
+          "from": [20.4, 4.55],
+          "to": [23.5, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#ddd3bf",
+            "right": "#a4b3a3"
+          }
+        },
+        {
+          "id": "library-left",
+          "from": [20.4, 0],
+          "to": [20.4, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "guest-bedroom-outer",
+          "from": [23.5, 0],
+          "to": [26.75, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "left": "#c7ae9e"
+          }
+        },
+        {
+          "id": "guest-bedroom-gallery",
+          "from": [23.5, 4.55],
+          "to": [26.75, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#ddd3bf",
+            "right": "#c7ae9e"
+          }
+        },
+        {
+          "id": "guest-bedroom-left",
+          "from": [23.5, 0],
+          "to": [23.5, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "dressing-outer",
+          "from": [26.75, 0],
+          "to": [30, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "left": "#cabba6"
+          }
+        },
+        {
+          "id": "dressing-gallery",
+          "from": [26.75, 4.55],
+          "to": [30, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#ddd3bf",
+            "right": "#cabba6"
+          }
+        },
+        {
+          "id": "dressing-left",
+          "from": [26.75, 0],
+          "to": [26.75, 4.55],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "bike-store-outer",
+          "from": [0, 11.15],
+          "to": [3.2, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "right": "#c2c7b5"
+          }
+        },
+        {
+          "id": "bike-store-gallery",
+          "from": [0, 6.4],
+          "to": [3.2, 6.4],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#c2c7b5",
+            "right": "#ddd3bf"
+          }
+        },
+        {
+          "id": "workshop-outer",
+          "from": [3.2, 11.15],
+          "to": [6.55, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "right": "#b7b9a8"
+          }
+        },
+        {
+          "id": "workshop-gallery",
+          "from": [3.2, 6.4],
+          "to": [6.55, 6.4],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#b7b9a8",
+            "right": "#ddd3bf"
+          }
+        },
+        {
+          "id": "workshop-left",
+          "from": [3.2, 6.4],
+          "to": [3.2, 11.15],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "playroom-outer",
+          "from": [6.55, 11.15],
+          "to": [10, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "right": "#d2b69c"
+          }
+        },
+        {
+          "id": "playroom-gallery",
+          "from": [6.55, 6.4],
+          "to": [10, 6.4],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#d2b69c",
+            "right": "#ddd3bf"
+          }
+        },
+        {
+          "id": "playroom-left",
+          "from": [6.55, 6.4],
+          "to": [6.55, 11.15],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "kitchen-outer",
+          "from": [10, 11.15],
+          "to": [13.65, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "right": "#c1cab6"
+          }
+        },
+        {
+          "id": "kitchen-gallery",
+          "from": [10, 6.4],
+          "to": [13.65, 6.4],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#c1cab6",
+            "right": "#ddd3bf"
+          }
+        },
+        {
+          "id": "kitchen-left",
+          "from": [10, 6.4],
+          "to": [10, 11.15],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "music-outer",
+          "from": [13.65, 11.15],
+          "to": [17.15, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "right": "#b0a696"
+          }
+        },
+        {
+          "id": "music-gallery",
+          "from": [13.65, 6.4],
+          "to": [17.15, 6.4],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#b0a696",
+            "right": "#ddd3bf"
+          }
+        },
+        {
+          "id": "music-left",
+          "from": [13.65, 6.4],
+          "to": [13.65, 11.15],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "bedroom-outer",
+          "from": [17.15, 11.15],
+          "to": [21.45, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "right": "#c5b5a0"
+          }
+        },
+        {
+          "id": "bedroom-gallery",
+          "from": [17.15, 6.4],
+          "to": [21.45, 6.4],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#c5b5a0",
+            "right": "#ddd3bf"
+          }
+        },
+        {
+          "id": "bedroom-left",
+          "from": [17.15, 6.4],
+          "to": [17.15, 11.15],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "junior-outer",
+          "from": [21.45, 11.15],
+          "to": [25.6, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "right": "#b7c6ba"
+          }
+        },
+        {
+          "id": "junior-gallery",
+          "from": [21.45, 6.4],
+          "to": [25.6, 6.4],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#b7c6ba",
+            "right": "#ddd3bf"
+          }
+        },
+        {
+          "id": "junior-left",
+          "from": [21.45, 6.4],
+          "to": [21.45, 11.15],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "lounge-outer",
+          "from": [25.6, 11.15],
+          "to": [30, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22,
+          "faceColors": {
+            "right": "#c7b394"
+          }
+        },
+        {
+          "id": "lounge-gallery",
+          "from": [25.6, 6.4],
+          "to": [30, 6.4],
+          "classification": "interior",
+          "thicknessMeters": 0.12,
+          "faceColors": {
+            "left": "#c7b394",
+            "right": "#ddd3bf"
+          }
+        },
+        {
+          "id": "lounge-left",
+          "from": [25.6, 6.4],
+          "to": [25.6, 11.15],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "west-north",
+          "from": [0, 0],
+          "to": [0, 4.55],
+          "classification": "exterior",
+          "thicknessMeters": 0.22
+        },
+        {
+          "id": "west-gallery",
+          "from": [0, 4.55],
+          "to": [0, 6.4],
+          "classification": "exterior",
+          "thicknessMeters": 0.22
+        },
+        {
+          "id": "west-south",
+          "from": [0, 6.4],
+          "to": [0, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22
+        },
+        {
+          "id": "east-north",
+          "from": [30, 0],
+          "to": [30, 4.55],
+          "classification": "exterior",
+          "thicknessMeters": 0.22
+        },
+        {
+          "id": "east-gallery",
+          "from": [30, 4.55],
+          "to": [30, 6.4],
+          "classification": "exterior",
+          "thicknessMeters": 0.22
+        },
+        {
+          "id": "east-south",
+          "from": [30, 6.4],
+          "to": [30, 11.15],
+          "classification": "exterior",
+          "thicknessMeters": 0.22
+        }
+      ],
+      "wallJunctions": [
+        {
+          "id": "junction-0-0",
+          "at": [0, 0],
+          "wallIds": ["laundry-outer", "west-north"]
+        },
+        {
+          "id": "junction-3-0",
+          "at": [3, 0],
+          "wallIds": ["laundry-outer", "bathroom-outer", "bathroom-left"]
+        },
+        {
+          "id": "junction-0-4p55",
+          "at": [0, 4.55],
+          "wallIds": ["laundry-gallery", "west-north", "west-gallery"]
+        },
+        {
+          "id": "junction-3-4p55",
+          "at": [3, 4.55],
+          "wallIds": ["laundry-gallery", "bathroom-gallery", "bathroom-left"]
+        },
+        {
+          "id": "junction-6p6-0",
+          "at": [6.6, 0],
+          "wallIds": ["bathroom-outer", "office-outer", "office-left"]
+        },
+        {
+          "id": "junction-6p6-4p55",
+          "at": [6.6, 4.55],
+          "wallIds": ["bathroom-gallery", "office-gallery", "office-left"]
+        },
+        {
+          "id": "junction-10p7-0",
+          "at": [10.7, 0],
+          "wallIds": ["office-outer", "living-outer", "living-left"]
+        },
+        {
+          "id": "junction-10p7-4p55",
+          "at": [10.7, 4.55],
+          "wallIds": ["office-gallery", "living-gallery", "living-left"]
+        },
+        {
+          "id": "junction-16p2-0",
+          "at": [16.2, 0],
+          "wallIds": ["living-outer", "dining-outer", "dining-left"]
+        },
+        {
+          "id": "junction-16p2-4p55",
+          "at": [16.2, 4.55],
+          "wallIds": ["living-gallery", "dining-gallery", "dining-left"]
+        },
+        {
+          "id": "junction-20p4-0",
+          "at": [20.4, 0],
+          "wallIds": ["dining-outer", "library-outer", "library-left"]
+        },
+        {
+          "id": "junction-20p4-4p55",
+          "at": [20.4, 4.55],
+          "wallIds": ["dining-gallery", "library-gallery", "library-left"]
+        },
+        {
+          "id": "junction-23p5-0",
+          "at": [23.5, 0],
+          "wallIds": ["library-outer", "guest-bedroom-outer", "guest-bedroom-left"]
+        },
+        {
+          "id": "junction-23p5-4p55",
+          "at": [23.5, 4.55],
+          "wallIds": ["library-gallery", "guest-bedroom-gallery", "guest-bedroom-left"]
+        },
+        {
+          "id": "junction-26p75-0",
+          "at": [26.75, 0],
+          "wallIds": ["guest-bedroom-outer", "dressing-outer", "dressing-left"]
+        },
+        {
+          "id": "junction-26p75-4p55",
+          "at": [26.75, 4.55],
+          "wallIds": ["guest-bedroom-gallery", "dressing-gallery", "dressing-left"]
+        },
+        {
+          "id": "junction-30-0",
+          "at": [30, 0],
+          "wallIds": ["dressing-outer", "east-north"]
+        },
+        {
+          "id": "junction-30-4p55",
+          "at": [30, 4.55],
+          "wallIds": ["dressing-gallery", "east-north", "east-gallery"]
+        },
+        {
+          "id": "junction-0-11p15",
+          "at": [0, 11.15],
+          "wallIds": ["bike-store-outer", "west-south"]
+        },
+        {
+          "id": "junction-3p2-11p15",
+          "at": [3.2, 11.15],
+          "wallIds": ["bike-store-outer", "workshop-outer", "workshop-left"]
+        },
+        {
+          "id": "junction-0-6p4",
+          "at": [0, 6.4],
+          "wallIds": ["bike-store-gallery", "west-gallery", "west-south"]
+        },
+        {
+          "id": "junction-3p2-6p4",
+          "at": [3.2, 6.4],
+          "wallIds": ["bike-store-gallery", "workshop-gallery", "workshop-left"]
+        },
+        {
+          "id": "junction-6p55-11p15",
+          "at": [6.55, 11.15],
+          "wallIds": ["workshop-outer", "playroom-outer", "playroom-left"]
+        },
+        {
+          "id": "junction-6p55-6p4",
+          "at": [6.55, 6.4],
+          "wallIds": ["workshop-gallery", "playroom-gallery", "playroom-left"]
+        },
+        {
+          "id": "junction-10-11p15",
+          "at": [10, 11.15],
+          "wallIds": ["playroom-outer", "kitchen-outer", "kitchen-left"]
+        },
+        {
+          "id": "junction-10-6p4",
+          "at": [10, 6.4],
+          "wallIds": ["playroom-gallery", "kitchen-gallery", "kitchen-left"]
+        },
+        {
+          "id": "junction-13p65-11p15",
+          "at": [13.65, 11.15],
+          "wallIds": ["kitchen-outer", "music-outer", "music-left"]
+        },
+        {
+          "id": "junction-13p65-6p4",
+          "at": [13.65, 6.4],
+          "wallIds": ["kitchen-gallery", "music-gallery", "music-left"]
+        },
+        {
+          "id": "junction-17p15-11p15",
+          "at": [17.15, 11.15],
+          "wallIds": ["music-outer", "bedroom-outer", "bedroom-left"]
+        },
+        {
+          "id": "junction-17p15-6p4",
+          "at": [17.15, 6.4],
+          "wallIds": ["music-gallery", "bedroom-gallery", "bedroom-left"]
+        },
+        {
+          "id": "junction-21p45-11p15",
+          "at": [21.45, 11.15],
+          "wallIds": ["bedroom-outer", "junior-outer", "junior-left"]
+        },
+        {
+          "id": "junction-21p45-6p4",
+          "at": [21.45, 6.4],
+          "wallIds": ["bedroom-gallery", "junior-gallery", "junior-left"]
+        },
+        {
+          "id": "junction-25p6-11p15",
+          "at": [25.6, 11.15],
+          "wallIds": ["junior-outer", "lounge-outer", "lounge-left"]
+        },
+        {
+          "id": "junction-25p6-6p4",
+          "at": [25.6, 6.4],
+          "wallIds": ["junior-gallery", "lounge-gallery", "lounge-left"]
+        },
+        {
+          "id": "junction-30-11p15",
+          "at": [30, 11.15],
+          "wallIds": ["lounge-outer", "east-south"]
+        },
+        {
+          "id": "junction-30-6p4",
+          "at": [30, 6.4],
+          "wallIds": ["lounge-gallery", "east-gallery", "east-south"]
+        }
+      ],
+      "openings": [
+        {
+          "id": "laundry-window-0.975",
+          "wallId": "laundry-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.975,
+          "widthPlanUnits": 1.05,
+          "openingHeightMeters": 0.84,
+          "sillHeightMeters": 1.32,
+          "operation": "fixed",
+          "variant": "plain",
+          "panelCount": 1,
+          "glazing": "privacy"
+        },
+        {
+          "id": "laundry-door",
+          "wallId": "laundry-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.08,
+          "widthPlanUnits": 0.9,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "bathroom-window-1.275",
+          "wallId": "bathroom-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 1.275,
+          "widthPlanUnits": 1.05,
+          "openingHeightMeters": 0.84,
+          "sillHeightMeters": 1.32,
+          "operation": "fixed",
+          "variant": "muntined",
+          "panelCount": 1,
+          "glazing": "privacy",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "bathroom-door",
+          "wallId": "bathroom-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.386,
+          "widthPlanUnits": 0.9,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "office-window-1.025",
+          "wallId": "office-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 1.025,
+          "widthPlanUnits": 2.05,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "office-door",
+          "wallId": "office-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.581,
+          "widthPlanUnits": 1.02,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "sliding",
+          "variant": "full-glass",
+          "finish": "white",
+          "leafCount": 1
+        },
+        {
+          "id": "living-window-0.77",
+          "wallId": "living-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.77,
+          "widthPlanUnits": 1.705,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "living-window-3.0250000000000004",
+          "wallId": "living-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 3.025,
+          "widthPlanUnits": 1.705,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "living-arch",
+          "wallId": "living-gallery",
+          "kind": "passage",
+          "variant": "arched",
+          "offsetFromWallStartPlanUnits": 1.955,
+          "widthPlanUnits": 1.7,
+          "openingHeightMeters": 2.34,
+          "sillHeightMeters": 0,
+          "archRiseMeters": 0.29
+        },
+        {
+          "id": "dining-window-0.5880000000000001",
+          "wallId": "dining-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.588,
+          "widthPlanUnits": 1.302,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "dining-window-2.3100000000000005",
+          "wallId": "dining-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 2.31,
+          "widthPlanUnits": 1.302,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "dining-arch",
+          "wallId": "dining-gallery",
+          "kind": "passage",
+          "variant": "arched",
+          "offsetFromWallStartPlanUnits": 1.432,
+          "widthPlanUnits": 1.42,
+          "openingHeightMeters": 2.34,
+          "sillHeightMeters": 0,
+          "archRiseMeters": 0.29
+        },
+        {
+          "id": "library-window-0.775",
+          "wallId": "library-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.775,
+          "widthPlanUnits": 1.55,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "library-door",
+          "wallId": "library-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.071,
+          "widthPlanUnits": 1.02,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "sliding",
+          "variant": "full-glass",
+          "finish": "white",
+          "leafCount": 1
+        },
+        {
+          "id": "guest-bedroom-window-0.8125",
+          "wallId": "guest-bedroom-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.813,
+          "widthPlanUnits": 1.625,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "fixed",
+          "variant": "plain",
+          "panelCount": 1,
+          "glazing": "clear"
+        },
+        {
+          "id": "guest-bedroom-door",
+          "wallId": "guest-bedroom-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.208,
+          "widthPlanUnits": 0.9,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "dressing-window-1.1",
+          "wallId": "dressing-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 1.1,
+          "widthPlanUnits": 1.05,
+          "openingHeightMeters": 0.84,
+          "sillHeightMeters": 1.32,
+          "operation": "fixed",
+          "variant": "muntined",
+          "panelCount": 1,
+          "glazing": "privacy",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "dressing-door",
+          "wallId": "dressing-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.208,
+          "widthPlanUnits": 0.9,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "bike-store-window-0.925",
+          "wallId": "bike-store-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.925,
+          "widthPlanUnits": 1.35,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "fixed",
+          "variant": "plain",
+          "panelCount": 1,
+          "glazing": "clear"
+        },
+        {
+          "id": "bike-store-door",
+          "wallId": "bike-store-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.182,
+          "widthPlanUnits": 0.9,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "plank",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "workshop-window-0.8375",
+          "wallId": "workshop-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.838,
+          "widthPlanUnits": 1.675,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "workshop-door",
+          "wallId": "workshop-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.259,
+          "widthPlanUnits": 0.9,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "playroom-window-0.8625",
+          "wallId": "playroom-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.863,
+          "widthPlanUnits": 1.725,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "playroom-door",
+          "wallId": "playroom-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.25,
+          "widthPlanUnits": 1.02,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "sliding",
+          "variant": "full-glass",
+          "finish": "white",
+          "leafCount": 1
+        },
+        {
+          "id": "kitchen-window-0.9125",
+          "wallId": "kitchen-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.913,
+          "widthPlanUnits": 1.825,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "fixed",
+          "variant": "plain",
+          "panelCount": 1,
+          "glazing": "clear"
+        },
+        {
+          "id": "kitchen-arch",
+          "wallId": "kitchen-gallery",
+          "kind": "passage",
+          "variant": "arched",
+          "offsetFromWallStartPlanUnits": 1.152,
+          "widthPlanUnits": 1.42,
+          "openingHeightMeters": 2.34,
+          "sillHeightMeters": 0,
+          "archRiseMeters": 0.29
+        },
+        {
+          "id": "music-window-0.875",
+          "wallId": "music-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.875,
+          "widthPlanUnits": 1.75,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "music-door",
+          "wallId": "music-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.275,
+          "widthPlanUnits": 1.02,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "sliding",
+          "variant": "french",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "bedroom-window-0.602",
+          "wallId": "bedroom-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.602,
+          "widthPlanUnits": 1.333,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "bedroom-window-2.365",
+          "wallId": "bedroom-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 2.365,
+          "widthPlanUnits": 1.333,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "bedroom-door",
+          "wallId": "bedroom-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.743,
+          "widthPlanUnits": 0.9,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "junior-window-1.0375",
+          "wallId": "junior-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 1.038,
+          "widthPlanUnits": 2.075,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "fixed",
+          "variant": "plain",
+          "panelCount": 1,
+          "glazing": "clear"
+        },
+        {
+          "id": "junior-door",
+          "wallId": "junior-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.667,
+          "widthPlanUnits": 0.9,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "lounge-window-0.6160000000000001",
+          "wallId": "lounge-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.616,
+          "widthPlanUnits": 1.364,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "casement",
+          "variant": "muntined",
+          "panelCount": 2,
+          "glazing": "clear",
+          "muntins": {
+            "columns": 2,
+            "rows": 2
+          }
+        },
+        {
+          "id": "lounge-window-2.4200000000000004",
+          "wallId": "lounge-outer",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 2.42,
+          "widthPlanUnits": 1.364,
+          "openingHeightMeters": 1.34,
+          "sillHeightMeters": 0.79,
+          "operation": "fixed",
+          "variant": "plain",
+          "panelCount": 1,
+          "glazing": "clear"
+        },
+        {
+          "id": "lounge-arch",
+          "wallId": "lounge-gallery",
+          "kind": "passage",
+          "variant": "arched",
+          "offsetFromWallStartPlanUnits": 1.534,
+          "widthPlanUnits": 1.42,
+          "openingHeightMeters": 2.34,
+          "sillHeightMeters": 0,
+          "archRiseMeters": 0.29
+        },
+        {
+          "id": "west-entry",
+          "wallId": "west-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 0.33,
+          "widthPlanUnits": 1.18,
+          "openingHeightMeters": 2.2,
+          "sillHeightMeters": 0,
+          "operation": "sliding",
+          "variant": "full-glass",
+          "finish": "white",
+          "leafCount": 1
+        },
+        {
+          "id": "east-entry",
+          "wallId": "east-gallery",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 0.33,
+          "widthPlanUnits": 1.18,
+          "openingHeightMeters": 2.2,
+          "sillHeightMeters": 0,
+          "operation": "sliding",
+          "variant": "full-glass",
+          "finish": "white",
+          "leafCount": 1
+        }
+      ],
+      "ceilings": [
+        {
+          "id": "apartment-ceiling",
+          "kind": "flat",
+          "roomIds": [
+            "laundry",
+            "bathroom",
+            "office",
+            "living",
+            "dining",
+            "library",
+            "guest-bedroom",
+            "dressing",
+            "bike-store",
+            "workshop",
+            "playroom",
+            "kitchen",
+            "music",
+            "bedroom",
+            "junior",
+            "lounge",
+            "gallery"
+          ],
+          "heightMeters": 2.64
+        }
+      ]
+    }
+  ],
+  "stairs": [],
+  "sceneItems": [
+    {
+      "id": "living-curved-three-seat-sofa-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "curved-three-seat-sofa",
+      "size": [2.6, 0.88, 1.1],
+      "placement": {
+        "kind": "absolute",
+        "at": [13.45, 0.82],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-upholstered-armchair-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-armchair",
+      "size": [0.85, 0.9, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.49, 2.28],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "living-sage-tub-armchair-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "sage-tub-armchair",
+      "size": [0.78, 0.86, 0.8],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.39, 2.24],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "living-round-jute-rug-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-jute-rug",
+      "size": [2, 0.018, 2],
+      "placement": {
+        "kind": "absolute",
+        "at": [13.46, 2.35],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-round-coffee-table-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [13.46, 2.17],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-tabletop-candle-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "tabletop-candle",
+      "size": [0.12, 0.18, 0.12],
+      "placement": {
+        "kind": "absolute",
+        "at": [13.26, 2.18],
+        "elevationMeters": 0.387,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-ring-ceramic-vase-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [13.63, 2.12],
+        "elevationMeters": 0.387,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-hexagonal-side-table-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "hexagonal-side-table",
+      "size": [0.6, 0.43, 0.5196152423],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.74, 0.9],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-table-lamp-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.74, 0.9],
+        "elevationMeters": 0.431,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-pedestal-side-table-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.09, 0.9],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-book-row-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.09, 0.9],
+        "elevationMeters": 0.551,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-double-arched-bookcase-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "double-arched-bookcase",
+      "size": [1, 1.73, 0.36],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.13, 3.59],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "living-low-media-console-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "low-media-console",
+      "size": [1.6, 0.55, 0.42],
+      "placement": {
+        "kind": "absolute",
+        "at": [14.97, 4.16],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "living-slim-soundbar-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "slim-soundbar",
+      "size": [1.05, 0.065, 0.12],
+      "placement": {
+        "kind": "absolute",
+        "at": [14.97, 4.11],
+        "elevationMeters": 0.551,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "living-floor-magazine-rack-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "floor-magazine-rack",
+      "size": [0.42, 0.45, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.23, 0.52],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-leafy-planter-16",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "leafy-planter",
+      "size": [0.8, 1.25, 0.8],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.53, 3.27],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-abstract-relief-wall-art-17",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "abstract-relief-wall-art",
+      "size": [0.45, 0.65, 0.035],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.83, 1.36],
+        "elevationMeters": 1.38,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "living-framed-wall-art-18",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.08, 1.42],
+        "elevationMeters": 1.26,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "living-six-globe-ceiling-lamp-19",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "living",
+        "at": [13.38, 2.05],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "living-loose-throw-cushion-20",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "loose-throw-cushion",
+      "size": [0.45, 0.16, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [13.24, 0.93],
+        "elevationMeters": 0.45,
+        "rotationYRadians": 0.24
+      }
+    },
+    {
+      "id": "living-loose-throw-cushion-21",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "loose-throw-cushion",
+      "size": [0.45, 0.16, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [14.06, 0.95],
+        "elevationMeters": 0.47,
+        "rotationYRadians": -0.28
+      }
+    },
+    {
+      "id": "dining-rectangular-dining-table-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "rectangular-dining-table",
+      "size": [1.8, 0.75, 0.9],
+      "placement": {
+        "kind": "absolute",
+        "at": [18.34, 2.17],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-oak-dining-chair-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [17.61, 1.62],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-oak-dining-chair-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [17.61, 2.59],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-white-shell-dining-chair-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "white-shell-dining-chair",
+      "size": [0.46, 0.84, 0.54],
+      "placement": {
+        "kind": "absolute",
+        "at": [19.1, 1.62],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-white-shell-dining-chair-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "white-shell-dining-chair",
+      "size": [0.46, 0.84, 0.54],
+      "placement": {
+        "kind": "absolute",
+        "at": [19.1, 2.59],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-white-shell-dining-chair-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "white-shell-dining-chair",
+      "size": [0.46, 0.84, 0.54],
+      "placement": {
+        "kind": "absolute",
+        "at": [18.34, 3.34],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "dining-three-door-sideboard-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "three-door-sideboard",
+      "size": [1.6, 0.82, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.6, 2.22],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-two-tier-bar-cart-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-tier-bar-cart",
+      "size": [0.7, 0.8, 0.42],
+      "placement": {
+        "kind": "absolute",
+        "at": [19.89, 2.81],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-open-display-bookcase-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "open-display-bookcase",
+      "size": [1, 1.6, 0.35],
+      "placement": {
+        "kind": "absolute",
+        "at": [19.98, 1.06],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-neutral-area-rug-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "neutral-area-rug",
+      "size": [2, 0.015, 3],
+      "placement": {
+        "kind": "absolute",
+        "at": [18.33, 2.26],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dining-potted-plant-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.8, 0.66],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dining-ring-ceramic-vase-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [18.33, 1.98],
+        "elevationMeters": 0.751,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dining-tabletop-candle-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "tabletop-candle",
+      "size": [0.12, 0.18, 0.12],
+      "placement": {
+        "kind": "absolute",
+        "at": [18.3, 2.52],
+        "elevationMeters": 0.751,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dining-ring-ceramic-vase-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.64, 1.68],
+        "elevationMeters": 0.821,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dining-book-row-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.61, 2.55],
+        "elevationMeters": 0.821,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dining-line-portrait-wall-art-16",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "line-portrait-wall-art",
+      "size": [0.42, 0.62, 0.025],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.32, 2.28],
+        "elevationMeters": 1.44,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "dining-woven-pendant-17",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "woven-pendant",
+      "size": [0.847, 0.58, 0.86],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "dining",
+        "at": [18.3, 2.14],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-drawer-pedestal-desk-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "drawer-pedestal-desk",
+      "size": [1.8, 0.75, 0.6],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.47, 0.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-ergonomic-office-chair-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ergonomic-office-chair",
+      "size": [0.68, 1.04, 0.68],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.49, 1.44],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "office-desktop-monitor-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "desktop-monitor",
+      "size": [0.54, 0.42, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.58, 0.42],
+        "elevationMeters": 0.751,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-desktop-keyboard-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "desktop-keyboard",
+      "size": [0.44, 0.03, 0.15],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.48, 0.67],
+        "elevationMeters": 0.751,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-desktop-mouse-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "desktop-mouse",
+      "size": [0.065, 0.04, 0.115],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.88, 0.68],
+        "elevationMeters": 0.751,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-desktop-pc-tower-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "desktop-pc-tower",
+      "size": [0.21, 0.44, 0.43],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.62, 0.47],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-open-laptop-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "open-laptop",
+      "size": [0.34, 0.24, 0.24],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.78, 0.59],
+        "elevationMeters": 0.751,
+        "rotationYRadians": 0.16
+      }
+    },
+    {
+      "id": "office-oak-bookshelf-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.92, 2.38],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "office-open-cube-bookcase-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "open-cube-bookcase",
+      "size": [0.8, 1.5, 0.28],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.36, 2.48],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "office-oak-slab-bench-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-slab-bench",
+      "size": [1.4, 0.45, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.38, 1.15],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "office-round-banded-rug-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-banded-rug",
+      "size": [1.2, 0.01, 1.2],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.89, 2.84],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-potted-plant-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.14, 3.74],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-table-lamp-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.18, 0.52],
+        "elevationMeters": 0.751,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "office-framed-wall-art-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.56, 1.12],
+        "elevationMeters": 1.46,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "office-six-globe-ceiling-lamp-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "office",
+        "at": [8.63, 2.29],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "library-double-arched-bookcase-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "double-arched-bookcase",
+      "size": [1, 1.73, 0.36],
+      "placement": {
+        "kind": "absolute",
+        "at": [20.74, 1.1],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "library-double-arched-bookcase-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "double-arched-bookcase",
+      "size": [1, 1.73, 0.36],
+      "placement": {
+        "kind": "absolute",
+        "at": [20.74, 2.12],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "library-oak-bookshelf-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.18, 1.08],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "library-oak-bookshelf-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.18, 1.91],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "library-sage-tub-armchair-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "sage-tub-armchair",
+      "size": [0.78, 0.86, 0.8],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.83, 1.69],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -0.28
+      }
+    },
+    {
+      "id": "library-upholstered-ottoman-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.8, 2.61],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "library-round-banded-rug-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-banded-rug",
+      "size": [1.2, 0.01, 1.2],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.88, 2.24],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "library-pedestal-side-table-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [22.7, 3.28],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "library-table-lamp-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [22.7, 3.28],
+        "elevationMeters": 0.551,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "library-book-row-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [20.72, 1.09],
+        "elevationMeters": 1.055,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "library-book-row-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [20.72, 2.17],
+        "elevationMeters": 1.26,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "library-floor-magazine-rack-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "floor-magazine-rack",
+      "size": [0.42, 0.45, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.17, 3.94],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "library-line-portrait-wall-art-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "line-portrait-wall-art",
+      "size": [0.42, 0.62, 0.025],
+      "placement": {
+        "kind": "absolute",
+        "at": [20.54, 3.15],
+        "elevationMeters": 1.23,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "library-six-globe-ceiling-lamp-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "library",
+        "at": [21.95, 2.34],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "bathroom-family-bathtub-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "family-bathtub",
+      "size": [1.64, 0.782, 0.78],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.2, 0.65],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "bathroom-folded-bath-screen-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "folded-bath-screen",
+      "size": [0.42, 1.5, 0.055],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.91, 0.63],
+        "elevationMeters": 0.78,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "bathroom-two-drawer-basin-vanity-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-drawer-basin-vanity",
+      "size": [0.83, 0.64, 0.49],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.44, 2.37],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-thin-oval-mirror-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "thin-oval-mirror",
+      "size": [0.4, 0.7, 0.012],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.13, 2.37],
+        "elevationMeters": 1.19,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-concealed-cistern-toilet-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "concealed-cistern-toilet",
+      "size": [0.728, 1.16, 0.58],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.13, 2.18],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-toilet-paper-holder-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "toilet-paper-holder",
+      "size": [0.18, 0.12, 0.14],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.44, 2.72],
+        "elevationMeters": 0.68,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-towel-rail-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "towel-rail",
+      "size": [0.62, 0.507, 0.098],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.14, 1.45],
+        "elevationMeters": 0.82,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-wicker-hamper-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wicker-hamper",
+      "size": [0.48, 0.593, 0.46],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.12, 3.47],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "bathroom-wicker-towel-basket-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wicker-towel-basket",
+      "size": [0.38, 0.315, 0.31],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.49, 3.52],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "bathroom-brass-bath-shower-column-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "brass-bath-shower-column",
+      "size": [0.27, 1.341, 0.38],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.25, 0.68],
+        "elevationMeters": 0.98,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-vanity-accessories-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "vanity-accessories",
+      "size": [0.136, 0.31, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.48, 2.62],
+        "elevationMeters": 0.641,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-tubular-wall-lamp-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "tubular-wall-lamp",
+      "size": [0.07, 0.32, 0.12],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.13, 2.91],
+        "elevationMeters": 1.52,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-medicine-cabinet-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "medicine-cabinet",
+      "size": [0.5, 0.65, 0.16],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.14, 3.2],
+        "elevationMeters": 1.31,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bathroom-ring-ceramic-vase-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.23, 0.57],
+        "elevationMeters": 0.81,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "bathroom-six-globe-ceiling-lamp-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "bathroom",
+        "at": [4.82, 2.2],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-utility-shelving-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "utility-shelving",
+      "size": [0.9, 1.8, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.6, 0.44],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-utility-shelving-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "utility-shelving",
+      "size": [0.9, 1.8, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.63, 0.44],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-wall-lifting-drying-rack-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wall-lifting-drying-rack",
+      "size": [1.2, 1.6, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.655, 1.8],
+        "elevationMeters": 0.61,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "laundry-ironing-board-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ironing-board",
+      "size": [1.2, 0.9, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.74, 2.02],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "laundry-drying-rack-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "drying-rack",
+      "size": [1.2, 0.95, 0.6],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.03, 2.69],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "laundry-laundry-carry-basket-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "laundry-carry-basket",
+      "size": [0.6, 0.35, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.6, 3.07],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-wicker-hamper-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wicker-hamper",
+      "size": [0.48, 0.593, 0.46],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.54, 3.63],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-indoor-bin-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "indoor-bin",
+      "size": [0.36, 0.62, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.46, 3.89],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-two-step-stool-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-step-stool",
+      "size": [0.45, 0.45, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.41, 1.05],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-wall-cleaning-tool-rack-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wall-cleaning-tool-rack",
+      "size": [0.22, 1.3, 0.12],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.14, 0.97],
+        "elevationMeters": 0.55,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "laundry-cordless-vacuum-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "cordless-vacuum",
+      "size": [0.25, 1.256, 0.26],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.65, 0.62],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-toolbox-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "toolbox",
+      "size": [0.45, 0.3, 0.24],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.6, 0.44],
+        "elevationMeters": 1.081,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-wicker-towel-basket-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wicker-towel-basket",
+      "size": [0.38, 0.315, 0.31],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.69, 0.44],
+        "elevationMeters": 1.081,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "laundry-six-globe-ceiling-lamp-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "laundry",
+        "at": [1.5, 2.4],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dressing-split-door-wardrobe-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "split-door-wardrobe",
+      "size": [2, 2.52, 0.6],
+      "placement": {
+        "kind": "absolute",
+        "at": [27.24, 1.78],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "dressing-cane-wardrobe-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "cane-wardrobe",
+      "size": [1.55, 2.15, 0.474],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.56, 1.28],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "dressing-open-shelf-closet-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "open-shelf-closet",
+      "size": [0.72, 2.15, 0.403],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.56, 2.67],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "dressing-chest-of-drawers-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "chest-of-drawers",
+      "size": [1, 0.9, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [28.37, 0.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dressing-round-banded-rug-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-banded-rug",
+      "size": [1.2, 0.01, 1.2],
+      "placement": {
+        "kind": "absolute",
+        "at": [28.42, 2.45],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dressing-sage-rounded-footstool-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "sage-rounded-footstool",
+      "size": [0.48, 0.45, 0.46],
+      "placement": {
+        "kind": "absolute",
+        "at": [28.42, 2.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dressing-wicker-hamper-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wicker-hamper",
+      "size": [0.48, 0.593, 0.46],
+      "placement": {
+        "kind": "absolute",
+        "at": [27.37, 3.33],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dressing-wicker-towel-basket-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wicker-towel-basket",
+      "size": [0.38, 0.315, 0.31],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.42, 3.38],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dressing-organic-wall-mirror-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "organic-wall-mirror",
+      "size": [0.76, 1.1, 0.09],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.88, 3.6],
+        "elevationMeters": 0.78,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "dressing-ring-ceramic-vase-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [28.15, 0.55],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dressing-book-row-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [28.6, 0.55],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "dressing-white-tapered-wall-sconce-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "white-tapered-wall-sconce",
+      "size": [0.18, 0.23, 0.12],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.85, 3.51],
+        "elevationMeters": 1.45,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "dressing-six-globe-ceiling-lamp-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "dressing",
+        "at": [28.41, 2.03],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-double-bed-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "double-bed",
+      "size": [1.7, 1.1, 2.15],
+      "placement": {
+        "kind": "absolute",
+        "at": [25.13, 1.37],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-oak-nightstand-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.99, 0.61],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-oak-nightstand-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.28, 0.61],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-table-lamp-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.99, 0.61],
+        "elevationMeters": 0.501,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-table-lamp-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.28, 0.61],
+        "elevationMeters": 0.501,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-round-banded-rug-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-banded-rug",
+      "size": [1.2, 0.01, 1.2],
+      "placement": {
+        "kind": "absolute",
+        "at": [25.13, 2.81],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-chest-of-drawers-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "chest-of-drawers",
+      "size": [1, 0.9, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.38, 3.22],
+        "elevationMeters": 0.001,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "guest-bedroom-oak-slab-bench-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-slab-bench",
+      "size": [1.4, 0.45, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [25.13, 2.84],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-slim-rectangular-mirror-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "slim-rectangular-mirror",
+      "size": [0.6, 0.8, 0.018],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.64, 2.73],
+        "elevationMeters": 0.92,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "guest-bedroom-floor-magazine-rack-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "floor-magazine-rack",
+      "size": [0.42, 0.45, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.94, 3.62],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-wicker-hamper-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wicker-hamper",
+      "size": [0.48, 0.593, 0.46],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.18, 4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-framed-wall-art-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.61, 2.51],
+        "elevationMeters": 1.26,
+        "rotationYRadians": -1.5707963267948966
+      }
+    },
+    {
+      "id": "guest-bedroom-book-row-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.37, 3.32],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-ring-ceramic-vase-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.37, 2.94],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "guest-bedroom-six-globe-ceiling-lamp-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "guest-bedroom",
+        "at": [25.1, 2.26],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "bike-store-bicycle-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "bicycle",
+      "size": [0.64, 1.1, 1.8],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.72, 9.81],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bike-store-bicycle-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "bicycle",
+      "size": [0.64, 1.1, 1.8],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.52, 9.81],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bike-store-utility-shelving-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "utility-shelving",
+      "size": [0.9, 1.8, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.81, 10.13],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bike-store-utility-shelving-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "utility-shelving",
+      "size": [0.9, 1.8, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.81, 9.09],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bike-store-toolbox-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "toolbox",
+      "size": [0.45, 0.3, 0.24],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.81, 10.12],
+        "elevationMeters": 1.081,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bike-store-outdoor-storage-box-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "outdoor-storage-box",
+      "size": [1.2, 0.6, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.8, 7.91],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "bike-store-two-step-stool-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-step-stool",
+      "size": [0.45, 0.45, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.45, 8],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bike-store-umbrella-stand-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "umbrella-stand",
+      "size": [0.28, 0.55, 0.28],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.4, 7.26],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bike-store-wall-coat-rack-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wall-coat-rack",
+      "size": [0.8, 0.32, 0.22],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.175, 8.32],
+        "elevationMeters": 1.43,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "bike-store-electrical-panel-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "electrical-panel",
+      "size": [0.2, 0.32, 0.1],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.04, 7.28],
+        "elevationMeters": 1.21,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bike-store-wall-clock-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wall-clock",
+      "size": [0.3, 0.3, 0.045],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.04, 8.05],
+        "elevationMeters": 1.74,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bike-store-six-globe-ceiling-lamp-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "bike-store",
+        "at": [1.63, 9.05],
+        "dropMeters": 0.025,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "workshop-workbench-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "workbench",
+      "size": [1.5, 0.9, 0.65],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.86, 10.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "workshop-toolbox-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "toolbox",
+      "size": [0.45, 0.3, 0.24],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.72, 10.61],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "workshop-utility-shelving-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "utility-shelving",
+      "size": [0.9, 1.8, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.6, 9.7],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "workshop-utility-shelving-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "utility-shelving",
+      "size": [0.9, 1.8, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.6, 8.61],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "workshop-utility-shelving-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "utility-shelving",
+      "size": [0.9, 1.8, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.16, 9.73],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "workshop-utility-shelving-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "utility-shelving",
+      "size": [0.9, 1.8, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.16, 8.59],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "workshop-counter-stool-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "counter-stool",
+      "size": [0.48, 0.92, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.86, 9.84],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "workshop-indoor-bin-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "indoor-bin",
+      "size": [0.36, 0.62, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.62, 7.62],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "workshop-two-step-stool-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-step-stool",
+      "size": [0.45, 0.45, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [5.91, 7.62],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "workshop-electrical-panel-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "electrical-panel",
+      "size": [0.2, 0.32, 0.1],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.37, 7.31],
+        "elevationMeters": 1.46,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "workshop-wall-clock-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wall-clock",
+      "size": [0.3, 0.3, 0.045],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.34, 7.76],
+        "elevationMeters": 1.71,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "workshop-toolbox-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "toolbox",
+      "size": [0.45, 0.3, 0.24],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.16, 8.57],
+        "elevationMeters": 1.081,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "workshop-watering-can-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "watering-can",
+      "size": [0.54, 0.36, 0.22],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.6, 9.73],
+        "elevationMeters": 0.691,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "workshop-cordless-vacuum-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "cordless-vacuum",
+      "size": [0.25, 1.256, 0.26],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.65, 7.06],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "workshop-six-globe-ceiling-lamp-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "workshop",
+        "at": [4.88, 8.95],
+        "dropMeters": 0.025,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "playroom-children-table-set-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-table-set",
+      "size": [1.08, 0.838, 1.12],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.22, 8.86],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "playroom-square-cube-storage-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "square-cube-storage",
+      "size": [0.77, 0.77, 0.39],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.94, 10.07],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "playroom-children-toy-shelf-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-toy-shelf",
+      "size": [0.505, 1.065, 0.285],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.88, 8.86],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "playroom-open-cube-bookcase-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "open-cube-bookcase",
+      "size": [0.8, 1.5, 0.28],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.62, 9.95],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "playroom-cube-storage-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "cube-storage",
+      "size": [0.85, 1.202, 0.412],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.59, 8.89],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "playroom-round-jute-rug-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-jute-rug",
+      "size": [2, 0.018, 2],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.23, 8.93],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "playroom-children-floor-basket-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-floor-basket",
+      "size": [0.68, 0.512, 0.68],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.07, 7.69],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "playroom-pet-bed-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pet-bed",
+      "size": [0.8, 0.24, 0.6],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.35, 7.63],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "playroom-two-step-stool-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-step-stool",
+      "size": [0.45, 0.45, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.2, 10.59],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "playroom-slatted-folding-chair-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "slatted-folding-chair",
+      "size": [0.4, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.28, 10.75],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "playroom-decorative-globe-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "decorative-globe",
+      "size": [0.278, 0.339, 0.24],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.92, 10.07],
+        "elevationMeters": 0.771,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "playroom-book-row-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.6, 8.8],
+        "elevationMeters": 1.203,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "playroom-children-wall-poster-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-wall-poster",
+      "size": [0.3, 0.42, 0.012],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.69, 9.7],
+        "elevationMeters": 1.42,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "playroom-children-wall-poster-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-wall-poster",
+      "size": [0.3, 0.42, 0.012],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.86, 8.43],
+        "elevationMeters": 1.4,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "playroom-children-pendant-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-pendant",
+      "size": [0.58, 0.479, 0.58],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "playroom",
+        "at": [8.24, 8.92],
+        "dropMeters": 0.025,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-kitchen-pantry-cabinet-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-pantry-cabinet",
+      "size": [0.6, 2.1, 0.63],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.49, 10.67],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-kitchen-base-cabinet-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-base-cabinet",
+      "size": [0.6, 0.9, 0.63],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.09, 10.67],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-kitchen-sink-cabinet-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-sink-cabinet",
+      "size": [0.6, 1.12, 0.63],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.69, 10.67],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-kitchen-hob-cabinet-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-hob-cabinet",
+      "size": [0.6, 0.91, 0.63],
+      "placement": {
+        "kind": "absolute",
+        "at": [12.29, 10.67],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-kitchen-base-cabinet-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-base-cabinet",
+      "size": [0.6, 0.9, 0.63],
+      "placement": {
+        "kind": "absolute",
+        "at": [12.89, 10.67],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-kitchen-wall-cabinet-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-wall-cabinet",
+      "size": [0.6, 0.8, 0.35],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.38, 9.52],
+        "elevationMeters": 1.62,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "kitchen-kitchen-wall-cabinet-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-wall-cabinet",
+      "size": [0.6, 0.8, 0.35],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.38, 8.91],
+        "elevationMeters": 1.62,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "kitchen-kitchen-hood-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-hood",
+      "size": [0.6, 0.7, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [12.29, 10.8],
+        "elevationMeters": 1.56,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-kitchen-island-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-island",
+      "size": [1.5, 0.9, 0.9],
+      "placement": {
+        "kind": "absolute",
+        "at": [12.06, 8.47],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-counter-stool-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "counter-stool",
+      "size": [0.48, 0.92, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.67, 7.72],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 6.283185307179586
+      }
+    },
+    {
+      "id": "kitchen-counter-stool-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "counter-stool",
+      "size": [0.48, 0.92, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [12.49, 7.72],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 6.283185307179586
+      }
+    },
+    {
+      "id": "kitchen-capsule-coffee-machine-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "capsule-coffee-machine",
+      "size": [0.2, 0.3, 0.35],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.04, 10.71],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-bread-bin-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "bread-bin",
+      "size": [0.4, 0.25, 0.25],
+      "placement": {
+        "kind": "absolute",
+        "at": [12.94, 10.72],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-dish-drying-rack-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "dish-drying-rack",
+      "size": [0.45, 0.15, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.47, 10.64],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-saucepan-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "saucepan",
+      "size": [0.36, 0.115, 0.2],
+      "placement": {
+        "kind": "absolute",
+        "at": [12.28, 10.64],
+        "elevationMeters": 0.918,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-stand-mixer-16",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "stand-mixer",
+      "size": [0.28, 0.4, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.61, 8.51],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-two-slot-toaster-17",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-slot-toaster",
+      "size": [0.28, 0.19, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [12.56, 8.53],
+        "elevationMeters": 0.901,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-kitchen-trolley-18",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "kitchen-trolley",
+      "size": [0.7, 0.9, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.56, 8.21],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "kitchen-indoor-bin-19",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "indoor-bin",
+      "size": [0.36, 0.62, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.43, 7.23],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "kitchen-six-globe-ceiling-lamp-20",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "kitchen",
+        "at": [12.02, 8.48],
+        "dropMeters": 0.025,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-portable-digital-piano-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "portable-digital-piano",
+      "size": [1.3, 0.84, 0.34],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.4, 10.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-piano-bench-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "piano-bench",
+      "size": [0.6, 0.48, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.4, 10.02],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-vinyl-record-cabinet-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "vinyl-record-cabinet",
+      "size": [0.9, 0.7, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [14.04, 8.95],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "music-open-display-bookcase-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "open-display-bookcase",
+      "size": [1, 1.6, 0.35],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.77, 9.82],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "music-two-seat-loveseat-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.63, 8.2],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "music-round-banded-rug-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-banded-rug",
+      "size": [1.2, 0.01, 1.2],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.23, 8.83],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-pedestal-side-table-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [14.75, 8.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-floor-magazine-rack-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "floor-magazine-rack",
+      "size": [0.42, 0.45, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [14.08, 7.51],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-potted-plant-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [16.58, 7.11],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-table-lamp-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [14.75, 8.6],
+        "elevationMeters": 0.551,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-book-row-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [14.04, 8.94],
+        "elevationMeters": 0.701,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "music-framed-wall-art-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [13.79, 9.92],
+        "elevationMeters": 1.44,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "music-abstract-relief-wall-art-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "abstract-relief-wall-art",
+      "size": [0.45, 0.65, 0.035],
+      "placement": {
+        "kind": "absolute",
+        "at": [13.79, 8.66],
+        "elevationMeters": 1.49,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "music-six-globe-ceiling-lamp-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "music",
+        "at": [15.35, 8.93],
+        "dropMeters": 0.025,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-double-bed-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "double-bed",
+      "size": [1.7, 1.1, 2.15],
+      "placement": {
+        "kind": "absolute",
+        "at": [19.3, 9.76],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-oak-nightstand-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [18.13, 10.52],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-oak-nightstand-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [20.47, 10.52],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-table-lamp-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [18.13, 10.52],
+        "elevationMeters": 0.501,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-table-lamp-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [20.47, 10.52],
+        "elevationMeters": 0.501,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-knob-door-wardrobe-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "knob-door-wardrobe",
+      "size": [1, 2.4, 0.6],
+      "placement": {
+        "kind": "absolute",
+        "at": [17.59, 8.92],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "bedroom-knob-door-wardrobe-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "knob-door-wardrobe",
+      "size": [1, 2.4, 0.6],
+      "placement": {
+        "kind": "absolute",
+        "at": [17.59, 7.91],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "bedroom-cane-wardrobe-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "cane-wardrobe",
+      "size": [1.55, 2.15, 0.474],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.02, 8.54],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bedroom-upholstered-ottoman-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [19.29, 8.28],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-neutral-area-rug-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "neutral-area-rug",
+      "size": [2, 0.015, 3],
+      "placement": {
+        "kind": "absolute",
+        "at": [19.29, 8.69],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-wicker-hamper-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wicker-hamper",
+      "size": [0.48, 0.593, 0.46],
+      "placement": {
+        "kind": "absolute",
+        "at": [20.83, 7.28],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "bedroom-organic-wall-mirror-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "organic-wall-mirror",
+      "size": [0.76, 1.1, 0.09],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.29, 7.42],
+        "elevationMeters": 0.92,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bedroom-framed-wall-art-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [17.29, 10.19],
+        "elevationMeters": 1.32,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "bedroom-round-globe-wall-lamp-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-globe-wall-lamp",
+      "size": [0.24, 0.24, 0.16],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.28, 10.06],
+        "elevationMeters": 1.39,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "bedroom-six-globe-ceiling-lamp-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "bedroom",
+        "at": [19.31, 8.82],
+        "dropMeters": 0.025,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-wood-bunk-bed-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "wood-bunk-bed",
+      "size": [1.015, 1.6, 2.08],
+      "placement": {
+        "kind": "absolute",
+        "at": [22.22, 9.75],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-student-storage-desk-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "student-storage-desk",
+      "size": [1.26, 0.756, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.96, 10.62],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-child-swivel-chair-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "child-swivel-chair",
+      "size": [0.44, 0.79, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.96, 9.87],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 6.283185307179586
+      }
+    },
+    {
+      "id": "junior-knob-door-wardrobe-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "knob-door-wardrobe",
+      "size": [1, 2.4, 0.6],
+      "placement": {
+        "kind": "absolute",
+        "at": [25.18, 9.61],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "junior-open-shelf-closet-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "open-shelf-closet",
+      "size": [0.72, 2.15, 0.403],
+      "placement": {
+        "kind": "absolute",
+        "at": [25.21, 8.58],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "junior-square-cube-storage-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "square-cube-storage",
+      "size": [0.77, 0.77, 0.39],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.9, 8.08],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "junior-children-floor-basket-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-floor-basket",
+      "size": [0.68, 0.512, 0.68],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.94, 7.2],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-children-toy-shelf-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-toy-shelf",
+      "size": [0.505, 1.065, 0.285],
+      "placement": {
+        "kind": "absolute",
+        "at": [25.23, 7.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "junior-tufted-diamond-rug-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "tufted-diamond-rug",
+      "size": [2.6, 0.016, 2],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.61, 8.53],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-decorative-globe-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "decorative-globe",
+      "size": [0.278, 0.339, 0.24],
+      "placement": {
+        "kind": "absolute",
+        "at": [24.36, 10.65],
+        "elevationMeters": 0.757,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-open-laptop-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "open-laptop",
+      "size": [0.34, 0.24, 0.24],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.72, 10.59],
+        "elevationMeters": 0.757,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-book-row-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.88, 8],
+        "elevationMeters": 0.771,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-table-lamp-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [23.55, 10.73],
+        "elevationMeters": 0.757,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "junior-children-wall-poster-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-wall-poster",
+      "size": [0.3, 0.42, 0.012],
+      "placement": {
+        "kind": "absolute",
+        "at": [21.59, 8.88],
+        "elevationMeters": 1.83,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "junior-children-wall-poster-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-wall-poster",
+      "size": [0.3, 0.42, 0.012],
+      "placement": {
+        "kind": "absolute",
+        "at": [25.45, 8.18],
+        "elevationMeters": 1.52,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "junior-children-pendant-16",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "children-pendant",
+      "size": [0.58, 0.479, 0.58],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "junior",
+        "at": [23.51, 8.83],
+        "dropMeters": 0.025,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-sectional-sofa-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "sectional-sofa",
+      "size": [2.93, 1.227, 1.63],
+      "placement": {
+        "kind": "absolute",
+        "at": [27.82, 10.08],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-upholstered-armchair-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-armchair",
+      "size": [0.85, 0.9, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.27, 8.68],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "lounge-rectangular-coffee-table-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "rectangular-coffee-table",
+      "size": [1.1, 0.4, 0.6],
+      "placement": {
+        "kind": "absolute",
+        "at": [27.75, 8.74],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-round-jute-rug-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-jute-rug",
+      "size": [2, 0.018, 2],
+      "placement": {
+        "kind": "absolute",
+        "at": [27.77, 8.63],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-media-shelf-surround-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "media-shelf-surround",
+      "size": [2, 1.73, 0.36],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.6, 8.47],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "lounge-two-tier-bar-cart-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-tier-bar-cart",
+      "size": [0.7, 0.8, 0.42],
+      "placement": {
+        "kind": "absolute",
+        "at": [26.22, 7.64],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "lounge-pedestal-side-table-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.58, 10.45],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-table-lamp-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "table-lamp",
+      "size": [0.32, 0.52, 0.32],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.58, 10.45],
+        "elevationMeters": 0.551,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-potted-plant-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.43, 7.16],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-book-row-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "book-row",
+      "size": [0.4, 0.28, 0.18],
+      "placement": {
+        "kind": "absolute",
+        "at": [27.49, 8.75],
+        "elevationMeters": 0.401,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-tabletop-candle-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "tabletop-candle",
+      "size": [0.12, 0.18, 0.12],
+      "placement": {
+        "kind": "absolute",
+        "at": [27.96, 8.77],
+        "elevationMeters": 0.401,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-framed-wall-art-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [25.74, 9.92],
+        "elevationMeters": 1.42,
+        "rotationYRadians": 4.71238898038469
+      }
+    },
+    {
+      "id": "lounge-line-portrait-wall-art-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "line-portrait-wall-art",
+      "size": [0.42, 0.62, 0.025],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.88, 7.41],
+        "elevationMeters": 1.35,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "lounge-six-globe-ceiling-lamp-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "lounge",
+        "at": [27.82, 8.81],
+        "dropMeters": 0.025,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "lounge-loose-throw-cushion-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "loose-throw-cushion",
+      "size": [0.45, 0.16, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [27.41, 10.34],
+        "elevationMeters": 0.53,
+        "rotationYRadians": 3.3615926535897933
+      }
+    },
+    {
+      "id": "lounge-loose-throw-cushion-16",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "loose-throw-cushion",
+      "size": [0.45, 0.16, 0.45],
+      "placement": {
+        "kind": "absolute",
+        "at": [28.17, 10.34],
+        "elevationMeters": 0.53,
+        "rotationYRadians": 2.981592653589793
+      }
+    },
+    {
+      "id": "gallery-six-globe-ceiling-lamp-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "gallery",
+        "at": [2.2, 5.475],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-six-globe-ceiling-lamp-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "gallery",
+        "at": [6.47, 5.475],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-six-globe-ceiling-lamp-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "gallery",
+        "at": [10.74, 5.475],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-six-globe-ceiling-lamp-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "gallery",
+        "at": [15.01, 5.475],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-six-globe-ceiling-lamp-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "gallery",
+        "at": [19.28, 5.475],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-six-globe-ceiling-lamp-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "gallery",
+        "at": [23.55, 5.475],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-six-globe-ceiling-lamp-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "six-globe-ceiling-lamp",
+      "size": [0.9, 0.42, 0.8062177826],
+      "placement": {
+        "kind": "ceiling",
+        "roomId": "gallery",
+        "at": [27.82, 5.475],
+        "dropMeters": 0.025,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-hallway-console-table-8",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "hallway-console-table",
+      "size": [0.82, 0.8, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.62, 4.82],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-ring-ceramic-vase-9",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.62, 4.82],
+        "elevationMeters": 0.801,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-framed-wall-art-10",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.62, 4.64],
+        "elevationMeters": 1.29,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-hallway-console-table-11",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "hallway-console-table",
+      "size": [0.82, 0.8, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.91, 4.83],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-ring-ceramic-vase-12",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.91, 4.83],
+        "elevationMeters": 0.801,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-framed-wall-art-13",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.91, 4.64],
+        "elevationMeters": 1.29,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-hallway-console-table-14",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "hallway-console-table",
+      "size": [0.82, 0.8, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.2, 6.17],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "gallery-ring-ceramic-vase-15",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.2, 6.17],
+        "elevationMeters": 0.801,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-framed-wall-art-16",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [15.2, 6.31],
+        "elevationMeters": 1.29,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "gallery-hallway-console-table-17",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "hallway-console-table",
+      "size": [0.82, 0.8, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [22.48, 4.81],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-ring-ceramic-vase-18",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [22.48, 4.81],
+        "elevationMeters": 0.801,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-framed-wall-art-19",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [22.48, 4.64],
+        "elevationMeters": 1.29,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-hallway-console-table-20",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "hallway-console-table",
+      "size": [0.82, 0.8, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.24, 6.14],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "gallery-ring-ceramic-vase-21",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "ring-ceramic-vase",
+      "size": [0.18, 0.3, 0.06],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.24, 6.14],
+        "elevationMeters": 0.801,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "gallery-framed-wall-art-22",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "framed-wall-art",
+      "size": [0.8, 0.6, 0.04],
+      "placement": {
+        "kind": "absolute",
+        "at": [29.24, 6.31],
+        "elevationMeters": 1.29,
+        "rotationYRadians": 3.141592653589793
+      }
+    }
+  ],
+  "roomProfiles": {
+    "laundry": {
+      "dashboardSlots": []
+    },
+    "bathroom": {
+      "dashboardSlots": []
+    },
+    "office": {
+      "dashboardSlots": []
+    },
+    "living": {
+      "dashboardSlots": []
+    },
+    "dining": {
+      "dashboardSlots": []
+    },
+    "library": {
+      "dashboardSlots": []
+    },
+    "guest-bedroom": {
+      "dashboardSlots": []
+    },
+    "dressing": {
+      "dashboardSlots": []
+    },
+    "bike-store": {
+      "dashboardSlots": []
+    },
+    "workshop": {
+      "dashboardSlots": []
+    },
+    "playroom": {
+      "dashboardSlots": []
+    },
+    "kitchen": {
+      "dashboardSlots": []
+    },
+    "music": {
+      "dashboardSlots": []
+    },
+    "bedroom": {
+      "dashboardSlots": []
+    },
+    "junior": {
+      "dashboardSlots": []
+    },
+    "lounge": {
+      "dashboardSlots": []
+    },
+    "gallery": {
+      "dashboardSlots": []
+    }
+  },
+  "openingProfiles": {},
+  "shortcuts": [],
+  "assumptions": [
+    {
+      "id": "synthetic-apartment-design",
+      "basis": "inferred",
+      "subjectId": "dense-courtyard-apartment",
+      "summary": "Synthetic single-floor courtyard-facing apartment, designed for an interactive performance replay. Plan coordinates are metres. Opposing room wings share a 1.85 m gallery with two exterior exits."
+    }
+  ]
+}

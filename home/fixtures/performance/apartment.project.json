@@ -1,0 +1,1754 @@
+{
+  "schemaVersion": 2,
+  "seedRevision": "performance-apartment-v1",
+  "home": {
+    "id": "performance-apartment",
+    "name": "Performance apartment",
+    "locale": "en",
+    "palette": {
+      "accent": "#d48a54",
+      "secondary": "#758f83",
+      "exterior": "#c97370",
+      "interior": "#e4e0d8",
+      "ground": "#91a06a"
+    }
+  },
+  "coordinates": {
+    "origin": [0, 0],
+    "metersPerPlanUnit": 1,
+    "scaleBasis": "measured"
+  },
+  "floors": [
+    {
+      "id": "ground-floor",
+      "name": "Ground floor",
+      "floorToFloorHeightMeters": 2.8,
+      "coordinates": {
+        "origin": [0, 0],
+        "metersPerPlanUnit": 1,
+        "scaleBasis": "measured"
+      },
+      "defaultWallHeightMeters": 2.4,
+      "defaultCeilingHeightMeters": 2.4,
+      "footprint": [
+        [0, 0],
+        [12, 0],
+        [12, 9],
+        [0, 9]
+      ],
+      "rooms": [
+        {
+          "id": "apartment-room-0",
+          "name": "Apartment room 1",
+          "polygon": [
+            [0.08, 0.08],
+            [2.92, 0.08],
+            [2.92, 2.92],
+            [0.08, 2.92]
+          ],
+          "accent": "#efc5a9",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-1",
+          "name": "Apartment room 2",
+          "polygon": [
+            [3.08, 0.08],
+            [5.92, 0.08],
+            [5.92, 2.92],
+            [3.08, 2.92]
+          ],
+          "accent": "#c7d9cf",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-2",
+          "name": "Apartment room 3",
+          "polygon": [
+            [6.08, 0.08],
+            [8.92, 0.08],
+            [8.92, 2.92],
+            [6.08, 2.92]
+          ],
+          "accent": "#efc5a9",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-3",
+          "name": "Apartment room 4",
+          "polygon": [
+            [9.08, 0.08],
+            [11.92, 0.08],
+            [11.92, 2.92],
+            [9.08, 2.92]
+          ],
+          "accent": "#c7d9cf",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-4",
+          "name": "Apartment room 5",
+          "polygon": [
+            [0.08, 3.08],
+            [2.92, 3.08],
+            [2.92, 5.92],
+            [0.08, 5.92]
+          ],
+          "accent": "#efc5a9",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-5",
+          "name": "Apartment room 6",
+          "polygon": [
+            [3.08, 3.08],
+            [5.92, 3.08],
+            [5.92, 5.92],
+            [3.08, 5.92]
+          ],
+          "accent": "#c7d9cf",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-6",
+          "name": "Apartment room 7",
+          "polygon": [
+            [6.08, 3.08],
+            [8.92, 3.08],
+            [8.92, 5.92],
+            [6.08, 5.92]
+          ],
+          "accent": "#efc5a9",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-7",
+          "name": "Apartment room 8",
+          "polygon": [
+            [9.08, 3.08],
+            [11.92, 3.08],
+            [11.92, 5.92],
+            [9.08, 5.92]
+          ],
+          "accent": "#c7d9cf",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-8",
+          "name": "Apartment room 9",
+          "polygon": [
+            [0.08, 6.08],
+            [2.92, 6.08],
+            [2.92, 8.92],
+            [0.08, 8.92]
+          ],
+          "accent": "#efc5a9",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-9",
+          "name": "Apartment room 10",
+          "polygon": [
+            [3.08, 6.08],
+            [5.92, 6.08],
+            [5.92, 8.92],
+            [3.08, 8.92]
+          ],
+          "accent": "#c7d9cf",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-10",
+          "name": "Apartment room 11",
+          "polygon": [
+            [6.08, 6.08],
+            [8.92, 6.08],
+            [8.92, 8.92],
+            [6.08, 8.92]
+          ],
+          "accent": "#efc5a9",
+          "dashboardSlots": [],
+          "devices": []
+        },
+        {
+          "id": "apartment-room-11",
+          "name": "Apartment room 12",
+          "polygon": [
+            [9.08, 6.08],
+            [11.92, 6.08],
+            [11.92, 8.92],
+            [9.08, 8.92]
+          ],
+          "accent": "#c7d9cf",
+          "dashboardSlots": [],
+          "devices": []
+        }
+      ],
+      "walls": [
+        {
+          "id": "apartment-v-0",
+          "from": [0, 0],
+          "to": [0, 9],
+          "classification": "exterior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "apartment-v-1",
+          "from": [3, 0],
+          "to": [3, 9],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "apartment-v-2",
+          "from": [6, 0],
+          "to": [6, 9],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "apartment-v-3",
+          "from": [9, 0],
+          "to": [9, 9],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "apartment-v-4",
+          "from": [12, 0],
+          "to": [12, 9],
+          "classification": "exterior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "apartment-h-0",
+          "from": [0, 0],
+          "to": [12, 0],
+          "classification": "exterior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "apartment-h-1",
+          "from": [0, 3],
+          "to": [12, 3],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "apartment-h-2",
+          "from": [0, 6],
+          "to": [12, 6],
+          "classification": "interior",
+          "thicknessMeters": 0.12
+        },
+        {
+          "id": "apartment-h-3",
+          "from": [0, 9],
+          "to": [12, 9],
+          "classification": "exterior",
+          "thicknessMeters": 0.12
+        }
+      ],
+      "wallJunctions": [
+        {
+          "id": "apartment-junction-0",
+          "at": [0, 0],
+          "wallIds": ["apartment-v-0", "apartment-h-0"]
+        },
+        {
+          "id": "apartment-junction-1",
+          "at": [3, 0],
+          "wallIds": ["apartment-v-1", "apartment-h-0"]
+        },
+        {
+          "id": "apartment-junction-2",
+          "at": [6, 0],
+          "wallIds": ["apartment-v-2", "apartment-h-0"]
+        },
+        {
+          "id": "apartment-junction-3",
+          "at": [9, 0],
+          "wallIds": ["apartment-v-3", "apartment-h-0"]
+        },
+        {
+          "id": "apartment-junction-4",
+          "at": [12, 0],
+          "wallIds": ["apartment-v-4", "apartment-h-0"]
+        },
+        {
+          "id": "apartment-junction-5",
+          "at": [0, 3],
+          "wallIds": ["apartment-v-0", "apartment-h-1"]
+        },
+        {
+          "id": "apartment-junction-6",
+          "at": [3, 3],
+          "wallIds": ["apartment-v-1", "apartment-h-1"]
+        },
+        {
+          "id": "apartment-junction-7",
+          "at": [6, 3],
+          "wallIds": ["apartment-v-2", "apartment-h-1"]
+        },
+        {
+          "id": "apartment-junction-8",
+          "at": [9, 3],
+          "wallIds": ["apartment-v-3", "apartment-h-1"]
+        },
+        {
+          "id": "apartment-junction-9",
+          "at": [12, 3],
+          "wallIds": ["apartment-v-4", "apartment-h-1"]
+        },
+        {
+          "id": "apartment-junction-10",
+          "at": [0, 6],
+          "wallIds": ["apartment-v-0", "apartment-h-2"]
+        },
+        {
+          "id": "apartment-junction-11",
+          "at": [3, 6],
+          "wallIds": ["apartment-v-1", "apartment-h-2"]
+        },
+        {
+          "id": "apartment-junction-12",
+          "at": [6, 6],
+          "wallIds": ["apartment-v-2", "apartment-h-2"]
+        },
+        {
+          "id": "apartment-junction-13",
+          "at": [9, 6],
+          "wallIds": ["apartment-v-3", "apartment-h-2"]
+        },
+        {
+          "id": "apartment-junction-14",
+          "at": [12, 6],
+          "wallIds": ["apartment-v-4", "apartment-h-2"]
+        },
+        {
+          "id": "apartment-junction-15",
+          "at": [0, 9],
+          "wallIds": ["apartment-v-0", "apartment-h-3"]
+        },
+        {
+          "id": "apartment-junction-16",
+          "at": [3, 9],
+          "wallIds": ["apartment-v-1", "apartment-h-3"]
+        },
+        {
+          "id": "apartment-junction-17",
+          "at": [6, 9],
+          "wallIds": ["apartment-v-2", "apartment-h-3"]
+        },
+        {
+          "id": "apartment-junction-18",
+          "at": [9, 9],
+          "wallIds": ["apartment-v-3", "apartment-h-3"]
+        },
+        {
+          "id": "apartment-junction-19",
+          "at": [12, 9],
+          "wallIds": ["apartment-v-4", "apartment-h-3"]
+        }
+      ],
+      "openings": [
+        {
+          "id": "apartment-door-0-0",
+          "wallId": "apartment-v-1",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "apartment-door-0-1",
+          "wallId": "apartment-v-1",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 4.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "apartment-door-0-2",
+          "wallId": "apartment-v-1",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 7.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "apartment-door-1-0",
+          "wallId": "apartment-v-2",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "apartment-door-1-1",
+          "wallId": "apartment-v-2",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 4.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "apartment-door-1-2",
+          "wallId": "apartment-v-2",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 7.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "apartment-door-2-0",
+          "wallId": "apartment-v-3",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 1.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "apartment-door-2-1",
+          "wallId": "apartment-v-3",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 4.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        },
+        {
+          "id": "apartment-door-2-2",
+          "wallId": "apartment-v-3",
+          "kind": "door",
+          "offsetFromWallStartPlanUnits": 7.05,
+          "widthPlanUnits": 0.85,
+          "openingHeightMeters": 2.1,
+          "sillHeightMeters": 0,
+          "operation": "hinged",
+          "variant": "panel",
+          "finish": "wood",
+          "leafCount": 1
+        }
+      ],
+      "ceilings": []
+    }
+  ],
+  "stairs": [],
+  "sceneItems": [
+    {
+      "id": "apartment-room-0-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 1.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-0-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 0.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-0-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 2.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-0-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.45, 0.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-0-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.55, 0.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-0-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.3, 1.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-0-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.45, 2.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-0-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.55, 2.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-1-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 1.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-1-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 0.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-1-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 2.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-1-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.45, 0.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-1-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [5.55, 0.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-1-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.3, 1.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-1-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [5.45, 2.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-1-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.55, 2.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-2-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 1.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-2-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 0.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-2-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 2.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-2-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.45, 0.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-2-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.55, 0.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-2-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.3, 1.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-2-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.45, 2.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-2-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.55, 2.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-3-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 1.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-3-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 0.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-3-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 2.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-3-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.45, 0.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-3-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.55, 0.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-3-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.3, 1.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-3-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.45, 2.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-3-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.55, 2.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-4-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 4.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-4-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 3.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-4-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 5.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-4-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.45, 3.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-4-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.55, 3.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-4-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.3, 4.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-4-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.45, 5.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-4-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.55, 5.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-5-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 4.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-5-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 3.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-5-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 5.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-5-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.45, 3.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-5-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [5.55, 3.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-5-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.3, 4.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-5-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [5.45, 5.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-5-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.55, 5.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-6-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 4.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-6-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 3.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-6-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 5.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-6-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.45, 3.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-6-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.55, 3.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-6-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.3, 4.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-6-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.45, 5.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-6-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.55, 5.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-7-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 4.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-7-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 3.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-7-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 5.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-7-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.45, 3.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-7-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.55, 3.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-7-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.3, 4.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-7-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.45, 5.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-7-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.55, 5.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-8-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 7.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-8-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 6.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-8-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [1.5, 8.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-8-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.45, 6.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-8-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.55, 6.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-8-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.3, 7.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-8-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [2.45, 8.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-8-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [0.55, 8.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-9-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 7.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-9-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 6.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-9-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [4.5, 8.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-9-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.45, 6.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-9-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [5.55, 6.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-9-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.3, 7.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-9-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [5.45, 8.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-9-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [3.55, 8.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-10-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 7.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-10-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 6.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-10-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [7.5, 8.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-10-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.45, 6.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-10-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.55, 6.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-10-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.3, 7.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-10-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [8.45, 8.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-10-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [6.55, 8.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-11-item-0",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "round-coffee-table",
+      "size": [0.68, 0.386, 0.612],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 7.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-11-item-1",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "two-seat-loveseat",
+      "size": [1.6, 0.82, 0.88],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 6.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 3.141592653589793
+      }
+    },
+    {
+      "id": "apartment-room-11-item-2",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-dining-chair",
+      "size": [0.49, 0.82, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [10.5, 8.3],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-11-item-3",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-nightstand",
+      "size": [0.45, 0.5, 0.4],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.45, 6.55],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-11-item-4",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "potted-plant",
+      "size": [0.615, 1.105, 0.44],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.55, 6.5],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-11-item-5",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "oak-bookshelf",
+      "size": [0.8, 1.9, 0.3],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.3, 7.6],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 1.5707963267948966
+      }
+    },
+    {
+      "id": "apartment-room-11-item-6",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "pedestal-side-table",
+      "size": [0.5, 0.55, 0.5],
+      "placement": {
+        "kind": "absolute",
+        "at": [11.45, 8.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    },
+    {
+      "id": "apartment-room-11-item-7",
+      "kind": "furnishing",
+      "floorId": "ground-floor",
+      "modelId": "upholstered-ottoman",
+      "size": [0.7, 0.42, 0.55],
+      "placement": {
+        "kind": "absolute",
+        "at": [9.55, 8.4],
+        "elevationMeters": 0.001,
+        "rotationYRadians": 0
+      }
+    }
+  ],
+  "roomProfiles": {
+    "apartment-room-0": { "dashboardSlots": [] },
+    "apartment-room-1": { "dashboardSlots": [] },
+    "apartment-room-2": { "dashboardSlots": [] },
+    "apartment-room-3": { "dashboardSlots": [] },
+    "apartment-room-4": { "dashboardSlots": [] },
+    "apartment-room-5": { "dashboardSlots": [] },
+    "apartment-room-6": { "dashboardSlots": [] },
+    "apartment-room-7": { "dashboardSlots": [] },
+    "apartment-room-8": { "dashboardSlots": [] },
+    "apartment-room-9": { "dashboardSlots": [] },
+    "apartment-room-10": { "dashboardSlots": [] },
+    "apartment-room-11": { "dashboardSlots": [] }
+  },
+  "openingProfiles": {},
+  "shortcuts": [],
+  "assumptions": []
+}
