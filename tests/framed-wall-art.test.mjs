@@ -11,6 +11,43 @@ await withModules(async (load) => {
   const { FramedWallArt } = await load(
     "/packages/catalog/src/furnishing/presets/decor/framed-wall-art.tsx",
   );
+  test("bundled prints share one texture and retain its upload identity across floor remounts", async (t) => {
+    let complete;
+    const loader = t.mock.method(TextureLoader.prototype, "load", (_src, onLoad) => {
+      complete = onLoad;
+      return new Texture();
+    });
+    const print = () => createElement(FramedWallArt, { variant: "atlantic-village" });
+    const first = await create(createElement("group", null, print(), print()));
+    const texture = new Texture({ width: 1484, height: 1060 });
+    const dispose = t.mock.method(texture, "dispose");
+    try {
+      assert.equal(loader.mock.callCount(), 1);
+      await act(async () => complete(texture));
+      const prints = first.scene.instance.children.flatMap((child) =>
+        child.getObjectsByProperty("name", "framed-art-image"),
+      );
+      assert.equal(prints.length, 2);
+      assert.ok(prints.every((mesh) => mesh.material.map === texture));
+      assert.equal(texture.colorSpace, SRGBColorSpace);
+      assert.equal(texture.anisotropy, 4);
+      assert.equal(texture.flipY, true);
+    } finally {
+      await first.unmount();
+    }
+    assert.equal(dispose.mock.callCount(), 0);
+    const remounted = await create(print());
+    try {
+      assert.equal(loader.mock.callCount(), 1);
+      assert.equal(
+        remounted.scene.instance.getObjectByName("framed-art-image").material.map,
+        texture,
+      );
+    } finally {
+      await remounted.unmount();
+    }
+    assert.equal(dispose.mock.callCount(), 0);
+  });
   test("prints retain their aspect ratio when the frame is resized and release their texture", async (t) => {
     let complete;
     t.mock.method(TextureLoader.prototype, "load", (_src, onLoad) => {

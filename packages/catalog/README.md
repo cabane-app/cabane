@@ -460,6 +460,11 @@ they do not claim to reproduce a particular manufacturer. Dimensions are
 | `counter-stool`            | 48 × 50 × 92            | Light oak four-leg frame, 65 cm beige seat, low back and foot rail                                                | Kitchen      |
 | `upholstered-ottoman`      | 70 × 55 × 42            | Beige upholstered cushion, perimeter seam and four short oak feet                                                 | Living room  |
 
+The four bundled wall-art prints share their full-resolution sRGB textures across
+frames and floor remounts. This finite, application-lifetime cache retains at most
+one texture per bundled print. Custom images keep instance-owned loading, failure
+fallback and texture disposal; no user-image URLs are retained in that cache.
+
 Freestanding models use a floor-contact origin at Y=0, centered X/Z footprints,
 and face +Z. Wall models use X-centered, bottom-edge Y=0 geometry with their
 back at Z=0. The media console never embeds a

@@ -13,3 +13,7 @@ export function wallArtImage(variant: string): string | undefined {
     ? WALL_ART_IMAGES[variant as keyof typeof WALL_ART_IMAGES]
     : undefined;
 }
+
+export function isBundledWallArtImage(src: string): boolean {
+  return Object.values(WALL_ART_IMAGES).some((url) => url === src);
+}

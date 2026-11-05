@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useThree } from "@react-three/fiber";
 import { SRGBColorSpace, TextureLoader, type Texture } from "three";
 import { ToonMaterial } from "@cabane/engine";
+import { subscribeBundledArtTexture } from "./bundled-art-textures";
 
-/** A contained print: owns its texture and leaves the cream mount visible on load failure. */
+/** Contained prints share bundled textures; custom prints retain instance ownership. */
 export function FramedArtImage({
   src,
   width,
@@ -16,6 +17,11 @@ export function FramedArtImage({
   const { invalidate } = useThree();
   const [loaded, setLoaded] = useState<{ src: string; texture: Texture } | null>(null);
   useEffect(() => {
+    const release = subscribeBundledArtTexture(src, (texture) => {
+      setLoaded(texture ? { src, texture } : null);
+      invalidate();
+    });
+    if (release) return release;
     let cancelled = false;
     let owned: Texture | undefined;
     const loader = new TextureLoader();
