@@ -1,4 +1,8 @@
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
+import {
+  PreparedOrbitFurnitureLayer,
+  PreparedOrbitItem,
+} from "../scene-batching/PreparedOrbitFurnitureLayer";
 import { ItemEntityReadings } from "../ItemEntityReadings";
 import { SolidRooms } from "../architecture-scene/SolidRooms";
 import { ArchitecturalOutdoorPlatforms, floorSlabPolygons } from "../outdoor-platforms";
@@ -24,6 +28,7 @@ export type FloorSceneProps = {
   liveMediaByEntityId?: Readonly<Partial<Record<EntityId, DeviceLiveMedia>>>;
   interactionMode?: ("runtime" | "editor") | undefined;
   sceneLightingEnabled?: boolean;
+  prepareOrbitFurniture?: boolean;
 };
 import { type Object3D } from "three";
 
@@ -86,6 +91,7 @@ export const FloorScene = memo(function FloorScene({
   liveMediaByEntityId = EMPTY_MEDIA,
   interactionMode = "runtime",
   sceneLightingEnabled = true,
+  prepareOrbitFurniture = false,
 }: FloorSceneProps) {
   const floor = useSceneArchitectureFloor(sourceFloor);
   const visualRoot = useRef<Object3D>(null);
@@ -133,6 +139,60 @@ export const FloorScene = memo(function FloorScene({
     () => mergeDeviceModelRegistriesStableFirst(deviceModels, manifest.extensions.deviceModels),
     [deviceModels, manifest.extensions.deviceModels],
   );
+  const preparedItems: ReactNode[] = [];
+  const sceneItems = manifest.sceneItems
+    .filter((item) => item.floorId === floor.id)
+    .map((item) => {
+      const definition = (
+        item.kind === "device" ? declarativeDeviceModels : manifest.extensions.furnishingModels
+      )[item.modelId];
+      const states =
+        roomStates[roomIdForItem(item, floor, definition) ?? `outside-rooms:${floor.id}`] ??
+        EMPTY_STATES;
+      const prepare =
+        prepareOrbitFurniture &&
+        item.kind === "furnishing" &&
+        manifest.extensions.furnishingModels[item.modelId]?.preparedOrbit === true &&
+        !definition?.lighting &&
+        !item.lightSlotId &&
+        !item.lightState &&
+        !item.entitySlots?.length;
+      const visual = (
+        <SceneItemRenderer
+          item={item}
+          floor={floor}
+          furnishingModels={manifest.extensions.furnishingModels}
+          deviceModels={declarativeDeviceModels}
+          resolvedDevice={resolvedDeviceById[item.id]}
+          entityStatesBySlotId={states}
+          reducedMotion={reducedMotion}
+          walkMode={walkMode}
+          onInteract={onInteract}
+          liveMediaByEntityId={liveMediaByEntityId}
+          outlineColor={manifest.home.palette.accent}
+        />
+      );
+      if (prepare) {
+        preparedItems.push(
+          <PreparedOrbitItem
+            key={item.id}
+            item={item}
+            floor={floor}
+            definition={manifest.extensions.furnishingModels[item.modelId]}
+          >
+            {visual}
+          </PreparedOrbitItem>,
+        );
+      }
+      return (
+        <Fragment key={item.id}>
+          {!prepare && visual}
+          {!walkMode && interactionMode !== "editor" && (
+            <ItemEntityReadings item={item} floor={floor} states={states} />
+          )}
+        </Fragment>
+      );
+    });
   return (
     <group
       ref={visualRoot}
@@ -244,38 +304,12 @@ export const FloorScene = memo(function FloorScene({
       })}
       {showCeiling && <CeilingSurfaces floor={floor} />}
       {manifest.sceneItems.length > 0 ? (
-        manifest.sceneItems
-          .filter((item) => item.floorId === floor.id)
-          .map((item) => {
-            const definition = (
-              item.kind === "device"
-                ? declarativeDeviceModels
-                : manifest.extensions.furnishingModels
-            )[item.modelId];
-            const states =
-              roomStates[roomIdForItem(item, floor, definition) ?? `outside-rooms:${floor.id}`] ??
-              EMPTY_STATES;
-            return (
-              <Fragment key={item.id}>
-                <SceneItemRenderer
-                  item={item}
-                  floor={floor}
-                  furnishingModels={manifest.extensions.furnishingModels}
-                  deviceModels={declarativeDeviceModels}
-                  resolvedDevice={resolvedDeviceById[item.id]}
-                  entityStatesBySlotId={states}
-                  reducedMotion={reducedMotion}
-                  walkMode={walkMode}
-                  onInteract={onInteract}
-                  liveMediaByEntityId={liveMediaByEntityId}
-                  outlineColor={manifest.home.palette.accent}
-                />
-                {!walkMode && interactionMode !== "editor" && (
-                  <ItemEntityReadings item={item} floor={floor} states={states} />
-                )}
-              </Fragment>
-            );
-          })
+        <>
+          {sceneItems}
+          {preparedItems.length > 0 && (
+            <PreparedOrbitFurnitureLayer>{preparedItems}</PreparedOrbitFurnitureLayer>
+          )}
+        </>
       ) : (
         <>
           {sourceFloor.rooms.map((room) => (

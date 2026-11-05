@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  BatchedMesh,
   BoxGeometry,
   DirectionalLight,
   Group,
@@ -104,6 +105,68 @@ await withModules(async (load) => {
       assert.equal(f.dirty(), true);
       assert.equal(f.dirty(), false);
     }
+  });
+  test("prepared shadow batches reuse the map across camera motion and invalidate by root revision", () => {
+    const f = fixture();
+    const root = new Group();
+    const parent = new Group();
+    const batch = new BatchedMesh(1, 24, 36, new MeshToonMaterial());
+    batch.addInstance(batch.addGeometry(new BoxGeometry()));
+    let casterReads = 0;
+    Object.defineProperty(batch, "castShadow", {
+      get() {
+        casterReads++;
+        return true;
+      },
+    });
+    f.scene.add(parent);
+    parent.add(root);
+    root.add(batch);
+    let revision = 0;
+    const preparedRevision = (object) => (object === root ? revision : undefined);
+    const renderer = {
+      shadowMap: { enabled: true, autoUpdate: true, type: PCFShadowMap, needsUpdate: false },
+      localClippingEnabled: false,
+      clippingPlanes: [],
+    };
+    const dirty = () => {
+      let redraw = false;
+      const draw = () => {
+        redraw = renderer.shadowMap.needsUpdate;
+        renderer.shadowMap.needsUpdate = false;
+      };
+      f.cache.render(renderer, f.scene, f.camera, draw, preparedRevision);
+      return redraw;
+    };
+    assert.equal(dirty(), true, "a newly admitted caster changes the map");
+    f.camera.position.x++;
+    assert.equal(dirty(), false, "camera position does not change static shadow depth");
+    for (const change of [
+      () => revision++,
+      () => parent.position.y++,
+      () => (root.visible = false),
+      () => (root.visible = true),
+      () => f.camera.layers.set(2),
+      () => f.camera.layers.set(0),
+      () => parent.remove(root),
+      () => parent.add(root),
+      () => f.cache.reset(),
+    ]) {
+      change();
+      assert.equal(dirty(), true);
+      assert.equal(dirty(), false);
+    }
+    assert.equal(casterReads, 0, "prepared batches do not need a per-mesh depth signature");
+
+    const unknownBatch = new BatchedMesh(1, 24, 36, new MeshToonMaterial());
+    unknownBatch.addInstance(unknownBatch.addGeometry(new BoxGeometry()));
+    unknownBatch.castShadow = true;
+    f.scene.add(unknownBatch);
+    assert.equal(dirty(), true);
+    assert.equal(dirty(), true, "unregistered batch hooks require conservative redraw");
+    f.scene.remove(unknownBatch);
+    assert.equal(dirty(), true);
+    assert.equal(dirty(), false);
   });
   test("geometry edits, alpha cutouts and instance transforms invalidate; ordinary animation does not", () => {
     const f = fixture();

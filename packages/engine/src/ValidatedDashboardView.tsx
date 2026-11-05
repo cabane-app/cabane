@@ -61,6 +61,11 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
   const roomFocus = useRoomFocusFrame();
   const [overlayPreferences] = useState(loadOverlayPreferences);
   const [invertYAxis] = useState(loadInvertYAxis);
+  const [prepareOrbitFurniture] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("prepared-orbit") === "1",
+  );
   const dashboard = useDashboardController(props);
   const weather = useWeatherController(
     dashboard.runtime,
@@ -256,7 +261,10 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
               >
                 <SceneOverlayLayout>
                   <RoomHoverProvider scope={`${floor.id}-${mode}`}>
-                    <StylizedScene antialias={quality.antialias}>
+                    <StylizedScene
+                      antialias={quality.antialias}
+                      preparedOrbit={prepareOrbitFurniture && !walkMode && !wholeBuilding}
+                    >
                       <ScenePreview enabled={!walkMode && !selectedRoomId} />
                       <SolarLighting
                         weather={weather.appearance}
@@ -330,6 +338,9 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                           deviceModels={deviceModels}
                           openingPositions={openingPositions}
                           interactionMode={!walkMode && wholeBuilding ? "editor" : "runtime"}
+                          prepareOrbitFurniture={
+                            prepareOrbitFurniture && !walkMode && !wholeBuilding
+                          }
                           onSelectRoom={wholeBuilding ? undefined : selectRoom}
                           onInteract={handleExtensionInteraction}
                           onWalkDeviceTargetChange={

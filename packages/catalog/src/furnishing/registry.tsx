@@ -1,3 +1,4 @@
+import { withPreparedOrbitFurnishings } from "./prepared-orbit-furnishings";
 import {
   twoSeatLoveseatDefinition,
   indoorChaiseLongueDefinition,
@@ -8,12 +9,10 @@ import {
 import { GARDEN_SWING_VARIANTS } from "./presets/outdoor/wooden-garden-swing";
 import { childrenCurtainDefinition } from "./presets/children-bedroom/curtain-definition";
 import { singleWindowCurtainDefinition } from "./presets/curtains/definition";
-import { DryingRack, DRYING_RACK_SIZE } from "./presets/laundry";
-import { IroningBoard, IRONING_BOARD_SIZE } from "./presets/laundry";
+import { DryingRack, DRYING_RACK_SIZE, IroningBoard, IRONING_BOARD_SIZE } from "./presets/laundry";
 import { TwoStepStool, TWO_STEP_STOOL_SIZE } from "./presets/kitchen";
 import { UtilityShelving, UTILITY_SHELVING_SIZE } from "./presets/storage";
-import { Workbench, WORKBENCH_SIZE } from "./presets/storage";
-import { Toolbox, TOOLBOX_SIZE } from "./presets/storage";
+import { Workbench, WORKBENCH_SIZE, Toolbox, TOOLBOX_SIZE } from "./presets/storage";
 import { ShoeCabinet, SHOE_CABINET_SIZE } from "./presets/entryway";
 import { UmbrellaStand, UMBRELLA_STAND_SIZE } from "./presets/entryway";
 import { FreestandingCoatStand, FREESTANDING_COAT_STAND_SIZE } from "./presets/entryway";
@@ -68,7 +67,7 @@ import {
   WROUGHT_IRON_PERGOLA_SIZE,
 } from "./presets/outdoor/wrought-iron-pergola";
 import { legacyLightFurnishingDefinitions } from "./legacy-light-definitions";
-import { defineFurnishingModel, defineFurnishingModelRegistry } from "@cabane/engine";
+import { defineFurnishingModel } from "@cabane/engine";
 import {
   ArchedMirror,
   DarkOakVesselVanity,
@@ -1353,6 +1352,4 @@ const stableFurnishingDefinitions = {
   }),
 };
 
-export const stableFurnishingRegistry = defineFurnishingModelRegistry(
-  Object.assign(Object.create(null) as Record<string, never>, stableFurnishingDefinitions),
-);
+export const stableFurnishingRegistry = withPreparedOrbitFurnishings(stableFurnishingDefinitions);

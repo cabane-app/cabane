@@ -5,6 +5,7 @@ import {
   type BufferGeometry,
   type Camera,
   type Mesh,
+  type Object3D,
   type Scene,
 } from "three";
 import { geometryRevision, isToonBatchCompatible } from "./toon-batch-compatibility";
@@ -12,6 +13,7 @@ import type { GeometryLod } from "./geometry-lod";
 import { GeometryLodWorker } from "./GeometryLodWorker";
 import { forgetGeometryLods, registerGeometryLods } from "./geometry-lod-family";
 import { registerSceneGeometryLods } from "./scene-preparation";
+import { preparedOrbitShadowRevision } from "./prepared-orbit-render-root";
 
 type Entry = { revision: string; levels: GeometryLod[] };
 /** Cached, error-limited LODs. Original geometry remains the picking surface. */
@@ -60,7 +62,13 @@ export class SceneGeometryLod {
     if (!this.disposed) this.invalidate();
   }
 
-  render(scene: Scene, camera: Camera, viewportHeight: number, draw: () => void) {
+  render(
+    scene: Scene,
+    camera: Camera,
+    viewportHeight: number,
+    draw: () => void,
+    skipPreparedRoots = false,
+  ) {
     // React StrictMode replays effect cleanup while retaining memoized resources.
     this.disposed = false;
     if (scene.overrideMaterial) {
@@ -72,7 +80,7 @@ export class SceneGeometryLod {
     const originals: Array<[Mesh, BufferGeometry]> = [];
     const used = new Set<BufferGeometry>();
     try {
-      scene.traverse((object) => {
+      const selectGeometry = (object: Object3D) => {
         const mesh = object as Mesh;
         if (!mesh.isMesh) return;
         const source = mesh.geometry;
@@ -130,7 +138,15 @@ export class SceneGeometryLod {
           originals.push([mesh, source]);
           mesh.geometry = geometry;
         }
-      });
+      };
+      if (skipPreparedRoots) {
+        const visit = (object: Object3D) => {
+          if (preparedOrbitShadowRevision(object) !== undefined) return;
+          selectGeometry(object);
+          for (const child of object.children) visit(child);
+        };
+        visit(scene);
+      } else scene.traverse(selectGeometry);
       for (const [source, entry] of this.entries) {
         if (!used.has(source)) {
           forgetGeometryLods(source);

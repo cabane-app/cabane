@@ -686,6 +686,8 @@ export interface SceneModelEditorDescriptor {
 }
 
 export interface FurnishingModelDefinition extends SceneModelEditorDescriptor {
+  /** Opt in only for synchronous, immutable visuals with no scene interaction or animation. */
+  preparedOrbit?: true;
   /** Read compatibility for existing items; omit from new-item catalogs. */
   legacyOnly?: boolean;
   component: ComponentType<SceneModelProps>;

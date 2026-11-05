@@ -12,6 +12,9 @@ import {
 } from "three";
 import { sceneLightMaterialHooks } from "./scene-light-wall-mask";
 
+/** Revisions certify shadow inputs owned by the prepared renderer. */
+type PreparedShadowRevision = (root: Object3D) => number | undefined;
+
 /** Compare render inputs without allocating a scene-sized signature every frame. */
 class ShadowInputs {
   private values: unknown[] = [];
@@ -48,7 +51,12 @@ export class ShadowMapCache {
   private inputs = new ShadowInputs();
   reset = () => this.inputs.clear();
 
-  needsUpdate(scene: Scene, camera: Camera, shadowType: number) {
+  needsUpdate(
+    scene: Scene,
+    camera: Camera,
+    shadowType: number,
+    preparedRevision?: PreparedShadowRevision,
+  ) {
     const s = this.inputs;
     s.begin();
     s.add(shadowType);
@@ -66,7 +74,7 @@ export class ShadowMapCache {
       // Video and user-updated texture contents may change without a version bump.
       if ("isVideoTexture" in t && t.isVideoTexture) untracked = true;
     };
-    scene.traverseVisible((object) => {
+    const inspect = (object: Object3D) => {
       if (object.onBeforeRender !== Object3D.prototype.onBeforeRender) untracked = true;
       if ((object as DirectionalLight).isLight && (object as DirectionalLight).castShadow) {
         const light = object as DirectionalLight;
@@ -181,7 +189,25 @@ export class ShadowMapCache {
         s.add(m.displacementScale);
         s.add(m.displacementBias);
       }
-    });
+    };
+    if (preparedRevision) {
+      const visit = (object: Object3D) => {
+        if (object.visible === false) return;
+        inspect(object);
+        const revision = preparedRevision(object);
+        if (revision !== undefined) {
+          // Prepared batches keep shadow casters independent of the beauty frustum.
+          // Their owner updates the revision before changing any depth inputs.
+          s.add(object);
+          s.add(revision);
+          s.numbers(object.matrixWorld.elements);
+          s.add(object.layers.mask);
+          return;
+        }
+        for (const child of object.children) visit(child);
+      };
+      visit(scene);
+    } else scene.traverseVisible(inspect);
     const changed = s.end();
     // A custom pass may have produced different depth: refresh once when returning
     // to the tracked path, even if all tracked values happen to match again.
@@ -198,6 +224,7 @@ export class ShadowMapCache {
     scene: Scene,
     camera: Camera,
     draw = () => renderer.render(scene, camera),
+    preparedRevision?: PreparedShadowRevision,
   ) {
     if (
       !renderer.shadowMap.enabled ||
@@ -211,7 +238,7 @@ export class ShadowMapCache {
       return;
     }
     if (scene.matrixWorldAutoUpdate) scene.updateMatrixWorld();
-    const update = this.needsUpdate(scene, camera, renderer.shadowMap.type);
+    const update = this.needsUpdate(scene, camera, renderer.shadowMap.type, preparedRevision);
     const autoUpdate = scene.matrixWorldAutoUpdate;
     try {
       scene.matrixWorldAutoUpdate = false; // The same update already ran above.

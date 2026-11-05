@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   DirectionalLight,
+  Group,
   InstancedMesh,
   Matrix4,
   PCFShadowMap,
@@ -18,6 +19,9 @@ await withModules(async (load) => {
     "/packages/engine/src/scene-batching/SceneGeometryLod.ts",
   );
   const { ShadowMapCache } = await load("/packages/engine/src/shadow-map-cache.ts");
+  const { markPreparedOrbitRenderRoot } = await load(
+    "/packages/engine/src/scene-batching/prepared-orbit-render-root.ts",
+  );
   const { SceneToonBatcher } = await load(
     "/packages/engine/src/scene-batching/SceneToonBatcher.ts",
   );
@@ -99,6 +103,39 @@ await withModules(async (load) => {
     }
     assert.deepEqual(source.index.array, original);
     source.dispose();
+  });
+  test("prepared roots leave LOD preparation to their owner while ordinary meshes still prepare", async () => {
+    const scene = new Scene();
+    const camera = new OrthographicCamera(-50, 50, 50, -50, 0.1, 100);
+    const root = new Group();
+    const material = new MeshToonMaterial();
+    const preparedGeometry = new SphereGeometry(1, 12, 12);
+    const ordinaryGeometry = new SphereGeometry(1, 12, 12);
+    root.add(new Mesh(preparedGeometry, material));
+    scene.add(root, new Mesh(ordinaryGeometry, material));
+    markPreparedOrbitRenderRoot(root, 0);
+    const requests = [];
+    const lod = new SceneGeometryLod(
+      () => {},
+      async (geometry) => {
+        requests.push(geometry);
+        return [];
+      },
+    );
+    try {
+      lod.render(scene, camera, 100, () => {}, true);
+      await lod.ready;
+      assert.equal(requests.length, 1);
+      assert.equal(requests[0], ordinaryGeometry);
+      lod.render(scene, camera, 100, () => {});
+      await lod.ready;
+      assert.deepEqual(requests, [ordinaryGeometry, preparedGeometry]);
+    } finally {
+      lod.dispose();
+      preparedGeometry.dispose();
+      ordinaryGeometry.dispose();
+      material.dispose();
+    }
   });
   test("instanced LOD accounts for the largest instance and preserves instance data", async () => {
     const scene = new Scene(),

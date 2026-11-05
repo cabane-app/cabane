@@ -150,6 +150,34 @@ power state, browser visibility, and competing CPU/GPU work consistent too.
 Run the benchmark without tests, builds, screen recording, or other heavy work
 running at the same time. Reuse passing measurements until relevant inputs change.
 
+## Prepared Orbit off-camera scale
+
+Build the native panel and run the focused drag with the prepared renderer off
+and on in the same build. The runner uses an isolated synthetic Home Assistant
+host and requires Chromium with native WebGL multi-draw.
+
+```sh
+npm run build:panel
+node scripts/measure-prepared-orbit.mjs --copies 0,1 --runs 3
+node scripts/measure-prepared-orbit.mjs --copies 0,1,2,4 --runs 3 --cpu-rate 4
+```
+
+The dense apartment has 269 items. Each copy adds 246 floor-standing
+furnishings 80 metres farther from the apartment, without changing its rooms,
+camera, or lighting. The runner checks that the items mount, that the copies
+stay outside the trusted pan, and that the foreground pixels match across
+tiers and renderer paths. It also verifies that prepared buffers stay stable
+during the measured drag.
+
+Compare full frame CPU p95 as the item count rises, along with the frame interval
+p95, p99, and counts above 50 ms. The CPU samples bracket the R3F frame callbacks,
+including scene preparation and drawing, and exclude asynchronous GPU execution.
+The renderer can delay CDP acknowledgements, so the report shows the actual
+number of input events sent along the same time-based path. Check the sent
+rate when comparing heavily throttled runs.
+Reports go to ignored `test-results/performance/`. This is a warmed desktop
+measurement. Use separate captures for first use and physical-device gestures.
+
 ## Arrange and Walk interaction replay
 
 Run the production Solstice Atelier demo through actual desktop input:

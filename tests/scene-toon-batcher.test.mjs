@@ -11,11 +11,13 @@ import {
   MeshToonMaterial,
   MeshStandardMaterial,
   Group,
+  OrthographicCamera,
   PointLight,
   Vector3,
   Vector4,
   PerspectiveCamera,
   Scene,
+  ShaderMaterial,
   Sphere,
 } from "three";
 import { withModules } from "./test-server.mjs";
@@ -27,6 +29,25 @@ await withModules(async (load) => {
     "/packages/engine/src/scene-batching/geometry-lod-family.ts",
   );
   const { SceneLightWallMask } = await load("/packages/engine/src/scene-light-wall-mask.ts");
+  const { PreparedOrbitFurniture, preparedOrbitShadowRevision } = await load(
+    "/packages/engine/src/scene-batching/PreparedOrbitFurniture.ts",
+  );
+  test("prepared Orbit leaves unknown shadow shaders on the live path", () => {
+    const furniture = new PreparedOrbitFurniture();
+    const geometry = new BoxGeometry();
+    const material = new ShaderMaterial();
+    const mesh = new Mesh(geometry, material);
+    mesh.castShadow = true;
+    try {
+      assert.equal(furniture.register("custom-shadow", mesh, [0, 0, 0]), null);
+      assert.equal(furniture.stats.items, 0);
+    } finally {
+      furniture.dispose();
+      geometry.dispose();
+      material.dispose();
+    }
+  });
+
   function fixture() {
     const scene = new Scene(),
       camera = new PerspectiveCamera(),
@@ -47,6 +68,110 @@ await withModules(async (load) => {
     };
     return { scene, camera, batcher, a, b, child, renderer };
   }
+  test(
+    "prepared Orbit keeps source meshes detached and rebuilds only the edited cell",
+    { timeout: 5000 },
+    async () => {
+      const scene = new Scene();
+      const authored = new Group();
+      const camera = new OrthographicCamera(-4, 4, 4, -4);
+      const geometry = new BoxGeometry();
+      const material = new MeshToonMaterial();
+      let waitForInvalidation;
+      const furniture = new PreparedOrbitFurniture(() => waitForInvalidation?.());
+      const settle = async () => {
+        while (furniture.stats.pendingChunks || furniture.stats.pendingLods) {
+          await new Promise((resolve) => {
+            waitForInvalidation = resolve;
+          });
+          waitForInvalidation = undefined;
+        }
+      };
+      const addSource = (id, x) => {
+        const source = new Group();
+        const mesh = new Mesh(geometry, material);
+        mesh.position.x = x;
+        mesh.castShadow = true;
+        source.add(mesh);
+        authored.add(source);
+        const remove = furniture.register(id, source, [x, 0, 0]);
+        assert.ok(remove);
+        return { source, mesh, remove };
+      };
+      const chunkBatches = () =>
+        furniture.root.children.map((chunk) =>
+          chunk.children[0].children.find((object) => object.isBatchedMesh),
+        );
+
+      scene.add(furniture.root);
+      const first = addSource("first", 1);
+      addSource("second", 2);
+      addSource("third", 5);
+      addSource("fourth", 6);
+      let sourceDisposals = 0;
+      geometry.addEventListener("dispose", () => sourceDisposals++);
+      try {
+        await settle();
+        assert.deepEqual(furniture.stats, {
+          items: 4,
+          sourceMeshes: 4,
+          chunks: 2,
+          builds: 2,
+          pendingChunks: 0,
+          pendingLods: 0,
+        });
+        assert.equal(authored.parent, null);
+        assert.equal(first.source.parent, authored);
+        const rendered = new Set();
+        scene.traverse((object) => rendered.add(object));
+        assert.equal(rendered.has(first.mesh), false);
+        const [nearBatch, farBatch] = chunkBatches();
+        assert.ok(nearBatch?.castShadow && farBatch?.castShadow);
+        const revision = preparedOrbitShadowRevision(furniture.root);
+        let nearDisposals = 0;
+        let farDisposals = 0;
+        nearBatch.geometry.addEventListener("dispose", () => nearDisposals++);
+        farBatch.geometry.addEventListener("dispose", () => farDisposals++);
+
+        furniture.prepare(camera, 800);
+        camera.position.x += 4;
+        camera.updateMatrixWorld();
+        furniture.prepare(camera, 800);
+        assert.deepEqual(chunkBatches(), [nearBatch, farBatch]);
+        assert.equal(furniture.stats.builds, 2);
+        assert.equal(preparedOrbitShadowRevision(furniture.root), revision);
+
+        first.mesh.position.x = 1.5;
+        const removeReplacement = furniture.register("first", first.source, [1.5, 0, 0]);
+        assert.ok(removeReplacement);
+        first.remove();
+        await settle();
+        const [rebuiltNear, unchangedFar] = chunkBatches();
+        assert.notEqual(rebuiltNear, nearBatch);
+        assert.equal(unchangedFar, farBatch);
+        assert.equal(furniture.stats.items, 4);
+        assert.equal(furniture.stats.builds, 3);
+        assert.equal(nearDisposals, 1);
+        assert.equal(farDisposals, 0);
+        assert.notEqual(preparedOrbitShadowRevision(furniture.root), revision);
+
+        furniture.dispose();
+        assert.equal(furniture.root.children.length, 0);
+        assert.equal(farDisposals, 1);
+        assert.equal(sourceDisposals, 0);
+        assert.equal(first.source.parent, authored);
+        removeReplacement();
+        // StrictMode can replay layout effects on the same owner.
+        assert.ok(furniture.register("first", first.source, [1.5, 0, 0]));
+        assert.equal(furniture.stats.items, 1);
+      } finally {
+        furniture.dispose();
+        geometry.dispose();
+        material.dispose();
+      }
+    },
+  );
+
   test("style shader defines survive batching and switching back", () => {
     const f = fixture();
     const draw = (flat) => {

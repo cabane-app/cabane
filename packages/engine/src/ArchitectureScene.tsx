@@ -178,6 +178,11 @@ export const ArchitectureScene = memo(function ArchitectureScene({
                       showCeiling={view === "walk" || (view === "cutaway" && floor.id !== active)}
                       manifest={floorManifests.get(floor.id)!}
                       interactionMode={floor.id === active ? props.interactionMode : "editor"}
+                      prepareOrbitFurniture={
+                        props.prepareOrbitFurniture === true &&
+                        floor.id === active &&
+                        view === "cutaway"
+                      }
                       onSelectRoom={floor.id === active ? props.onSelectRoom : undefined}
                       onWalkDeviceTargetChange={
                         floor.id === active ? props.onWalkDeviceTargetChange : undefined

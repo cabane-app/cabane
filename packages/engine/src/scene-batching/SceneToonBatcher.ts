@@ -1,5 +1,5 @@
 import {
-  BatchedMesh,
+  type BatchedMesh,
   type BufferGeometry,
   LessEqualDepth,
   Matrix4,
@@ -12,6 +12,8 @@ import {
 } from "three";
 import { ToonBatchGeometryPacker, type ToonBatchGeometryInput } from "./toon-batch-geometry";
 import { geometryLodFamily } from "./geometry-lod-family";
+import { preparedOrbitShadowRevision } from "./prepared-orbit-render-root";
+import { createToonBatchMaterial, createToonBatchMesh } from "./toon-batch-mesh";
 import { registerSceneToonBatches } from "./scene-preparation";
 import {
   canRenderToonBatch,
@@ -98,30 +100,9 @@ export class SceneToonBatcher {
 
   private build(sources: Mesh[], root: Object3D, scene: Scene): Batch {
     const sourceMaterial = sources[0].material as MeshToonMaterial;
-    const material = sourceMaterial.clone();
-    material.defines = { ...sourceMaterial.defines };
-    material.color.set(0xffffff);
-    material.transparent =
-      (sourceMaterial.userData.cameraFadeBaseTransparent as boolean | undefined) ??
-      sourceMaterial.transparent;
-    material.opacity =
-      (sourceMaterial.userData.cameraFadeBaseOpacity as number | undefined) ??
-      sourceMaterial.opacity;
-    material.depthWrite =
-      (sourceMaterial.userData.cameraFadeBaseDepthWrite as boolean | undefined) ??
-      sourceMaterial.depthWrite;
+    const material = createToonBatchMaterial(sourceMaterial);
     const ordinaryDepth =
       material.depthTest && material.depthWrite && material.depthFunc === LessEqualDepth;
-    // Static geometry bakes transforms/tints once. This avoids the matrix,
-    // indirect-ID and color texture fetches of the default batching shader.
-    material.vertexColors = true;
-    material.onBeforeCompile = (shader) => {
-      shader.vertexShader = shader.vertexShader.replace(
-        "#include <batching_vertex>",
-        "mat4 batchingMatrix = mat4(1.0);",
-      );
-    };
-    material.customProgramCacheKey = () => "cabane-static-toon-batch-v1";
     const identityRoot = root.matrixWorld.equals(this.identity);
     const packedSources = sources.map((source): PackedSource => {
       const family = geometryLodFamily(source.geometry);
@@ -151,18 +132,7 @@ export class SceneToonBatcher {
       (sum, geometry) => sum + (geometry.index?.count ?? geometry.attributes.position.count),
       0,
     );
-    const mesh = new BatchedMesh(sources.length, vertices, indices, material);
-    mesh.name = "opaque-toon-batch";
-    mesh.castShadow =
-      (sources[0].userData.cameraFadeBaseCastShadow as boolean | undefined) ??
-      sources[0].castShadow;
-    mesh.receiveShadow = sources[0].receiveShadow;
-    mesh.layers.mask = sources[0].layers.mask;
-    mesh.renderOrder = sources[0].renderOrder;
-    mesh.frustumCulled = false;
-    mesh.perObjectFrustumCulled = sources[0].frustumCulled;
-    mesh.raycast = () => {};
-    mesh.matrixAutoUpdate = false;
+    const mesh = createToonBatchMesh(sources[0], material, sources.length, vertices, indices);
     try {
       for (const entry of packedSources) {
         for (const [level, geometry] of entry.family.entries())
@@ -270,6 +240,7 @@ export class SceneToonBatcher {
     scene: Scene,
     camera: Camera,
     render: () => void = () => renderer.render(scene, camera),
+    skipPreparedRoots = false,
   ) {
     // Without native multi-draw, Three falls back to individual calls. Avoid
     // paying the batching overhead on those devices.
@@ -291,6 +262,7 @@ export class SceneToonBatcher {
       root: Object3D,
       groupsByMaterial: Map<string, SourceGroup>,
     ) => {
+      if (skipPreparedRoots && preparedOrbitShadowRevision(object) !== undefined) return;
       if (object.userData.toonBatchRoot === true) {
         root = object;
         groupsByMaterial = new Map();

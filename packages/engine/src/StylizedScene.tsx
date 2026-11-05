@@ -17,6 +17,7 @@ import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 import { ShadowMapCache } from "./shadow-map-cache";
 import { SceneGeometryLod } from "./scene-batching/SceneGeometryLod";
 import { SceneToonBatcher } from "./scene-batching/SceneToonBatcher";
+import { preparedOrbitShadowRevision } from "./scene-batching/prepared-orbit-render-root";
 import { SceneLightWallMask, SceneLightWallMaskContext } from "./scene-light-wall-mask";
 
 /** Decorative mesh shells are replaced by a single visible-depth contour pass. */
@@ -26,10 +27,12 @@ function SceneContourPass({
   antialias,
   active,
   editing,
+  preparedOrbit,
 }: {
   antialias: boolean;
   active: boolean;
   editing: boolean;
+  preparedOrbit: boolean;
 }) {
   const style = useSceneStyle();
   const gl = useThree((state) => state.gl);
@@ -118,13 +121,31 @@ function SceneContourPass({
     try {
       gl.autoClear = true;
       gl.setRenderTarget(target);
-      resources.shadows.render(gl, scene, camera, () =>
-        resources.lod.render(scene, camera, size.y / gl.getPixelRatio(), () => {
-          if (
-            resources.batches.render(gl, scene, camera, () => lightWalls.render(gl, scene, camera))
-          )
-            invalidate();
-        }),
+      const prepareFurniture = preparedOrbit && gl.extensions.has("WEBGL_multi_draw");
+      resources.shadows.render(
+        gl,
+        scene,
+        camera,
+        () =>
+          resources.lod.render(
+            scene,
+            camera,
+            size.y / gl.getPixelRatio(),
+            () => {
+              if (
+                resources.batches.render(
+                  gl,
+                  scene,
+                  camera,
+                  () => lightWalls.render(gl, scene, camera),
+                  prepareFurniture,
+                )
+              )
+                invalidate();
+            },
+            prepareFurniture,
+          ),
+        prepareFurniture ? preparedOrbitShadowRevision : undefined,
       );
       material.uniforms.hasImportedModels.value = resources.importedMask.render(
         gl,
@@ -149,6 +170,7 @@ export function StylizedScene({
   antialias = true,
   active = true,
   editing = false,
+  preparedOrbit = false,
 }: {
   children: ReactNode;
   enabled?: boolean;
@@ -157,6 +179,7 @@ export function StylizedScene({
   active?: boolean;
   /** Bound GPU buffer rebuilding during item and floor edits. */
   editing?: boolean;
+  preparedOrbit?: boolean;
 }) {
   const style = useSceneStyle();
   const lightWalls = useMemo(() => new SceneLightWallMask(), []);
@@ -167,7 +190,14 @@ export function StylizedScene({
         <SceneStyleContext.Provider value={active ? style : "default"}>
           {children}
         </SceneStyleContext.Provider>
-        {enabled && <SceneContourPass antialias={antialias} active={active} editing={editing} />}
+        {enabled && (
+          <SceneContourPass
+            antialias={antialias}
+            active={active}
+            editing={editing}
+            preparedOrbit={preparedOrbit}
+          />
+        )}
       </SceneContourContext.Provider>
     </SceneLightWallMaskContext.Provider>
   );
