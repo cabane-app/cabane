@@ -28,7 +28,7 @@ interface ShortcutContext {
   redoProject: () => void;
   selectedOpening: import("@cabane/engine").EditorWallAttachment | undefined;
   undoProject: () => void;
-  unsettled: boolean;
+  cameraSwitchBlocked: boolean;
   setCameraView: (view: "3d" | "top") => void;
   walkButton: RefObject<HTMLButtonElement | null>;
   setPendingRoomPaintId: Dispatch<SetStateAction<string | null>>;
@@ -55,7 +55,7 @@ export function useHomeEditorShortcuts({
   redoProject,
   selectedOpening,
   undoProject,
-  unsettled,
+  cameraSwitchBlocked,
   setCameraView,
   walkButton,
   setPendingRoomPaintId,
@@ -95,20 +95,19 @@ export function useHomeEditorShortcuts({
       ) {
         if (
           mode === "connect" ||
-          unsettled ||
+          cameraSwitchBlocked ||
           dom.root.querySelector(
             '.editor-settings, .shortcuts-workspace, dialog[open], [aria-modal="true"]:not(.direction-preview-dialog)',
           )
         )
           return;
-        if (event.code === "Digit1" && mode === "construct") return;
         event.preventDefault();
         if (event.code === "Digit3") {
           // Keep pointer lock and its error handling on the same user-activation path.
           if (!previewOpen) walkButton.current?.click();
         } else {
           if (previewOpen) closeWalk();
-          if (mode === "furnish") setCameraView(event.code === "Digit1" ? "3d" : "top");
+          setCameraView(event.code === "Digit1" ? "3d" : "top");
         }
         return;
       }
@@ -232,7 +231,7 @@ export function useHomeEditorShortcuts({
     redoProject,
     selectedOpening,
     undoProject,
-    unsettled,
+    cameraSwitchBlocked,
     setCameraView,
     walkButton,
     dom,

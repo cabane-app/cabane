@@ -58,6 +58,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     setFloorDialog,
     floorReferences,
     mode,
+    cameraView,
     editingLocked,
     publishOpen,
     previewOpen,
@@ -141,11 +142,9 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     displayedContextualIssues.length > 0,
     `${mode}:${activeFloorId}:${settingsMode}`,
   );
-  const panelIssues = displayedContextualIssues;
-  const { closeMobilePanel } = panels;
+  const { closeMobilePanel, issuesOpen } = panels;
   const panelsDisabled =
     editingLocked || publishOpen || previewOpen || northOrientation.active || panelBusy;
-  const issuesExpanded = panels.issuesOpen;
   const collapseProperties = () => {
     panels.collapseProperties();
     requestAnimationFrame(() =>
@@ -272,9 +271,11 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     return () => dom.events.removeEventListener("keydown", cancel);
   }, [dom]);
   useEffect(() => {
-    if (constructEditor.tool !== "select" || stairPlacement) setWalkStartFloor(null);
-  }, [constructEditor.tool, stairPlacement]);
-  const placingWalkStart = mode === "construct" && walkStartFloor === activeFloorId;
+    if (cameraView === "3d" || constructEditor.tool !== "select" || stairPlacement)
+      setWalkStartFloor(null);
+  }, [cameraView, constructEditor.tool, stairPlacement]);
+  const constructPlan = mode === "construct" && cameraView === "top";
+  const placingWalkStart = constructPlan && walkStartFloor === activeFloorId;
   const canvasTask =
     reference.adjusting ||
     northOrientation.active ||
@@ -297,17 +298,17 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
         <DevAgentBridge controller={controller} />
       )}
       <main
-        className={`direction-preview${northOrientation.active ? " is-orienting-north" : ""}${settingsMode ? " is-settings" : mode === "connect" ? " is-connect" : mode === "construct" ? " is-plan" : ""}`}
+        className={`direction-preview${northOrientation.active ? " is-orienting-north" : ""}${settingsMode ? " is-settings" : mode === "connect" ? " is-connect" : constructPlan ? " is-plan" : ""}`}
         data-connect-room={mode === "connect" && Boolean(connect.room)}
         data-editor-mode={settingsMode ? "settings" : mode}
         data-properties-open={panels.propertiesOpen}
-        data-has-issues={panelIssues.length > 0}
-        data-issues-expanded={issuesExpanded}
+        data-has-issues={displayedContextualIssues.length > 0}
+        data-issues-expanded={issuesOpen}
         data-mobile-editor={mobileEditor}
         data-mobile-panel={
           mobileEditor && !panels.mobileOpen
             ? "closed"
-            : panels.mobileSurface === "issues" && !panelIssues.length
+            : panels.mobileSurface === "issues" && !displayedContextualIssues.length
               ? "tools"
               : panels.mobileSurface
         }
@@ -353,7 +354,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
                 : undefined
             }
           />
-          {mode === "construct" &&
+          {constructPlan &&
             floorReferences.references.map(({ direction, floor, visible }) => (
               <label key={direction} title={floor.name}>
                 <input
@@ -417,7 +418,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
           mode={settingsMode ? "settings" : mode}
           floorName={constructEditor.previewFloor.name}
           panels={panels}
-          issueCount={panelIssues.length}
+          issueCount={displayedContextualIssues.length}
           disabled={panelsDisabled}
         >
           <EditorSidebar
@@ -466,7 +467,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             inert={editingLocked || publishOpen || previewOpen || northOrientation.active}
           >
             <EditorValidationPanel
-              issues={panelIssues}
+              issues={displayedContextualIssues}
               expanded={panels.issuesExpanded}
               onToggle={panels.toggleIssues}
               disabled={panelBusy}
@@ -485,7 +486,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
           <EditorPanelControls
             mode={settingsMode ? "settings" : mode}
             panels={panels}
-            issueCount={panelIssues.length}
+            issueCount={displayedContextualIssues.length}
             disabled={panelsDisabled}
           />
         </div>

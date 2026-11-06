@@ -55,9 +55,12 @@
 .direction-preview__model canvas {
   touch-action: none;
 }
-.direction-preview[data-editor-mode="construct"] .direction-preview__model canvas,
+.direction-preview.is-plan .direction-preview__model canvas,
 .direction-preview[data-editor-mode="furnish"] .direction-preview__model canvas {
   cursor: pointer;
+}
+.direction-preview[data-editor-mode="construct"]:not(.is-plan) .direction-preview__model canvas {
+  cursor: grab;
 }
 .direction-preview :is(button, input, select, summary):focus-visible {
   outline: 2px solid #985637;

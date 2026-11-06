@@ -179,6 +179,9 @@ export function HomeEditorScene({
   duplicateArrangeItem,
   deleteSceneItem,
 }: Props) {
+  const constructPlan = mode === "construct" && cameraView === "top";
+  const constructPreview = mode === "construct" && cameraView === "3d";
+  const showArchitecture = mode === "furnish" || constructPreview;
   const stairRegistries = useMemo(
     () => ({ furnishingModels, deviceModels }),
     [furnishingModels, deviceModels],
@@ -186,7 +189,7 @@ export function HomeEditorScene({
   const referenceCanvas = useReferenceCanvas(
     reference,
     constructEditor.previewFloor,
-    mode === "construct",
+    constructPlan,
   );
   const levels = deriveFloorLevels(visualManifest.floors);
   const activeLevel = levels.find((level) => level.floorId === activeFloorId)?.elevationMeters ?? 0;
@@ -208,7 +211,9 @@ export function HomeEditorScene({
         mode === "connect"
           ? "Home connection map"
           : mode === "construct"
-            ? "2D construction plan"
+            ? constructPreview
+              ? "3D construction preview"
+              : "2D construction plan"
             : "3D home editor"
       }
       inert={editingLocked || publishOpen || previewOpen}
@@ -234,7 +239,7 @@ export function HomeEditorScene({
           }}
           onPointerMissed={(event) => {
             if (event.type !== "click" || event.button !== 0) return;
-            if (mode === "construct") clearConstructionSelection();
+            if (constructPlan) clearConstructionSelection();
             else if (mode === "furnish") clearFurnishingSelection();
           }}
           shadows={false}
@@ -244,8 +249,8 @@ export function HomeEditorScene({
         >
           <Suspense fallback={null}>
             {referenceCanvas.bridge}
-            <StylizedScene active={mode === "furnish"}>
-              {mode !== "construct" && (
+            <StylizedScene active={showArchitecture}>
+              {!constructPlan && (
                 <>
                   <hemisphereLight args={["#ecf4ff", "#768b93", 0.95]} />
                   <directionalLight
@@ -256,7 +261,7 @@ export function HomeEditorScene({
                   />
                 </>
               )}
-              {mode === "construct" && (
+              {constructPlan && (
                 <WalkStartPointer
                   floor={constructEditor.previewFloor}
                   start={snapshot.project.home.walkStart}
@@ -270,11 +275,11 @@ export function HomeEditorScene({
                   }}
                 />
               )}
-              {mode === "construct" && !referenceCanvas.visible && <ConstructionGrid />}
+              {constructPlan && !referenceCanvas.visible && <ConstructionGrid />}
               <PreviewCamera
                 northOrientation={northOrientation.active}
                 planWheelNavigation={mode === "construct" || mode === "furnish"}
-                view={mode === "construct" ? "top" : cameraView}
+                view={cameraView}
                 resetKey={cameraResetKey}
                 floor={constructEditor.previewFloor}
                 controlsEnabled={!dragging && !placingWalkStart && !northOrientation.active}
@@ -283,32 +288,34 @@ export function HomeEditorScene({
                 onTargetChange={handleCameraTargetChange}
                 savedCamera={savedCamera}
               />
-              <ConstructionValidationOverlay
-                planMode={mode === "construct"}
-                floor={constructEditor.previewFloor}
-                sceneItems={previewSceneItems}
-                issues={
-                  mode === "construct"
-                    ? displayedContextualIssues.filter(
-                        (issue) =>
-                          !issue.code.startsWith("stair.") &&
-                          issue.code !== "room.name" &&
-                          issue.code !== "topology.room-name",
-                      )
-                    : displayedContextualIssues
-                }
-                activeIssueKey={activeIssueKey}
-                focusVersion={issueFocusVersion}
-                showLabels={
-                  mode !== "construct" ||
-                  (!dragging &&
-                    !constructEditor.drawStart &&
-                    !poolDrawing.active &&
-                    !floorZoneDrawing.active)
-                }
-                onActivate={focusIssue}
-              />
-              {mode === "construct" &&
+              {!constructPreview && (
+                <ConstructionValidationOverlay
+                  planMode={constructPlan}
+                  floor={constructEditor.previewFloor}
+                  sceneItems={previewSceneItems}
+                  issues={
+                    constructPlan
+                      ? displayedContextualIssues.filter(
+                          (issue) =>
+                            !issue.code.startsWith("stair.") &&
+                            issue.code !== "room.name" &&
+                            issue.code !== "topology.room-name",
+                        )
+                      : displayedContextualIssues
+                  }
+                  activeIssueKey={activeIssueKey}
+                  focusVersion={issueFocusVersion}
+                  showLabels={
+                    !constructPlan ||
+                    (!dragging &&
+                      !constructEditor.drawStart &&
+                      !poolDrawing.active &&
+                      !floorZoneDrawing.active)
+                  }
+                  onActivate={focusIssue}
+                />
+              )}
+              {constructPlan &&
                 !stairPlacement &&
                 !(dragging && stairDialog) &&
                 floorReferences.references.map(
@@ -317,7 +324,7 @@ export function HomeEditorScene({
                       <AdjacentFloorGuide key={direction} floor={floor} direction={direction} />
                     ),
                 )}
-              {mode === "construct" &&
+              {constructPlan &&
                 snapshot.project.stairs.map((stair) => {
                   if (!stairFloorIds(stair).includes(activeFloorId)) return null;
                   const selected =
@@ -355,7 +362,7 @@ export function HomeEditorScene({
                     />
                   );
                 })}
-              {mode === "construct" ? (
+              {constructPlan && (
                 <ConstructionPlan
                   showFinishes={!referenceCanvas.visible}
                   nameFocusRequest={nameFocusRequest}
@@ -376,8 +383,8 @@ export function HomeEditorScene({
                   furnishingModels={furnishingModels}
                   deviceModels={deviceModels}
                 />
-              ) : null}
-              <RetainedArrangeScene active={mode === "furnish"}>
+              )}
+              <RetainedArrangeScene active={showArchitecture}>
                 <ArchitectureScene
                   manifest={visualManifest}
                   activeFloorId={activeFloorId}
@@ -385,7 +392,7 @@ export function HomeEditorScene({
 
                   interactionMode="editor"
                   architectureModels={stableArchitectureModelRegistry}
-                  selectedRoomId={selectedRoomId}
+                  selectedRoomId={constructPreview ? null : selectedRoomId}
                   walkMode={false}
                   wallFadeEnabled={cameraView === "3d"}
                   reducedMotion
@@ -395,7 +402,7 @@ export function HomeEditorScene({
                   onInteract={NO_INTERACTION}
                 />
               </RetainedArrangeScene>
-              {mode === "construct" && (
+              {constructPlan && (
                 <ConstructionFloorLayer
                   draft={constructEditor.draft}
                   floor={constructEditor.previewFloor}
@@ -414,7 +421,7 @@ export function HomeEditorScene({
                   onDraggingChange={setDragging}
                 />
               )}
-              {mode === "construct" && (
+              {constructPlan && (
                 <ConstructionEditLayer
                   doorConfiguration={constructEditor.doorConfiguration}
                   referenceWalls={floorReferences.referenceWalls}
@@ -493,10 +500,10 @@ export function HomeEditorScene({
                   onMarqueeChange={setMarqueeSelecting}
                 />
               )}
-              {mode === "construct" && !editingLocked && (
+              {constructPlan && !editingLocked && (
                 <ConstructionHedgeLayer editor={constructEditor} onDraggingChange={setDragging} />
               )}
-              {mode === "construct" && (
+              {constructPlan && (
                 <ConstructionPlatformLayer
                   draft={constructEditor.draft}
                   selection={marqueeSelecting ? null : constructEditor.selection}
@@ -511,7 +518,7 @@ export function HomeEditorScene({
                   onDraggingChange={setDragging}
                 />
               )}
-              {mode === "construct" && (
+              {constructPlan && (
                 <ConstructionPoolLayer
                   draft={constructEditor.draft}
                   selection={marqueeSelecting ? null : constructEditor.selection}
@@ -524,13 +531,13 @@ export function HomeEditorScene({
                   onDraggingChange={setDragging}
                 />
               )}
-              {mode === "construct" && !marqueeSelecting && (
+              {constructPlan && !marqueeSelecting && (
                 <SelectedRoomControls
                   editor={constructEditor}
                   disabled={dragging || editingLocked}
                 />
               )}
-              {mode === "construct" && !marqueeSelecting && selectedOpening && (
+              {constructPlan && !marqueeSelecting && selectedOpening && (
                 <SelectedOpeningControls
                   key={selectedOpening.id}
                   opening={selectedOpening}
@@ -548,7 +555,7 @@ export function HomeEditorScene({
                   onDelete={constructEditor.deleteSelected}
                 />
               )}
-              {mode === "construct" && constructEditor.tool === "measure" && (
+              {constructPlan && constructEditor.tool === "measure" && (
                 <ConstructionMeasureOverlay
                   planMode
                   measurement={constructMeasure.measurement}
@@ -642,7 +649,7 @@ export function HomeEditorScene({
                 />
               )}
             </StylizedScene>
-            {mode === "construct" && stairPlacement && (
+            {constructPlan && stairPlacement && (
               <StairPlacement
                 key={`${activeFloorId}:${stairPlacement.id}:${stairPlacement.shape ?? "straight"}`}
                 registries={stairRegistries}
@@ -671,7 +678,7 @@ export function HomeEditorScene({
         />
       )}
       {referenceCanvas.controls}
-      {referenceCanvas.assetError && mode === "construct" && (
+      {referenceCanvas.assetError && constructPlan && (
         <p className="reference-asset-error" role="alert">
           {referenceCanvas.assetError}
         </p>

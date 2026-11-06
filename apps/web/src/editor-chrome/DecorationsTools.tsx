@@ -3,7 +3,7 @@ import { EditorToolGroup } from "./EditorToolGroup";
 import { decorationTools } from "./construction-tool-options";
 
 export function DecorationsTools(props: {
-  tool: FloorEditorTool;
+  tool: FloorEditorTool | null;
   disabled?: boolean | undefined;
   onToolChange: (tool: FloorEditorTool) => void;
 }) {

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 
-/** Keep expensive visual-only meshes across tab changes, without rebuilding them
- * for Construct edits. The next Arrange visit receives the latest draft. */
+/** Keep architecture meshes across views. Hidden meshes stay unchanged until
+ * Arrange or the Construct preview needs the latest draft. */
 export function RetainedArrangeScene({
   active,
   children,

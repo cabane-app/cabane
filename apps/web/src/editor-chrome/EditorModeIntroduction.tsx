@@ -19,12 +19,22 @@ const introductions = {
   },
 } satisfies Record<EditorMode | "settings", { title: string; description: string }>;
 
-export function EditorModeIntroduction({ mode }: { mode: EditorMode | "settings" }) {
+export function EditorModeIntroduction({
+  mode,
+  constructPreview,
+}: {
+  mode: EditorMode | "settings";
+  constructPreview?: boolean;
+}) {
   const { title, description } = introductions[mode];
   return (
     <header className="editor-mode-introduction">
       <h2>{title}</h2>
-      <p>{description}</p>
+      <p>
+        {mode === "construct" && constructPreview
+          ? "Inspect your draft in 3D. Choose a construction tool to return to the plan."
+          : description}
+      </p>
     </header>
   );
 }
