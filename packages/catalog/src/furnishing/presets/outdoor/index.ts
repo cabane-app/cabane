@@ -38,3 +38,5 @@ export {
   TEAK_LOUNGE_SOFA_SIZE,
   TEAK_LOUNGE_CHAIR_SIZE,
 } from "./teak-lounge";
+
+export { Carport, CARPORT_SIZE } from "./carport";

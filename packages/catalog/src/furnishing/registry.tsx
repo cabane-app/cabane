@@ -63,10 +63,7 @@ import { KitchenIsland, KITCHEN_ISLAND_SIZE } from "./presets/kitchen";
 import { KitchenPantryCabinet, KITCHEN_PANTRY_CABINET_SIZE } from "./presets/kitchen";
 import { KITCHEN_FINISH_VARIANTS } from "./presets/kitchen/kitchen-finish";
 import { furnishingPresetDefinitions } from "./definitions";
-import {
-  WroughtIronPergola,
-  WROUGHT_IRON_PERGOLA_SIZE,
-} from "./presets/outdoor/wrought-iron-pergola";
+import { outdoorShelterFurnishingDefinitions } from "./definitions/outdoor-shelters";
 import { legacyLightFurnishingDefinitions } from "./legacy-light-definitions";
 import { defineFurnishingModel, defineFurnishingModelRegistry } from "@cabane/engine";
 import {
@@ -1227,20 +1224,7 @@ const stableFurnishingDefinitions = {
     outlineContact: true,
     complexity: { visibleMeshes: 5, triangles: 32_000 },
   }),
-  "wrought-iron-pergola": defineFurnishingModel({
-    legacyOnly: true,
-    component: WroughtIronPergola,
-    label: "Wrought-iron pergola",
-    category: "Garden structures",
-    defaultRoomType: "outdoor",
-    defaultSize: WROUGHT_IRON_PERGOLA_SIZE,
-    bounds: { min: [-2, 0, -1.5], max: [2, 2.7, 1.5] },
-    resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
-    preferredPlacement: "absolute",
-    placementEnvironment: "outdoor",
-    outlineContact: false,
-    complexity: { visibleMeshes: 14, triangles: 24_000 },
-  }),
+  ...outdoorShelterFurnishingDefinitions,
   "garden-shrub": defineFurnishingModel({
     component: GardenShrub,
     label: "Garden shrub",

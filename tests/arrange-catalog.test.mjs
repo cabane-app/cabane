@@ -499,6 +499,7 @@ await withModules(async (load) => {
         .sort(),
       [
         "bicycle",
+        "carport",
         "compact-car",
         "deciduous-tree",
         "electric-sedan",

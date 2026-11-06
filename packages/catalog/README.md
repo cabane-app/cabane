@@ -1147,3 +1147,19 @@ override and restores the selected variant's original palette.
 The wheelie bin uses the same field for its body, lid and molded front foot.
 Its wheels and rear handle keep their dark finish. No additional color channels
 or project fields are introduced.
+
+## Carport
+
+**Carport** (`carport`, public component `Carport`) is available in
+**Arrange → Outdoor → Garden structures**, or by searching “carport”. Place it
+outside, then choose **Modern flat roof**, **Timber pitched roof**, or
+**Solar canopy** in its Variant control. All three use an inferred single-car
+envelope of 360 × 300 × 560 cm (width × height × depth), centered on X/Z with
+feet at Y=0. Width, height and depth resize independently; variants retain the
+placed dimensions. Color changes the frame while preserving the roof finish.
+
+The modern shelter has a pale fascia and slim metal posts; the timber shelter
+has a terracotta pitched roof with a ridge beam and king posts; the solar canopy
+has twelve framed blue panels. Solar panels are decorative, with no HA binding.
+Only the four posts obstruct walking, leaving the sheltered parking bay open.
+These are generic visual models, not construction specifications.
