@@ -1,7 +1,10 @@
 # Bundled home
 
-The demo is an ordinary `HomeProject`, using the same schema as portable workspace
-import/export. Its checked-in source is split for easier editing:
+Fresh browsers start with [Casa Solstice · Atelier](showcase/atelier.project.json).
+That file is also an ordinary `HomeProject` you can import from the workspace library.
+
+The original bundled home is retained for legacy workspace migration. Its
+source is split into the following files.
 
 - `src/layout.json`: building coordinates, floors, rooms, walls, openings, ceilings, and stairs.
 - `src/items.json`: furniture and device instances, with model IDs, sizes, placements, and typed binding slots.
@@ -13,7 +16,7 @@ Reusable models belong to `packages/catalog`. Use an existing preset ID before
 creating geometry. The home contains no per-room React compositions or separate
 hand-maintained furnishing inventory. The runtime manifest is derived from the project data.
 
-Create an importable JSON file with:
+Run this command to export the original home as an importable JSON file.
 
 ```sh
 node scripts/export-bundled-home.mjs > /tmp/cabane-home.json

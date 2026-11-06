@@ -1,5 +1,5 @@
 import { createWorkspaceRepository } from "@cabane/engine";
-import { ownerHomeProject } from "@cabane/home";
+import { demoHomeProject, ownerHomeProject } from "@cabane/home";
 import { ownerProjectRegistries } from "../project-runtime";
 import { migrateSingleHomeStorage, singleHomeUrl } from "./migrate-single-home-storage";
 
@@ -18,8 +18,12 @@ export async function initializeWorkspaces(
     migrationError =
       error instanceof Error ? error.message : "Saved connection data needs recovery.";
   }
-  const demo = { ...ownerHomeProject, home: { ...ownerHomeProject.home, name: "Demo home" } };
-  await repository.initialize(demo, previousOrigin);
+  // Legacy connections belong to the original single-home seed.
+  const seed = previousOrigin ? ownerHomeProject : demoHomeProject;
+  await repository.initialize(
+    { ...seed, home: { ...seed.home, name: "Demo home" } },
+    previousOrigin,
+  );
   try {
     if (!skipLegacyMigration)
       await migrateSingleHomeStorage(repository, ownerHomeProject.home.id, storage);

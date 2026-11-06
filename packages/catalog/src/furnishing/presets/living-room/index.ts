@@ -39,3 +39,9 @@ export {
   AstroParallelWallLight,
   ASTRO_PARALLEL_WALL_LIGHT_SIZE,
 } from "./astro-parallel-wall-light";
+
+export { CinemaRecliner, CINEMA_RECLINER_SIZE } from "./cinema-recliner";
+
+export { TravertineCoffeeTable, TRAVERTINE_COFFEE_TABLE_SIZE } from "./travertine-coffee-table";
+
+export { AcousticSlatPanel, ACOUSTIC_SLAT_PANEL_SIZE } from "./acoustic-slat-panel";

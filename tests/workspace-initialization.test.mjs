@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { withStorageDom } from "./dom-test-environment.mjs";
 import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
@@ -41,6 +42,23 @@ await withModules(async (load) => {
       },
     };
   };
+  test("the demo replacement preserves the legacy connected home", () =>
+    withStorageDom(async (dom) => {
+      const { initializeWorkspaces } = await load(
+        "/apps/web/src/workspaces/initialize-workspaces.ts",
+      );
+      const { ownerHomeProject } = await load("/home/src/index.ts");
+      dom.window.localStorage.setItem("cabane:ha-url:v1", origin);
+      const { repository, migrationError } = await initializeWorkspaces(
+        dom.indexedDB,
+        dom.window.localStorage,
+      );
+      assert.equal(migrationError, undefined);
+      const [entry] = await repository.list();
+      assert.equal(entry.record.published.home.id, ownerHomeProject.home.id);
+      assert.equal(entry.metadata.homeAssistantUrl, origin);
+      assert.equal((await repository.readOnboarding()).demoWorkspaceId, null);
+    }));
   test("one-shot token conversion retries failed destination writes without losing its source", async () => {
     const storage = storageFixture({
       "cabane:ha-url:v1": origin,

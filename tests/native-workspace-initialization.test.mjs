@@ -22,6 +22,10 @@ test("native initialization never reads or migrates legacy connection storage", 
       );
       const native = await initializeWorkspaces(indexedDB, trap, { skipLegacyMigration: true });
       const entries = await native.repository.list();
+      assert.deepEqual(
+        entries[0].record.published.floors.map((floor) => floor.id),
+        ["atelier-basement", "ground", "upper"],
+      );
       const nativeResult = {
         accesses: [...accesses],
         error: native.migrationError ?? null,
