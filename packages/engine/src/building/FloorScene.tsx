@@ -10,6 +10,8 @@ export type FloorSceneProps = {
   above?: HomeManifest["floors"][number] | undefined;
   showGround: boolean;
   showCeiling: boolean;
+  /** Leave out sloped ceiling planes that rise above this height. */
+  ceilingMaxHeightMeters?: number | undefined;
   manifest: HomeManifest;
   walkMode: boolean;
   wallFadeEnabled: boolean;
@@ -70,6 +72,7 @@ export const FloorScene = memo(function FloorScene({
   sourceFloor,
   showGround,
   showCeiling,
+  ceilingMaxHeightMeters,
   below,
   above,
   platformBelow,
@@ -248,7 +251,7 @@ export const FloorScene = memo(function FloorScene({
           />
         );
       })}
-      {showCeiling && <CeilingSurfaces floor={floor} />}
+      {showCeiling && <CeilingSurfaces floor={floor} maxHeightMeters={ceilingMaxHeightMeters} />}
       {manifest.sceneItems.length > 0 ? (
         manifest.sceneItems
           .filter((item) => item.floorId === floor.id)
