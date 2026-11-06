@@ -227,9 +227,11 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
       }));
     });
     const aboveAuthoredSlope = slopes.length
-      ? above.flatMap((coverage, offset) => {
+      ? upperCoverage.flatMap((coverage, offset) => {
           const upperIndex = index + 1 + offset;
           const upperRoof = roofsByFloor[upperIndex];
+          // A slope stops at the floor above itself, not at the wall tops a flat
+          // roof reaches over: a wall under the slope near that floor would punch through it.
           if (!upperRoof.some((region) => region.heightAt)) return [coverage];
           // The upper wall assembly extends past its authored ceiling. Cutting
           // to the wall edge would leave a gap where the two slopes should meet.
