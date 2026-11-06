@@ -5,6 +5,11 @@ import { wallSolidBands } from "./architecture-geometry/wall-solid-bands";
 import { wallFaceFinish, wallEdgeFinish } from "./architecture-geometry/wall-face-finish";
 import { wallLevelContact } from "./architecture-geometry/wall-level-contact";
 import { physicalFloor } from "./architecture-geometry/physical-floor";
+import {
+  DEFAULT_GABLE_FRAME_COLOR,
+  extrudeWallPlaneShapes,
+  wallGableShapes,
+} from "./architecture-geometry/wall-gable-geometry";
 import { type MultiPolygon } from "polygon-clipping";
 
 import { BufferGeometry, Color, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
@@ -27,6 +32,7 @@ import {
   ArchitecturalWallGeometryGroup,
   createWallAssemblyPointTest,
 } from "./architecture-geometry/wall-solid-footprints";
+import { leanPositions } from "./architecture-geometry/wall-lean";
 import type { FloorSpec, WallSpec, WallSurfaceFinish } from "./types";
 import { wallSurfaceRepeatHeight } from "./wall-types";
 
@@ -40,15 +46,28 @@ export function buildArchitecturalWallGeometries(
 ): ArchitecturalWallGeometryGroup[] {
   const sourceFloor = physicalFloor(requestedFloor);
   // Continue exterior finish across the structural slab between ceiling and next level.
-  const floor = neighbors.above
-    ? {
-        ...sourceFloor,
-        walls: sourceFloor.walls.map((wall) => ({
-          ...wall,
-          heightMeters: wallStructuralHeight(wall, sourceFloor),
-        })),
-      }
-    : sourceFloor;
+  // A gable wall's horizontal bands stop where its gable begins; the gable
+  // follows the sloped ceiling above them and is drawn after the bands.
+  const gables = new Map(
+    sourceFloor.walls.flatMap((wall) => {
+      const shapes = wallGableShapes(wall, sourceFloor, sourceFloor.openings);
+      return shapes ? [[wall.id, shapes] as const] : [];
+    }),
+  );
+  const floor =
+    neighbors.above || gables.size
+      ? {
+          ...sourceFloor,
+          walls: sourceFloor.walls.map((wall) => ({
+            ...wall,
+            heightMeters:
+              gables.get(wall.id)?.bandTop ??
+              (neighbors.above
+                ? wallStructuralHeight(wall, sourceFloor)
+                : (wall.heightMeters ?? sourceFloor.defaultWallHeightMeters)),
+          })),
+        }
+      : sourceFloor;
   const wallData = new Map(
     floor.walls.map((wall) => [
       wall,
@@ -320,7 +339,42 @@ export function buildArchitecturalWallGeometries(
     );
   });
 
+  for (const wall of floor.walls) {
+    const shapes = gables.get(wall.id);
+    if (!shapes) continue;
+    const exteriorNormal = wallData.get(wall)!.exteriorNormal;
+    const buffers = buffersFor(exteriorNormal);
+    const frame = wallData.get(wall)!.frame;
+    const outside = (face: "left" | "right") =>
+      exteriorNormal !== null &&
+      exteriorNormal[0] * frame.normal[0] + exteriorNormal[1] * frame.normal[1] > 0 ===
+        (face === "left");
+    const faceColor = (face: "left" | "right" | "edge") =>
+      customColor(
+        face === "edge"
+          ? wallEdgeFinish(wall, interiorColor)
+          : wallFaceFinish(
+              wall,
+              face,
+              outside(face),
+              outside(face) ? exteriorColor : interiorColor,
+            ),
+      );
+    extrudeWallPlaneShapes(shapes.solid, wall, floor, wall.thicknessMeters, (a, b, c, face) =>
+      addTriangle(buffers, a, b, c, faceColor(face)),
+    );
+    const frameColor = customColor(wall.gable?.frameColor ?? DEFAULT_GABLE_FRAME_COLOR);
+    extrudeWallPlaneShapes(
+      shapes.frame,
+      wall,
+      floor,
+      Math.min(wall.thicknessMeters, 0.12),
+      (a, b, c) => addTriangle(buffers, a, b, c, frameColor),
+    );
+  }
+
   return [...buffersByDirection.values()].map((buffers) => {
+    leanPositions(buffers.positions, sourceFloor);
     const geometry = new BufferGeometry();
     geometry.userData.preservePlanarFaces = true;
     geometry.setAttribute("position", new Float32BufferAttribute(buffers.positions, 3));
@@ -341,6 +395,31 @@ export function buildArchitecturalWallGeometries(
       fadeNormals: buffers.fadeNormals,
       center,
     };
+  });
+}
+/** The glass of every glass gable on a floor, grouped by the facade it fades with. */
+export function buildWallGableGlass(floor: FloorSpec) {
+  const groups = new Map<string, { outwardNormal: Horizontal | null; positions: number[] }>();
+  for (const wall of floor.walls) {
+    const shapes = wallGableShapes(wall, floor, floor.openings);
+    if (!shapes?.glass.length) continue;
+    const outwardNormal = wallExteriorNormal(wall, floor);
+    const key = outwardNormal
+      ? `${outwardNormal[0].toFixed(4)}:${outwardNormal[1].toFixed(4)}`
+      : "interior";
+    const group = groups.get(key) ?? { outwardNormal, positions: [] };
+    groups.set(key, group);
+    extrudeWallPlaneShapes(shapes.glass, wall, floor, 0.024, (a, b, c, face) => {
+      if (face !== "edge") group.positions.push(...a, ...b, ...c);
+    });
+  }
+  return [...groups.values()].map(({ outwardNormal, positions }) => {
+    leanPositions(positions, floor);
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+    geometry.computeVertexNormals();
+    geometry.computeBoundingSphere();
+    return { geometry, outwardNormal };
   });
 }
 export { JUNCTION_SEAM_OVERLAP_METERS } from "./architecture-geometry/architecture-geometry-contract";

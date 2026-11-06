@@ -104,7 +104,20 @@ terrace and lower-floor outlines meet. Numerical normalization affects derived
 geometry without rounding saved outlines. Wall bases extend to outdoor
 terrain, 5 cm below the indoor floor datum, without shifting openings or wall tops. Floor-level exterior doors and passages
 have solid thresholds bridging that terrain-to-floor difference. Ceilings support flat and
-sloped runtime surfaces. Project authoring has the narrower flat-ceiling schema.
+sloped surfaces in both the runtime manifest and layout projects. A wall with a
+`gable` rises above its height to the sloped ceiling planes over it, as at the
+end of an A-frame: solid gables continue the wall's faces, and glass gables are
+framed panes split by mullions and optional transoms, with the wall top acting as
+their header. Roof infill is not drawn where such a gable already closes the
+edge, nor along a seam where two authored slopes continue each other at the same
+height (a ridge, or one slope carried over two floors). In a cutaway, a lower
+floor's sloped plane that rises into the floor in view is left out, so an
+open double-height slope does not cover that floor. A wall with `leanMeters` is
+drawn sheared about its base, outward along its exterior normal: its openings,
+wall-mounted items and gable glass shear with it, corners where two leaning walls
+meet move along both, flat ceilings it meets follow its top, and the flat roof
+reaches out over that top. Sloped ceilings and roof slopes keep their authored
+edges, so a lean suits walls under a flat ceiling or a flat roof.
 The exterior roof is separate procedural geometry, visible in Home's roof view.
 Connected ceiling areas merge at equal height, with higher floor coverage removed
 from lower sections. Concave outlines, detached sections, and courtyard holes are

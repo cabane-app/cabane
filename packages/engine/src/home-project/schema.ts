@@ -3,10 +3,20 @@ import { validateHomePosition } from "./schema-home-position";
 import { validateActionBarSchema } from "./schema-action-bar";
 import { entitySlot } from "./schema-entity-slot";
 import { wallSchema } from "./schema-wall";
+import { ceilingSchema } from "./schema-ceiling";
 import { projectSchemaVersionMessage } from "./project-format-errors";
 import { sceneItem } from "./schema-scene-item";
 import { validateProjectModelCatalogs } from "../imported-models/model-schema";
-import { keys, record, array, string, finite, point, polygon } from "./schema-json-values";
+import {
+  keys,
+  record,
+  array,
+  string,
+  stringArray,
+  finite,
+  point,
+  polygon,
+} from "./schema-json-values";
 import { openingSchema } from "./schema-opening";
 import { stairSchema } from "./schema-stairs";
 import { validHedge } from "../hedges/hedge-validity";
@@ -15,10 +25,6 @@ import { room } from "./schema-room";
 import { floorZone } from "./schema-floor-finish";
 import type { HomeProject, LegacyHomeProject } from "./types";
 import { addProjectIssue, isPlainRecord, type HomeProjectIssue } from "./validation-types";
-
-const stringArray = (value: unknown, path: string, issues: HomeProjectIssue[]) => {
-  array(value, path, issues)?.forEach((entry, index) => string(entry, `${path}[${index}]`, issues));
-};
 
 const contactSlot = (value: unknown, path: string, issues: HomeProjectIssue[]) => {
   const slot = record(value, path, issues);
@@ -181,22 +187,9 @@ const floor = (value: unknown, path: string, issues: HomeProjectIssue[], legacy:
     openingSchema(entry, `${path}.openings[${index}]`, issues),
   );
   if (candidate.ceilings !== undefined)
-    array(candidate.ceilings, `${path}.ceilings`, issues)?.forEach((entry, index) => {
-      const ceilingPath = `${path}.ceilings[${index}]`;
-      const ceiling = record(entry, ceilingPath, issues);
-      if (!ceiling) return;
-      keys(ceiling, ["id", "kind", "roomIds", "heightMeters"], ceilingPath, issues);
-      string(ceiling.id, `${ceilingPath}.id`, issues);
-      if (ceiling.kind !== "flat")
-        addProjectIssue(
-          issues,
-          "project.ceiling-kind",
-          `${ceilingPath}.kind`,
-          "Layout projects support flat ceilings only.",
-        );
-      stringArray(ceiling.roomIds, `${ceilingPath}.roomIds`, issues);
-      finite(ceiling.heightMeters, `${ceilingPath}.heightMeters`, issues);
-    });
+    array(candidate.ceilings, `${path}.ceilings`, issues)?.forEach((entry, index) =>
+      ceilingSchema(entry, `${path}.ceilings[${index}]`, issues),
+    );
 };
 
 export const validateHomeProjectSchemaShape = (

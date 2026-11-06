@@ -152,6 +152,7 @@ export { MeasurementText } from "./MeasurementText";
 export { WALL_IMAGE_LIMITS, wallImageDimensions, wallSurfaceImageError } from "./wall-image";
 export {
   wallSurfaceRepeatHeight,
+  type WallGableSpec,
   type WallImageFinish,
   type WallPatternFinish,
   type WallSurfaceImage,

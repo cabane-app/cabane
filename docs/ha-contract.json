@@ -1,9 +1,9 @@
 {
-  "revision": 37,
-  "fingerprint": "6a324a47ef170799a2da3e67503650776bfbfad4e0e29b114682cef277569cd1",
-  "summary": "Support glass railings on outdoor platforms",
+  "revision": 39,
+  "fingerprint": "cd28b4004639059d0f9fe89b8633ca40f1c0ddadafa189c1b730cc0f0113d8b8",
+  "summary": "Allow walls to lean (leanMeters)",
   "breakingChanges": [
-    "Existing outdoor platforms keep their edge styles. Workspaces with glass railings require the updated Home Assistant panel. Update through HACS, restart Home Assistant, and reload before opening one on an older panel."
+    "No saved fields or IDs change for existing projects. Walls may now store leanMeters; older frontends and Home Assistant panels reject projects that use it."
   ],
   "history": [
     {
@@ -256,6 +256,20 @@
       "summary": "Allow explicit switch and cover connections without device-class restrictions",
       "breakingChanges": [
         "No saved fields or IDs change. Existing smart plugs, power strips, curtains and garage covers accept compatible entities regardless of optional device class after updating the Home Assistant panel. Older panels can hide or reject these connections; automatic matching and typed sensor requirements remain strict."
+      ]
+    },
+    {
+      "revision": 37,
+      "summary": "Support glass railings on outdoor platforms",
+      "breakingChanges": [
+        "Existing outdoor platforms keep their edge styles. Workspaces with glass railings require the updated Home Assistant panel. Update through HACS, restart Home Assistant, and reload before opening one on an older panel."
+      ]
+    },
+    {
+      "revision": 38,
+      "summary": "Allow sloped ceilings in layout projects and gable walls that rise to them",
+      "breakingChanges": [
+        "No saved fields or IDs change for existing projects. Layout projects may now store sloped ceilings and wall gable settings; older frontends and Home Assistant panels reject projects that use them."
       ]
     }
   ],

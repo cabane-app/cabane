@@ -158,6 +158,39 @@ export const validateWalls = (
         }
       }
     }
+    if (rawWall.gable !== undefined) {
+      if (!isObject(rawWall.gable) || !["solid", "glass"].includes(String(rawWall.gable.fill))) {
+        issues.push(
+          issue("wall.gable", `${wallPath}.gable`, "Wall gable fill must be solid or glass."),
+        );
+      } else if (
+        rawWall.gable.frameColor !== undefined &&
+        !isNonEmptyString(rawWall.gable.frameColor)
+      ) {
+        issues.push(
+          issue(
+            "wall.gable-frame-color",
+            `${wallPath}.gable.frameColor`,
+            "Wall gable frame color must be a non-empty CSS color when supplied.",
+          ),
+        );
+      }
+    }
+    if (rawWall.leanMeters !== undefined) {
+      const height = Number(rawWall.heightMeters ?? rawFloor.defaultWallHeightMeters);
+      if (
+        !isFiniteNumber(rawWall.leanMeters) ||
+        (Number.isFinite(height) && Math.abs(rawWall.leanMeters) > height)
+      ) {
+        issues.push(
+          issue(
+            "wall.lean",
+            `${wallPath}.leanMeters`,
+            "A wall can lean at most as far as it is high (45 degrees).",
+          ),
+        );
+      }
+    }
   });
   const validWalls = walls.filter(
     (wall): wall is ValidWall =>

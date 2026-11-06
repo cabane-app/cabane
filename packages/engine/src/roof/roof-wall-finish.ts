@@ -2,6 +2,7 @@ import { createWallAssemblyPointTest } from "../architecture-geometry/wall-solid
 import { wallFaceFinish } from "../architecture-geometry/wall-face-finish";
 import { wallFrame } from "../architecture-geometry/wall-coordinate-frame";
 import { physicalFloor } from "../architecture-geometry/physical-floor";
+import { wallGableShapes } from "../architecture-geometry/wall-gable-geometry";
 import type { FloorSpec } from "../types";
 
 type Point = readonly [number, number];
@@ -59,4 +60,26 @@ export function roofWallBreaks(requestedFloor: FloorSpec, from: Point, to: Point
       .map((point) => ((point[0] - from[0]) * dx + (point[1] - from[1]) * dz) / lengthSquared)
       .filter((t) => t > 1e-6 && t < 1 - 1e-6);
   });
+}
+
+/** Whether a wall's gable already rises to the sloped ceiling along this roof edge. */
+export function createGableWallTest(floor: FloorSpec) {
+  const walls = floor.walls
+    .filter((wall) => wall.gable && wallGableShapes(wall, floor, floor.openings))
+    .map((wall) => ({
+      frame: wallFrame(wall, floor),
+      contains: createWallAssemblyPointTest(wall, floor),
+    }));
+  return (from: Point, to: Point): boolean => {
+    const center: Point = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
+    const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
+    return walls.some(
+      ({ frame, contains }) =>
+        contains(center) &&
+        Math.abs(
+          ((to[0] - from[0]) * frame.direction[0] + (to[1] - from[1]) * frame.direction[1]) /
+            length,
+        ) >= 0.999,
+    );
+  };
 }

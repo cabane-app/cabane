@@ -1,6 +1,6 @@
 import { WALL_SURFACE_PATTERNS } from "../types";
 import { wallSurfaceImageError } from "../wall-image";
-import { record, keys, string, finite, point } from "./schema-json-values";
+import { record, keys, string, finite, point, array } from "./schema-json-values";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
 import { wallNichesSchema } from "./schema-wall-niches";
 
@@ -18,11 +18,13 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
       "thicknessMeters",
       "virtual",
       "heightMeters",
+      "leanMeters",
       "exteriorColor",
       "edgeColor",
       "faceColors",
       "faceFinishes",
       "niches",
+      "gable",
     ],
     path,
     issues,
@@ -51,6 +53,8 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
   wallNichesSchema(candidate.niches, `${path}.niches`, issues);
   if (candidate.heightMeters !== undefined)
     finite(candidate.heightMeters, `${path}.heightMeters`, issues);
+  if (candidate.leanMeters !== undefined)
+    finite(candidate.leanMeters, `${path}.leanMeters`, issues);
   if (candidate.exteriorColor !== undefined)
     string(candidate.exteriorColor, `${path}.exteriorColor`, issues);
   if (candidate.edgeColor !== undefined) string(candidate.edgeColor, `${path}.edgeColor`, issues);
@@ -124,6 +128,40 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
       keys(colors, ["left", "right"], `${path}.faceColors`, issues);
       if (colors.left !== undefined) string(colors.left, `${path}.faceColors.left`, issues);
       if (colors.right !== undefined) string(colors.right, `${path}.faceColors.right`, issues);
+    }
+  }
+  if (candidate.gable !== undefined) {
+    const gable = record(candidate.gable, `${path}.gable`, issues);
+    if (gable) {
+      keys(
+        gable,
+        ["fill", "frameColor", "columns", "transomHeightsMeters"],
+        `${path}.gable`,
+        issues,
+      );
+      if (!["solid", "glass"].includes(String(gable.fill)))
+        addProjectIssue(
+          issues,
+          "project.wall-gable-fill",
+          `${path}.gable.fill`,
+          "Wall gable fill must be solid or glass.",
+        );
+      if (gable.frameColor !== undefined)
+        string(gable.frameColor, `${path}.gable.frameColor`, issues);
+      if (
+        gable.columns !== undefined &&
+        (!Number.isInteger(gable.columns) || (gable.columns as number) < 1)
+      )
+        addProjectIssue(
+          issues,
+          "project.wall-gable-columns",
+          `${path}.gable.columns`,
+          "Wall gable columns must be a positive whole number.",
+        );
+      if (gable.transomHeightsMeters !== undefined)
+        array(gable.transomHeightsMeters, `${path}.gable.transomHeightsMeters`, issues)?.forEach(
+          (value, index) => finite(value, `${path}.gable.transomHeightsMeters[${index}]`, issues),
+        );
     }
   }
 };
