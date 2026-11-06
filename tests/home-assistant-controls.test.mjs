@@ -9,6 +9,38 @@ await withModules(async (load) => {
   const { bindingCanMutate } = await load("/packages/engine/src/home-assistant-resolver.ts");
   const { deviceVisualStateForSnapshot } = await load("/packages/engine/src/devices.ts");
 
+  test("climate target shape follows the supported features, mode, and reported values", () => {
+    const entity = states["climate.demo"];
+    const attributes = {
+      ...entity.attributes,
+      supported_features: 3,
+      min_temp: 16,
+      max_temp: 30,
+      target_temp_low: 20,
+      target_temp_high: 24,
+    };
+    const target = (overrides = {}, state = "heat_cool") =>
+      controls.climateTargetTemperature({
+        ...entity,
+        state,
+        attributes: { ...attributes, ...overrides },
+      });
+    assert.deepEqual(target(), { kind: "range", min: 16, max: 30, step: 0.5, low: 20, high: 24 });
+    assert.deepEqual(target({}, "cool"), { kind: "single", temperature: 20.5 });
+    assert.deepEqual(target({ supported_features: 1 }), { kind: "single", temperature: 20.5 });
+    for (const invalid of [
+      { supported_features: 0 },
+      { min_temp: undefined },
+      { target_temp_low: null },
+      { target_temp_low: 15 },
+      { target_temp_high: 19 },
+      { target_temp_high: 31 },
+      { target_temp_step: 0 },
+    ]) {
+      assert.equal(target(invalid), null);
+    }
+  });
+
   test("events display their last type and event timestamp and never offer a command", async () => {
     const event = {
       entityId: "event.synthetic_remote",

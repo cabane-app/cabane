@@ -135,6 +135,58 @@ export const climateTemperatureCall = (
   return coalescedValueCall(entity, "set_temperature", "temperature", { temperature });
 };
 
+const CLIMATE_FEATURE_TARGET_TEMPERATURE = 1;
+const CLIMATE_FEATURE_TARGET_TEMPERATURE_RANGE = 2;
+
+export const climateTargetTemperature = (entity: EntityStateSnapshot) => {
+  const attributes = entity.attributes;
+  const supportsRange = featureEnabled(entity, CLIMATE_FEATURE_TARGET_TEMPERATURE_RANGE);
+  const temperature = attributes.temperature;
+  if (
+    !(supportsRange && entity.state === "heat_cool") &&
+    (attributes.supported_features == null ||
+      featureEnabled(entity, CLIMATE_FEATURE_TARGET_TEMPERATURE)) &&
+    typeof temperature === "number" &&
+    Number.isFinite(temperature)
+  ) {
+    return { kind: "single" as const, temperature };
+  }
+  if (!supportsRange) return null;
+
+  const {
+    min_temp: min,
+    max_temp: max,
+    target_temp_low: low,
+    target_temp_high: high,
+    target_temp_step: step = attributes.temperature_unit === "°F" ? 1 : 0.5,
+  } = attributes;
+  if (
+    typeof min !== "number" ||
+    typeof max !== "number" ||
+    typeof low !== "number" ||
+    typeof high !== "number" ||
+    typeof step !== "number" ||
+    ![min, max, low, high, step].every(Number.isFinite) ||
+    min >= max ||
+    low < min ||
+    high > max ||
+    low > high ||
+    step <= 0
+  ) {
+    return null;
+  }
+  return { kind: "range" as const, min, max, step, low, high };
+};
+
+export const climateTemperatureRangeCall = (
+  entity: EntityStateSnapshot,
+  { low, high }: { low: number; high: number },
+) =>
+  coalescedValueCall(entity, "set_temperature", "temperature", {
+    target_temp_low: low,
+    target_temp_high: high,
+  });
+
 export const climatePowerCall = (entity: EntityStateSnapshot, turnOn: boolean) =>
   valueCall(entity, turnOn ? "turn_on" : "turn_off");
 

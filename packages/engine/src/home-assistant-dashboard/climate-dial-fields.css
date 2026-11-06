@@ -302,3 +302,30 @@
   outline: 3px solid rgba(190, 103, 72, 0.22);
   outline-offset: 3px;
 }
+.vtherm-control .vtherm-main--setpoints {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  min-height: 0;
+}
+.vtherm-main--setpoints :is(.vtherm-action, .vtherm-off) {
+  position: static;
+  justify-self: center;
+  transform: none;
+}
+.climate-setpoints {
+  display: grid;
+  gap: 8px;
+}
+.climate-setpoints__label {
+  color: #596b62;
+  font-size: 0.75rem;
+  font-weight: 690;
+  text-align: center;
+}
+.climate-setpoints .temperature-stepper output {
+  font-size: 1.1rem;
+}
+.vtherm-control .vtherm-main--setpoints:has([role="alert"]) {
+  min-height: 0;
+}

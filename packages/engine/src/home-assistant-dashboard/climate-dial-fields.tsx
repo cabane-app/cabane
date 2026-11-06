@@ -1,13 +1,15 @@
 import { textAttribute } from "./entity-field-contract";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import {
   climateFanModeCall,
   climateModeCall,
   climatePresetCall,
   climateSwingModeCall,
+  climateTargetTemperature,
   climateTemperatureCall,
   climateTemperatureRange,
+  climateTemperatureRangeCall,
   stringOptions,
   type SupportedServiceCall,
 } from "../home-assistant-controls";
@@ -16,7 +18,7 @@ import type { EntityStateSnapshot, ResolvedEntityBinding } from "../types";
 
 import { TemperatureStepper, useOptimisticCommand } from "./control-primitives";
 
-import { confirmationKey, isVersatileThermostat, numberAttribute } from "./entity-field-contract";
+import { confirmationKey, isVersatileThermostat } from "./entity-field-contract";
 
 const readableOption = (option: string) =>
   option.replaceAll("_", " ").replace(/^./, (character) => character.toUpperCase());
@@ -191,7 +193,8 @@ function ClimateDialFieldsWithEntity({
     onCallService,
   });
   const range = climateTemperatureRange(entity);
-  const targetTemperature = numberAttribute(entity.attributes.temperature, range.min);
+  const target = climateTargetTemperature(entity);
+  const targetTemperature = target?.kind === "single" ? target.temperature : null;
   const [dialTargetTemperature, setDialTargetTemperature] = useState(targetTemperature);
   const currentTemperature = Number(entity.attributes.current_temperature);
   const regulatedTemperature = Number(entity.attributes.regulated_target_temperature);
@@ -200,18 +203,21 @@ function ClimateDialFieldsWithEntity({
       ? entity.attributes.temperature_unit
       : "°C";
   const hasCurrentTemperature = Number.isFinite(currentTemperature);
-  const comparisonTemperature = hasCurrentTemperature ? currentTemperature : dialTargetTemperature;
+  const dialTemperature = dialTargetTemperature ?? targetTemperature;
+  const comparisonTemperature = hasCurrentTemperature ? currentTemperature : dialTemperature;
   const dialMinimum = range.min;
   const dialMaximum = range.max;
-  const dialProgress = (temperature: number) =>
-    Math.min(
-      1,
-      Math.max(
-        0,
-        (temperature - dialMinimum) / Math.max(Number.EPSILON, dialMaximum - dialMinimum),
-      ),
-    );
-  const targetProgress = dialProgress(dialTargetTemperature);
+  const dialProgress = (temperature: number | null) =>
+    temperature === null
+      ? 0
+      : Math.min(
+          1,
+          Math.max(
+            0,
+            (temperature - dialMinimum) / Math.max(Number.EPSILON, dialMaximum - dialMinimum),
+          ),
+        );
+  const targetProgress = dialProgress(dialTemperature);
   const currentProgress = dialProgress(comparisonTemperature);
   const arcStart = Math.min(targetProgress, currentProgress) * 75;
   const arcLength = Math.abs(targetProgress - currentProgress) * 75;
@@ -227,7 +233,12 @@ function ClimateDialFieldsWithEntity({
   const modeOptions = stringOptions(entity.attributes.hvac_modes);
   const hasDirectOff = isVersatileThermostat(binding) && modeOptions.includes("off");
   const preferredOnMode =
-    hasCurrentTemperature && currentTemperature > dialTargetTemperature ? "cool" : "heat";
+    targetTemperature !== null &&
+    dialTemperature !== null &&
+    hasCurrentTemperature &&
+    currentTemperature > dialTemperature
+      ? "cool"
+      : "heat";
   const onMode =
     [preferredOnMode, "heat", "cool", "heat_cool", "auto"].find((mode) =>
       modeOptions.includes(mode),
@@ -275,54 +286,73 @@ function ClimateDialFieldsWithEntity({
         )}
       </div>
 
-      <div className="vtherm-main">
-        <div className="vtherm-dial" aria-hidden="true">
-          <svg viewBox="0 0 200 200">
-            <circle className="vtherm-dial__track" cx="100" cy="100" r="76" pathLength="100" />
-            <circle
-              className="vtherm-dial__value"
-              cx="100"
-              cy="100"
-              r="76"
-              pathLength="100"
-              strokeDasharray={`${arcLength} ${100 - arcLength}`}
-              strokeDashoffset={-arcStart}
-            />
-            {hasCurrentTemperature && (
+      <div
+        className={
+          targetTemperature === null ? "vtherm-main vtherm-main--setpoints" : "vtherm-main"
+        }
+      >
+        {targetTemperature !== null && (
+          <div className="vtherm-dial" aria-hidden="true">
+            <svg viewBox="0 0 200 200">
+              <circle className="vtherm-dial__track" cx="100" cy="100" r="76" pathLength="100" />
               <circle
-                className="vtherm-dial__marker vtherm-dial__marker--current"
-                cx={currentMarker.x}
-                cy={currentMarker.y}
-                r="4"
+                className="vtherm-dial__value"
+                cx="100"
+                cy="100"
+                r="76"
+                pathLength="100"
+                strokeDasharray={`${arcLength} ${100 - arcLength}`}
+                strokeDashoffset={-arcStart}
               />
-            )}
-            <circle
-              className="vtherm-dial__marker vtherm-dial__marker--target"
-              cx={targetMarker.x}
-              cy={targetMarker.y}
-              r="5"
-            />
-          </svg>
-        </div>
+              {hasCurrentTemperature && (
+                <circle
+                  className="vtherm-dial__marker vtherm-dial__marker--current"
+                  cx={currentMarker.x}
+                  cy={currentMarker.y}
+                  r="4"
+                />
+              )}
+              <circle
+                className="vtherm-dial__marker vtherm-dial__marker--target"
+                cx={targetMarker.x}
+                cy={targetMarker.y}
+                r="5"
+              />
+            </svg>
+          </div>
+        )}
 
         <div className="vtherm-action" aria-live="polite">
           {actionLabel}
         </div>
 
-        <div className="vtherm-temperature" data-unit={temperatureUnit}>
-          <TemperatureStepper
-            label={`${binding.label} target temperature`}
-            min={range.min}
-            max={range.max}
-            step={range.step}
-            confirmedValue={targetTemperature}
-            confirmedKey={confirmationKey(entity, targetTemperature)}
-            disabled={!enabled}
-            callForValue={(value) => climateTemperatureCall(entity, value)}
+        {targetTemperature !== null && (
+          <div className="vtherm-temperature" data-unit={temperatureUnit}>
+            <TemperatureStepper
+              label={`${binding.label} target temperature`}
+              min={range.min}
+              max={range.max}
+              step={range.step}
+              confirmedValue={targetTemperature}
+              confirmedKey={confirmationKey(entity, targetTemperature)}
+              disabled={!enabled}
+              callForValue={(value) => climateTemperatureCall(entity, value)}
+              onCallService={onCallService}
+              onValueChange={setDialTargetTemperature}
+            />
+          </div>
+        )}
+        {target?.kind === "range" && (
+          <ClimateRangeFields
+            key={entity.entityId}
+            entity={entity}
+            label={binding.label}
+            unit={temperatureUnit}
+            target={target}
+            enabled={enabled && modeCommand.value === entity.state && !modeCommand.pending}
             onCallService={onCallService}
-            onValueChange={setDialTargetTemperature}
           />
-        </div>
+        )}
         {hasDirectOff && (
           <button
             type="button"
@@ -403,6 +433,78 @@ function ClimateDialFieldsWithEntity({
             onCallService={onCallService}
           />
         </div>
+      )}
+    </div>
+  );
+}
+
+type ClimateRangeTarget = Extract<ReturnType<typeof climateTargetTemperature>, { kind: "range" }>;
+
+function ClimateRangeFields({
+  entity,
+  label,
+  unit,
+  target: { low, high, min, max, step },
+  enabled,
+  onCallService,
+}: {
+  entity: EntityStateSnapshot;
+  label: string;
+  unit: string;
+  target: ClimateRangeTarget;
+  enabled: boolean;
+  onCallService: (call: SupportedServiceCall) => Promise<unknown>;
+}) {
+  const confirmedValue = useMemo(() => ({ low, high }), [low, high]);
+  const command = useOptimisticCommand({
+    confirmedValue,
+    confirmedKey: confirmationKey(entity, `${entity.state}:${enabled}:${min}:${max}:${step}`),
+    label: `${label} target temperature range`,
+    onCallService,
+  });
+
+  return (
+    <div className="climate-setpoints" data-pending={command.pending ? "true" : "false"}>
+      {(["low", "high"] as const).map((endpoint) => {
+        const heating = endpoint === "low";
+        const name = heating ? "Heating target" : "Cooling target";
+        const outputLabel = `${label} ${name.toLowerCase()} temperature`;
+        const value = command.value[endpoint];
+        const minimum = heating ? min : command.value.low;
+        const maximum = heating ? command.value.high : max;
+        return (
+          <div key={endpoint}>
+            <div className="climate-setpoints__label">{name}</div>
+            <div className="temperature-stepper">
+              <output aria-label={outputLabel} aria-live="polite">
+                {value} {unit}
+              </output>
+              {([-1, 1] as const).map((direction) => {
+                const next = Number((value + direction * step).toFixed(6));
+                const buttonLabel = `${direction < 0 ? "Decrease" : "Increase"} ${outputLabel}`;
+                return (
+                  <button
+                    key={direction}
+                    type="button"
+                    aria-label={buttonLabel}
+                    disabled={!enabled || next === value || next < minimum || next > maximum}
+                    onClick={() => {
+                      const pair = { ...command.value, [endpoint]: next };
+                      void command.run(climateTemperatureRangeCall(entity, pair), pair);
+                    }}
+                  >
+                    {direction < 0 ? "−" : "+"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+      {command.error && (
+        <p role="alert" aria-live="assertive">
+          {command.error}
+        </p>
       )}
     </div>
   );

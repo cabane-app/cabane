@@ -1331,6 +1331,66 @@ await withModules(async (load) => {
     });
   });
 
+  test("climate range steppers send the latest pair when both targets are edited", async () => {
+    await withDom(async ({ dom, root }) => {
+      const runtime = connectedRuntimeFixture();
+      const entity = runtime.entityStates["climate.demo"];
+      entity.state = "heat_cool";
+      Object.assign(entity.attributes, {
+        supported_features: 2,
+        temperature: undefined,
+        min_temp: 16,
+        target_temp_step: 0.5,
+        target_temp_low: 20,
+        target_temp_high: 21,
+        hvac_modes: ["off", "heat_cool"],
+      });
+      const room = resolveHomeAssistantBindings(
+        connectedManifestFixture(neutralDemoManifest),
+        connectedProfileFixture(),
+        runtime,
+      ).rooms["demo-room"];
+      const module = buildRoomModules(room).find(({ id }) => id === "slot:demo-climate-slot");
+      const calls = [];
+      await act(async () =>
+        root.render(
+          React.createElement(RoomModule, {
+            module,
+            canMutate: true,
+            focused: false,
+            onCallService: async (call) => {
+              calls.push(call);
+            },
+          }),
+        ),
+      );
+      const find = (tag, label) =>
+        dom.window.document.querySelector(`${tag}[aria-label='${label}']`);
+      const low = "Room climate heating target temperature";
+      const high = "Room climate cooling target temperature";
+      assert.equal(find("output", "Room climate target temperature"), null);
+      assert.equal(find("output", low)?.textContent, "20 °C");
+      assert.equal(find("output", high)?.textContent, "21 °C");
+      await act(async () => find("button", `Increase ${low}`).click());
+      await act(async () => find("button", `Decrease ${high}`).click());
+      assert.equal(find("button", `Increase ${low}`).disabled, true);
+      assert.equal(find("button", `Decrease ${high}`).disabled, true);
+      assert.deepEqual(
+        calls.map(({ data }) => data),
+        [
+          { target_temp_low: 20.5, target_temp_high: 21 },
+          { target_temp_low: 20.5, target_temp_high: 20.5 },
+        ],
+      );
+      assert.ok(
+        calls.every(
+          ({ delivery }) =>
+            delivery?.mode === "coalesced-value" && delivery.channel === "temperature",
+        ),
+      );
+    });
+  });
+
   test("renders one direct module grid without old navigation or technical wording", () => {
     const html = renderDashboard(connectedRuntimeFixture());
     const document = new JSDOM(html).window.document;
