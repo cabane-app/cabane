@@ -305,6 +305,7 @@ export function StandaloneHomeAssistantRuntime({
           client.subscribeEntities(connection, (states) => {
             if (isCurrent()) {
               const snapshot = normalizeEntityStates(states, connection.connected === false);
+              schedulerRef.current?.observeEntityStates(snapshot);
               setEntityStates(snapshot);
             }
           }),

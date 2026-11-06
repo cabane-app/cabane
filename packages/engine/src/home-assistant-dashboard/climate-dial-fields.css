@@ -69,7 +69,8 @@
   overflow: visible;
 }
 .vtherm-dial__track,
-.vtherm-dial__value {
+.vtherm-dial__value,
+.vtherm-dial__range {
   fill: none;
   stroke-width: 15;
   stroke-linecap: round;
@@ -298,7 +299,172 @@
   --room-button-border-color: #5e6d65;
   opacity: 1;
 }
-.vtherm-off:focus-visible {
+.vtherm-off:focus-visible,
+.climate-range__target:focus-visible {
   outline: 3px solid rgba(190, 103, 72, 0.22);
   outline-offset: 3px;
+}
+.vtherm-control .vtherm-main--status {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  min-height: 0;
+}
+.vtherm-main--status :is(.vtherm-action, .vtherm-off) {
+  position: static;
+  justify-self: center;
+  transform: none;
+}
+
+.vtherm-main--range [data-endpoint="low"] {
+  --climate-target-accent: color-mix(in srgb, var(--home-accent, #bd724d) 88%, #bc3f32);
+}
+.vtherm-main--range [data-endpoint="high"] {
+  --climate-target-accent: #2a8ed6;
+}
+.vtherm-main--range .vtherm-dial__marker--current {
+  fill: #63756b;
+}
+.vtherm-dial__range {
+  stroke: var(--climate-target-accent);
+}
+.vtherm-dial__marker--range {
+  fill: #fbfaf3;
+  stroke: var(--climate-target-accent);
+}
+.vtherm-dial__marker--range[data-selected="true"] {
+  fill: var(--climate-target-accent);
+  stroke: #fbfaf3;
+}
+.vtherm-dial__thumb {
+  position: absolute;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  cursor: grab;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+}
+.vtherm-dial__thumb[data-selected="true"] {
+  z-index: 2;
+}
+.vtherm-dial__thumb:active {
+  cursor: grabbing;
+}
+.vtherm-dial__thumb[data-disabled="true"] {
+  pointer-events: none;
+}
+.vtherm-control:has(.vtherm-main--range) {
+  gap: 8px;
+}
+.vtherm-control .vtherm-main--range {
+  width: min(100%, 224px);
+  min-height: 0;
+  align-self: center;
+  padding-bottom: 6px;
+}
+.vtherm-main--range .vtherm-dial {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  transform: none;
+}
+.vtherm-main--range .vtherm-dial svg {
+  height: auto;
+}
+.vtherm-main--range .vtherm-action {
+  top: 24%;
+}
+.vtherm-control .vtherm-main--range:has([role="alert"]) {
+  min-height: 0;
+  margin-bottom: 45px;
+}
+.vtherm-control .vtherm-main--range .temperature-stepper [role="alert"] {
+  top: calc(100% + 5px);
+  width: min(220px, 100%);
+}
+.vtherm-control .vtherm-main--range :is(.temperature-stepper button, .vtherm-off) {
+  top: auto;
+  bottom: 0;
+}
+.vtherm-temperature--range::after {
+  content: none;
+}
+.climate-range__targets {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  width: min(144px, 64%);
+  transform: translateX(-50%);
+}
+.room-module .climate-range__target {
+  --room-button-color: #52675d;
+  --room-button-background: transparent;
+  --room-button-border-color: transparent;
+  --room-button-hover-color: #1e332c;
+  --room-button-hover-background: transparent;
+  --room-button-hover-border-color: transparent;
+  display: grid;
+  flex: 1;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  pointer-events: auto;
+}
+.room-module .climate-range__target[aria-pressed="true"] {
+  --room-button-color: #1e332c;
+}
+.room-module .climate-range__target:hover:not(:disabled) {
+  transform: none;
+}
+.climate-range__label {
+  font-size: 0.63rem;
+  font-weight: 690;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.climate-range__value {
+  position: relative;
+  font-family: var(--font-family-numeric);
+  font-size: 1.65rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 570;
+  line-height: 1;
+  white-space: nowrap;
+}
+.climate-range__target[aria-pressed="true"] .climate-range__value {
+  font-weight: 720;
+}
+.climate-range__target[aria-pressed="true"] .climate-range__value::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -6px;
+  left: 0;
+  width: 14px;
+  height: 2px;
+  margin: auto;
+  background: var(--climate-target-accent);
+  border-radius: 2px;
+}
+.climate-range__value small {
+  font-size: 0.59rem;
+  vertical-align: top;
+}
+@media (min-width: 700px) {
+  @container climate-module (min-width: 500px) {
+    .vtherm-control:has(.vtherm-main--range):has(.vtherm-toolbar) {
+      grid-template-columns: minmax(224px, 0.85fr) minmax(0, 1fr);
+    }
+    .vtherm-control:has(.vtherm-main--range) .vtherm-toolbar[data-picker-count="4"] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 }

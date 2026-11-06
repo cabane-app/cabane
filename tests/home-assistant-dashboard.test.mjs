@@ -1331,6 +1331,98 @@ await withModules(async (load) => {
     });
   });
 
+  test("one climate range dial preserves queued edits across Home Assistant updates", async () => {
+    await withDom(async ({ dom, root }) => {
+      const runtime = connectedRuntimeFixture();
+      const entity = runtime.entityStates["climate.demo"];
+      entity.state = "heat";
+      Object.assign(entity.attributes, {
+        supported_features: 2,
+        temperature: undefined,
+        min_temp: 16,
+        target_temp_step: 0.5,
+        target_temp_low: 20,
+        target_temp_high: 22,
+        hvac_modes: ["off", "heat", "heat_cool"],
+      });
+      const manifest = connectedManifestFixture(neutralDemoManifest);
+      const profile = connectedProfileFixture();
+      const calls = [];
+      const finish = [];
+      const render = () =>
+        act(async () => {
+          const room = resolveHomeAssistantBindings(manifest, profile, runtime).rooms["demo-room"];
+          const module = buildRoomModules(room).find(({ id }) => id === "slot:demo-climate-slot");
+          root.render(
+            React.createElement(RoomModule, {
+              module,
+              canMutate: true,
+              focused: false,
+              onCallService: async (call) => {
+                calls.push(call);
+                await new Promise((resolve) => finish.push(resolve));
+              },
+            }),
+          );
+        });
+      await render();
+      const find = (tag, label) =>
+        dom.window.document.querySelector(`${tag}[aria-label='${label}']`);
+      const low = "Room climate heating target temperature";
+      const high = "Room climate cooling target temperature";
+      const document = dom.window.document;
+      const heating = () => document.querySelector('.climate-range__target[data-endpoint="low"]');
+      const cooling = () => document.querySelector('.climate-range__target[data-endpoint="high"]');
+      assert.equal(document.querySelectorAll(".vtherm-dial").length, 1);
+      assert.equal(document.querySelectorAll(".vtherm-dial__marker--range").length, 2);
+      assert.equal(document.querySelectorAll(".temperature-stepper button").length, 2);
+      assert.equal(
+        heating().getAttribute("aria-label"),
+        "Select Room climate heating target, 20 °C",
+      );
+      assert.equal(
+        cooling().getAttribute("aria-label"),
+        "Select Room climate cooling target, 22 °C",
+      );
+      assert.equal(heating().getAttribute("aria-pressed"), "true");
+      await act(async () => find("button", `Increase ${low}`).click());
+      entity.attributes.current_temperature = 19;
+      entity.lastUpdated = "2026-11-06T18:30:00.000Z";
+      await render();
+      await act(async () => cooling().click());
+      assert.equal(cooling().getAttribute("aria-pressed"), "true");
+      assert.equal(calls.length, 1);
+      await act(async () => find("button", `Decrease ${high}`).click());
+      entity.attributes.target_temp_low = 20.5;
+      entity.lastUpdated = "2026-11-06T18:30:01.000Z";
+      await render();
+      await act(async () => finish[0]());
+      await act(async () => heating().click());
+      await act(async () => find("button", `Increase ${low}`).click());
+      await act(async () => cooling().click());
+      await act(async () => find("button", `Decrease ${high}`).click());
+      assert.equal(find("button", `Decrease ${high}`).disabled, true);
+      await act(async () => heating().click());
+      assert.equal(find("button", `Increase ${low}`).disabled, true);
+      assert.deepEqual(
+        calls.map(({ data }) => data),
+        [
+          { target_temp_low: 20.5, target_temp_high: 22 },
+          { target_temp_low: 20.5, target_temp_high: 21.5 },
+          { target_temp_low: 21, target_temp_high: 21.5 },
+          { target_temp_low: 21, target_temp_high: 21 },
+        ],
+      );
+      await act(async () => finish.slice(1).forEach((resolve) => resolve()));
+      assert.ok(
+        calls.every(
+          ({ delivery }) =>
+            delivery?.mode === "coalesced-value" && delivery.channel === "temperature",
+        ),
+      );
+    });
+  });
+
   test("renders one direct module grid without old navigation or technical wording", () => {
     const html = renderDashboard(connectedRuntimeFixture());
     const document = new JSDOM(html).window.document;

@@ -3,6 +3,15 @@ import type { ControllableDeviceDomain, EntityId, EntityStateSnapshot } from "./
 export type CoalescedControlChannel =
   "brightness" | "humidity" | "percentage" | "position" | "temperature" | "value" | "volume";
 
+export type ClimateTemperaturePair = { low: number; high: number };
+
+interface ClimateRangeEdit {
+  context: string;
+  targets: Partial<ClimateTemperaturePair>;
+}
+
+export const canceledClimateRangeEdit = Symbol("canceled climate range edit");
+
 export interface SupportedServiceCall {
   domain: ControllableDeviceDomain | "dreame_vacuum" | "scene" | "script";
   service: string;
@@ -12,6 +21,7 @@ export interface SupportedServiceCall {
     mode: "coalesced-value" | "continuous-value";
     channel: CoalescedControlChannel;
   };
+  climateRangeEdit?: ClimateRangeEdit;
 }
 
 const clamp = (value: number, minimum: number, maximum: number) =>
@@ -133,6 +143,105 @@ export const climateTemperatureCall = (
   const { min, max, step } = climateTemperatureRange(entity);
   const temperature = Math.round(clamp(requestedTemperature, min, max) / step) * step;
   return coalescedValueCall(entity, "set_temperature", "temperature", { temperature });
+};
+
+const CLIMATE_FEATURE_TARGET_TEMPERATURE = 1;
+const CLIMATE_FEATURE_TARGET_TEMPERATURE_RANGE = 2;
+
+export const climateTargetTemperature = (entity: EntityStateSnapshot) => {
+  const attributes = entity.attributes;
+  const supportsRange = featureEnabled(entity, CLIMATE_FEATURE_TARGET_TEMPERATURE_RANGE);
+  const temperature = attributes.temperature;
+  const single =
+    (attributes.supported_features == null ||
+      featureEnabled(entity, CLIMATE_FEATURE_TARGET_TEMPERATURE)) &&
+    typeof temperature === "number" &&
+    Number.isFinite(temperature)
+      ? { kind: "single" as const, temperature }
+      : null;
+  if (!supportsRange || (single && entity.state !== "heat_cool")) return single;
+
+  const {
+    min_temp: min,
+    max_temp: max,
+    target_temp_low: low,
+    target_temp_high: high,
+    target_temp_step: step = attributes.temperature_unit === "°F" ? 1 : 0.5,
+  } = attributes;
+  if (
+    typeof min !== "number" ||
+    typeof max !== "number" ||
+    typeof low !== "number" ||
+    typeof high !== "number" ||
+    typeof step !== "number" ||
+    ![min, max, low, high, step].every(Number.isFinite) ||
+    min >= max ||
+    low < min ||
+    high > max ||
+    low > high ||
+    step <= 0
+  ) {
+    return single;
+  }
+  return { kind: "range" as const, min, max, step, low, high };
+};
+
+export type ClimateRangeTarget = Extract<
+  ReturnType<typeof climateTargetTemperature>,
+  { kind: "range" }
+>;
+
+export const climateRangeContext = (
+  entity: EntityStateSnapshot,
+  { min, max, step }: ClimateRangeTarget,
+) => JSON.stringify([entity.state, entity.attributes.temperature_unit, min, max, step]);
+
+export const climateRangeForContext = (
+  entity: EntityStateSnapshot | undefined,
+  context: string,
+) => {
+  if (!entity?.available || entity.stale) return null;
+  const target = climateTargetTemperature(entity);
+  return target?.kind === "range" && climateRangeContext(entity, target) === context
+    ? target
+    : null;
+};
+
+export const climateTemperatureRangeCall = (
+  entity: EntityStateSnapshot,
+  range: ClimateRangeTarget,
+  pair: ClimateTemperaturePair,
+  endpoint: keyof ClimateTemperaturePair,
+): SupportedServiceCall => ({
+  ...coalescedValueCall(entity, "set_temperature", "temperature", {
+    target_temp_low: pair.low,
+    target_temp_high: pair.high,
+  }),
+  climateRangeEdit: {
+    context: climateRangeContext(entity, range),
+    targets: { [endpoint]: pair[endpoint] },
+  },
+});
+
+export const resolveClimateRangeCall = (
+  call: SupportedServiceCall,
+  entity: EntityStateSnapshot | undefined,
+) => {
+  const edit = call.climateRangeEdit;
+  if (!edit) return null;
+  const range = climateRangeForContext(entity, edit.context);
+  if (!range) {
+    throw new Error("The climate target range changed before the command was sent.");
+  }
+  const { low, high } = { low: range.low, high: range.high, ...edit.targets };
+  if (![low, high].every(Number.isFinite) || low < range.min || high > range.max || low > high) {
+    throw new Error("The requested climate targets no longer fit the current range.");
+  }
+  return {
+    call: { ...call, data: { target_temp_low: low, target_temp_high: high } },
+    previous: range,
+    edit,
+  };
 };
 
 export const climatePowerCall = (entity: EntityStateSnapshot, turnOn: boolean) =>

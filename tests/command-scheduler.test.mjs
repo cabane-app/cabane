@@ -6,6 +6,8 @@ await withModules(async (load) => {
   const { DEVICE_THROTTLE_MS, DeviceCommandScheduler, VALUE_DEBOUNCE_MS } = await load(
     "/packages/engine/src/command-scheduler.ts",
   );
+  const { canceledClimateRangeEdit, climateTargetTemperature, climateTemperatureRangeCall } =
+    await load("/packages/engine/src/home-assistant-controls.ts");
 
   test("uses the Phase 3 production timing contract", () => {
     assert.equal(VALUE_DEBOUNCE_MS, 500);
@@ -199,6 +201,108 @@ await withModules(async (load) => {
     await clock.advance(1000);
     await Promise.all([...scheduled, cancelled]);
     assert.equal(dispatched.at(-1).service, "turn_off", "power off cancels pending dimming");
+    scheduler.dispose();
+  });
+
+  test("coalesces climate edits and resolves the untouched target from the latest snapshot", async () => {
+    const clock = fakeClock();
+    const entity = {
+      entityId: "climate.demo",
+      state: "heat",
+      available: true,
+      stale: false,
+      attributes: {
+        supported_features: 2,
+        min_temp: 16,
+        max_temp: 30,
+        target_temp_step: 0.5,
+        target_temp_low: 18,
+        target_temp_high: 21,
+      },
+    };
+    const dispatched = [];
+    let reportAfterWrite = true;
+    let finishFirst;
+    const firstWrite = new Promise((resolve) => {
+      finishFirst = resolve;
+    });
+    const scheduler = new DeviceCommandScheduler({
+      ...clock,
+      debounceMs: 5,
+      throttleMs: 20,
+      resolveDeviceKey: () => "climate-device",
+      dispatch: (call) => {
+        dispatched.push(call.data);
+        if (dispatched.length === 1) return firstWrite;
+        if (reportAfterWrite) {
+          Object.assign(entity.attributes, call.data);
+          observe();
+        }
+        return Promise.resolve();
+      },
+    });
+    const observe = () => scheduler.observeEntityStates({ [entity.entityId]: entity });
+    observe();
+    const send = (endpoint, temperature) => {
+      const range = climateTargetTemperature(entity);
+      return scheduler.schedule(
+        climateTemperatureRangeCall(
+          entity,
+          range,
+          { low: range.low, high: range.high, [endpoint]: temperature },
+          endpoint,
+        ),
+      );
+    };
+
+    const first = send("low", 18.5);
+    entity.attributes.target_temp_high = 22;
+    observe();
+    await clock.advance(5);
+    assert.deepEqual(dispatched, [{ target_temp_low: 18.5, target_temp_high: 22 }]);
+    const high = send("high", 23);
+    await clock.advance(20);
+    assert.equal(dispatched.length, 1, "a range write waits for the preceding range write");
+    finishFirst();
+    await Promise.resolve();
+    await clock.advance(0);
+    assert.equal(dispatched.length, 1, "service success alone does not confirm the edited target");
+    entity.attributes.current_temperature = 19;
+    observe();
+    await clock.advance(0);
+    assert.equal(dispatched.length, 1, "an ambient reading does not confirm the edited target");
+    entity.attributes.target_temp_low = 18.5;
+    observe();
+    await first;
+    await clock.advance(0);
+    assert.deepEqual(dispatched.at(-1), { target_temp_low: 18.5, target_temp_high: 23 });
+    await high;
+
+    const nextLow = send("low", 19);
+    const nextHigh = send("high", 24);
+    await clock.advance(20);
+    assert.equal(dispatched.length, 3);
+    assert.deepEqual(dispatched.at(-1), { target_temp_low: 19, target_temp_high: 24 });
+    await Promise.all([nextLow, nextHigh]);
+
+    const invalid = assert.rejects(send("low", 21), /no longer fit/);
+    entity.attributes.target_temp_high = 20;
+    observe();
+    await clock.advance(20);
+    await invalid;
+    const canceled = send("low", 19.5);
+    scheduler.cancelPendingValues();
+    assert.equal(await canceled, canceledClimateRangeEdit);
+    assert.equal(dispatched.length, 3);
+
+    observe();
+    reportAfterWrite = false;
+    const unconfirmed = assert.rejects(send("low", 19.5), /did not report/);
+    await clock.advance(20);
+    const blocked = assert.rejects(send("high", 22), /did not report/);
+    await clock.advance(10_000);
+    await Promise.all([unconfirmed, blocked]);
+    assert.equal(dispatched.length, 4, "a queued edit cannot undo an unconfirmed write");
     scheduler.dispose();
   });
 

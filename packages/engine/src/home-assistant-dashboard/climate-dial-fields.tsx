@@ -5,7 +5,9 @@ import {
   climateFanModeCall,
   climateModeCall,
   climatePresetCall,
+  climateRangeContext,
   climateSwingModeCall,
+  climateTargetTemperature,
   climateTemperatureCall,
   climateTemperatureRange,
   stringOptions,
@@ -14,9 +16,10 @@ import {
 
 import type { EntityStateSnapshot, ResolvedEntityBinding } from "../types";
 
+import { ClimateRangeDial, ClimateTemperatureDial } from "./climate-temperature-dial";
 import { TemperatureStepper, useOptimisticCommand } from "./control-primitives";
 
-import { confirmationKey, isVersatileThermostat, numberAttribute } from "./entity-field-contract";
+import { confirmationKey, isVersatileThermostat } from "./entity-field-contract";
 
 const readableOption = (option: string) =>
   option.replaceAll("_", " ").replace(/^./, (character) => character.toUpperCase());
@@ -191,7 +194,8 @@ function ClimateDialFieldsWithEntity({
     onCallService,
   });
   const range = climateTemperatureRange(entity);
-  const targetTemperature = numberAttribute(entity.attributes.temperature, range.min);
+  const target = climateTargetTemperature(entity);
+  const targetTemperature = target?.kind === "single" ? target.temperature : null;
   const [dialTargetTemperature, setDialTargetTemperature] = useState(targetTemperature);
   const currentTemperature = Number(entity.attributes.current_temperature);
   const regulatedTemperature = Number(entity.attributes.regulated_target_temperature);
@@ -200,34 +204,16 @@ function ClimateDialFieldsWithEntity({
       ? entity.attributes.temperature_unit
       : "°C";
   const hasCurrentTemperature = Number.isFinite(currentTemperature);
-  const comparisonTemperature = hasCurrentTemperature ? currentTemperature : dialTargetTemperature;
-  const dialMinimum = range.min;
-  const dialMaximum = range.max;
-  const dialProgress = (temperature: number) =>
-    Math.min(
-      1,
-      Math.max(
-        0,
-        (temperature - dialMinimum) / Math.max(Number.EPSILON, dialMaximum - dialMinimum),
-      ),
-    );
-  const targetProgress = dialProgress(dialTargetTemperature);
-  const currentProgress = dialProgress(comparisonTemperature);
-  const arcStart = Math.min(targetProgress, currentProgress) * 75;
-  const arcLength = Math.abs(targetProgress - currentProgress) * 75;
-  const markerPosition = (progress: number) => {
-    const angle = ((135 + progress * 270) * Math.PI) / 180;
-    return {
-      x: 100 + Math.cos(angle) * 76,
-      y: 100 + Math.sin(angle) * 76,
-    };
-  };
-  const targetMarker = markerPosition(targetProgress);
-  const currentMarker = markerPosition(currentProgress);
+  const dialTemperature = dialTargetTemperature ?? targetTemperature;
   const modeOptions = stringOptions(entity.attributes.hvac_modes);
   const hasDirectOff = isVersatileThermostat(binding) && modeOptions.includes("off");
   const preferredOnMode =
-    hasCurrentTemperature && currentTemperature > dialTargetTemperature ? "cool" : "heat";
+    targetTemperature !== null &&
+    dialTemperature !== null &&
+    hasCurrentTemperature &&
+    currentTemperature > dialTemperature
+      ? "cool"
+      : "heat";
   const onMode =
     [preferredOnMode, "heat", "cool", "heat_cool", "auto"].find((mode) =>
       modeOptions.includes(mode),
@@ -275,54 +261,48 @@ function ClimateDialFieldsWithEntity({
         )}
       </div>
 
-      <div className="vtherm-main">
-        <div className="vtherm-dial" aria-hidden="true">
-          <svg viewBox="0 0 200 200">
-            <circle className="vtherm-dial__track" cx="100" cy="100" r="76" pathLength="100" />
-            <circle
-              className="vtherm-dial__value"
-              cx="100"
-              cy="100"
-              r="76"
-              pathLength="100"
-              strokeDasharray={`${arcLength} ${100 - arcLength}`}
-              strokeDashoffset={-arcStart}
-            />
-            {hasCurrentTemperature && (
-              <circle
-                className="vtherm-dial__marker vtherm-dial__marker--current"
-                cx={currentMarker.x}
-                cy={currentMarker.y}
-                r="4"
-              />
-            )}
-            <circle
-              className="vtherm-dial__marker vtherm-dial__marker--target"
-              cx={targetMarker.x}
-              cy={targetMarker.y}
-              r="5"
-            />
-          </svg>
-        </div>
+      <div className={`vtherm-main vtherm-main--${target?.kind ?? "status"}`}>
+        {targetTemperature !== null && dialTemperature !== null && (
+          <ClimateTemperatureDial
+            min={range.min}
+            max={range.max}
+            current={currentTemperature}
+            target={dialTemperature}
+          />
+        )}
 
         <div className="vtherm-action" aria-live="polite">
           {actionLabel}
         </div>
 
-        <div className="vtherm-temperature" data-unit={temperatureUnit}>
-          <TemperatureStepper
-            label={`${binding.label} target temperature`}
-            min={range.min}
-            max={range.max}
-            step={range.step}
-            confirmedValue={targetTemperature}
-            confirmedKey={confirmationKey(entity, targetTemperature)}
-            disabled={!enabled}
-            callForValue={(value) => climateTemperatureCall(entity, value)}
+        {targetTemperature !== null && (
+          <div className="vtherm-temperature" data-unit={temperatureUnit}>
+            <TemperatureStepper
+              label={`${binding.label} target temperature`}
+              min={range.min}
+              max={range.max}
+              step={range.step}
+              confirmedValue={targetTemperature}
+              confirmedKey={confirmationKey(entity, targetTemperature)}
+              disabled={!enabled}
+              callForValue={(value) => climateTemperatureCall(entity, value)}
+              onCallService={onCallService}
+              onValueChange={setDialTargetTemperature}
+            />
+          </div>
+        )}
+        {target?.kind === "range" && (
+          <ClimateRangeDial
+            key={`${entity.entityId}:${climateRangeContext(entity, target)}`}
+            entity={entity}
+            label={binding.label}
+            unit={temperatureUnit}
+            current={currentTemperature}
+            target={target}
+            enabled={enabled && modeCommand.value === entity.state && !modeCommand.pending}
             onCallService={onCallService}
-            onValueChange={setDialTargetTemperature}
           />
-        </div>
+        )}
         {hasDirectOff && (
           <button
             type="button"
