@@ -258,6 +258,39 @@ await withModules(async (load) => {
     });
   }
 
+  test("returning to Arrange restores the live camera pose even when the cached pose changes", async () => {
+    const cameraReader = { current: null };
+    const props = cameraProps({ view: "3d", cameraReader });
+    const renderer = await create(createElement(PreviewCamera, props), options);
+    try {
+      await renderer.advanceFrames(1, 1 / 60);
+      const controls = controlsFor(renderer);
+      controls.target.set(2, 0.2, -1);
+      controls.object.position.set(8, 9, 3);
+      controls.object.zoom = 115;
+      controls.update();
+      // The last increment of a damped gesture can land below the change event threshold.
+      controls.object.position.x += 0.00001;
+      controls.object.lookAt(controls.target);
+      const before = pose(controls);
+      const initialPose = cameraReader.current();
+      props.savedCamera.current = { ...initialPose, position: [4, 7, 5], zoom: 38 };
+
+      await renderer.update(createElement(PreviewCamera, { ...props, key: "return", initialPose }));
+      await renderer.advanceFrames(1, 1 / 60);
+      const after = pose(controlsFor(renderer));
+      assert.equal(after.zoom, before.zoom);
+      assert.deepEqual(after.target, before.target);
+      for (const field of ["position", "quaternion"])
+        assert.ok(
+          after[field].every((value, index) => Math.abs(value - before[field][index]) < 1e-9),
+          `Arrange return changed the camera ${field}`,
+        );
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("active orthographic controls keep foreground geometry out of the near clipping plane", async () => {
     const { renderer, controls } = await createWheelCamera(
       createElement(OrbitCamera, { floor, resetKey: 0 }),

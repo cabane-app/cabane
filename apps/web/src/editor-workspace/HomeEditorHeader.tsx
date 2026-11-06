@@ -48,6 +48,7 @@ type Props = Pick<
   referenceAdjusting?: boolean;
   settingsMode: boolean;
   onModeTabChange: (mode: EditorMode | "settings") => void;
+  onBackToArrange?: (() => void) | undefined;
 };
 export function HomeEditorHeader({
   referenceAdjusting,
@@ -81,6 +82,7 @@ export function HomeEditorHeader({
   redoProject,
   settingsMode,
   onModeTabChange,
+  onBackToArrange,
   replaceEditorsFromProject,
 }: Props) {
   const requestSave = () => {
@@ -90,7 +92,6 @@ export function HomeEditorHeader({
   };
   useEditorSaveShortcut(editingLocked || unsettled || previewOpen || publishOpen, requestSave);
   const [walkError, setWalkError] = useState<string | null>(null);
-  const hasSaved = workspace.record.publishedAt !== 0;
   const hasChanges = useMemo(
     () =>
       JSON.stringify(snapshot.project) !== JSON.stringify(workspace.record.published) ||
@@ -117,17 +118,17 @@ export function HomeEditorHeader({
   return (
     <header className="editor-header" inert={editingLocked || publishOpen || previewOpen}>
       <div className="editor-navigation">
-        <button
-          type="button"
-          className="editor-close"
-          disabled={editingLocked || unsettled || !hasSaved}
-          title={hasSaved ? "Back to Home" : "Save your home before returning to Home"}
-          aria-label={closing ? "Returning to Home" : "Back"}
-          onClick={() => void closeEditor()}
-        >
-          <EditorIcon name="back" />
-          {closing ? "Returning…" : "Back"}
-        </button>
+        {onBackToArrange && (
+          <button
+            type="button"
+            className="editor-return-arrange"
+            disabled={editingLocked || unsettled}
+            onClick={onBackToArrange}
+          >
+            <EditorIcon name="back" />
+            Back to Arrange
+          </button>
+        )}
         {!settingsMode && mode !== "connect" && (
           <div className="direction-camera" role="group" aria-label="Camera controls">
             <button
@@ -199,56 +200,69 @@ export function HomeEditorHeader({
       </div>
       {walkError && <p role="alert">{walkError}</p>}
       <EditorModeNav mode={settingsMode ? "settings" : mode} onModeChange={onModeTabChange} />
-      <div className="direction-project-actions" role="group" aria-label="Project actions">
-        <EditorActionButton
-          icon="undo"
-          label="Undo"
-          disabled={!canUndo}
-          onClick={undoProject}
-          shortcut="⌘/Ctrl Z"
-          keyShortcuts="Control+Z Meta+Z"
-        />
-        <EditorActionButton
-          icon="redo"
-          label="Redo"
-          disabled={!canRedo}
-          onClick={redoProject}
-          shortcut="⌘/Ctrl Shift Z · Ctrl Y"
-          keyShortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
-        />
-        <span className="editor-action-bar__separator" aria-hidden="true" />
+      <div className="editor-project-controls">
+        <div className="direction-project-actions" role="group" aria-label="Project actions">
+          <EditorActionButton
+            icon="undo"
+            label="Undo"
+            disabled={!canUndo}
+            onClick={undoProject}
+            shortcut="⌘/Ctrl Z"
+            keyShortcuts="Control+Z Meta+Z"
+          />
+          <EditorActionButton
+            icon="redo"
+            label="Redo"
+            disabled={!canRedo}
+            onClick={redoProject}
+            shortcut="⌘/Ctrl Shift Z · Ctrl Y"
+            keyShortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+          />
+          <span className="editor-action-bar__separator" aria-hidden="true" />
+          <button
+            type="button"
+            className="editor-reset-changes"
+            aria-label="Reset changes"
+            disabled={editingLocked || unsettled || !hasChanges}
+            title="Discard draft changes and restore the saved version"
+            onClick={() => {
+              void (async () => {
+                if (
+                  !window.confirm(
+                    "Reset changes? This discards all draft home and connection changes and restores the last saved version.",
+                  )
+                )
+                  return;
+                const result = await workspace.resetDraftToPublished();
+                if (result.status === "saved") replaceEditorsFromProject(result.record.draft);
+              })();
+            }}
+          >
+            <EditorIcon name="reset" />
+            Reset
+          </button>
+          <EditorButton
+            variant="primary"
+            disabled={editingLocked || unsettled}
+            onClick={requestSave}
+            title="Save & close (⌘/Ctrl S)"
+            aria-keyshortcuts="Control+S Meta+S"
+          >
+            <EditorIcon name="save" />
+            Save &amp; close
+          </EditorButton>
+        </div>
         <button
           type="button"
-          className="editor-reset-changes"
-          aria-label="Reset changes"
-          disabled={editingLocked || unsettled || !hasChanges}
-          title="Discard draft changes and restore the saved version"
-          onClick={() => {
-            void (async () => {
-              if (
-                !window.confirm(
-                  "Reset changes? This discards all draft home and connection changes and restores the last saved version.",
-                )
-              )
-                return;
-              const result = await workspace.resetDraftToPublished();
-              if (result.status === "saved") replaceEditorsFromProject(result.record.draft);
-            })();
-          }}
-        >
-          <EditorIcon name="reset" />
-          Reset
-        </button>
-        <EditorButton
-          variant="primary"
+          className="editor-close"
           disabled={editingLocked || unsettled}
-          onClick={requestSave}
-          title="Save (⌘/Ctrl S)"
-          aria-keyshortcuts="Control+S Meta+S"
+          title="Close editor and keep the draft"
+          aria-label={closing ? "Closing editor" : "Close editor"}
+          onClick={() => void closeEditor()}
         >
-          <EditorIcon name="save" />
-          Save
-        </EditorButton>
+          <EditorIcon name="close" />
+          <span>{closing ? "Closing…" : "Close editor"}</span>
+        </button>
       </div>
       {settingsMode || mode === "connect" ? null : mode === "construct" ? (
         <EditorActionBar

@@ -32,7 +32,7 @@ export function RoutedHomeEditor({ onClose, ...props }: ComponentProps<typeof Ho
       replace: true,
     });
   };
-  // Browser Back must save the draft just like the editor's Home button.
+  // Leaving the editor through browser history also saves the draft.
   const allowExit = useRef(false);
   const blocker = useBlocker(
     ({ nextLocation }) =>
@@ -72,7 +72,7 @@ export function RoutedHomeEditor({ onClose, ...props }: ComponentProps<typeof Ho
           allowExit.current = true;
           onClose(record, reason);
           if (blocker.state === "blocked") blocker.proceed();
-          else void navigate(workspaceHomePath(props.initialRecord.homeId));
+          else void navigate(record.publishedAt ? workspaceHomePath(record.homeId) : "/workspaces");
         }}
       />
     </Suspense>

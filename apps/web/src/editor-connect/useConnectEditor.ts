@@ -419,6 +419,7 @@ export function useConnectEditor({
       const destination = deviceRoom(manifest, id);
       setView("devices");
       setPendingAreaChange(null);
+      setSlotId(null);
       if (!destination) {
         setRelationshipId(null);
         setMessage("This device is no longer in the draft. Select another device to connect.");

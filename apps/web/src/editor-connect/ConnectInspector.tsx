@@ -21,12 +21,13 @@ export function ConnectInspector({
   manifest: HomeBindingManifest;
   deviceModels?: DeviceModelRegistry;
 }) {
-  const [deviceOpen, setDeviceOpen] = useState(Boolean(editor.relationship));
+  const relationshipId = editor.relationship?.id;
+  const [deviceOpen, setDeviceOpen] = useState(Boolean(relationshipId));
   const scrollRoot = useRef<HTMLDivElement>(null);
   const room = editor.room;
   useEffect(() => {
-    setDeviceOpen(false);
-  }, [room?.id]);
+    setDeviceOpen(Boolean(relationshipId));
+  }, [relationshipId]);
   useEffect(() => {
     if (editor.slotId) setDeviceOpen(true);
   }, [room?.id, editor.slotId]);

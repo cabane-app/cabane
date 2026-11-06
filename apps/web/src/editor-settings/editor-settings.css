@@ -178,8 +178,7 @@
   background: transparent;
 }
 @media (max-width: 1240px) {
-  .is-settings .editor-navigation,
-  .is-settings .direction-project-actions {
+  .is-settings .editor-project-controls {
     grid-row: 2;
   }
   .editor-settings {
@@ -190,23 +189,16 @@
   .direction-preview.is-settings .editor-header {
     left: max(10px, env(safe-area-inset-left));
     right: max(10px, env(safe-area-inset-right));
-    grid-template-columns: auto minmax(0, 1fr);
     gap: 8px;
   }
-  .is-settings .direction-modes {
-    grid-column: 1 / -1;
+  .direction-preview.is-settings .editor-project-controls {
     grid-row: 1;
   }
-  .is-settings .editor-close {
-    grid-column: 1;
-    grid-row: 2;
+  .is-settings .editor-reset-changes {
+    font-size: 0;
+    gap: 0;
   }
-  .is-settings .direction-project-actions {
-    grid-column: 2;
-    grid-row: 2;
-    justify-self: end;
-  }
-  .is-settings .editor-mobile-home {
+  .is-settings .direction-project-actions .editor-action-bar__separator {
     display: none;
   }
   .direction-preview.is-settings .direction-rail {

@@ -218,7 +218,7 @@ export function FurnishingProperties({
             </EditorButton>
           </div>
           {definition.lighting && onConnectLighting && (
-            <EditorButton variant="text" onClick={onConnectLighting}>
+            <EditorButton variant="text" data-connect-lighting onClick={onConnectLighting}>
               Connect lighting
             </EditorButton>
           )}

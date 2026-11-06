@@ -151,7 +151,7 @@ await withModules(async (load) => {
       assert.equal(button(`Edit ${ownerHomeProject.floors[0].rooms[0].name} shortcut`), undefined);
       assert.equal(button("Reset changes").disabled, true);
       assert.equal(button("Undo").disabled, true);
-      await act(async () => button("Back").click());
+      await act(async () => button("Close editor").click());
       assert.equal(closed.length, 1);
       assert.equal(closed[0].draft.actionBar, undefined);
       assert.equal(closed[0].published.actionBar, undefined);
@@ -406,7 +406,7 @@ await withModules(async (load) => {
           }),
         ),
       );
-      assert.equal(button("Back").disabled, true, "Back is unavailable before the first save");
+      assert.equal(button("Close editor").disabled, false, "an unpublished draft can close");
       await act(async () => {
         const event = new dom.window.KeyboardEvent("keydown", {
           key: "s",
@@ -418,8 +418,8 @@ await withModules(async (load) => {
       });
       assert.equal(dom.window.document.querySelector('[aria-labelledby="publish-title"]'), null);
       assert.equal(calls.length, 1);
-      assert.equal(button("Back").disabled, true);
-      assert.equal(button("Save").disabled, true);
+      assert.equal(button("Close editor").disabled, true);
+      assert.equal(button("Save & close").disabled, true);
       assert.ok(dom.window.document.querySelector(".direction-rail").hasAttribute("inert"));
       await act(async () => {
         release();
@@ -642,7 +642,7 @@ await withModules(async (load) => {
         });
         const button = (label) =>
           [...document.querySelectorAll("button")].find((entry) => entry.textContent === label);
-        await act(async () => button("Save").click());
+        await act(async () => button("Save & close").click());
         assert.equal(document.querySelector('[aria-labelledby="publish-title"]'), null);
         const originalIds = new Set(ownerHomeProject.sceneItems.map((item) => item.id));
         const copies = getPublishedProject().sceneItems.filter((item) => !originalIds.has(item.id));

@@ -57,6 +57,7 @@ function ItemConnectionRow({
           <button
             type="button"
             className="item-connection-link"
+            data-connect-slot={slot.id}
             onClick={() => connections?.onConnect(slot.id)}
             disabled={!connections}
           >

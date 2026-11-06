@@ -359,7 +359,7 @@ export function useHomeEditorController({
   const { setView: connectSetView, defaultView: connectDefaultView } = connect;
   const { cancel: cancelPoolDrawing } = poolDrawing;
   const selectMode = useCallback(
-    (nextMode: EditorMode, preserveConnectTarget = false) => {
+    (nextMode: EditorMode, { preserveConnectTarget = false, replace = false } = {}) => {
       if (editingLocked) return;
       setCatalogError(null);
       if (furnishingEditorTransaction) furnishingEditorCancelTransaction();
@@ -372,7 +372,7 @@ export function useHomeEditorController({
       setDragging(false);
       setMarqueeSelecting(false);
       if (navigation) {
-        if (!preserveConnectTarget) navigation.go({ mode: nextMode });
+        if (!preserveConnectTarget) navigation.go({ mode: nextMode }, replace);
       } else if (nextMode === "connect" && mode !== "connect" && !preserveConnectTarget)
         connectSetView(connectDefaultView);
       setMode(nextMode);

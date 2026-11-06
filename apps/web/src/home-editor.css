@@ -326,10 +326,13 @@
   left: calc(var(--editor-rail-width) + 16px);
   bottom: max(16px, env(safe-area-inset-bottom));
 }
-.direction-project-actions {
+.editor-project-controls {
   grid-column: 3;
   grid-row: 1;
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .editor-header button {
   display: inline-flex;
@@ -1684,7 +1687,7 @@
   .editor-action-bar {
     grid-row: 2;
   }
-  .direction-project-actions {
+  .editor-project-controls {
     grid-column: 2;
     grid-row: 3;
   }
@@ -1829,7 +1832,7 @@
     grid-column: 1 / -1;
     grid-row: 1;
   }
-  .direction-project-actions {
+  .editor-project-controls {
     grid-column: 2;
     grid-row: 3;
   }
@@ -1983,7 +1986,7 @@
   line-height: 1.5;
 }
 
-/* Exit navigation is separate from actions on the draft. */
+/* A return belongs to the active task. Closing the editor stays beside Save. */
 .editor-navigation {
   grid-column: 1;
   grid-row: 1;
@@ -1992,17 +1995,21 @@
   align-items: start;
   gap: 8px;
 }
-.editor-header .editor-close {
+.editor-header :is(.editor-close, .editor-return-arrange) {
   pointer-events: auto;
   border: 1px solid var(--editor-line);
   background: rgba(247, 242, 233, 0.94);
   min-height: 47px;
 }
+.editor-header .editor-return-arrange {
+  color: var(--connect-blue-text);
+}
 .direction-project-actions button.editor-reset-changes {
   font-weight: 400;
 }
 .direction-project-actions button:disabled,
-.editor-close:disabled {
+.editor-close:disabled,
+.editor-return-arrange:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -2010,18 +2017,20 @@
   .editor-navigation {
     grid-row: 3;
   }
-  .direction-preview.is-settings .editor-navigation {
-    grid-row: 2;
+}
+@media (max-width: 760px), (max-width: 1024px) and (max-height: 500px) {
+  .editor-header .editor-close {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+  .editor-close span {
+    display: none;
   }
 }
 @media (max-width: 760px) {
   .editor-navigation {
     display: contents;
-  }
-  .editor-header .editor-close {
-    grid-column: 1;
-    grid-row: 3;
-    justify-self: start;
   }
   .direction-camera {
     grid-column: 1 / -1;
@@ -2030,8 +2039,28 @@
   .direction-preview__model {
     top: 245px;
   }
-  .direction-preview.is-settings .editor-close {
+  .direction-preview:is(.is-connect, .is-settings) .editor-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .direction-preview:is(.is-connect, .is-settings) .direction-modes {
     grid-row: 2;
+  }
+  .direction-preview:is(.is-connect, .is-settings) .editor-project-controls {
+    grid-row: 1;
+  }
+  .direction-preview:is(.is-connect, .is-settings)
+    .direction-project-actions
+    .editor-button
+    .editor-icon {
+    display: none;
+  }
+  .direction-preview:is(.is-connect, .is-settings)
+    .editor-header:not(:has(.editor-return-arrange))
+    .editor-mobile-home {
+    display: flex;
+    flex-direction: column;
+    grid-area: 1 / 1;
+    align-self: center;
   }
 }
 

@@ -343,7 +343,7 @@
 
 /* Keep the same mode navigation and project actions as the other editors. */
 @media (max-width: 1240px) {
-  .direction-preview.is-shortcuts .direction-project-actions {
+  .direction-preview.is-shortcuts .editor-project-controls {
     grid-row: 2;
   }
 }

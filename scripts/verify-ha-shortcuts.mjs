@@ -34,7 +34,7 @@ try {
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   await page.getByRole("button", { name: "Redo", exact: true }).click();
   await page.screenshot({ path: `${screenshotDir}/draft-desktop.png` });
-  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page.getByRole("button", { name: "Save & close", exact: true }).click();
   const confirm = page.getByRole("button", {
     name: /Save changes|Save anyway|Apply anyway|Confirm/,
   });

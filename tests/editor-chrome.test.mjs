@@ -253,7 +253,7 @@ await withModules(async (load) => {
         ];
         assert.deepEqual(
           buttons.map((button) => button.getAttribute("aria-label") ?? button.textContent.trim()),
-          ["Undo", "Redo", "Reset changes", "Save"],
+          ["Undo", "Redo", "Reset changes", "Save & close"],
         );
         assert.equal(document.querySelectorAll('[aria-label="Undo"]').length, 1);
         assert.equal(document.querySelectorAll('[aria-label="Redo"]').length, 1);
