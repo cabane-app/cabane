@@ -19,6 +19,7 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
       "thicknessMeters",
       "virtual",
       "heightMeters",
+      "leanMeters",
       "exteriorColor",
       "edgeColor",
       "faceColors",
@@ -53,6 +54,8 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
   wallNichesSchema(candidate.niches, `${path}.niches`, issues);
   if (candidate.heightMeters !== undefined)
     finite(candidate.heightMeters, `${path}.heightMeters`, issues);
+  if (candidate.leanMeters !== undefined)
+    finite(candidate.leanMeters, `${path}.leanMeters`, issues);
   if (candidate.exteriorColor !== undefined)
     string(candidate.exteriorColor, `${path}.exteriorColor`, issues);
   if (candidate.edgeColor !== undefined) string(candidate.edgeColor, `${path}.edgeColor`, issues);
