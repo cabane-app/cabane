@@ -404,7 +404,7 @@ test("workspace repository uses atomic IndexedDB operations and never reseeds de
       adopted.revision = 7;
       await recordStore.write(seed.home.id, api.serializeHomeProjectRecord(adopted));
       await recordStore.write("damaged", "{broken");
-      await repository.initialize(seed, "https://fixture.test");
+      await repository.initialize(seed);
       const entries = await repository.list();
       check(entries.length === 2, "existing records are adopted without another demo");
       const healthy = entries.find((item) => item.metadata.id === seed.home.id);
@@ -412,10 +412,7 @@ test("workspace repository uses atomic IndexedDB operations and never reseeds de
         healthy.record.revision === 7 && healthy.record.draft.home.name === "Existing draft",
         "adoption preserves draft and revision",
       );
-      check(
-        healthy.metadata.homeAssistantUrl === "https://fixture.test",
-        "owner adopts previous configured server",
-      );
+      check(healthy.metadata.homeAssistantUrl === null, "adoption begins disconnected");
       check(
         Boolean(entries.find((item) => item.metadata.id === "damaged").error),
         "corruption is isolated to a recovery entry",

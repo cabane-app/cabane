@@ -14,7 +14,7 @@ await mkdir(output, { recursive: true });
 const scaleRecord = process.argv.includes("--scale")
   ? await withModules(async (load) => {
       const { scaleFixtureManifest } = await load("/tests/fixtures/agent-home.tsx");
-      const { ownerHomeProject } = await load("/home/src/index.ts");
+      const { ownerHomeProject } = await load("/tests/fixtures/previous-demo/project.ts");
       const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
       const { layoutFloorFromEditorFloor } = await load(
         "/apps/web/src/editor-preview/project-sync.ts",

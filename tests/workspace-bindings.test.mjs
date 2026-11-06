@@ -7,7 +7,6 @@ await withModules(async (load) => {
     composeHomeManifest,
     createEmptyRuntimeBindingProfile,
     createSeedProjectRecord,
-    migrateWorkspaceBindingProfile,
     parseHomeProjectRecord,
     reconcileWorkspaceBindings,
     removeWorkspaceSlotReferences,
@@ -29,29 +28,6 @@ await withModules(async (load) => {
     const empty = createEmptyRuntimeBindingProfile(project.home.id);
     return { project, manifest, empty };
   };
-
-  test("migrates a normalized origin into private published and cloned draft profiles", () => {
-    const { project, manifest, empty } = fixture();
-    const profile = {
-      ...empty,
-      roomAreaIds: { [project.floors[0].rooms[0].id]: "fixture-area" },
-    };
-    const migrated = migrateWorkspaceBindingProfile(
-      {},
-      "HTTPS://FIXTURE-HA.TEST:443/path",
-      profile,
-      manifest,
-      manifest,
-    );
-    assert.deepEqual(migrated["https://fixture-ha.test"].published, profile);
-    assert.notEqual(migrated["https://fixture-ha.test"].draft, profile);
-    assert.notEqual(migrated["https://fixture-ha.test"].draft.roomAreaIds, profile.roomAreaIds);
-    assert.deepEqual(migrated["https://fixture-ha.test"].manualRoomIds, []);
-    assert.deepEqual(migrated["https://fixture-ha.test"].manualSlotIds, []);
-    assert.throws(() =>
-      migrateWorkspaceBindingProfile({}, "invalid origin", profile, manifest, manifest),
-    );
-  });
 
   test("normalizes V1 records into V2 envelopes without putting bindings in HomeProject JSON", () => {
     const { project } = fixture();
@@ -224,17 +200,5 @@ await withModules(async (load) => {
     assert.deepEqual(reconciled["https://fixture-ha.test"].published, profile);
     assert.deepEqual(reconciled["https://fixture-ha.test"].manualRoomIds, [roomId]);
     assert.deepEqual(reconciled["https://fixture-ha.test"].manualSlotIds, []);
-    assert.throws(() =>
-      migrateWorkspaceBindingProfile(
-        {},
-        "https://fixture-ha.test",
-        {
-          ...profile,
-          schemaVersion: 999,
-        },
-        manifest,
-        manifest,
-      ),
-    );
   });
 });

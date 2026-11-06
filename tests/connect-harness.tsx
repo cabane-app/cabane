@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { createMemoryRouter, RouterProvider } from "react-router";
-import { ownerHomeProject } from "@cabane/home";
+import { ownerHomeProject } from "./fixtures/previous-demo/project";
 import {
   HomeAssistantRuntimeValueProvider,
   collectBindingSlots,

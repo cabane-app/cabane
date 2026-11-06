@@ -129,7 +129,7 @@ export function createWorkspaceRepository(factory: IDBFactory, registries: Proje
         );
       });
     });
-  const initialize = (seed: HomeProject, legacyUrl: string | null = null) =>
+  const initialize = (seed: HomeProject) =>
     projectTransaction<void>(factory, "readwrite", stores, (tx, request, done) => {
       const state = tx.objectStore(STATE_STORE);
       request(state.get("initialized"), (initialized) => {
@@ -145,7 +145,7 @@ export function createWorkspaceRepository(factory: IDBFactory, registries: Proje
         const metadata = tx.objectStore(WORKSPACE_STORE);
         request(records.getAllKeys(), (keys) => {
           state.put(
-            initialWorkspaceOnboarding(keys.length || legacyUrl ? null : seed.home.id),
+            initialWorkspaceOnboarding(keys.length ? null : seed.home.id),
             WORKSPACE_ONBOARDING_KEY,
           );
           if (!keys.length) {
@@ -155,7 +155,7 @@ export function createWorkspaceRepository(factory: IDBFactory, registries: Proje
               {
                 id: record.homeId,
                 name: record.draft.home.name,
-                homeAssistantUrl: legacyUrl,
+                homeAssistantUrl: null,
                 hasPublished: true,
                 createdAt: Date.now(),
               },
@@ -175,7 +175,7 @@ export function createWorkspaceRepository(factory: IDBFactory, registries: Proje
                   {
                     id,
                     name: record?.draft.home.name ?? "Home needing recovery",
-                    homeAssistantUrl: id === seed.home.id ? legacyUrl : null,
+                    homeAssistantUrl: null,
                     hasPublished: record ? record.publishedAt !== 0 : false,
                     createdAt: record?.publishedAt || Date.now(),
                   },
@@ -467,16 +467,6 @@ export function createWorkspaceRepository(factory: IDBFactory, registries: Proje
         request(tx.objectStore(PROJECT_STORE).get(id), (raw) =>
           done(typeof raw === "string" ? raw : null),
         ),
-      ),
-    migrationDone: () =>
-      projectTransaction<boolean>(factory, "readonly", STATE_STORE, (tx, request, done) =>
-        request(tx.objectStore(STATE_STORE).get("single-home-migrated"), (value) =>
-          done(value === true),
-        ),
-      ),
-    finishMigration: () =>
-      projectTransaction<void>(factory, "readwrite", STATE_STORE, (tx, request, done) =>
-        request(tx.objectStore(STATE_STORE).put(true, "single-home-migrated"), () => done()),
       ),
   };
 }

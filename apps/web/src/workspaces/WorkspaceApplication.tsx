@@ -43,22 +43,17 @@ export function WorkspaceApplication() {
   const onboarding = useWorkspaceOnboarding(repository);
   const [entries, setEntries] = useState<WorkspaceEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [migrationError, setMigrationError] = useState<string | undefined>();
   // Keep the initiating identity while the runtime asynchronously consumes OAuth.
   // ConnectedProduct removes its session return request after restoring navigation.
-  const [skipLegacyMigration] = useState(() => Boolean(hostSession));
   const [callbackRequest] = useState(() => (hostSession ? null : readEditorReturn()));
   useEffect(() => {
     let active = true;
-    void initializeWorkspaces(window.indexedDB, window.localStorage, {
-      skipLegacyMigration,
-    })
-      .then(async (result) => {
-        const all = await result.repository.list();
+    void initializeWorkspaces(window.indexedDB)
+      .then(async (workspaceRepository) => {
+        const all = await workspaceRepository.list();
         if (active) {
-          setRepository(result.repository);
+          setRepository(workspaceRepository);
           setEntries(all);
-          setMigrationError(result.migrationError);
         }
       })
       .catch((cause) => {
@@ -68,7 +63,7 @@ export function WorkspaceApplication() {
     return () => {
       active = false;
     };
-  }, [skipLegacyMigration]);
+  }, []);
   const refresh = useCallback(async () => {
     if (repository) setEntries(await repository.list());
   }, [repository]);
@@ -258,11 +253,6 @@ export function WorkspaceApplication() {
   };
   return (
     <>
-      {migrationError && (
-        <p role="alert" className="workspace-error">
-          {migrationError} Your saved source data has been retained.
-        </p>
-      )}
       <WorkspaceLibrary
         demoWorkspaceId={onboarding.state?.demoWorkspaceId}
         onSettings={async (id, intent) => {

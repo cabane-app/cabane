@@ -15,3 +15,5 @@ export { ShowerAssembly, SHOWER_ASSEMBLY_SIZE } from "./shower-assembly";
 export { TransparentBathScreen } from "./transparent-bath-screen";
 export { ToiletPaperHolder, TOILET_PAPER_HOLDER_SIZE } from "./toilet-paper-holder";
 export { MedicineCabinet, MEDICINE_CABINET_SIZE } from "./medicine-cabinet";
+
+export { SpaTowelTower, SPA_TOWEL_TOWER_SIZE } from "./spa-towel-tower";

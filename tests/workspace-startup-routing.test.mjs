@@ -32,7 +32,7 @@ await withModules(async (load) => {
     };
   }
   async function prepare(dom, count) {
-    const { repository } = await initializeWorkspaces(dom.indexedDB, dom.window.localStorage);
+    const repository = await initializeWorkspaces(dom.indexedDB);
     for (const entry of await repository.list())
       await repository.delete(entry.metadata.id, await repository.readRaw(entry.metadata.id));
     const ids = [];

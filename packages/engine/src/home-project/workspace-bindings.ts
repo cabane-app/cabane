@@ -315,37 +315,3 @@ export const reconcileWorkspaceBindings = (
     }),
   );
 };
-
-/**
- * Moves a legacy per-origin profile into a private workspace envelope. Existing
- * workspace state wins, preventing a stale legacy profile from republishing
- * or replacing a newer draft.
- */
-export const migrateWorkspaceBindingProfile = (
-  bindings: WorkspaceBindings,
-  origin: string,
-  profile: RuntimeBindingProfile,
-  draft: HomeBindingManifest,
-  published: HomeBindingManifest,
-): WorkspaceBindings => {
-  const canonicalOrigin = normalizeOrigin(origin);
-  const existingIssues = validateWorkspaceBindings(bindings, draft, published);
-  if (existingIssues.length > 0) {
-    throw new TypeError(existingIssues[0].message);
-  }
-  const profileForDraft = profileIssues(profile, draft, "profile");
-  const profileForPublished = profileIssues(profile, published, "profile");
-  if (profileForDraft.length > 0 || profileForPublished.length > 0) {
-    throw new TypeError((profileForDraft[0] ?? profileForPublished[0]).message);
-  }
-  if (bindings[canonicalOrigin]) return clone(bindings);
-  return {
-    ...clone(bindings),
-    [canonicalOrigin]: {
-      draft: clone(profile),
-      published: clone(profile),
-      manualRoomIds: [],
-      manualSlotIds: [],
-    },
-  };
-};

@@ -1,6 +1,6 @@
 import { composeHomeManifest } from "@cabane/engine";
-import { ownerHomeProject } from "./project";
+import { demoHomeProject } from "./demo";
 import { homeExtensions } from "./extensions";
 
-export { ownerHomeProject, homeExtensions };
-export const homeManifest = composeHomeManifest(ownerHomeProject, homeExtensions);
+export { demoHomeProject, homeExtensions };
+export const homeManifest = composeHomeManifest(demoHomeProject, homeExtensions);
