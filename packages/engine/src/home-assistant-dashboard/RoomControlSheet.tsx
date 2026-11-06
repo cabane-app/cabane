@@ -17,7 +17,7 @@ export interface RoomControlSheetProps {
   cleaningAreaId?: string | undefined;
   homeId?: string;
   resolved: ResolvedRoomBindings;
-  roomStatus: RoomStatusSummary;
+  roomStatus: RoomStatusSummary | undefined;
   status: HomeAssistantConnectionStatus;
   canMutate: boolean;
   selectedDeviceId: string | null;
@@ -25,7 +25,7 @@ export interface RoomControlSheetProps {
   onCallService: (call: SupportedServiceCall) => Promise<unknown>;
   onHome: () => void;
   onWalk: () => void;
-  onConnectDevices: () => void;
+  onConnectDevices?: (() => void) | undefined;
   onReconnect: () => void;
   onRetry: () => void;
   liveCameraDeviceIds?: ReadonlySet<string>;
@@ -128,6 +128,8 @@ export function RoomControlSheet({
   onEscape,
 }: RoomControlSheetProps) {
   const dom = useCabaneDom();
+  const outsideRooms = roomStatus === undefined;
+  const roomOverview = !deviceOverlay && !outsideRooms;
   const modules = useMemo(() => buildRoomModules(resolved), [resolved]);
   const overviewModules = useMemo(() => roomOverviewModules(modules), [modules]);
   const { ordered, move } = useRoomModuleOrder(homeId, resolved.room.id, overviewModules);
@@ -168,6 +170,7 @@ export function RoomControlSheet({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (sheetRef.current?.inert) return;
       if (event.key === "Escape") {
         event.preventDefault();
         if (reordering) {
@@ -181,9 +184,9 @@ export function RoomControlSheet({
       if (!deviceOverlay || event.key !== "Tab") return;
       const controls = [
         ...(sheetRef.current?.querySelectorAll<HTMLElement>(
-          "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex='-1'])",
+          "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), summary, [tabindex]:not([tabindex='-1'])",
         ) ?? []),
-      ];
+      ].filter((control) => control.getClientRects().length > 0);
       if (controls.length === 0) return;
       const first = controls[0];
       const last = controls[controls.length - 1];
@@ -210,7 +213,7 @@ export function RoomControlSheet({
   useRoomHeroParallax({
     scrollRef,
     heroRef,
-    enabled: true,
+    enabled: !outsideRooms,
     resetKey: `${resolved.room.id}:${resolved.pictureUrl ?? "fallback"}:${selectedModule?.id ?? "room"}`,
   });
 
@@ -263,6 +266,7 @@ export function RoomControlSheet({
         aria-modal={deviceOverlay ? "true" : undefined}
         data-expanded={sheetDrag.expanded ? "true" : "false"}
         data-device-overlay={deviceOverlay ? "true" : "false"}
+        data-outside-rooms={outsideRooms ? "true" : undefined}
         role={deviceOverlay ? "dialog" : undefined}
         style={sheetDrag.style}
       >
@@ -274,11 +278,16 @@ export function RoomControlSheet({
         />
         <nav
           className="room-control-sheet__nav"
-          aria-label={focused ? "Device navigation" : "Room navigation"}
+          aria-label={focused || outsideRooms ? "Device navigation" : "Room navigation"}
         >
           {returnsToRoom && navigationButton}
+          {outsideRooms && (
+            <h1 className="room-control-sheet__group-heading">
+              {selectedModule?.label ?? resolved.displayName}
+            </h1>
+          )}
           <div className="room-control-sheet__actions">
-            {!deviceOverlay && !focused && overviewModules.length > 1 && (
+            {roomOverview && !focused && overviewModules.length > 1 && (
               <button
                 type="button"
                 className="room-control-sheet__walk"
@@ -290,14 +299,14 @@ export function RoomControlSheet({
                 {reordering ? "Done" : <ReorderIcon />}
               </button>
             )}
-            {!deviceOverlay && !focused && cleaningAreaId && (
+            {roomOverview && !focused && cleaningAreaId && (
               <RoomCleanAction
                 key={cleaningAreaId}
                 areaId={cleaningAreaId}
                 roomId={resolved.room.id}
               />
             )}
-            {!deviceOverlay && (
+            {roomOverview && (
               <button
                 type="button"
                 className="room-control-sheet__walk room-control-sheet__walk-entry"
@@ -332,48 +341,50 @@ export function RoomControlSheet({
             if (!focused) roomScrollTop.current = event.currentTarget.scrollTop;
           }}
         >
-          <header
-            ref={heroRef}
-            className={`room-control-sheet__hero ${photoLoaded ? "is-photo-loaded" : ""} ${showPhotoFallback ? "has-fallback" : ""}`}
-          >
-            <div className="room-control-sheet__hero-visual">
-              <div className="room-control-sheet__placeholder">
-                <svg viewBox="0 0 64 64" aria-hidden="true">
-                  <path d="M9 29.5 32 10l23 19.5" />
-                  <path d="M15 27v27h34V27M25 54V36h14v18" />
-                </svg>
+          {roomStatus && (
+            <header
+              ref={heroRef}
+              className={`room-control-sheet__hero ${photoLoaded ? "is-photo-loaded" : ""} ${showPhotoFallback ? "has-fallback" : ""}`}
+            >
+              <div className="room-control-sheet__hero-visual">
+                <div className="room-control-sheet__placeholder">
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <path d="M9 29.5 32 10l23 19.5" />
+                    <path d="M15 27v27h34V27M25 54V36h14v18" />
+                  </svg>
+                </div>
+                {pictureUrl && !photoFailed && (
+                  <img
+                    src={pictureUrl}
+                    alt=""
+                    loading="eager"
+                    decoding="async"
+                    onLoad={() => {
+                      setFailedPictureUrl(null);
+                      setLoadedPictureUrl(pictureUrl);
+                    }}
+                    onError={() => {
+                      setLoadedPictureUrl(null);
+                      setFailedPictureUrl(pictureUrl);
+                    }}
+                  />
+                )}
+                <div className="room-control-sheet__shade" />
               </div>
-              {pictureUrl && !photoFailed && (
-                <img
-                  src={pictureUrl}
-                  alt=""
-                  loading="eager"
-                  decoding="async"
-                  onLoad={() => {
-                    setFailedPictureUrl(null);
-                    setLoadedPictureUrl(pictureUrl);
-                  }}
-                  onError={() => {
-                    setLoadedPictureUrl(null);
-                    setFailedPictureUrl(pictureUrl);
-                  }}
+              <div className="room-control-sheet__foreground">
+                <div className="room-control-sheet__title">
+                  {focused && <p>{resolved.displayName}</p>}
+                  <h1>{selectedModule?.label ?? resolved.displayName}</h1>
+                </div>
+                <RoomStatusBadges
+                  summary={roomStatus}
+                  variant="detailed"
+                  className="room-control-sheet__status"
+                  includeConnection
                 />
-              )}
-              <div className="room-control-sheet__shade" />
-            </div>
-            <div className="room-control-sheet__foreground">
-              <div className="room-control-sheet__title">
-                {focused && <p>{resolved.displayName}</p>}
-                <h1>{selectedModule?.label ?? resolved.displayName}</h1>
               </div>
-              <RoomStatusBadges
-                summary={roomStatus}
-                variant="detailed"
-                className="room-control-sheet__status"
-                includeConnection
-              />
-            </div>
-          </header>
+            </header>
+          )}
 
           <div className="room-control-sheet__content">
             <ConnectionProblem status={status} onReconnect={onReconnect} onRetry={onRetry} />
@@ -415,10 +426,16 @@ export function RoomControlSheet({
             ) : (
               <section className="room-control-sheet__empty">
                 <h2>No controls connected</h2>
-                <p>This room can stay empty, or you can choose controls for it.</p>
-                <button type="button" onClick={onConnectDevices}>
-                  Connect devices
-                </button>
+                <p>
+                  {outsideRooms
+                    ? "Connect devices placed outside rooms on this floor to use their controls."
+                    : "This room can stay empty, or you can choose controls for it."}
+                </p>
+                {onConnectDevices && (
+                  <button type="button" onClick={onConnectDevices}>
+                    Connect devices
+                  </button>
+                )}
               </section>
             )}
           </div>

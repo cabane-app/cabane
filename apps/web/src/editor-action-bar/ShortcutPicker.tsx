@@ -3,6 +3,7 @@ import {
   RoomShortcutIcon,
   actionBarBuiltInLabels,
   haActionShortcutChoices,
+  outsideRoomGroupId,
   resolvedRoomIdForItem,
   type ActionBarBuiltIn,
   type ActionBarItem,
@@ -58,18 +59,21 @@ export function ShortcutPicker({
   choose,
   onClose,
 }: Props) {
+  const outsideGroups = project.floors.map((floor) => ({
+    floorId: floor.id,
+    id: outsideRoomGroupId(floor.id, project.floors),
+    name: project.floors.length > 1 ? `Outside rooms · ${floor.name}` : "Outside rooms",
+  }));
+  const outsideIdsByFloor = new Map(outsideGroups.map(({ floorId, id }) => [floorId, id]));
   const deviceGroups = [
     ...rooms.map((room) => ({ id: room.id, name: roomNames[room.id] ?? room.name })),
-    ...project.floors.map((floor) => ({
-      id: `outside-rooms:${floor.id}`,
-      name: project.floors.length > 1 ? `Outside rooms · ${floor.name}` : "Outside rooms",
-    })),
+    ...outsideGroups,
   ]
     .map((group) => ({
       ...group,
       choices: devices.filter((device) => {
         const roomId = resolvedRoomIdForItem(device, project, deviceModels[device.modelId]);
-        const groupId = roomId ?? `outside-rooms:${device.floorId}`;
+        const groupId = roomId ?? outsideIdsByFloor.get(device.floorId);
         return (
           groupId === group.id &&
           (matching(group.name) ||

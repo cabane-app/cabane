@@ -119,9 +119,11 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
     setMappingOpen,
     goHome,
     controlRoom,
+    outsideRoom,
     selectedDeviceId,
     deviceOverlay,
     closeDevicePanel,
+    setDevicePanelRoomId,
     setSelectedDeviceId,
     enterWalkMode,
     onOpenConnect,
@@ -146,6 +148,10 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
     setSceneActionError,
     pendingHaActions,
   } = dashboard;
+  const outsideControlRoom = controlRoom === outsideRoom ? outsideRoom : undefined;
+  const cameraRoom = selectedCamera && resolvedBindings.rooms[selectedCamera.roomId];
+  const outsideCameraRoom =
+    cameraRoom && cameraRoom.outsideFloorId !== undefined ? cameraRoom.room : undefined;
   const orbitView = useDashboardOrbitView(manifest.home.id, floor.id);
   const equippedTool =
     walkMode && !walkthrough
@@ -209,7 +215,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
           }
         >
           <div ref={roomFocus.ref} className="room-focus-frame" aria-hidden="true" />
-          <div className="building-floor-controls">
+          <div className="building-floor-controls" hidden={Boolean(outsideControlRoom)}>
             {!walkMode && (
               <OrbitNavigation controls={orbitView.controls} locked={orbitView.locked} />
             )}
@@ -234,6 +240,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                 floorNavigation.selectFloor(id, "picker");
                 setSelectedRoomId(null);
                 setSelectedDeviceId(null);
+                setDevicePanelRoomId(null);
                 if (mode === "room") setMode("overview");
               }}
             />
@@ -524,9 +531,11 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
           {controlRoom && resolvedBindings.rooms[controlRoom.id] && (
             <RoomDashboardPanel
               homeId={manifest.home.id}
-              cleaningAreaId={bindingManager.profile.roomAreaIds[controlRoom.id]}
+              cleaningAreaId={
+                outsideControlRoom ? undefined : bindingManager.profile.roomAreaIds[controlRoom.id]
+              }
               resolved={resolvedBindings.rooms[controlRoom.id]}
-              roomStatus={roomStatuses[controlRoom.id]}
+              roomStatus={outsideControlRoom ? undefined : roomStatuses[controlRoom.id]}
               status={runtime.status}
               canMutate={runtime.canMutate}
               selectedDeviceId={selectedDeviceId}
@@ -540,17 +549,21 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
               onCallService={runtime.callService}
               onHome={deviceOverlay ? closeDevicePanel : goHome}
               onWalk={enterWalkMode}
-              onConnectDevices={() => {
-                if (onOpenConnect) {
-                  onOpenConnect("devices", controlRoom.id);
-                  return;
-                }
-                if (demoSession) setupAction?.onOpen();
-                else {
-                  setMappingView("devices");
-                  setMappingOpen(true);
-                }
-              }}
+              onConnectDevices={
+                outsideControlRoom && !onOpenConnect
+                  ? undefined
+                  : () => {
+                      if (onOpenConnect) {
+                        onOpenConnect("devices", controlRoom.id);
+                        return;
+                      }
+                      if (demoSession) setupAction?.onOpen();
+                      else {
+                        setMappingView("devices");
+                        setMappingOpen(true);
+                      }
+                    }
+              }
               onReconnect={runtime.connect}
               onRetry={runtime.retry}
               liveCameraDeviceIds={liveCameraDeviceIds}
@@ -577,29 +590,35 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
           {selectedCamera && (
             <CameraViewer
               roomName={
-                floor.rooms.find((room) => room.id === selectedCamera.roomId)?.name ?? "Camera"
+                outsideCameraRoom?.name ??
+                floor.rooms.find((room) => room.id === selectedCamera.roomId)?.name ??
+                "Camera"
               }
               label={selectedCamera.label}
               media={liveMediaByEntityId[selectedCamera.entityId]}
               onClose={closeCameraViewer}
-              onReviewConnections={() => {
-                const camera = selectedCamera;
-                if (onOpenConnect) {
-                  setSelectedCamera(null);
-                  onOpenConnect("devices", camera.roomId);
-                  return;
-                }
-                setSelectedCamera(null);
-                setSelectedRoomId(camera.roomId);
-                setSelectedDeviceId(camera.deviceId);
-                setMode("room");
-                if (demoSession) setupAction?.onOpen();
-                else {
-                  setMappingView("devices");
-                  setMappingOpen(true);
-                  if (runtime.status !== "connected") runtime.connect();
-                }
-              }}
+              onReviewConnections={
+                outsideCameraRoom && !onOpenConnect
+                  ? undefined
+                  : () => {
+                      const camera = selectedCamera;
+                      if (onOpenConnect) {
+                        setSelectedCamera(null);
+                        onOpenConnect("devices", camera.roomId);
+                        return;
+                      }
+                      setSelectedCamera(null);
+                      setSelectedRoomId(camera.roomId);
+                      setSelectedDeviceId(camera.deviceId);
+                      setMode("room");
+                      if (demoSession) setupAction?.onOpen();
+                      else {
+                        setMappingView("devices");
+                        setMappingOpen(true);
+                        if (runtime.status !== "connected") runtime.connect();
+                      }
+                    }
+              }
             />
           )}
           {walkMode && (
@@ -652,6 +671,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                       setWholeBuilding(!wholeBuilding);
                       setSelectedRoomId(null);
                       setSelectedDeviceId(null);
+                      setDevicePanelRoomId(null);
                       setMode("overview");
                     }
               }

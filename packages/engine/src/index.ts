@@ -101,7 +101,7 @@ export { RoundedBox } from "./rounded-box/RoundedBox";
 
 export { ScenePreviewContext } from "./ScenePreview";
 
-export { deviceMappingRooms } from "./outside-room-devices";
+export { deviceMappingRooms, outsideRoomGroupId } from "./outside-room-devices";
 
 export { BUILD_TUTORIAL_STEPS, createBuildTutorialState } from "./onboarding/build-tutorial-state";
 export type { BuildTutorialState, BuildTutorialStep } from "./onboarding/build-tutorial-state";

@@ -18,11 +18,12 @@ type RoomSelectionSurfacesProps = Pick<
   | "walkMode"
   | "onSelectRoom"
   | "sceneLightingEnabled"
-> & { floor: FloorSpec };
+> & { floor: FloorSpec; outsideRoomId: string };
 
 export function RoomSelectionSurfaces({
   sourceFloor,
   floor,
+  outsideRoomId,
   manifest,
   resolvedBindings,
   deviceModels,
@@ -36,6 +37,7 @@ export function RoomSelectionSurfaces({
     <>
       <HomeAssistantSceneLighting
         floor={sourceFloor}
+        outsideRoomId={outsideRoomId}
         resolvedBindings={resolvedBindings}
         deviceModels={deviceModels}
         extensionDeviceModels={manifest.extensions.deviceModels}

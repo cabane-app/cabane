@@ -262,9 +262,10 @@ export const resolveHomeAssistantBindings = (
   for (const floor of manifest.floors) {
     deviceMappingRooms(manifest, floor.id).forEach((room) => {
       const roomIssues: HomeAssistantBindingIssue[] = [];
+      const spatialRoom = floor.rooms.includes(room);
       const areaId = profile.roomAreaIds[room.id];
       const area = runtime.areas.find((candidate) => candidate.area_id === areaId);
-      if (!areaId && floor.rooms.some((candidate) => candidate.id === room.id)) {
+      if (!areaId && spatialRoom) {
         roomIssues.push(
           issue({
             code: "binding.area-unmapped",
@@ -376,8 +377,9 @@ export const resolveHomeAssistantBindings = (
       roomIssues.push(...devices.flatMap((device) => device.issues));
       rooms[room.id] = {
         sceneEntities,
+        ...(!spatialRoom ? { outsideFloorId: floor.id } : {}),
         room,
-        displayName: !floor.rooms.some((candidate) => candidate.id === room.id)
+        displayName: !spatialRoom
           ? room.name
           : runtimeRoomDisplayName({
               floor,
