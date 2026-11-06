@@ -24,8 +24,10 @@ are relative to the floor and can be signed where one roof continues across
 storeys. A wall's optional `gable` rises above `heightMeters` to the slope.
 With `fill: "glass"`, `frameColor` colors the frame, `columns` counts panes
 across the wall (1 to 32), and `transomHeightsMeters` lists up to 32 heights
-above the floor. `fill: "solid"` uses the wall finish. Existing flat projects
-need no migration. Older clients reject the new fields.
+above the floor. `fill: "solid"` uses the wall finish. A wall may also lean:
+`leanMeters` is how far its top sits outward of its base (negative leans in), at
+most the wall's height. Existing flat projects need no migration. Older clients
+reject the new fields.
 
 Scene items refer to registered models by ID, carry an explicit floor ID and size, an optional `variant` ID, and use
 absolute, wall-relative, or ceiling-relative placement. Device items declare

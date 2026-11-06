@@ -1,9 +1,9 @@
 {
-  "revision": 39,
-  "fingerprint": "2a5a9d3d33c809f729a9ef2d2eb6e553c8bf83c1e580d086e67fc92052d8d1b7",
-  "summary": "Add a Grass finish for outdoor spaces",
+  "revision": 40,
+  "fingerprint": "47924347b0d8d610f38554cff8046b8190545261e09db7e9fdb5e3627ea4fc60",
+  "summary": "Allow walls to lean (leanMeters)",
   "breakingChanges": [
-    "Workspaces that use the Grass finish require an updated Cabane panel. Update the integration through HACS, restart Home Assistant, and reload before opening one on an older panel."
+    "No saved fields or IDs change for existing projects. Walls may now store leanMeters; older frontends and Home Assistant panels reject projects that use it."
   ],
   "history": [
     {
@@ -270,6 +270,13 @@
       "summary": "Allow authored sloped ceilings and solid or glazed wall gables in layout projects",
       "breakingChanges": [
         "Existing flat projects keep their saved fields and IDs. Update older frontends and Home Assistant panels before opening a layout with sloped ceilings or wall gables."
+      ]
+    },
+    {
+      "revision": 39,
+      "summary": "Add a Grass finish for outdoor spaces",
+      "breakingChanges": [
+        "Workspaces that use the Grass finish require an updated Cabane panel. Update the integration through HACS, restart Home Assistant, and reload before opening one on an older panel."
       ]
     }
   ],
