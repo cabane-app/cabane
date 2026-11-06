@@ -25,10 +25,8 @@ recovery path rather than overwriting saved data; optional browser features such
 clipboard access retain their unavailable-feature guidance. Model synchronization
 uses the borrowed authenticated WebSocket, including chunked GLB uploads.
 
-Native initialization skips standalone legacy URL and authentication migration.
-It does not read, copy, remove, or persist legacy OAuth material, write OAuth
-return state, or consume the host URL's callback parameters. Ordinary workspace
-initialization and browser-local project storage remain available. Demo providers
+Native initialization uses the same browser-local workspace storage as standalone
+Cabane. The native panel borrows the host connection and leaves OAuth to Home Assistant. Demo providers
 explicitly disable the host session. Before the first native welcome screen, a
 read-only workspace-list request checks the host for saved homes; it does not
 subscribe to devices, dispatch controls, read tokens, or create a connection.
@@ -100,8 +98,7 @@ by an application server. The configured origin and client identity are checked
 when reusing stored auth. Authentication keys include normalized server origin
 and OAuth client identity. Homes using the same server can reuse sign-in. Explicit
 sign-out removes that server's authentication; deleting a workspace or changing
-its configured server does not revoke other homes' credentials. Existing global
-keys are adopted once through the isolated workspace migration.
+its configured server does not revoke other homes' credentials.
 
 Project data lives in IndexedDB. Runtime mappings and private backups can contain
 household area/entity IDs. Public project data and generated home code use typed

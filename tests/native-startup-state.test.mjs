@@ -31,9 +31,7 @@ await withModules(async (load) => {
       failRestore = false,
       savedOrigin,
     } = typeof input === "string" ? { mode: input } : input;
-    const { repository } = await initializeWorkspaces(indexedDB, window.localStorage, {
-      skipLegacyMigration: true,
-    });
+    const repository = await initializeWorkspaces(indexedDB);
     const requests = [];
     let failList = mode === "error";
     let saved;

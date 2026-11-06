@@ -195,11 +195,6 @@ not copy draft edits, bindings or the HA origin. Ordinary Duplicate still copies
 those private settings by design. The designated demo cannot be assigned a real
 HA origin; connection entry creates/resumes a personal workspace instead.
 
-One-time browser adoption is isolated in `migrate-single-home-storage.ts`.
-Current-store initialization is permanent; conversion and retired key readers
-are scheduled for removal after the owner confirms their existing data survived
-rollout. There is no steady-state dual-write migration contract.
-
 Implementation: [workspace repository](../../packages/engine/src/home-project/workspace-repository.ts),
 [initialization](../../apps/web/src/workspaces/initialize-workspaces.ts),
 [workspace transfer](../../apps/web/src/workspaces/workspace-transfer.ts),

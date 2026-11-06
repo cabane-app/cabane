@@ -41,8 +41,7 @@ browser editor provides an additional implemented authoring route; its existence
 does not remove generation's ownership or review rules.
 
 Authority: [repository instructions](../../AGENTS.md).
-Implementation/workflows: [home layout](../../home/src/layout.json),
-[furniture and devices](../../home/src/items.json),
+Implementation/workflows: [bundled demo project](../../home/showcase/atelier.project.json),
 [layout validator](../../scripts/validate-floor.mjs),
 [home verifier](../../scripts/verify-home.mjs),
 [evidence capture](../../scripts/capture-visual-evidence.mjs).

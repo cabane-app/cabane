@@ -13,7 +13,7 @@ import {WorkspaceApplication} from '/src/workspaces/WorkspaceApplication';
 import {initializeWorkspaces} from '/src/workspaces/initialize-workspaces';
 import {exportWorkspaceBackup} from '/src/workspaces/workspace-transfer';
 const mode = new URLSearchParams(location.search).get('mode');
-const {repository} = await initializeWorkspaces(indexedDB, localStorage, {skipLegacyMigration:true});
+const repository = await initializeWorkspaces(indexedDB);
 window.repository=repository;
 const requests=[]; window.requests=requests; window.failList=mode==='error';
 let saved;

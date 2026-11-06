@@ -12,6 +12,7 @@ const BOUNDS_TOLERANCE_METERS = 0.001;
 
 await withModules(async (load) => {
   const { ownerHomeProject, homeExtensions } = await load("/tests/fixtures/bundled-home.ts");
+  const { demoHomeProject } = await load("/home/src/index.ts");
   const { stableFurnishingRegistry } = await load("/packages/catalog/src/furnishing/index.ts");
   const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
   const engine = await load("/packages/engine/src/index.ts");
@@ -23,10 +24,10 @@ await withModules(async (load) => {
     deviceModels: { ...stableDeviceRegistry, ...homeExtensions.deviceModels },
   };
 
-  test("the bundled home is assembled directly from portable project data", async () => {
+  test("the previous demo fixture is assembled directly from portable project data", async () => {
     const [metadata, layout, sceneItems] = await Promise.all(
       ["project", "layout", "items"].map(async (name) =>
-        JSON.parse(await readFile(`home/src/${name}.json`, "utf8")),
+        JSON.parse(await readFile(`tests/fixtures/previous-demo/${name}.json`, "utf8")),
       ),
     );
     assert.deepEqual(ownerHomeProject, { ...metadata, ...layout, sceneItems });
@@ -61,8 +62,8 @@ await withModules(async (load) => {
       execFileSync(process.execPath, ["scripts/export-bundled-home.mjs"], { encoding: "utf8" }),
       registries,
     );
-    assert.deepEqual(portable.record.draft, ownerHomeProject);
-    const record = engine.createSeedProjectRecord(ownerHomeProject);
+    assert.deepEqual(portable.record.draft, demoHomeProject);
+    const record = engine.createSeedProjectRecord(demoHomeProject);
     const backup = exportWorkspaceBackup(
       {
         name: record.draft.home.name,

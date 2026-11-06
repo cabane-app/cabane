@@ -138,7 +138,8 @@ await withModules(async (load) => {
   });
 
   test("owner bedrooms use their interior dimensions at the current and calibrated scales", () => {
-    const source = JSON.parse(readFileSync("home/src/layout.json", "utf8")).floors[1];
+    const source = JSON.parse(readFileSync("tests/fixtures/previous-demo/layout.json", "utf8"))
+      .floors[1];
     const { floor: derived } = deriveFloorTopology(createFloorEditorDraft(source));
     assert.ok(derived);
     for (const [id, width, depth] of [

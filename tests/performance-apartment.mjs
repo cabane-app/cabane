@@ -6,7 +6,6 @@ export async function prepareApartment() {
   const project = createPerformanceApartment();
   const workspaces = createWorkspaceRepository(window.indexedDB, ownerProjectRegistries);
   await workspaces.initialize(project);
-  await workspaces.finishMigration();
   await workspaces.dismissOnboarding("welcome");
   await workspaces.dismissOnboarding("nudge");
   const entry = await workspaces.read(project.home.id);
