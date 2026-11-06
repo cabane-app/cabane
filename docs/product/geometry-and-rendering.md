@@ -310,7 +310,8 @@ Optional `FloorSpec.outdoorPlatforms` stores an independent polygon and finish,
 a default edge configuration, and an ordered edge record for every polygon edge.
 Platform and edge IDs share the architecture identity namespace. Missing platforms
 mean none in existing projects; no version migration is needed. Procedural toon
-slabs and railing/low-wall barriers render at the floor's existing level. Platform
+slabs and barriers render at the floor's existing level. Glass railings use
+translucent panels between solid posts. Platform
 coverage participates in scene bounds, placement support, stair landing support,
 walk spawn and elevated-floor boundary checks; Open removes its barrier while
 retaining the elevated-floor support boundary. Barriers share their facade-aware

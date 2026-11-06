@@ -130,7 +130,21 @@ await withModules(async (load) => {
       defaultEdge: platform().defaultEdge,
     });
     assert.equal(history.present.outdoorPlatforms.length, 1);
+    const added = history.present.outdoorPlatforms[0];
+    history = e.floorEditorReducer(history, {
+      type: "update-outdoor-platform",
+      id: added.id,
+      changes: {
+        defaultEdge: { kind: "glass-railing", heightMeters: 1 },
+        edges: added.edges.map((edge, index) =>
+          index === 1
+            ? { ...edge, configuration: { kind: "glass-railing", heightMeters: 1.1 } }
+            : edge,
+        ),
+      },
+    });
     const before = structuredClone(history.present.outdoorPlatforms[0]);
+    assert.equal(before.defaultEdge.kind, "glass-railing");
     const polygon = before.polygon.map((p, i) => (i === 1 ? [7, 0] : p));
     history = e.floorEditorReducer(history, {
       type: "update-outdoor-platform",
@@ -154,10 +168,14 @@ await withModules(async (load) => {
     };
     const parsed = e.parseHomeProjectSchema(JSON.parse(JSON.stringify(project)));
     assert.equal(parsed.valid, true, JSON.stringify(parsed.issues));
-    assert.deepEqual(
-      e.composeHomeManifest(parsed.project, e.neutralDemoManifest.extensions).floors[0]
-        .outdoorPlatforms,
-      [before],
+    const composedFloor = e.composeHomeManifest(parsed.project, e.neutralDemoManifest.extensions)
+      .floors[0];
+    assert.deepEqual(composedFloor.outdoorPlatforms, [before]);
+    assert.equal(
+      e
+        .deriveWalkColliders(composedFloor)
+        .find((collider) => collider.id.startsWith(before.edges[1].id))?.maxY,
+      1.1,
     );
   });
   test("facade suppression includes door spans and rails produce exposed-edge colliders", () => {

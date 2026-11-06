@@ -3,6 +3,11 @@ import type { FloorSpec, OutdoorPlatformEdgeConfiguration, PlanPoint } from "../
 import { isOutdoorPlatformOutline } from "./platform-geometry";
 export const OUTDOOR_PLATFORM_EDGE_PRESETS = [
   { id: "railing", name: "Railing", configuration: { kind: "railing", heightMeters: 1 } },
+  {
+    id: "glass-railing",
+    name: "Glass railing",
+    configuration: { kind: "glass-railing", heightMeters: 1 },
+  },
   { id: "low-wall", name: "Low wall", configuration: { kind: "low-wall", heightMeters: 0.3 } },
   { id: "open", name: "Open", configuration: { kind: "open" } },
 ] as const;
@@ -13,7 +18,7 @@ export const validPlatformEdgeConfiguration = (
   const c = value as OutdoorPlatformEdgeConfiguration;
   return (
     c.kind === "open" ||
-    (["railing", "low-wall"].includes(c.kind) &&
+    (OUTDOOR_PLATFORM_EDGE_PRESETS.some((preset) => preset.id === c.kind) &&
       "heightMeters" in c &&
       Number.isFinite(c.heightMeters) &&
       c.heightMeters > 0)

@@ -42,7 +42,7 @@ export function validateOutdoorPlatforms(
         issue(
           "platform.edge-configuration",
           `${p}.defaultEdge`,
-          "Choose Railing, Low wall, or Open with a positive height.",
+          "Choose a supported edge style and set a positive height for barriers.",
         ),
       );
     if (

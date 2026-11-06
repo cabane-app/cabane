@@ -366,7 +366,7 @@ The landing depth equals the flight width; curved half-turn stairs remain unsupp
 Wall → Outdoor space draws the existing outdoor platforms for same-level terraces and
 balconies. The Floor tool keeps whole-room and custom-area finish painting. Close an
 independent polygon using the ordinary snapping, measurements, local drawing
-undo/redo and cancel gestures. Choose Railing (1 m), Low wall (0.3 m), or Open
+undo/redo and cancel gestures. Choose Railing (1 m), Glass railing (1 m), Low wall (0.3 m), or Open
 from procedural thumbnail cards before drawing; exposed edges inherit that
 configuration. Select the finished platform to move it, edit or insert/remove
 corners, repaint its finish, or delete it. Select an edge on the plan or in the

@@ -347,7 +347,7 @@ export interface PoolSpec {
 }
 
 export type OutdoorPlatformEdgeConfiguration =
-  { kind: "railing" | "low-wall"; heightMeters: number } | { kind: "open" };
+  { kind: "railing" | "glass-railing" | "low-wall"; heightMeters: number } | { kind: "open" };
 export interface OutdoorPlatformEdgeSpec {
   id: string;
   configuration?: OutdoorPlatformEdgeConfiguration;

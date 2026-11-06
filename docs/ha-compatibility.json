@@ -2011,6 +2011,9 @@
                                     "schema": {
                                       "anyOf": [
                                         {
+                                          "const": "glass-railing"
+                                        },
+                                        {
                                           "const": "low-wall"
                                         },
                                         {
@@ -2055,6 +2058,9 @@
                                             "optional": false,
                                             "schema": {
                                               "anyOf": [
+                                                {
+                                                  "const": "glass-railing"
+                                                },
                                                 {
                                                   "const": "low-wall"
                                                 },
@@ -7208,6 +7214,9 @@
                                   "schema": {
                                     "anyOf": [
                                       {
+                                        "const": "glass-railing"
+                                      },
+                                      {
                                         "const": "low-wall"
                                       },
                                       {
@@ -7252,6 +7261,9 @@
                                           "optional": false,
                                           "schema": {
                                             "anyOf": [
+                                              {
+                                                "const": "glass-railing"
+                                              },
                                               {
                                                 "const": "low-wall"
                                               },

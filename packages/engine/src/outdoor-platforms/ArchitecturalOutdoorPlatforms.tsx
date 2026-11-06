@@ -23,7 +23,7 @@ export function ArchitecturalOutdoorPlatforms({
         ))}
       <PlatformLowWallRuns barriers={barriers} />
       {barriers
-        .filter((barrier) => barrier.configuration.kind === "railing")
+        .filter((barrier) => barrier.configuration.kind !== "low-wall")
         .map((barrier, index) => (
           <PlatformBarrierModel
             key={`${barrier.edgeId}-${index}`}

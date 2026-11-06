@@ -1,13 +1,14 @@
 import { keys, record, array, string, finite, polygon } from "./schema-json-values";
 import { floorFinish } from "./schema-floor-finish";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
+import { OUTDOOR_PLATFORM_EDGE_PRESETS } from "../outdoor-platforms/platform-barriers";
 
 export const outdoorPlatforms = (value: unknown, path: string, issues: HomeProjectIssue[]) => {
   const edgeConfiguration = (value: unknown, edgePath: string) => {
     const c = record(value, edgePath, issues);
     if (!c) return;
     keys(c, ["kind", "heightMeters"], edgePath, issues);
-    if (!["railing", "low-wall", "open"].includes(String(c.kind)))
+    if (!OUTDOOR_PLATFORM_EDGE_PRESETS.some((preset) => preset.id === c.kind))
       addProjectIssue(issues, "project.platform-edge", edgePath, "Unknown platform edge style.");
     if (c.kind !== "open") finite(c.heightMeters, `${edgePath}.heightMeters`, issues);
     else if (c.heightMeters !== undefined)
