@@ -116,3 +116,19 @@ export const wallLeanMatrix = (wall: WallSpec, floor: FloorSpec) => {
     0, 0, 0, 1,
   );
 };
+
+/** Move world-space outline rings to where the walls they follow are at `height`. */
+export const leanWorldRings = <R extends readonly (readonly [number, number])[]>(
+  rings: readonly R[],
+  floor: FloorSpec,
+  height: number,
+): [number, number][][] => {
+  const leans = wallLeans(floor);
+  return rings.map((ring) =>
+    ring.map(([x, z]): [number, number] => {
+      if (!leans.length) return [x, z];
+      const [dx, dz] = leanOffsetAt(leans, x, height, z);
+      return [x + dx, z + dz];
+    }),
+  );
+};

@@ -12,6 +12,7 @@ import {
 } from "../architecture-geometry/sloped-ceiling-plane";
 import { wallSolidFootprintPolygons } from "../architecture-geometry/wall-solid-footprints";
 import { deriveFloorLevels } from "../building/floor-levels";
+import { leanWorldRings } from "../architecture-geometry/wall-lean";
 import { planPointToWorld, polygonSignedArea, worldPointToPlan } from "../geometry";
 import type { FloorSpec, PlanPoint } from "../types";
 import {
@@ -51,14 +52,18 @@ const coveredFloor = (floor: FloorSpec): MultiPolygon => {
   // are not roof openings. Only bridge enclosed voids narrower than a wall;
   // retain courtyard rings and every concavity of the exterior outline.
   const seamWidth = Math.max(0.005, ...floor.walls.map((wall) => wall.thicknessMeters)) + 0.01;
-  return domain.map(([outer, ...holes]) => [
-    outer,
-    ...holes.filter((ring) => {
-      const width = Math.max(...ring.map((p) => p[0])) - Math.min(...ring.map((p) => p[0]));
-      const depth = Math.max(...ring.map((p) => p[1])) - Math.min(...ring.map((p) => p[1]));
-      return Math.min(width, depth) > seamWidth;
-    }),
-  ]);
+  // Leaning walls reach out at the top: the roof covers them there.
+  return domain.map((polygon) => {
+    const [outer, ...holes] = leanWorldRings(polygon, floor, floor.floorToFloorHeightMeters);
+    return [
+      outer,
+      ...holes.filter((ring) => {
+        const width = Math.max(...ring.map((p) => p[0])) - Math.min(...ring.map((p) => p[0]));
+        const depth = Math.max(...ring.map((p) => p[1])) - Math.min(...ring.map((p) => p[1]));
+        return Math.min(width, depth) > seamWidth;
+      }),
+    ];
+  });
 };
 
 /** Extend a ceiling into its supporting walls; the building domain clips the result. */
@@ -160,7 +165,13 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
         const polygons = flat.get(height) ?? [];
         const coveredRooms = rooms.filter((room) => ceiling.roomIds.includes(room.id));
         for (const room of coveredRooms)
-          polygons.push(...ceilingWithWalls(worldPolygon(room.polygon, floor), margin, domain));
+          polygons.push(
+            ...ceilingWithWalls(
+              leanWorldRings(worldPolygon(room.polygon, floor), floor, ceiling.heightMeters),
+              margin,
+              domain,
+            ),
+          );
         if (!rooms.length) polygons.push(...domain);
         flat.set(height, polygons);
       }
