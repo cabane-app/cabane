@@ -1,4 +1,3 @@
-import { Carport, CARPORT_SIZE } from "./presets/outdoor/carport";
 import {
   twoSeatLoveseatDefinition,
   indoorChaiseLongueDefinition,
@@ -64,10 +63,7 @@ import { KitchenIsland, KITCHEN_ISLAND_SIZE } from "./presets/kitchen";
 import { KitchenPantryCabinet, KITCHEN_PANTRY_CABINET_SIZE } from "./presets/kitchen";
 import { KITCHEN_FINISH_VARIANTS } from "./presets/kitchen/kitchen-finish";
 import { furnishingPresetDefinitions } from "./definitions";
-import {
-  WroughtIronPergola,
-  WROUGHT_IRON_PERGOLA_SIZE,
-} from "./presets/outdoor/wrought-iron-pergola";
+import { outdoorShelterFurnishingDefinitions } from "./definitions/outdoor-shelters";
 import { legacyLightFurnishingDefinitions } from "./legacy-light-definitions";
 import { defineFurnishingModel, defineFurnishingModelRegistry } from "@cabane/engine";
 import {
@@ -1228,39 +1224,7 @@ const stableFurnishingDefinitions = {
     outlineContact: true,
     complexity: { visibleMeshes: 5, triangles: 32_000 },
   }),
-  carport: defineFurnishingModel({
-    component: Carport,
-    defaultColor: "#465257",
-    label: "Carport",
-    category: "Garden structures",
-    defaultRoomType: "outdoor",
-    defaultSize: CARPORT_SIZE,
-    bounds: { min: [-1.8, 0, -2.8], max: [1.8, 3, 2.8] },
-    variants: [
-      { id: "default", label: "Modern flat roof" },
-      { id: "timber", label: "Timber pitched roof" },
-      { id: "solar", label: "Solar canopy" },
-    ],
-    resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
-    preferredPlacement: "absolute",
-    placementEnvironment: "outdoor",
-    outlineContact: false,
-    complexity: { visibleMeshes: 40, triangles: 30_000 },
-  }),
-  "wrought-iron-pergola": defineFurnishingModel({
-    legacyOnly: true,
-    component: WroughtIronPergola,
-    label: "Wrought-iron pergola",
-    category: "Garden structures",
-    defaultRoomType: "outdoor",
-    defaultSize: WROUGHT_IRON_PERGOLA_SIZE,
-    bounds: { min: [-2, 0, -1.5], max: [2, 2.7, 1.5] },
-    resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
-    preferredPlacement: "absolute",
-    placementEnvironment: "outdoor",
-    outlineContact: false,
-    complexity: { visibleMeshes: 14, triangles: 24_000 },
-  }),
+  ...outdoorShelterFurnishingDefinitions,
   "garden-shrub": defineFurnishingModel({
     component: GardenShrub,
     label: "Garden shrub",
