@@ -1331,11 +1331,11 @@ await withModules(async (load) => {
     });
   });
 
-  test("climate range steppers send the latest pair when both targets are edited", async () => {
+  test("one climate range dial adjusts the selected target and sends the latest pair", async () => {
     await withDom(async ({ dom, root }) => {
       const runtime = connectedRuntimeFixture();
       const entity = runtime.entityStates["climate.demo"];
-      entity.state = "heat_cool";
+      entity.state = "heat";
       Object.assign(entity.attributes, {
         supported_features: 2,
         temperature: undefined,
@@ -1343,7 +1343,7 @@ await withModules(async (load) => {
         target_temp_step: 0.5,
         target_temp_low: 20,
         target_temp_high: 21,
-        hvac_modes: ["off", "heat_cool"],
+        hvac_modes: ["off", "heat", "heat_cool"],
       });
       const room = resolveHomeAssistantBindings(
         connectedManifestFixture(neutralDemoManifest),
@@ -1368,13 +1368,29 @@ await withModules(async (load) => {
         dom.window.document.querySelector(`${tag}[aria-label='${label}']`);
       const low = "Room climate heating target temperature";
       const high = "Room climate cooling target temperature";
-      assert.equal(find("output", "Room climate target temperature"), null);
-      assert.equal(find("output", low)?.textContent, "20 °C");
-      assert.equal(find("output", high)?.textContent, "21 °C");
+      const document = dom.window.document;
+      const heating = () => document.querySelector('.climate-range__target[data-endpoint="low"]');
+      const cooling = () => document.querySelector('.climate-range__target[data-endpoint="high"]');
+      assert.equal(document.querySelectorAll(".vtherm-dial").length, 1);
+      assert.equal(document.querySelectorAll(".vtherm-dial__marker--range").length, 2);
+      assert.equal(document.querySelectorAll(".temperature-stepper button").length, 2);
+      assert.equal(
+        heating().getAttribute("aria-label"),
+        "Select Room climate heating target, 20 °C",
+      );
+      assert.equal(
+        cooling().getAttribute("aria-label"),
+        "Select Room climate cooling target, 21 °C",
+      );
+      assert.equal(heating().getAttribute("aria-pressed"), "true");
       await act(async () => find("button", `Increase ${low}`).click());
+      await act(async () => cooling().click());
+      assert.equal(cooling().getAttribute("aria-pressed"), "true");
+      assert.equal(calls.length, 1);
       await act(async () => find("button", `Decrease ${high}`).click());
-      assert.equal(find("button", `Increase ${low}`).disabled, true);
       assert.equal(find("button", `Decrease ${high}`).disabled, true);
+      await act(async () => heating().click());
+      assert.equal(find("button", `Increase ${low}`).disabled, true);
       assert.deepEqual(
         calls.map(({ data }) => data),
         [

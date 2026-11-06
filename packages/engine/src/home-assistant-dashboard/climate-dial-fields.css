@@ -69,7 +69,8 @@
   overflow: visible;
 }
 .vtherm-dial__track,
-.vtherm-dial__value {
+.vtherm-dial__value,
+.vtherm-dial__range {
   fill: none;
   stroke-width: 15;
   stroke-linecap: round;
@@ -298,34 +299,111 @@
   --room-button-border-color: #5e6d65;
   opacity: 1;
 }
-.vtherm-off:focus-visible {
+.vtherm-off:focus-visible,
+.climate-range__target:focus-visible {
   outline: 3px solid rgba(190, 103, 72, 0.22);
   outline-offset: 3px;
 }
-.vtherm-control .vtherm-main--setpoints {
+.vtherm-control .vtherm-main--status {
   display: grid;
   align-content: center;
   gap: 10px;
   min-height: 0;
 }
-.vtherm-main--setpoints :is(.vtherm-action, .vtherm-off) {
+.vtherm-main--status :is(.vtherm-action, .vtherm-off) {
   position: static;
   justify-self: center;
   transform: none;
 }
-.climate-setpoints {
+
+.vtherm-main--range [data-endpoint="low"] {
+  --climate-target-accent: color-mix(in srgb, var(--home-accent, #bd724d) 88%, #bc3f32);
+}
+.vtherm-main--range [data-endpoint="high"] {
+  --climate-target-accent: #2a8ed6;
+}
+.vtherm-main--range .vtherm-dial__marker--current {
+  fill: #63756b;
+}
+.vtherm-dial__range {
+  stroke: var(--climate-target-accent);
+}
+.vtherm-dial__marker--range {
+  fill: #fbfaf3;
+  stroke: var(--climate-target-accent);
+}
+.vtherm-dial__marker--range[data-selected="true"] {
+  fill: var(--climate-target-accent);
+  stroke: #fbfaf3;
+}
+.vtherm-dial__thumb {
+  position: absolute;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  cursor: grab;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+}
+.vtherm-dial__thumb[data-selected="true"] {
+  z-index: 2;
+}
+.vtherm-dial__thumb:active {
+  cursor: grabbing;
+}
+.vtherm-dial__thumb[data-disabled="true"] {
+  pointer-events: none;
+}
+.vtherm-main--range .vtherm-action {
+  top: 45px;
+}
+.vtherm-temperature--range::after {
+  content: none;
+}
+.climate-range__targets {
+  position: absolute;
+  top: 65px;
+  left: 50%;
+  display: flex;
+  gap: 4px;
+  transform: translateX(-50%);
+}
+.room-module .climate-range__target {
+  --room-button-color: #1e332c;
+  --room-button-background: transparent;
+  --room-button-border-color: transparent;
+  --room-button-hover-background: #fbfaf3;
+  --room-button-hover-border-color: #9ea9a2;
   display: grid;
-  gap: 8px;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  width: 56px;
+  padding: 3px 0;
+  pointer-events: auto;
+  border-radius: 8px;
 }
-.climate-setpoints__label {
+.room-module .climate-range__target[aria-pressed="true"] {
+  --room-button-background: #fbfaf3;
+  --room-button-border-color: var(--climate-target-accent);
+  --room-button-hover-border-color: var(--climate-target-accent);
+}
+.climate-range__label {
   color: #596b62;
-  font-size: 0.75rem;
+  font-size: 0.63rem;
   font-weight: 690;
-  text-align: center;
+  line-height: 1.15;
+  white-space: nowrap;
 }
-.climate-setpoints .temperature-stepper output {
-  font-size: 1.1rem;
+.climate-range__value {
+  font-family: var(--font-family-numeric);
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 620;
+  line-height: 1;
+  white-space: nowrap;
 }
-.vtherm-control .vtherm-main--setpoints:has([role="alert"]) {
-  min-height: 0;
+.climate-range__value small {
+  font-size: 0.57rem;
+  vertical-align: top;
 }
