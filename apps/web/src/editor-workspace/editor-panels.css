@@ -203,7 +203,8 @@
   border: 0;
   background: transparent;
 }
-.direction-preview .construction-inspector__context:empty {
+.direction-preview .construction-inspector__context:empty,
+.direction-preview[data-editor-mode="construct"]:not(.is-plan) .construction-inspector__context {
   display: none;
 }
 .direction-preview .construction-inspector__bulk-facts {

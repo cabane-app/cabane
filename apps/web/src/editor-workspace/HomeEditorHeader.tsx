@@ -24,6 +24,7 @@ type Props = Pick<
   | "snapshot"
   | "mode"
   | "cameraView"
+  | "cameraSwitchBlocked"
   | "setCameraView"
   | "walkButton"
   | "unsettled"
@@ -60,6 +61,7 @@ export function HomeEditorHeader({
   previewOpen,
   mode,
   cameraView,
+  cameraSwitchBlocked,
   setCameraView,
   walkButton,
   unsettled,
@@ -132,13 +134,13 @@ export function HomeEditorHeader({
               type="button"
               title={
                 mode === "construct"
-                  ? "3D is available in Arrange"
+                  ? "Preview construction in 3D (Shift+1)"
                   : "View the home in 3D (Shift+1)"
               }
               aria-label="3D"
               aria-keyshortcuts="Shift+1"
-              aria-pressed={mode !== "construct" && cameraView === "3d"}
-              disabled={mode === "construct" || editingLocked || unsettled}
+              aria-pressed={cameraView === "3d"}
+              disabled={editingLocked || cameraSwitchBlocked}
               onClick={() => setCameraView("3d")}
             >
               <EditorIcon name="cube" />
@@ -150,11 +152,9 @@ export function HomeEditorHeader({
               title="View the floor plan (Shift+2)"
               aria-label="2D"
               aria-keyshortcuts="Shift+2"
-              aria-pressed={mode === "construct" || cameraView === "top"}
-              disabled={editingLocked || unsettled}
-              onClick={() => {
-                if (mode === "furnish") setCameraView("top");
-              }}
+              aria-pressed={cameraView === "top"}
+              disabled={editingLocked || cameraSwitchBlocked}
+              onClick={() => setCameraView("top")}
             >
               <EditorIcon name="plan" />
               2D
@@ -167,7 +167,7 @@ export function HomeEditorHeader({
               aria-label="Explore"
               aria-keyshortcuts="Shift+3"
               aria-haspopup="dialog"
-              disabled={editingLocked || unsettled}
+              disabled={editingLocked || cameraSwitchBlocked}
               onClick={(event) => {
                 void (async () => {
                   setWalkError(null);
@@ -253,7 +253,7 @@ export function HomeEditorHeader({
       {settingsMode || mode === "connect" ? null : mode === "construct" ? (
         <EditorActionBar
           inert={referenceAdjusting}
-          tool={constructEditor.tool}
+          tool={cameraView === "top" ? constructEditor.tool : null}
           onToolChange={(tool) => {
             setStairPlacement(null);
             constructEditor.setTool(tool);

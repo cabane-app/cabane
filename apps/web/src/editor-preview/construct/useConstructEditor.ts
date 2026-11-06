@@ -44,6 +44,7 @@ export const useConstructEditor = (
   defaultExteriorWallColor: string = DEFAULT_WALL_COLORS.exterior,
   initialTool: import("@cabane/engine").FloorEditorTool = "select",
   otherFloorRoomNames: readonly string[] = [],
+  onToolChange?: () => void,
 ): ConstructEditorController => {
   const reservedNamesKey = JSON.stringify(otherFloorRoomNames);
   const deriveTopology = useCallback(
@@ -192,6 +193,7 @@ export const useConstructEditor = (
   });
   const setTool = useCallback(
     (tool: FloorEditorTool) => {
+      onToolChange?.();
       poolDrawingCancel();
       cancelWall();
       if (tool === "platform") rememberFloorPaintTarget("outdoor-platform");
@@ -202,16 +204,17 @@ export const useConstructEditor = (
         tool,
       });
     },
-    [poolDrawingCancel, floorPaintTarget, cancelWall],
+    [poolDrawingCancel, floorPaintTarget, cancelWall, onToolChange],
   );
   const setFloorPaintTarget = useCallback(
     (target: ConstructEditorController["floorPaintTarget"]) => {
+      onToolChange?.();
       rememberFloorPaintTarget(target);
       poolDrawingCancel();
       cancelWall();
       dispatch({ type: "set-tool", tool: target === "outdoor-platform" ? "platform" : "floor" });
     },
-    [poolDrawingCancel, cancelWall],
+    [poolDrawingCancel, cancelWall, onToolChange],
   );
   const select = useCallback((selection: FloorEditorSelection) => {
     setOpeningError(null);

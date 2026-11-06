@@ -237,11 +237,12 @@ bindings, and clears draft undo history. Before the first Save it restores the
 initial unpublished baseline. Reset is disabled when the draft matches that baseline.
 
 Construct and Arrange share ordered 3D, 2D, and Explore controls with subtle
-Shift+1, Shift+2, and Shift+3 hints on desktop. Construct keeps 3D visible but
-disabled and 2D selected. Shift+1/2 returns from Explore to the corresponding
-available editor view; Shift+3 uses the same pointer-lock flow as the Explore
-button. These shortcuts ignore typing, repeated/composing keys, additional
-modifiers, unfinished gestures, other dialogs, Connect, and Settings.
+Shift+1, Shift+2, and Shift+3 hints on desktop. Construct starts in 2D and offers a
+3D cutaway of the draft. Choosing a construction tool returns to the plan.
+Shift+1/2 returns from Explore to the corresponding editor view. Shift+3 uses
+the same pointer-lock flow as the Explore button. These shortcuts ignore typing,
+repeated/composing keys, additional modifiers, unfinished gestures, other dialogs,
+Connect, and Settings.
 
 Reference plans are browser-only editor assets in the separate
 `cabane-reference-plans-v1` IndexedDB database. Image blobs are keyed by home and

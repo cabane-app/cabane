@@ -73,6 +73,8 @@ export function useHomeEditorController({
   const [connectionBusy, setConnectionBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [marqueeSelecting, setMarqueeSelecting] = useState(false);
+  const [constructCameraView, setConstructCameraView] = useState<"top" | "3d">("top");
+  const showConstructPlan = useCallback(() => setConstructCameraView("top"), []);
   const initialFloor =
     initialRecord.draft.floors.find((floor) => floor.id === activeFloorId) ??
     initialRecord.draft.floors[0];
@@ -87,6 +89,7 @@ export function useHomeEditorController({
     snapshot.project.floors
       .filter((floor) => floor.id !== activeFloorId)
       .flatMap((floor) => floor.rooms.map((room) => room.name)),
+    showConstructPlan,
   );
   const {
     draft: constructEditorDraft,
@@ -119,25 +122,11 @@ export function useHomeEditorController({
     activeFloorId,
     registries,
   });
+  const { ceilingDependencies, walkNavigation, editorProjectJson, ...sceneProjection } = projection;
+  const { previewSceneItems, editorProject } = sceneProjection;
   const {
-    furnishingModels,
-    deviceModels,
-    ceilingDependencies,
-    previewSceneItems,
-    visualSceneItems,
-    selectedItem,
-    selectedDefinition,
-    walkNavigation,
-    editorProject,
-    editorProjectJson,
-    editedManifest,
-    placementFloor,
-    editorResolvedBindings,
-    visualManifest,
-  } = projection;
-  const {
-    cameraView,
-    setCameraView,
+    cameraView: arrangeCameraView,
+    setCameraView: setArrangeCameraView,
     savedCamera,
     cameraResetKey,
     cameraFocusRoomId,
@@ -225,6 +214,17 @@ export function useHomeEditorController({
     commit,
   });
   const unsettled = constructionUnsettled || reference.adjusting || northOrientation.active;
+  const cameraView =
+    mode !== "construct"
+      ? arrangeCameraView
+      : reference.adjusting || northOrientation.active
+        ? "top"
+        : constructCameraView;
+  const setCameraView = mode === "construct" ? setConstructCameraView : setArrangeCameraView;
+  const cameraSwitchBlocked =
+    unsettled ||
+    (mode === "construct" &&
+      (Boolean(constructEditorDrawStart) || constructMeasure.phase === "drawing"));
   const {
     catalogBrowsing,
     setCatalogBrowsing,
@@ -314,7 +314,7 @@ export function useHomeEditorController({
     redoProject,
     selectedOpening,
     undoProject,
-    unsettled,
+    cameraSwitchBlocked,
     setCameraView,
     walkButton,
     setPendingRoomPaintId,
@@ -424,11 +424,10 @@ export function useHomeEditorController({
     executeProjectAction,
     northOrientation,
     ...constructionTools,
-    editorProject,
+    ...sceneProjection,
     setActionBarItems,
     cameraFocusRoomId,
     focusRoom,
-    placementFloor,
     selectSceneItem,
     floorNavigation,
     activeFloorId,
@@ -444,32 +443,25 @@ export function useHomeEditorController({
     clearConstructionSelection,
     clearFurnishingSelection,
     cameraView,
+    cameraSwitchBlocked,
     cameraResetKey,
     constructEditor,
     dragging,
     cameraFocusPoint,
     handleCameraTargetChange,
     savedCamera,
-    previewSceneItems,
     displayedContextualIssues,
     activeIssueKey,
     issueFocusVersion,
     poolDrawing,
     focusIssue,
-    furnishingModels,
-    deviceModels,
-    visualManifest,
     selectedRoomId,
-    editorResolvedBindings,
     marqueeSelecting,
     setDragging,
     setSelectedRoomId,
     setMarqueeSelecting,
     duplicateConstructionOpening: constructEditorDuplicateOpening,
-    visualSceneItems,
     furnishingEditor,
-    selectedItem,
-    selectedDefinition,
     unsettled,
     selectMode,
     duplicateArrangeItem,
@@ -500,7 +492,6 @@ export function useHomeEditorController({
     addCatalogItem,
     arrangeAnnouncement,
     autosaveStatus,
-    editedManifest,
     closeWalk,
     publishErrors,
     publishWarnings,

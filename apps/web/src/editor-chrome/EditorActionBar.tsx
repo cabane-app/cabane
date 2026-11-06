@@ -6,7 +6,7 @@ import { wallTools, openingTools } from "./construction-tool-options";
 
 export interface EditorActionBarProps {
   inert?: boolean | undefined;
-  tool: FloorEditorTool;
+  tool: FloorEditorTool | null;
   onToolChange: (tool: FloorEditorTool) => void;
   onStairs?: () => void;
   stairsActive?: boolean;

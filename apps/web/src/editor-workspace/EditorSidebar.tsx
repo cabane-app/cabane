@@ -40,6 +40,7 @@ type Props = Pick<
   | "setStairPlacement"
   | "setFloorDialog"
   | "mode"
+  | "cameraView"
   | "editingLocked"
   | "publishOpen"
   | "previewOpen"
@@ -96,6 +97,7 @@ export function EditorSidebar({
   setStairPlacement,
   setFloorDialog,
   mode,
+  cameraView,
   editingLocked,
   publishOpen,
   previewOpen,
@@ -143,6 +145,7 @@ export function EditorSidebar({
   onMobileToolChoose,
 }: Props) {
   const [editingModel, setEditingModel] = useState<CustomModel | null>(null);
+  const constructPreview = mode === "construct" && cameraView === "3d";
   return (
     <>
       <aside
@@ -185,11 +188,14 @@ export function EditorSidebar({
               }
             />
           )}
-          <EditorModeIntroduction mode={settingsMode ? "settings" : mode} />
+          <EditorModeIntroduction
+            mode={settingsMode ? "settings" : mode}
+            constructPreview={constructPreview}
+          />
           {!settingsMode && mode === "construct" && (
             <ConstructionToolCards
               inert={editingLocked || unsettled || reference.adjusting}
-              tool={constructEditor.tool}
+              tool={constructPreview ? null : constructEditor.tool}
               stairsActive={Boolean(stairPlacement)}
               onToolChange={(tool) => {
                 setStairPlacement(null);
@@ -215,6 +221,7 @@ export function EditorSidebar({
           )}
           {!settingsMode &&
             mode === "construct" &&
+            !constructPreview &&
             tutorial.state?.status !== "active" &&
             isPristineConstructionFloor(constructEditor.previewFloor) && (
               <p className="construction-empty-hint">
