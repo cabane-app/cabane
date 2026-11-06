@@ -23,6 +23,25 @@ await withModules(async (load) => {
     return deriveRoomStatusMap(manifest, profile, resolved, runtime)["demo-room"];
   };
 
+  const addAqiSensor = (runtime, entityId, registry = {}, state = {}) => {
+    runtime.entityRegistry.push({
+      entity_id: entityId,
+      area_id: "demo_room",
+      device_id: null,
+      disabled_by: null,
+      hidden_by: null,
+      ...registry,
+    });
+    runtime.entityStates[entityId] = {
+      entityId,
+      state: "42",
+      attributes: { device_class: "aqi" },
+      available: true,
+      stale: false,
+      ...state,
+    };
+  };
+
   test("uses only the exact temperature and humidity references configured on the mapped area", () => {
     const summary = derive(({ profile, runtime }) => {
       delete profile.entityIdsBySlotId["demo-temperature-slot"];
@@ -99,6 +118,40 @@ await withModules(async (load) => {
       runtime.areas[0].temperature_entity_id = "sensor.preferred";
     });
     assert.equal(summary.temperature.value, "23");
+  });
+
+  test("finds an unbound AQI sensor through its device area and respects entity area overrides", () => {
+    const summary = derive(({ runtime }) => {
+      addAqiSensor(runtime, "sensor.demo_aqi", { area_id: null, device_id: "device-switch" });
+      addAqiSensor(runtime, "sensor.outdoor_aqi", {
+        area_id: "outside",
+        device_id: "device-switch",
+      });
+      addAqiSensor(runtime, "sensor.hidden_aqi", { hidden_by: "user" });
+      addAqiSensor(runtime, "sensor.disabled_aqi", { disabled_by: "user" });
+      addAqiSensor(runtime, "sensor.demo_pm25", {}, { attributes: { device_class: "pm25" } });
+    });
+    assert.deepEqual(summary.aqi, { value: "42", unit: null });
+  });
+
+  test("omits an ambiguous AQI reading even when only one sensor is available", () => {
+    const summary = derive(({ runtime }) => {
+      addAqiSensor(runtime, "sensor.demo_aqi");
+      addAqiSensor(runtime, "sensor.second_aqi", {}, { state: "unavailable", available: false });
+    });
+    assert.equal(summary.aqi, undefined);
+  });
+
+  test("omits a unique AQI sensor when its reading is stale or its area is unlinked", () => {
+    const stale = derive(({ runtime }) => {
+      addAqiSensor(runtime, "sensor.demo_aqi", {}, { stale: true });
+    });
+    const unlinked = derive(({ profile, runtime }) => {
+      delete profile.roomAreaIds["demo-room"];
+      addAqiSensor(runtime, "sensor.demo_aqi");
+    });
+    assert.equal(stale.aqi, undefined);
+    assert.equal(unlinked.aqi, undefined);
   });
 
   test("aggregates only exact reliable climate, light, presence, and adjacent door bindings", () => {

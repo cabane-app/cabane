@@ -3,6 +3,7 @@ import type { RoomStatusMap } from "./model";
 export const overlayOptions = [
   ["temperature", "Temperature"],
   ["humidity", "Humidity"],
+  ["aqi", "Air quality (AQI)"],
   ["heating", "Heating"],
   ["cooling", "Cooling"],
   ["lighting", "Lights"],

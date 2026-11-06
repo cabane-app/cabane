@@ -24,6 +24,7 @@ await withModules(async (load) => {
     roomId: "demo-room",
     temperature: { value: "21", unit: "°C" },
     humidity: { value: "48", unit: "%" },
+    aqi: { value: "42", unit: null },
     heating: false,
     cooling: true,
     lighting: "on",
@@ -31,16 +32,22 @@ await withModules(async (load) => {
     doorOpen: false,
   };
 
-  test("persists overlay choices, defaults humidity on, and leaves room details intact", () => {
+  test("persists overlay choices, defaults AQI on for existing preferences, and leaves room details intact", () => {
     const previousWindow = globalThis.window;
     const dom = new JSDOM("", { url: "https://cabane.test" });
     globalThis.window = dom.window;
     try {
-      const defaults = loadOverlayPreferences();
-      assert.equal(defaults.humidity, true);
-      saveOverlayPreferences({ ...defaults, humidity: false, cooling: false });
+      assert.equal(loadOverlayPreferences().humidity, true);
+      dom.window.localStorage.setItem(
+        "cabane.room-overlays.preferences.v1",
+        JSON.stringify({ humidity: false, cooling: false }),
+      );
+      const existing = loadOverlayPreferences();
+      assert.equal(existing.aqi, true);
+      saveOverlayPreferences({ ...existing, aqi: false });
       const preferences = loadOverlayPreferences();
       assert.equal(preferences.humidity, false);
+      assert.equal(preferences.aqi, false);
       const filtered = filterOverlayStatuses({ "demo-room": summary }, preferences)["demo-room"];
       const html = renderToStaticMarkup(
         React.createElement(RoomStatusOverlayButton, {
@@ -51,8 +58,11 @@ await withModules(async (load) => {
       );
       assert.equal(html.includes("Humidity"), false);
       assert.equal(html.includes("Cooling"), false);
+      assert.equal(html.includes("AQI"), false);
+      assert.equal(html.includes("Air quality index"), false);
       assert.match(html, /Temperature 21/);
       assert.equal(summary.humidity.value, "48");
+      assert.equal(summary.aqi.value, "42");
       dom.window.localStorage.setItem("cabane.room-overlays.preferences.v1", "broken");
       assert.equal(loadOverlayPreferences().humidity, true);
     } finally {
@@ -85,12 +95,13 @@ await withModules(async (load) => {
     assert.match(html, /<button/);
     assert.match(
       html,
-      /aria-label="Open Demo room\. Temperature 21 °C, Humidity 48 %, Cooling, Lights on, Presence"/,
+      /aria-label="Open Demo room\. Temperature 21 °C, Humidity 48 %, Air quality index 42, Cooling, Lights on, Presence"/,
     );
     assert.match(html, /data-visible="true"/);
     assert.match(html, /Demo room/);
     assert.equal(html.includes("Humidity"), true);
     assert.equal(html.includes("48 %"), true);
+    assert.match(html, /room-status-badge__label">AQI 42</);
   });
 
   test("uses a compact cap and prioritizes useful status before center distance", () => {
@@ -101,6 +112,16 @@ await withModules(async (load) => {
       roomStatusOverlayPriority({
         roomId: "humidity-only",
         humidity: { value: "48", unit: "%" },
+        heating: false,
+        cooling: false,
+        doorOpen: false,
+      }),
+      1,
+    );
+    assert.equal(
+      roomStatusOverlayPriority({
+        roomId: "aqi-only",
+        aqi: { value: "42", unit: null },
         heating: false,
         cooling: false,
         doorOpen: false,

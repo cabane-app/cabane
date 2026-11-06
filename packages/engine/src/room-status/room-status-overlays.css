@@ -11,6 +11,7 @@
 .room-status-overlay {
   display: grid;
   justify-items: center;
+  width: max-content;
   min-width: 88px;
   min-height: 44px;
   padding: 0;
