@@ -28,6 +28,7 @@ import { EditorPanels } from "./EditorPanels";
 import { useMobileEditorViewport } from "./useMobileEditorViewport";
 import { EditorPanelControls } from "./EditorPanelControls";
 import { editorPanelSelection, editorPanelsBusy, useEditorPanels } from "./useEditorPanels";
+import { useArrangeConnectReturn } from "./useArrangeConnectReturn";
 
 import { ownerProjectRegistries } from "../project-runtime";
 
@@ -64,7 +65,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     previewOpen,
     connect,
     constructEditor,
-    displayedContextualIssues,
+    displayedContextualIssues: panelIssues,
     deviceModels,
     unsettled,
     selectMode,
@@ -98,17 +99,13 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     Object.keys(workspace.snapshot.references ?? {}).length > 0,
   );
   const request = props.navigation?.request ?? props.initialRequest;
-  const requestedSettings =
-    request?.panel === "settings" ||
-    request?.panel === "action-bar" ||
-    request?.panel === "home-assistant";
   const requestedSection =
     request?.settingsSection ?? (request?.panel === "action-bar" ? "shortcuts" : "home-assistant");
   const [localSettings, setLocalSettings] = useState<SettingsSection | null>(
-    requestedSettings ? requestedSection : null,
+    request?.panel ? requestedSection : null,
   );
   const [settingsBusy, setSettingsBusy] = useState(false);
-  const settingsMode = props.navigation ? requestedSettings : localSettings !== null;
+  const settingsMode = props.navigation ? Boolean(request?.panel) : localSettings !== null;
   const settingsSection = props.navigation ? requestedSection : (localSettings ?? "home-assistant");
   const dom = useCabaneDom();
   const iconUrl = useCabaneAssetUrl("cabane-icon.png");
@@ -117,32 +114,29 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     setLocalSettings(section);
     props.navigation?.go({ mode, panel: "settings", settingsSection: section });
   };
-  const mobileViewport = useMobileEditorViewport();
-  const mobileEditor =
-    mobileViewport && !settingsMode && (mode === "construct" || mode === "furnish");
+  const mobileEditor = useMobileEditorViewport() && !settingsMode && mode !== "connect";
   const sidebar = useRef<HTMLElement>(null);
   useEffect(() => {
     const content = sidebar.current?.querySelector<HTMLElement>(".editor-sidebar-content");
     if (content) content.scrollTop = 0;
   }, [mode, settingsMode, settingsSection]);
-  const onModeTabChange = (next: EditorMode | "settings") => {
-    if (settingsBusy || editingLocked) return;
-    reference.cancel();
-    if (next === "settings") {
-      selectSettingsSection(settingsSection);
-    } else {
-      setLocalSettings(null);
-      selectMode(next);
-    }
-  };
   const panelBusy = editorPanelsBusy(controller);
   const panels = useEditorPanels(
     editorPanelSelection(controller, settingsMode),
     panelBusy,
-    displayedContextualIssues.length > 0,
+    panelIssues.length > 0,
     `${mode}:${activeFloorId}:${settingsMode}`,
   );
-  const { closeMobilePanel, issuesOpen } = panels;
+  const arrangeReturn = useArrangeConnectReturn(controller, panels, settingsMode);
+  const onModeTabChange = (next: EditorMode | "settings") => {
+    if (settingsBusy || editingLocked) return;
+    reference.cancel();
+    if (next === "settings") return selectSettingsSection(settingsSection);
+    setLocalSettings(null);
+    if (next === "furnish" && arrangeReturn.backToArrange) return arrangeReturn.backToArrange();
+    selectMode(next);
+  };
+  const { closeMobilePanel } = panels;
   const panelsDisabled =
     editingLocked || publishOpen || previewOpen || northOrientation.active || panelBusy;
   const collapseProperties = () => {
@@ -302,19 +296,22 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
         data-connect-room={mode === "connect" && Boolean(connect.room)}
         data-editor-mode={settingsMode ? "settings" : mode}
         data-properties-open={panels.propertiesOpen}
-        data-has-issues={displayedContextualIssues.length > 0}
-        data-issues-expanded={issuesOpen}
+        data-has-issues={panelIssues.length > 0}
+        data-issues-expanded={panels.issuesOpen}
         data-mobile-editor={mobileEditor}
         data-mobile-panel={
           mobileEditor && !panels.mobileOpen
             ? "closed"
-            : panels.mobileSurface === "issues" && !displayedContextualIssues.length
+            : panels.mobileSurface === "issues" && !panelIssues.length
               ? "tools"
               : panels.mobileSurface
         }
       >
         {!settingsMode && (
           <HomeEditorScene
+            cameraReader={arrangeReturn.cameraReader}
+            cameraReturn={arrangeReturn.cameraReturn}
+            onConnectDevice={(id) => arrangeReturn.openConnect({ kind: "device", id })}
             onStairIssuesChange={setStairLiveIssues}
             onNameFocusHandled={() => setNameFocusRequest(null)}
             nameFocusRequest={nameFocusRequest}
@@ -373,6 +370,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
           editingLocked={editingLocked || northOrientation.active || settingsBusy}
           settingsMode={settingsMode}
           onModeTabChange={onModeTabChange}
+          onBackToArrange={arrangeReturn.backToArrange}
         />
         {settingsMode && (
           <EditorSettings
@@ -418,7 +416,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
           mode={settingsMode ? "settings" : mode}
           floorName={constructEditor.previewFloor.name}
           panels={panels}
-          issueCount={displayedContextualIssues.length}
+          issueCount={panelIssues.length}
           disabled={panelsDisabled}
         >
           <EditorSidebar
@@ -457,6 +455,8 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
           />
           <EditorSelectionDetails
             {...controller}
+            onConnectSlot={(id) => arrangeReturn.openConnect({ kind: "slot", id }, true)}
+            onConnectLighting={(id) => arrangeReturn.openConnect({ kind: "device", id }, true)}
             open={panels.propertiesOpen && !settingsMode}
             onCollapse={collapseProperties}
             liveStairIssues={stairLiveIssues}
@@ -467,7 +467,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             inert={editingLocked || publishOpen || previewOpen || northOrientation.active}
           >
             <EditorValidationPanel
-              issues={displayedContextualIssues}
+              issues={panelIssues}
               expanded={panels.issuesExpanded}
               onToggle={panels.toggleIssues}
               disabled={panelBusy}
@@ -486,7 +486,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
           <EditorPanelControls
             mode={settingsMode ? "settings" : mode}
             panels={panels}
-            issueCount={displayedContextualIssues.length}
+            issueCount={panelIssues.length}
             disabled={panelsDisabled}
           />
         </div>

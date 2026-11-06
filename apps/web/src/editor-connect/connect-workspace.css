@@ -273,16 +273,29 @@
     font-size: 12px;
   }
 }
+@media (max-width: 1380px) {
+  .direction-preview.is-connect .editor-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .direction-preview.is-connect .direction-modes {
+    grid-area: 1 / 1 / auto / -1;
+  }
+  .direction-preview.is-connect :is(.editor-navigation, .editor-project-controls) {
+    grid-row: 2;
+  }
+  .direction-preview.is-connect .editor-project-controls {
+    grid-column: 2;
+  }
+}
 @media (max-width: 760px) {
   .direction-preview.is-connect .editor-header {
     left: 10px;
     right: 10px;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 10px;
+    gap: 8px;
   }
   .direction-preview.is-connect .editor-header .direction-modes {
     grid-column: 1 / -1;
-    grid-row: 1;
+    grid-row: 2;
     width: 100%;
     min-width: 0;
     justify-self: stretch;
@@ -298,22 +311,35 @@
     width: 14px;
     height: 14px;
   }
-  .direction-preview.is-connect .editor-header .editor-close {
-    grid-column: 1;
-    grid-row: 2;
+  .direction-preview.is-connect .editor-return-arrange {
+    grid-area: 1 / 1;
+    justify-self: start;
+    gap: 5px;
+    padding-inline: 6px;
+    font-size: 12px;
+  }
+  .direction-preview.is-connect .editor-project-controls {
+    grid-row: 1;
+    gap: 6px;
   }
   .direction-preview.is-connect .direction-project-actions {
-    grid-column: 2;
-    grid-row: 2;
+    gap: 2px;
+    padding: 3px;
+  }
+  .direction-preview.is-connect .direction-project-actions .editor-button {
+    padding-inline: 8px;
+    font-size: 12px;
   }
   .direction-preview.is-connect .connect-action-bar {
     display: none;
   }
-  .direction-preview.is-connect .direction-project-actions .editor-reset-changes {
+  .direction-preview.is-connect
+    .direction-project-actions
+    :is(.editor-reset-changes, .editor-action-bar__separator) {
     display: none;
   }
   .connect-workspace-host {
-    inset: 125px 10px calc(40dvh + 10px);
+    inset: 132px 10px calc(40dvh + 10px);
   }
   .direction-preview.is-connect .direction-rail__brand,
   .direction-preview.is-connect .editor-mode-introduction p {
@@ -387,5 +413,22 @@
   }
   .connect-room-workspace {
     overflow: hidden;
+  }
+}
+
+@media (max-width: 388px) {
+  .direction-preview.is-connect:has(.editor-return-arrange) .editor-project-controls {
+    display: contents;
+  }
+  .direction-preview.is-connect:has(.editor-return-arrange) .editor-close {
+    grid-area: 1 / 2;
+    justify-self: end;
+  }
+  .direction-preview.is-connect:has(.editor-return-arrange) .direction-project-actions {
+    grid-area: 3 / 1 / auto / -1;
+    justify-self: end;
+  }
+  .direction-preview.is-connect:has(.editor-return-arrange) .connect-workspace-host {
+    top: 191px;
   }
 }

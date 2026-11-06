@@ -35,12 +35,13 @@ type Props = Pick<
   | "snapshot"
   | "commit"
   | "connect"
-  | "selectMode"
   | "workspace"
   | "replaceEditorsFromProject"
 > & {
   open: boolean;
   onCollapse: () => void;
+  onConnectSlot: (id: string) => void;
+  onConnectLighting: (id: string) => void;
   liveStairIssues: readonly ManifestIssue[] | null;
   disabled: boolean;
 };
@@ -68,7 +69,8 @@ export function EditorSelectionDetails({
   commit,
   workspace,
   connect,
-  selectMode,
+  onConnectSlot,
+  onConnectLighting,
   replaceEditorsFromProject,
   open,
   onCollapse,
@@ -79,9 +81,7 @@ export function EditorSelectionDetails({
   const itemConnections = {
     profile: connect.profile,
     runtime: connect.displayRuntime,
-    onConnect: (slotId: string) => {
-      if (connect.selectSlot(slotId)) selectMode("connect", true);
-    },
+    onConnect: onConnectSlot,
     onDisconnect: (slotId: string) =>
       connect.assignEntities(
         Object.fromEntries(
@@ -165,10 +165,9 @@ export function EditorSelectionDetails({
                 onVariantChange={furnishingEditor.updateVariant}
                 onColorChange={furnishingEditor.updateColor}
                 onEditLighting={() => setLightingModel(selectedItem.modelId)}
-                onConnectLighting={() => {
-                  if (connect.selectDevice(selectedItem.lightSlotId ?? selectedItem.id))
-                    selectMode("connect", true);
-                }}
+                onConnectLighting={() =>
+                  onConnectLighting(selectedItem.lightSlotId ?? selectedItem.id)
+                }
                 onClose={onCollapse}
               />
             ) : null)}

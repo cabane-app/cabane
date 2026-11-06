@@ -10,10 +10,20 @@ import {
   type FloorSpec,
   type PlanPoint,
 } from "@cabane/engine";
-import { useCallback, useEffect, useRef, useState, type ComponentRef, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentRef,
+  type RefObject,
+} from "react";
 import type { EditorCameraState } from "../editor-connect/connect-navigation";
 
 import { navigatePlanWheel } from "./construct/plan-wheel-navigation";
+
+export type ReadEditorCamera = () => EditorCameraState | null;
 
 interface PreviewCameraProps {
   planWheelNavigation?: boolean;
@@ -26,6 +36,8 @@ interface PreviewCameraProps {
   focusRoomId?: (string | null) | undefined;
   onTargetChange: (point: PlanPoint, isVisible: (position: readonly number[]) => boolean) => void;
   savedCamera: RefObject<EditorCameraState | null>;
+  cameraReader?: RefObject<ReadEditorCamera | null> | undefined;
+  initialPose?: EditorCameraState | null | undefined;
 }
 
 export function PreviewCamera(props: PreviewCameraProps) {
@@ -35,7 +47,9 @@ export function PreviewCamera(props: PreviewCameraProps) {
   const previousView = useRef(view);
   const previousReset = useRef(resetKey);
   const previousFloorId = useRef(floor.id);
-  const initialCamera = useRef(savedCamera.current);
+  const initialCamera = useRef(
+    props.initialPose === undefined ? savedCamera.current : props.initialPose,
+  );
   const initialReset = useRef(resetKey);
   if (previousNorth.current !== northOrientation) {
     previousNorth.current = northOrientation;
@@ -80,6 +94,7 @@ function PreviewCameraRig({
   restored,
   planWheelNavigation,
   northOrientation,
+  cameraReader,
 }: PreviewCameraProps & { restored: EditorCameraState | null }) {
   const { width, height } = useThree((state) => state.size);
   const canvas = useThree((state) => state.gl.domElement);
@@ -90,32 +105,43 @@ function PreviewCameraRig({
     origin: [originX, originZ],
     metersPerPlanUnit,
   } = floor.coordinates;
+  const readPose = useCallback<ReadEditorCamera>(() => {
+    const active = controls.current;
+    if (!active) return null;
+    return {
+      view,
+      position: active.object.position.toArray(),
+      target: active.target.toArray(),
+      zoom: active.object.zoom,
+    };
+  }, [view]);
+  useLayoutEffect(() => {
+    if (!cameraReader) return;
+    cameraReader.current = readPose;
+    return () => {
+      cameraReader.current = null;
+    };
+  }, [cameraReader, readPose]);
   // Drei reconnects controls when onChange changes. Keep it stable during edits
   // so a render cannot remove the document's pointer-up listener mid-gesture.
   const handleChange = useCallback(() => {
-    const target = controls.current?.target;
     const camera = controls.current?.object;
-    if (target && camera)
-      savedCamera.current = {
-        view,
-        position: camera.position.toArray(),
-        target: target.toArray(),
-        zoom: camera.zoom,
-      };
-    if (target && camera)
-      onTargetChange(
-        [target.x / metersPerPlanUnit + originX, target.z / metersPerPlanUnit + originZ],
-        (position) => {
-          const projected = new Vector3(position[0], position[1], position[2]).project(camera);
-          return (
-            Math.abs(projected.x) < 0.9 &&
-            Math.abs(projected.y) < 0.9 &&
-            projected.z >= -1 &&
-            projected.z <= 1
-          );
-        },
-      );
-  }, [metersPerPlanUnit, onTargetChange, originX, originZ, savedCamera, view]);
+    const pose = readPose();
+    if (!camera || !pose) return;
+    savedCamera.current = pose;
+    onTargetChange(
+      [pose.target[0] / metersPerPlanUnit + originX, pose.target[2] / metersPerPlanUnit + originZ],
+      (position) => {
+        const projected = new Vector3(position[0], position[1], position[2]).project(camera);
+        return (
+          Math.abs(projected.x) < 0.9 &&
+          Math.abs(projected.y) < 0.9 &&
+          projected.z >= -1 &&
+          projected.z <= 1
+        );
+      },
+    );
+  }, [metersPerPlanUnit, onTargetChange, originX, originZ, readPose, savedCamera]);
   const initialPoseSaved = useRef(false);
   useFrame(() => {
     if (northOrientation || initialPoseSaved.current || !controls.current) return;

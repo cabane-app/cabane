@@ -371,7 +371,7 @@
     right: calc(var(--editor-properties-width) + max(16px, env(safe-area-inset-right)));
   }
   .direction-preview:is([data-editor-mode="construct"], [data-editor-mode="furnish"])
-    .direction-project-actions {
+    .editor-project-controls {
     position: fixed;
     top: max(16px, env(safe-area-inset-top));
     right: max(16px, env(safe-area-inset-right));

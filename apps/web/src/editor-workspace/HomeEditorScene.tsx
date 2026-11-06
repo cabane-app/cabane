@@ -25,7 +25,7 @@ import {
   ArchitectureScene,
 } from "@cabane/engine";
 
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, type RefObject } from "react";
 import { RetainedArrangeScene } from "./RetainedArrangeScene";
 
 import { FurnishingSelectionControls } from "../editor-preview/furnish/FurnishingSelectionControls";
@@ -42,7 +42,8 @@ import { ArrangePlanOpenings, FurnishingEditLayer } from "../editor-preview/furn
 
 import { ConstructionPlan } from "../editor-preview/construct/ConstructionPlan";
 
-import { PreviewCamera } from "../editor-preview/PreviewCamera";
+import { PreviewCamera, type ReadEditorCamera } from "../editor-preview/PreviewCamera";
+import type { EditorCameraState } from "../editor-connect/connect-navigation";
 import type { useHomeEditorController } from "./useHomeEditorController";
 
 const NO_INTERACTION = () => undefined;
@@ -54,6 +55,9 @@ type Props = {
   nameFocusRequest?: { roomId: string; serial: number } | null;
   placingWalkStart: boolean;
   onWalkStartPlaced: () => void;
+  onConnectDevice: (id: string) => void;
+  cameraReader: RefObject<ReadEditorCamera | null>;
+  cameraReturn: { key: number; pose: EditorCameraState | null } | null;
 } & Pick<
   ReturnType<typeof useHomeEditorController>,
   | "northOrientation"
@@ -110,7 +114,6 @@ type Props = {
   | "selectedItem"
   | "selectedDefinition"
   | "unsettled"
-  | "selectMode"
   | "duplicateArrangeItem"
   | "deleteSceneItem"
 >;
@@ -143,6 +146,8 @@ export function HomeEditorScene({
   clearConstructionSelection,
   clearFurnishingSelection,
   cameraView,
+  cameraReader,
+  cameraReturn,
   cameraResetKey,
   constructEditor,
   dragging,
@@ -175,7 +180,7 @@ export function HomeEditorScene({
   selectedItem,
   selectedDefinition,
   unsettled,
-  selectMode,
+  onConnectDevice,
   duplicateArrangeItem,
   deleteSceneItem,
 }: Props) {
@@ -277,6 +282,9 @@ export function HomeEditorScene({
               )}
               {constructPlan && !referenceCanvas.visible && <ConstructionGrid />}
               <PreviewCamera
+                key={cameraReturn?.key}
+                initialPose={cameraReturn?.pose}
+                cameraReader={cameraReader}
                 northOrientation={northOrientation.active}
                 planWheelNavigation={mode === "construct" || mode === "furnish"}
                 view={cameraView}
@@ -630,18 +638,14 @@ export function HomeEditorScene({
                     selectedItem &&
                     ((selectedItem.entitySlots?.length ?? 0) > 0 || !!selectedItem.lightSlotId) &&
                     !unsettled
-                      ? () => {
-                          if (
-                            connect.selectDevice(
-                              selectedItem.kind === "device"
-                                ? selectedItem.id
-                                : (selectedItem.lightSlotId ??
-                                    selectedItem.entitySlots?.[0]?.id ??
-                                    selectedItem.id),
-                            )
+                      ? () =>
+                          onConnectDevice(
+                            selectedItem.kind === "device"
+                              ? selectedItem.id
+                              : (selectedItem.lightSlotId ??
+                                  selectedItem.entitySlots?.[0]?.id ??
+                                  selectedItem.id),
                           )
-                            selectMode("connect", true);
-                        }
                       : undefined
                   }
                   onDuplicate={duplicateArrangeItem}

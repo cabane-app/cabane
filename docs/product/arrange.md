@@ -144,7 +144,12 @@ Shortening a collinear wall preserves attached items at their original anchors
 when their width still fits the retained wall; unsupported items are deleted.
 Other support changes can produce actionable issues. The editor's
 preview resolves typed slots without substituting live entity state. Selecting
-an item's Connect action carries its relationship into the connection workspace.
+an item's Connect action from the action bar or Properties opens its relationship
+in Connect and offers **Back to Arrange** at the top left. That action and the
+Arrange tab return to the same floor, view, camera pose and item selection.
+Properties reopens when it launched Connect, including on phones. Connection
+edits stay in the draft. Opening Connect directly from its mode tab has no
+contextual return.
 The Explore preview uses the edited manifest but disables service mutation.
 
 The source registries, not a hard-coded count in this document, determine which

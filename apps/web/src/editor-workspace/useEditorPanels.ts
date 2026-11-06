@@ -63,6 +63,14 @@ interface PanelState {
 }
 type Action =
   | { type: "selection"; selection: string | null; hasIssues: boolean; context: string }
+  | {
+      type: "restore-properties";
+      selection: string | null;
+      hasIssues: boolean;
+      context: string;
+      open: boolean;
+      mobileOpen: boolean;
+    }
   | { type: "properties" | "collapse" | "issues" | "tools" | "show-issues" | "close-mobile" };
 function reduce(state: PanelState, action: Action): PanelState {
   switch (action.type) {
@@ -91,6 +99,16 @@ function reduce(state: PanelState, action: Action): PanelState {
           : state.surface === "properties"
             ? "tools"
             : state.surface,
+      };
+    case "restore-properties":
+      return {
+        ...state,
+        selection: action.selection,
+        hasIssues: action.hasIssues,
+        context: action.context,
+        collapsed: !action.open,
+        surface: action.open ? "properties" : "tools",
+        mobileOpen: action.open && action.mobileOpen,
       };
     case "properties":
       return { ...state, collapsed: false, surface: "properties", mobileOpen: true };
@@ -131,6 +149,11 @@ export function useEditorPanels(
     if (!busy) dispatch({ type: "selection", selection, hasIssues, context });
   }, [busy, selection, hasIssues, context]);
   const closeMobilePanel = useCallback(() => dispatch({ type: "close-mobile" }), []);
+  const restoreProperties = useCallback(
+    (open: boolean, mobileOpen: boolean) =>
+      dispatch({ type: "restore-properties", selection, hasIssues, context, open, mobileOpen }),
+    [selection, hasIssues, context],
+  );
   return {
     propertiesOpen: !!state.selection && !state.collapsed,
     hasSelection: !!selection,
@@ -139,6 +162,7 @@ export function useEditorPanels(
     mobileSurface: state.surface,
     mobileOpen: state.mobileOpen,
     closeMobilePanel,
+    restoreProperties,
     openProperties: () => dispatch({ type: "properties" }),
     collapseProperties: () => dispatch({ type: "collapse" }),
     showIssues: () => dispatch({ type: "show-issues" }),

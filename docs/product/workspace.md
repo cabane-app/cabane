@@ -103,7 +103,7 @@ placement and appearance; advanced controls remain accessible through one disclo
 On desktop, Properties overlays the canvas as a full-height right sidebar. Opening
 or collapsing it never resizes the canvas or shifts the camera projection; floating
 floor and status controls move aside to stay accessible. Undo and Redo share the
-top-right project actions with Reset and Save, separated by a divider. The Construct
+top-right project actions with Reset and Save & close, separated by a divider. The Construct
 toolbar contains construction tools; Arrange has no separate history toolbar.
 On phones, Construct and Arrange start with a compact bottom dock and no open panel.
 Build tools or Add items opens a full-screen panel; Properties is available after
@@ -226,12 +226,11 @@ nonempty room name for Apply. This does not change the HomeProject wire format.
 The optional per-home build tutorial is browser setup data, excluded from project
 exports, workspace duplication, and undo history.
 
-The editor separates Back navigation on the left from Reset and primary Save
-actions on the right. Save validates and
-atomically publishes the draft, closes the editor, and opens Home.
-Save proceeds immediately when validation has only warnings or no issues; the
-review dialog remains available for errors and failed saves. Back returns to
-Home and preserves draft edits; it is disabled until the first successful Save.
+**Save & close** validates and atomically publishes the draft, closes the editor,
+and opens Home. It proceeds immediately when validation has only warnings or no
+issues. Errors and failed saves keep the review dialog available. **Close editor**
+at the right edge keeps draft edits and returns to Home, or to Workspaces for a
+home that has not been published yet.
 Reset asks for confirmation, restores the published project and connection
 bindings, and clears draft undo history. Before the first Save it restores the
 initial unpublished baseline. Reset is disabled when the draft matches that baseline.

@@ -229,10 +229,6 @@
   .connect-map {
     top: 176px;
   }
-  .is-connect .direction-project-actions {
-    grid-column: 2;
-    justify-self: end;
-  }
 }
 @media (max-width: 760px) {
   .connect-map {
