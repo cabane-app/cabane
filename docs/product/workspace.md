@@ -22,7 +22,9 @@ The layout project accepts flat and sloped ceilings. A sloped ceiling lists plan
 each a boundary polygon rising from a low edge to a high edge. Walls may carry an
 optional `gable` (`fill` solid or glass, optional `frameColor`, `columns` and
 `transomHeightsMeters`) that rises above `heightMeters` to the sloped ceiling over
-it. Existing projects need no migration; older clients reject these fields.
+it. A wall may also lean: `leanMeters` is how far its top sits outward of its
+base (negative leans in), at most the wall's height. Existing projects need no
+migration; older clients reject these fields.
 
 Scene items refer to registered models by ID, carry an explicit floor ID and size, an optional `variant` ID, and use
 absolute, wall-relative, or ceiling-relative placement. Device items declare

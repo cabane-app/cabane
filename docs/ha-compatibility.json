@@ -3296,6 +3296,12 @@
                             "type": "string"
                           }
                         },
+                        "leanMeters": {
+                          "optional": true,
+                          "schema": {
+                            "type": "number"
+                          }
+                        },
                         "name": {
                           "optional": true,
                           "schema": {
@@ -8704,6 +8710,12 @@
                         "optional": false,
                         "schema": {
                           "type": "string"
+                        }
+                      },
+                      "leanMeters": {
+                        "optional": true,
+                        "schema": {
+                          "type": "number"
                         }
                       },
                       "name": {
