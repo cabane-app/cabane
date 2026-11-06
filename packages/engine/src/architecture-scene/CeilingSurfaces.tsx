@@ -9,6 +9,7 @@ import { planPointToWorld, slopedCeilingHeightAtPoint } from "../geometry";
 import { ToonMaterial } from "../rendering";
 import { CEILING_SURFACE_COLOR } from "./surface-colors";
 
+import { leanPlanPolygon } from "../architecture-geometry/wall-lean";
 import type { FloorSpec, Polygon, SlopedCeilingSpec } from "../types";
 
 function FlatCeilingSlab({
@@ -22,8 +23,8 @@ function FlatCeilingSlab({
 }) {
   const apertures = useStairSurfaceApertures("ceiling");
   const shape = useMemo(
-    () => cutSurfaceShapes(polygon, floor.coordinates, apertures),
-    [floor, polygon, apertures],
+    () => cutSurfaceShapes(leanPlanPolygon(polygon, floor, height), floor.coordinates, apertures),
+    [floor, polygon, apertures, height],
   );
   return (
     <mesh position={[0, height, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>

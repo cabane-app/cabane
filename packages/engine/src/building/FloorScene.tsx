@@ -49,6 +49,7 @@ import { LegacyDeviceItemRenderer, SceneItemRenderer } from "../SceneItemRendere
 import { ArchitecturalWall, ArchitecturalWalls } from "../architecture-scene/ArchitecturalWalls";
 import { PolygonSurface } from "../architecture-scene/ArchitecturePolygonSurface";
 import { CeilingSurfaces } from "../architecture-scene/CeilingSurfaces";
+import { WallLeanGroup } from "../architecture-scene/WallLeanGroup";
 import { DioramaGround } from "../architecture-scene/DioramaGround";
 import {
   EMPTY_MEDIA,
@@ -199,57 +200,64 @@ export const FloorScene = memo(function FloorScene({
       {sourceFloor.openings.map((opening) => {
         const wall = floor.walls.find((candidate) => candidate.id === opening.wallId);
         if (!wall) return null;
-        const CustomModel = opening.visualModel
-          ? Object.hasOwn(manifest.extensions.openingModels, opening.visualModel)
-            ? manifest.extensions.openingModels[opening.visualModel]
-            : undefined
-          : undefined;
-        if (CustomModel) {
-          return (
+        return (
+          <WallLeanGroup key={opening.id} wall={wall} floor={floor}>
+            {renderOpening(wall)}
+          </WallLeanGroup>
+        );
+        function renderOpening(wall: (typeof floor.walls)[number]) {
+          const CustomModel = opening.visualModel
+            ? Object.hasOwn(manifest.extensions.openingModels, opening.visualModel)
+              ? manifest.extensions.openingModels[opening.visualModel]
+              : undefined
+            : undefined;
+          if (CustomModel) {
+            return (
+              <SceneOpeningRenderer
+                model={CustomModel}
+                key={opening.id}
+                wall={wall}
+                opening={opening}
+                floor={sourceFloor}
+                position={openingPositions[opening.id] ?? 0}
+                reducedMotion={reducedMotion}
+              />
+            );
+          }
+          return opening.kind === "door" ? (
             <SceneOpeningRenderer
-              model={CustomModel}
+              model={DoorModel}
+              walkMode={walkMode}
+              onInteract={interactionMode === "runtime" ? onInteract : undefined}
               key={opening.id}
               wall={wall}
               opening={opening}
-              floor={sourceFloor}
+              floor={floor}
               position={openingPositions[opening.id] ?? 0}
+              reducedMotion={reducedMotion}
+            />
+          ) : opening.kind === "window" ? (
+            <SceneOpeningRenderer
+              model={WindowModel}
+              key={opening.id}
+              wall={wall}
+              opening={opening}
+              floor={floor}
+              position={openingPositions[opening.id] ?? 0}
+              reducedMotion={reducedMotion}
+            />
+          ) : (
+            <SceneOpeningRenderer
+              model={PassageModel}
+              key={opening.id}
+              wall={wall}
+              opening={opening}
+              floor={floor}
+              position={1}
               reducedMotion={reducedMotion}
             />
           );
         }
-        return opening.kind === "door" ? (
-          <SceneOpeningRenderer
-            model={DoorModel}
-            walkMode={walkMode}
-            onInteract={interactionMode === "runtime" ? onInteract : undefined}
-            key={opening.id}
-            wall={wall}
-            opening={opening}
-            floor={floor}
-            position={openingPositions[opening.id] ?? 0}
-            reducedMotion={reducedMotion}
-          />
-        ) : opening.kind === "window" ? (
-          <SceneOpeningRenderer
-            model={WindowModel}
-            key={opening.id}
-            wall={wall}
-            opening={opening}
-            floor={floor}
-            position={openingPositions[opening.id] ?? 0}
-            reducedMotion={reducedMotion}
-          />
-        ) : (
-          <SceneOpeningRenderer
-            model={PassageModel}
-            key={opening.id}
-            wall={wall}
-            opening={opening}
-            floor={floor}
-            position={1}
-            reducedMotion={reducedMotion}
-          />
-        );
       })}
       {showCeiling && <CeilingSurfaces floor={floor} maxHeightMeters={ceilingMaxHeightMeters} />}
       {manifest.sceneItems.length > 0 ? (
