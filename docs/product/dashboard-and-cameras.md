@@ -146,6 +146,11 @@ entity supports every possible action. Sensor-only content is read-only.
 Optimistic commands reconcile with confirmed state and expose pending/error
 feedback. Invalid or stale bindings limit mutation.
 
+Climate devices with a valid target range show both setpoints on one dial.
+Select a setpoint to use the shared step buttons, or drag its marker. Cabane
+sends the pair and keeps the latest Home Assistant value for an untouched
+setpoint.
+
 Light dimmers span 0% to 100%. Reaching 0% turns the light off; positive values
 turn it on at the selected brightness. Decreasing an already-off light is a no-op,
 and Home moves the slider to off. An off light reads 0% rather than its last

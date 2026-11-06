@@ -1,5 +1,9 @@
-import type { EntityId } from "./types";
-import type { SupportedServiceCall } from "./home-assistant-controls";
+import type { EntityId, EntityStateSnapshot } from "./types";
+import {
+  canceledClimateRangeEdit,
+  resolveClimateRangeCall,
+  type SupportedServiceCall,
+} from "./home-assistant-controls";
 
 export const VALUE_DEBOUNCE_MS = 500;
 export const DEVICE_THROTTLE_MS = 2_000;
@@ -13,6 +17,7 @@ interface PendingWaiter {
 }
 
 interface PendingValue {
+  entityId: EntityId;
   call: SupportedServiceCall;
   sequence: number;
   updatedAt: number;
@@ -23,11 +28,13 @@ interface DeviceQueue {
   lastDispatchAt: number;
   pending: Map<string, PendingValue>;
   timer: TimerHandle | null;
+  climateRangeInFlight: PendingValue | null;
 }
 
 export interface DeviceCommandSchedulerOptions {
   dispatch: (call: SupportedServiceCall) => Promise<unknown>;
   resolveDeviceKey: (entityId: EntityId) => string;
+  resolveEntityState?: (entityId: EntityId) => EntityStateSnapshot | undefined;
   debounceMs?: number;
   throttleMs?: number;
   now?: () => number;
@@ -38,6 +45,7 @@ export interface DeviceCommandSchedulerOptions {
 export class DeviceCommandScheduler {
   private readonly dispatch: DeviceCommandSchedulerOptions["dispatch"];
   private readonly resolveDeviceKey: DeviceCommandSchedulerOptions["resolveDeviceKey"];
+  private readonly resolveEntityState: DeviceCommandSchedulerOptions["resolveEntityState"];
   private readonly debounceMs: number;
   private readonly throttleMs: number;
   private readonly now: () => number;
@@ -50,6 +58,7 @@ export class DeviceCommandScheduler {
   constructor(options: DeviceCommandSchedulerOptions) {
     this.dispatch = options.dispatch;
     this.resolveDeviceKey = options.resolveDeviceKey;
+    this.resolveEntityState = options.resolveEntityState;
     this.debounceMs = options.debounceMs ?? VALUE_DEBOUNCE_MS;
     this.throttleMs = options.throttleMs ?? DEVICE_THROTTLE_MS;
     this.now = options.now ?? Date.now;
@@ -82,11 +91,20 @@ export class DeviceCommandScheduler {
     const existing = queue.pending.get(channelKey);
     const promise = new Promise<unknown>((resolve, reject) => {
       if (existing) {
-        existing.call = call;
+        const earlierEdit = existing.call.climateRangeEdit;
+        const edit = call.climateRangeEdit;
+        existing.call =
+          earlierEdit && edit && earlierEdit.context === edit.context
+            ? {
+                ...call,
+                climateRangeEdit: { ...edit, targets: { ...earlierEdit.targets, ...edit.targets } },
+              }
+            : call;
         existing.updatedAt = this.now();
         existing.waiters.push({ resolve, reject });
       } else {
         queue.pending.set(channelKey, {
+          entityId,
           call,
           sequence: this.nextSequence++,
           updatedAt: this.now(),
@@ -99,7 +117,10 @@ export class DeviceCommandScheduler {
   }
 
   cancelPendingValues(): void {
-    for (const queue of this.queues.values()) this.cancelQueue(queue);
+    for (const queue of this.queues.values()) {
+      this.cancelQueue(queue);
+      queue.climateRangeInFlight = null;
+    }
   }
 
   dispose(): void {
@@ -116,6 +137,7 @@ export class DeviceCommandScheduler {
       lastDispatchAt: Number.NEGATIVE_INFINITY,
       pending: new Map(),
       timer: null,
+      climateRangeInFlight: null,
     };
     this.queues.set(key, queue);
     return queue;
@@ -125,17 +147,22 @@ export class DeviceCommandScheduler {
     if (queue.timer !== null) this.clearTimer(queue.timer);
     queue.timer = null;
     for (const pending of queue.pending.values()) {
-      for (const waiter of pending.waiters) waiter.resolve(undefined);
+      const result = pending.call.climateRangeEdit ? canceledClimateRangeEdit : undefined;
+      for (const waiter of pending.waiters) waiter.resolve(result);
     }
     queue.pending.clear();
+  }
+
+  private nextValue(queue: DeviceQueue) {
+    return [...queue.pending.entries()]
+      .filter(([, pending]) => !pending.call.climateRangeEdit || !queue.climateRangeInFlight)
+      .sort(([, left], [, right]) => left.sequence - right.sequence)[0];
   }
 
   private scheduleNext(queue: DeviceQueue) {
     if (queue.timer !== null) this.clearTimer(queue.timer);
     queue.timer = null;
-    const next = [...queue.pending.values()].sort(
-      (left, right) => left.sequence - right.sequence,
-    )[0];
+    const next = this.nextValue(queue)?.[1];
     if (!next) return;
     const continuous = next.call.delivery?.mode === "continuous-value";
     const dueAt = continuous
@@ -152,22 +179,30 @@ export class DeviceCommandScheduler {
 
   private async flushNext(queue: DeviceQueue) {
     if (this.disposed) return;
-    const next = [...queue.pending.entries()].sort(
-      ([, left], [, right]) => left.sequence - right.sequence,
-    )[0];
+    const next = this.nextValue(queue);
     if (!next) return;
     const [key, pending] = next;
     queue.pending.delete(key);
     queue.lastDispatchAt = this.now();
+    const rangeEdit = pending.call.climateRangeEdit;
+    if (rangeEdit) queue.climateRangeInFlight = pending;
     this.scheduleNext(queue);
     try {
-      const result = await this.dispatch(pending.call);
+      const call = rangeEdit
+        ? resolveClimateRangeCall(pending.call, this.resolveEntityState?.(pending.entityId))
+        : pending.call;
+      const result = await this.dispatch(call);
       for (const waiter of pending.waiters) waiter.resolve(result);
     } catch (error) {
       for (const waiter of pending.waiters)
         waiter.reject(
           error instanceof Error ? error : new Error("Operation failed.", { cause: error }),
         );
+    } finally {
+      if (queue.climateRangeInFlight === pending) {
+        queue.climateRangeInFlight = null;
+        this.scheduleNext(queue);
+      }
     }
   }
 }

@@ -5,6 +5,7 @@ import {
   climateFanModeCall,
   climateModeCall,
   climatePresetCall,
+  climateRangeContext,
   climateSwingModeCall,
   climateTargetTemperature,
   climateTemperatureCall,
@@ -292,7 +293,7 @@ function ClimateDialFieldsWithEntity({
         )}
         {target?.kind === "range" && (
           <ClimateRangeDial
-            key={entity.entityId}
+            key={`${entity.entityId}:${climateRangeContext(entity, target)}`}
             entity={entity}
             label={binding.label}
             unit={temperatureUnit}

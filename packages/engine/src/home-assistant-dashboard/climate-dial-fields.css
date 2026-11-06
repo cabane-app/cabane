@@ -354,56 +354,117 @@
 .vtherm-dial__thumb[data-disabled="true"] {
   pointer-events: none;
 }
+.vtherm-control:has(.vtherm-main--range) {
+  gap: 8px;
+}
+.vtherm-control .vtherm-main--range {
+  width: min(100%, 224px);
+  min-height: 0;
+  align-self: center;
+  padding-bottom: 6px;
+}
+.vtherm-main--range .vtherm-dial {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  transform: none;
+}
+.vtherm-main--range .vtherm-dial svg {
+  height: auto;
+}
 .vtherm-main--range .vtherm-action {
-  top: 45px;
+  top: 24%;
+}
+.vtherm-control .vtherm-main--range:has([role="alert"]) {
+  min-height: 0;
+  margin-bottom: 45px;
+}
+.vtherm-control .vtherm-main--range .temperature-stepper [role="alert"] {
+  top: calc(100% + 5px);
+  width: min(220px, 100%);
+}
+.vtherm-control .vtherm-main--range :is(.temperature-stepper button, .vtherm-off) {
+  top: auto;
+  bottom: 0;
 }
 .vtherm-temperature--range::after {
   content: none;
 }
 .climate-range__targets {
   position: absolute;
-  top: 65px;
+  top: 34%;
   left: 50%;
   display: flex;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
+  width: min(144px, 64%);
   transform: translateX(-50%);
 }
 .room-module .climate-range__target {
-  --room-button-color: #1e332c;
+  --room-button-color: #52675d;
   --room-button-background: transparent;
   --room-button-border-color: transparent;
-  --room-button-hover-background: #fbfaf3;
-  --room-button-hover-border-color: #9ea9a2;
+  --room-button-hover-color: #1e332c;
+  --room-button-hover-background: transparent;
+  --room-button-hover-border-color: transparent;
   display: grid;
+  flex: 1;
   justify-items: center;
   align-content: center;
-  gap: 2px;
-  width: 56px;
-  padding: 3px 0;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
   pointer-events: auto;
-  border-radius: 8px;
 }
 .room-module .climate-range__target[aria-pressed="true"] {
-  --room-button-background: #fbfaf3;
-  --room-button-border-color: var(--climate-target-accent);
-  --room-button-hover-border-color: var(--climate-target-accent);
+  --room-button-color: #1e332c;
+}
+.room-module .climate-range__target:hover:not(:disabled) {
+  transform: none;
 }
 .climate-range__label {
-  color: #596b62;
   font-size: 0.63rem;
   font-weight: 690;
   line-height: 1.15;
   white-space: nowrap;
 }
 .climate-range__value {
+  position: relative;
   font-family: var(--font-family-numeric);
-  font-size: 1.35rem;
+  font-size: 1.65rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 620;
+  font-weight: 570;
   line-height: 1;
   white-space: nowrap;
 }
+.climate-range__target[aria-pressed="true"] .climate-range__value {
+  font-weight: 720;
+}
+.climate-range__target[aria-pressed="true"] .climate-range__value::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -6px;
+  left: 0;
+  width: 14px;
+  height: 2px;
+  margin: auto;
+  background: var(--climate-target-accent);
+  border-radius: 2px;
+}
 .climate-range__value small {
-  font-size: 0.57rem;
+  font-size: 0.59rem;
   vertical-align: top;
+}
+@media (min-width: 700px) {
+  @container climate-module (min-width: 500px) {
+    .vtherm-control:has(.vtherm-main--range):has(.vtherm-toolbar) {
+      grid-template-columns: minmax(224px, 0.85fr) minmax(0, 1fr);
+    }
+    .vtherm-control:has(.vtherm-main--range) .vtherm-toolbar[data-picker-count="4"] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 }

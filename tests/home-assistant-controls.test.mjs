@@ -28,6 +28,7 @@ await withModules(async (load) => {
     assert.deepEqual(target(), { kind: "range", min: 16, max: 30, step: 0.5, low: 20, high: 24 });
     assert.deepEqual(target({}, "cool"), { kind: "single", temperature: 20.5 });
     assert.deepEqual(target({ supported_features: 1 }), { kind: "single", temperature: 20.5 });
+    assert.deepEqual(target({ target_temp_low: null }), { kind: "single", temperature: 20.5 });
     for (const invalid of [
       { supported_features: 0 },
       { min_temp: undefined },
@@ -37,7 +38,7 @@ await withModules(async (load) => {
       { target_temp_high: 31 },
       { target_temp_step: 0 },
     ]) {
-      assert.equal(target(invalid), null);
+      assert.equal(target({ supported_features: 2, ...invalid }), null);
     }
   });
 

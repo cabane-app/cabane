@@ -8,17 +8,17 @@ import {
 } from "react";
 
 import {
+  canceledClimateRangeEdit,
   climateTemperatureRangeCall,
-  type climateTargetTemperature,
+  type ClimateRangeTarget,
+  type ClimateTemperaturePair,
   type SupportedServiceCall,
 } from "../home-assistant-controls";
 import type { EntityStateSnapshot } from "../types";
-import { useOptimisticCommand } from "./control-primitives";
-import { confirmationKey } from "./entity-field-contract";
 
 const endpoints = { low: "Heating", high: "Cooling" } as const;
 type Endpoint = keyof typeof endpoints;
-type TargetPair = Record<Endpoint, number>;
+type TargetPair = ClimateTemperaturePair;
 
 const dialCenter = 100;
 const dialRadius = 76;
@@ -157,13 +157,11 @@ export function ClimateTemperatureDial({
   );
 }
 
-type RangeTarget = Extract<ReturnType<typeof climateTargetTemperature>, { kind: "range" }>;
-
 function steppedTarget(
   pair: TargetPair,
   endpoint: Endpoint,
   steps: number,
-  { min, max, step }: RangeTarget,
+  { min, max, step }: ClimateRangeTarget,
 ) {
   const value = pair[endpoint];
   const lower = endpoint === "low" ? min : pair.low;
@@ -176,7 +174,6 @@ function steppedTarget(
 
 type DragPreview = {
   basis: TargetPair;
-  confirmedKey: string;
   endpoint: Endpoint;
   temperature: number;
 };
@@ -198,6 +195,70 @@ const pointAtPointer = (event: DialPointerEvent) => {
   return { x, y, angle: Math.atan2(y - dialCenter, x - dialCenter) };
 };
 
+type EndpointEdit = {
+  value: number;
+  baseline: number;
+  revision: string | undefined;
+  pending: boolean;
+};
+const emptyEdits: Record<Endpoint, EndpointEdit | null> = { low: null, high: null };
+
+function useRangeCommand(
+  entity: EntityStateSnapshot,
+  target: ClimateRangeTarget,
+  enabled: boolean,
+  onCallService: (call: SupportedServiceCall) => Promise<unknown>,
+) {
+  const { low, high } = target;
+  const revision = entity.lastUpdated ?? entity.lastConfirmedAt;
+  const [edits, setEdits] = useState(emptyEdits);
+  const [error, setError] = useState(false);
+  const latest = useRef<EndpointEdit | null>(null);
+  const retainEdit = (edit: EndpointEdit | null, baseline: number) =>
+    enabled && edit && (edit.pending || (edit.baseline === baseline && edit.revision === revision))
+      ? edit
+      : null;
+  const lowEdit = retainEdit(edits.low, low);
+  const highEdit = retainEdit(edits.high, high);
+  useLayoutEffect(() => {
+    if (lowEdit !== edits.low || highEdit !== edits.high)
+      setEdits({ low: lowEdit, high: highEdit });
+    if (!enabled) {
+      latest.current = null;
+      setError(false);
+    }
+  }, [edits, enabled, highEdit, lowEdit]);
+
+  const optimisticLow = lowEdit?.value ?? low;
+  const optimisticHigh = highEdit?.value ?? high;
+  const shownLow = optimisticLow <= optimisticHigh ? optimisticLow : low;
+  const shownHigh = optimisticLow <= optimisticHigh ? optimisticHigh : high;
+  const value = useMemo(() => ({ low: shownLow, high: shownHigh }), [shownLow, shownHigh]);
+
+  const run = async (endpoint: Endpoint, temperature: number) => {
+    if (!enabled || temperature === value[endpoint]) return;
+    const edit = { value: temperature, baseline: target[endpoint], revision, pending: true };
+    latest.current = edit;
+    setEdits((current) => ({ ...current, [endpoint]: edit }));
+    setError(false);
+    const settle = (next: EndpointEdit | null) =>
+      setEdits((current) =>
+        current[endpoint] === edit ? { ...current, [endpoint]: next } : current,
+      );
+    try {
+      const pair = { ...value, [endpoint]: temperature };
+      const result = await onCallService(
+        climateTemperatureRangeCall(entity, target, pair, endpoint),
+      );
+      settle(result === canceledClimateRangeEdit ? null : { ...edit, pending: false });
+    } catch {
+      settle(null);
+      if (latest.current === edit) setError(true);
+    }
+  };
+  return { value, run, pending: Boolean(lowEdit?.pending || highEdit?.pending), error };
+}
+
 export function ClimateRangeDial({
   entity,
   label,
@@ -211,46 +272,30 @@ export function ClimateRangeDial({
   label: string;
   unit: string;
   current: number;
-  target: RangeTarget;
+  target: ClimateRangeTarget;
   enabled: boolean;
   onCallService: (call: SupportedServiceCall) => Promise<unknown>;
 }) {
-  const { low, high, min, max, step } = target;
-  const confirmedValue = useMemo(() => ({ low, high }), [low, high]);
-  const confirmedKey = confirmationKey(entity, `${entity.state}:${enabled}:${min}:${max}:${step}`);
-  const command = useOptimisticCommand({
-    confirmedValue,
-    confirmedKey,
-    label: `${label} target temperature range`,
-    onCallService,
-  });
+  const { min, max, step } = target;
+  const command = useRangeCommand(entity, target, enabled, onCallService);
   const [selection, setSelection] = useState<Endpoint | null>(null);
   const selected = selection ?? (entity.state === "cool" ? "high" : "low");
   const drag = useRef<RangeDrag | null>(null);
   const [preview, setPreview] = useState<DragPreview | null>(null);
   useLayoutEffect(() => {
     const gesture = drag.current;
-    if (
-      gesture &&
-      (!enabled || gesture.confirmedKey !== confirmedKey || gesture.basis !== command.value)
-    ) {
+    if (gesture && (!enabled || gesture.basis !== command.value)) {
       drag.current = null;
       setPreview(null);
     }
-  }, [command.value, confirmedKey, enabled]);
-  const previewIsCurrent = (candidate: DragPreview) =>
-    enabled && candidate.basis === command.value && candidate.confirmedKey === confirmedKey;
+  }, [command.value, enabled]);
+  const previewIsCurrent = (candidate: DragPreview) => enabled && candidate.basis === command.value;
   const activePreview = preview && previewIsCurrent(preview) ? preview : null;
   const displayedPair = activePreview
     ? { ...command.value, [activePreview.endpoint]: activePreview.temperature }
     : command.value;
   const selectedLabel = `${label} ${endpoints[selected].toLowerCase()} target temperature`;
 
-  const commit = (endpoint: Endpoint, value: number) => {
-    if (!enabled || value === command.value[endpoint]) return;
-    const pair = { ...command.value, [endpoint]: value };
-    void command.run(climateTemperatureRangeCall(entity, pair), pair);
-  };
   const readDrag = (event: DialPointerEvent) => {
     const gesture = drag.current;
     if (!gesture || gesture.pointerId !== event.pointerId || !previewIsCurrent(gesture))
@@ -276,7 +321,6 @@ export function ClimateRangeDial({
     const steps = Math.round((desired - gesture.basis[gesture.endpoint]) / step);
     return {
       basis: gesture.basis,
-      confirmedKey: gesture.confirmedKey,
       endpoint: gesture.endpoint,
       temperature: steppedTarget(gesture.basis, gesture.endpoint, steps, target),
     };
@@ -310,7 +354,6 @@ export function ClimateRangeDial({
       setSelection(endpoint);
       const initial = {
         basis: command.value,
-        confirmedKey,
         endpoint,
         temperature: command.value[endpoint],
       };
@@ -332,7 +375,7 @@ export function ClimateRangeDial({
     onPointerUp(event) {
       const next = readDrag(event);
       cancelDrag(event);
-      if (next) commit(next.endpoint, next.temperature);
+      if (next) void command.run(next.endpoint, next.temperature);
     },
     onPointerCancel: cancelDrag,
     onLostPointerCapture: cancelDrag,
@@ -381,7 +424,7 @@ export function ClimateRangeDial({
                 type="button"
                 aria-label={`${direction < 0 ? "Decrease" : "Increase"} ${selectedLabel}`}
                 disabled={!enabled || Boolean(activePreview) || next === command.value[selected]}
-                onClick={() => commit(selected, next)}
+                onClick={() => void command.run(selected, next)}
               >
                 {direction < 0 ? "−" : "+"}
               </button>
@@ -389,7 +432,7 @@ export function ClimateRangeDial({
           })}
           {command.error && (
             <p role="alert" aria-live="assertive">
-              {command.error}
+              Couldn’t update {label} target temperature range. Try again.
             </p>
           )}
         </div>

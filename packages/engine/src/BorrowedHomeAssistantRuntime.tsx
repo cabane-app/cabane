@@ -99,6 +99,7 @@ export function BorrowedHomeAssistantRuntime({
     setRefreshError(null);
     if (!origin || configurationError || detached) return;
     let registryDeviceIds = new Map<string, string | null>();
+    let entityStates = EMPTY_STATES;
     let request = 0;
     let transportReady = connection.connected !== false;
     const subscriptions = new Set<() => void>();
@@ -113,6 +114,7 @@ export function BorrowedHomeAssistantRuntime({
             ? client.callService(connection, call.domain, call.service, call.data, call.target)
             : Promise.reject(inactive()),
         resolveDeviceKey: (entityId) => registryDeviceIds.get(entityId) ?? `entity:${entityId}`,
+        resolveEntityState: (entityId) => entityStates[entityId],
       }),
       dispose: () => {
         attachment.active = false;
@@ -187,12 +189,14 @@ export function BorrowedHomeAssistantRuntime({
       transportReady = false;
       attachment.connected = false;
       attachment.scheduler.cancelPendingValues();
+      const snapshot = markEntityStatesStale(entityStates);
+      entityStates = snapshot;
       setRefreshing(false);
       setState((previous) => ({
         ...previous,
         status: "reconnecting",
         canMutate: false,
-        entityStates: markEntityStatesStale(previous.entityStates),
+        entityStates: snapshot,
       }));
     };
     const reconnectError = (_connection: unknown, error?: unknown) => {
@@ -215,8 +219,9 @@ export function BorrowedHomeAssistantRuntime({
     subscriptions.add(
       client.subscribeEntities(connection, (states) => {
         if (!attachment.active) return;
-        const entityStates = normalizeEntityStates(states, !transportReady);
-        setState((previous) => ({ ...previous, entityStates }));
+        const snapshot = normalizeEntityStates(states, !transportReady);
+        entityStates = snapshot;
+        setState((previous) => ({ ...previous, entityStates: snapshot }));
       }),
     );
     const registrySubscriptions = Promise.all(

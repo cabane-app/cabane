@@ -1331,7 +1331,7 @@ await withModules(async (load) => {
     });
   });
 
-  test("one climate range dial adjusts the selected target and sends the latest pair", async () => {
+  test("one climate range dial preserves queued edits across Home Assistant updates", async () => {
     await withDom(async ({ dom, root }) => {
       const runtime = connectedRuntimeFixture();
       const entity = runtime.entityStates["climate.demo"];
@@ -1342,28 +1342,30 @@ await withModules(async (load) => {
         min_temp: 16,
         target_temp_step: 0.5,
         target_temp_low: 20,
-        target_temp_high: 21,
+        target_temp_high: 22,
         hvac_modes: ["off", "heat", "heat_cool"],
       });
-      const room = resolveHomeAssistantBindings(
-        connectedManifestFixture(neutralDemoManifest),
-        connectedProfileFixture(),
-        runtime,
-      ).rooms["demo-room"];
-      const module = buildRoomModules(room).find(({ id }) => id === "slot:demo-climate-slot");
+      const manifest = connectedManifestFixture(neutralDemoManifest);
+      const profile = connectedProfileFixture();
       const calls = [];
-      await act(async () =>
-        root.render(
-          React.createElement(RoomModule, {
-            module,
-            canMutate: true,
-            focused: false,
-            onCallService: async (call) => {
-              calls.push(call);
-            },
-          }),
-        ),
-      );
+      const finish = [];
+      const render = () =>
+        act(async () => {
+          const room = resolveHomeAssistantBindings(manifest, profile, runtime).rooms["demo-room"];
+          const module = buildRoomModules(room).find(({ id }) => id === "slot:demo-climate-slot");
+          root.render(
+            React.createElement(RoomModule, {
+              module,
+              canMutate: true,
+              focused: false,
+              onCallService: async (call) => {
+                calls.push(call);
+                await new Promise((resolve) => finish.push(resolve));
+              },
+            }),
+          );
+        });
+      await render();
       const find = (tag, label) =>
         dom.window.document.querySelector(`${tag}[aria-label='${label}']`);
       const low = "Room climate heating target temperature";
@@ -1380,13 +1382,24 @@ await withModules(async (load) => {
       );
       assert.equal(
         cooling().getAttribute("aria-label"),
-        "Select Room climate cooling target, 21 °C",
+        "Select Room climate cooling target, 22 °C",
       );
       assert.equal(heating().getAttribute("aria-pressed"), "true");
       await act(async () => find("button", `Increase ${low}`).click());
+      entity.attributes.current_temperature = 19;
+      entity.lastUpdated = "2026-11-06T18:30:00.000Z";
+      await render();
       await act(async () => cooling().click());
       assert.equal(cooling().getAttribute("aria-pressed"), "true");
       assert.equal(calls.length, 1);
+      await act(async () => find("button", `Decrease ${high}`).click());
+      entity.attributes.target_temp_low = 20.5;
+      entity.lastUpdated = "2026-11-06T18:30:01.000Z";
+      await render();
+      await act(async () => finish[0]());
+      await act(async () => heating().click());
+      await act(async () => find("button", `Increase ${low}`).click());
+      await act(async () => cooling().click());
       await act(async () => find("button", `Decrease ${high}`).click());
       assert.equal(find("button", `Decrease ${high}`).disabled, true);
       await act(async () => heating().click());
@@ -1394,10 +1407,13 @@ await withModules(async (load) => {
       assert.deepEqual(
         calls.map(({ data }) => data),
         [
-          { target_temp_low: 20.5, target_temp_high: 21 },
-          { target_temp_low: 20.5, target_temp_high: 20.5 },
+          { target_temp_low: 20.5, target_temp_high: 22 },
+          { target_temp_low: 20.5, target_temp_high: 21.5 },
+          { target_temp_low: 21, target_temp_high: 21.5 },
+          { target_temp_low: 21, target_temp_high: 21 },
         ],
       );
+      await act(async () => finish.slice(1).forEach((resolve) => resolve()));
       assert.ok(
         calls.every(
           ({ delivery }) =>
