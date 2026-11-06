@@ -678,7 +678,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("explicit focus and view changes still frame the latest floor", async () => {
+  test("explicit focus frames the latest floor and view changes preserve that framing", async () => {
     const props = cameraProps();
     const renderer = await create(createElement(PreviewCamera, props), options);
     try {
@@ -695,6 +695,7 @@ await withModules(async (load) => {
       assert.notEqual(focused, initialControls);
       assert.deepEqual(focused.target.toArray(), [8, 0.2, 2]);
       assert.equal(focused.object.zoom, (1000 / (10 * 1.48)) * 2.25);
+      await renderer.advanceFrames(1, 1 / 60);
       const focusedPose = pose(focused);
       await renderer.update(
         createElement(PreviewCamera, { ...props, floor, resetKey: 1, focusPoint: [8, 2] }),
@@ -705,9 +706,36 @@ await withModules(async (load) => {
       );
       const overview = controlsFor(renderer);
       assert.notEqual(overview, focused);
-      assert.deepEqual(overview.target.toArray(), [5, 0.2, 1.5]);
-      assert.equal(overview.object.zoom, 1000 / (10 * 1.48));
+      assert.deepEqual(overview.target.toArray(), focusedPose.target);
+      assert.equal(overview.object.zoom, focusedPose.zoom);
       assert.equal(overview.enableRotate, true);
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
+  test("view switches preserve live pan and zoom through repeated 2D and 3D transitions", async () => {
+    const props = cameraProps();
+    const renderer = await create(createElement(PreviewCamera, props), options);
+    try {
+      for (const view of ["3d", "top", "3d", "top"]) {
+        const controls = controlsFor(renderer);
+        await act(async () => {
+          controls.target.add(new Vector3(2, 0, -3));
+          controls.object.position.add(new Vector3(2, 0, -3));
+          controls.object.zoom = 137;
+          controls.object.updateProjectionMatrix();
+          controls.update();
+          controls.dispatchEvent({ type: "change" });
+        });
+        const before = pose(controls);
+        await renderer.update(createElement(PreviewCamera, { ...props, view }));
+        const next = controlsFor(renderer);
+        assert.deepEqual(next.target.toArray(), before.target);
+        assert.equal(next.object.zoom, before.zoom);
+        assert.equal(next.enableRotate, view === "3d");
+        assert.notDeepEqual(next.object.position.toArray(), before.position);
+      }
     } finally {
       await renderer.unmount();
     }

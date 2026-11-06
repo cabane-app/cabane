@@ -32,6 +32,8 @@ export function PreviewCamera(props: PreviewCameraProps) {
   const { view, resetKey, savedCamera, floor, northOrientation = false } = props;
   const compassCamera = useRef<EditorCameraState | null>(null);
   const previousNorth = useRef(northOrientation);
+  const previousView = useRef(view);
+  const previousReset = useRef(resetKey);
   const previousFloorId = useRef(floor.id);
   const initialCamera = useRef(savedCamera.current);
   const initialReset = useRef(resetKey);
@@ -45,10 +47,16 @@ export function PreviewCamera(props: PreviewCameraProps) {
     initialCamera.current = savedCamera.current;
     initialReset.current = resetKey;
   }
+  if (previousView.current !== view) {
+    previousView.current = view;
+    if (!northOrientation && previousReset.current === resetKey) {
+      initialCamera.current = savedCamera.current;
+      initialReset.current = resetKey;
+    }
+  }
+  previousReset.current = resetKey;
   const restored =
-    !northOrientation && initialReset.current === resetKey && initialCamera.current?.view === view
-      ? initialCamera.current
-      : null;
+    !northOrientation && initialReset.current === resetKey ? initialCamera.current : null;
   return (
     <PreviewCameraRig
       key={`${view}-${resetKey}-${northOrientation}`}
@@ -158,11 +166,20 @@ function PreviewCameraRig({
     controls.current.update();
     invalidate();
   }, [northOrientation, width, height, floor, canvas, invalidate]);
-  // Fit once per explicit view/focus request. Topology edits (including closing
+  // Fit once per explicit reset/focus request. Topology edits (including closing
   // a room, deleting walls, and undo/redo) must never overwrite the user's pose.
   // Resizing still updates the orthographic frustum, without resetting pan/zoom.
   const [framing] = useState(() => {
-    if (restored) return restored;
+    if (restored) {
+      if (restored.view === view) return restored;
+      // Both views are orthographic: preserve world scale and the point under
+      // the viewport center, rotating only the camera offset around that point.
+      const target = new Vector3(...restored.target);
+      const distance = new Vector3(...restored.position).distanceTo(target);
+      const offset = view === "top" ? new Vector3(0, 1, 0.00001) : new Vector3(0.42, 0.86, 0.48);
+      const position = offset.normalize().multiplyScalar(distance).add(target).toArray();
+      return { ...restored, view, position };
+    }
     const focusRoom = !northOrientation && floor.rooms.find((room) => room.id === focusRoomId);
     const bounds = focusRoom
       ? worldBoundsForPolygon(focusRoom.polygon, floor.coordinates)
