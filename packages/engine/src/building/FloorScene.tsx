@@ -278,21 +278,38 @@ export const FloorScene = memo(function FloorScene({
             )[item.modelId];
             const states =
               roomStates[roomIdForItem(item, floor, definition) ?? outsideRoomId] ?? EMPTY_STATES;
+            // A wall-mounted item tilts with its wall when the wall leans.
+            const wall =
+              item.placement.kind === "wall"
+                ? floor.walls.find(
+                    (candidate) =>
+                      item.placement.kind === "wall" && candidate.id === item.placement.wallId,
+                  )
+                : undefined;
+            const rendered = (
+              <SceneItemRenderer
+                item={item}
+                floor={floor}
+                furnishingModels={manifest.extensions.furnishingModels}
+                deviceModels={declarativeDeviceModels}
+                resolvedDevice={resolvedDeviceById[item.id]}
+                entityStatesBySlotId={states}
+                reducedMotion={reducedMotion}
+                walkMode={walkMode}
+                onInteract={onInteract}
+                liveMediaByEntityId={liveMediaByEntityId}
+                outlineColor={manifest.home.palette.accent}
+              />
+            );
             return (
               <Fragment key={item.id}>
-                <SceneItemRenderer
-                  item={item}
-                  floor={floor}
-                  furnishingModels={manifest.extensions.furnishingModels}
-                  deviceModels={declarativeDeviceModels}
-                  resolvedDevice={resolvedDeviceById[item.id]}
-                  entityStatesBySlotId={states}
-                  reducedMotion={reducedMotion}
-                  walkMode={walkMode}
-                  onInteract={onInteract}
-                  liveMediaByEntityId={liveMediaByEntityId}
-                  outlineColor={manifest.home.palette.accent}
-                />
+                {wall?.leanMeters ? (
+                  <WallLeanGroup wall={wall} floor={floor}>
+                    {rendered}
+                  </WallLeanGroup>
+                ) : (
+                  rendered
+                )}
                 {!walkMode && interactionMode !== "editor" && (
                   <ItemEntityReadings item={item} floor={floor} states={states} />
                 )}
