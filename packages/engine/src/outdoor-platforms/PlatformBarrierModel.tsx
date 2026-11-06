@@ -1,5 +1,6 @@
 import { omitUndefinedProperties } from "../defined-properties";
 import type { OutdoorPlatformEdgeConfiguration, PlanPoint } from "../types";
+import { PlatformGlassRailing } from "./PlatformGlassRailing";
 import { PlatformLowWall } from "./PlatformLowWall";
 import { PlatformRailing } from "./PlatformRailing";
 
@@ -26,6 +27,8 @@ export function PlatformBarrierModel({
     >
       {configuration.kind === "low-wall" ? (
         <PlatformLowWall name={name} length={length} height={height} />
+      ) : configuration.kind === "glass-railing" ? (
+        <PlatformGlassRailing name={name} length={length} height={height} />
       ) : (
         <PlatformRailing name={name} length={length} height={height} />
       )}

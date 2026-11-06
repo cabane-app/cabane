@@ -1,5 +1,6 @@
 import {
   FLOOR_PATTERN_PRESET_IDS,
+  OUTDOOR_PLATFORM_EDGE_PRESETS,
   type DoorConfiguration,
   type EditorWallAttachment,
   type FloorEditorFloorSettings,
@@ -91,7 +92,11 @@ export function finish(value: unknown): FloorFinishSpec {
 
 export function edge(value: unknown): OutdoorPlatformEdgeConfiguration {
   const input = object(value, "edge", ["kind", "heightMeters"]);
-  const kind = oneOf(input.kind, "edge.kind", ["open", "railing", "low-wall"]);
+  const kind = oneOf(
+    input.kind,
+    "edge.kind",
+    OUTDOOR_PLATFORM_EDGE_PRESETS.map((preset) => preset.id),
+  );
   if (kind === "open") {
     if (input.heightMeters !== undefined) throw new Error("Open edges do not have a height.");
     return { kind };
