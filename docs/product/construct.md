@@ -150,6 +150,10 @@ labels, selection or mapping actions. Their boundaries block
 walking even where an opening exists. Toggling back restores the saved name,
 finishes, ceiling and room profile through ordinary undo/redo and save flows. Removing the final room clears its floor
 preview instead of keeping the last closed shape. Deletion is one undoable edit.
+For sloped ceilings imported with a layout, Properties shows their type and
+Construct preserves their saved plane coordinates for rooms that keep their
+identity. Deleting the last associated room removes its ceiling. The plane
+outline stays fixed when walls move. Edit slope geometry in the project file.
 Tool shortcuts include V/W/D/N/A/F/P/M; Escape cancels the active drawing
 or selection state. Measure displays lengths and supports copying a result.
 

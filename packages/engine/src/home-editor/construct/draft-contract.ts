@@ -9,6 +9,7 @@ import type {
   PoolSpec,
   OutdoorPlatformSpec,
   HedgeSpec,
+  SlopedCeilingSpec,
   WallJunctionSpec,
 } from "../../types";
 
@@ -78,6 +79,7 @@ export interface FloorEditorDraft {
   walls: EditorWall[];
   openings: EditorOpening[];
   rooms: EditorRoomIdentity[];
+  slopedCeilings?: readonly SlopedCeilingSpec[];
   junctions: WallJunctionSpec[];
   hedges?: HedgeSpec[];
   pools?: PoolSpec[];

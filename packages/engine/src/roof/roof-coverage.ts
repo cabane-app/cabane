@@ -8,7 +8,12 @@ import {
 import { physicalFloor } from "../architecture-geometry/physical-floor";
 import { wallSolidFootprintPolygons } from "../architecture-geometry/wall-solid-footprints";
 import { deriveFloorLevels } from "../building/floor-levels";
-import { planPointToWorld, slopedCeilingHeightAtPoint, worldPointToPlan } from "../geometry";
+import {
+  planPointToWorld,
+  polygonSignedArea,
+  slopedCeilingHeightAtPoint,
+  worldPointToPlan,
+} from "../geometry";
 import type { FloorSpec, PlanPoint } from "../types";
 import { ROOF_MAX_RISE_METERS, ROOF_THICKNESS_METERS } from "./roof-settings";
 
@@ -121,9 +126,12 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
     for (const ceiling of ceilings) {
       if (ceiling.kind === "sloped") {
         for (const plane of ceiling.planes) {
+          // Like clipped roof rings, these edges keep solid material on the left.
+          const boundary =
+            polygonSignedArea(plane.boundary) < 0 ? [...plane.boundary].reverse() : plane.boundary;
           slopes.push({
             floorId: floor.id,
-            polygon: worldPolygon(plane.boundary, floor),
+            polygon: worldPolygon(boundary, floor),
             baseHeight: elevation + Math.min(plane.lowHeightMeters, plane.highHeightMeters) + 0.16,
             maxRise: 0,
             heightAt: ([x, z]) =>

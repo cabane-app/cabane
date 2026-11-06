@@ -1,15 +1,19 @@
 import { indoorRoomsForFloor } from "../outdoor-platforms/platform-rooms";
 import { cutSurfaceShapes, useStairSurfaceApertures } from "../stairs/surface-apertures";
-import { BufferGeometry, DoubleSide, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
+import { DoubleSide, ShapeGeometry } from "three";
+import type { MultiPolygon } from "polygon-clipping";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
-import { planPointToWorld, slopedCeilingHeightAtPoint } from "../geometry";
+import { intersectClippingGeometry } from "../architecture-geometry/architecture-clipping";
+import { planPointToWorld, slopedCeilingHeightAtPoint, worldPointToPlan } from "../geometry";
 
 import { ToonMaterial } from "../rendering";
 import { CEILING_SURFACE_COLOR } from "./surface-colors";
 
-import type { FloorSpec, Polygon, SlopedCeilingSpec } from "../types";
+import type { FloorSpec, PlanPoint, Polygon, SlopedCeilingSpec } from "../types";
+
+type CeilingPlane = SlopedCeilingSpec["planes"][number];
 
 function FlatCeilingSlab({
   polygon,
@@ -33,7 +37,32 @@ function FlatCeilingSlab({
   );
 }
 
-export function CeilingSurfaces({ floor }: { floor: FloorSpec }) {
+function crossesCutaway(
+  plane: CeilingPlane,
+  coordinates: FloorSpec["coordinates"],
+  height: number,
+  footprint: MultiPolygon,
+) {
+  const risesAbove = (point: PlanPoint) => slopedCeilingHeightAtPoint(point, plane) > height + 1e-6;
+  if (!plane.boundary.some(risesAbove)) return false;
+  const ring = plane.boundary.map((point): [number, number] => [
+    ...planPointToWorld(point, coordinates),
+  ]);
+  const overlap = intersectClippingGeometry([ring], footprint);
+  return overlap.some(([ring]) =>
+    ring.some(([x, z]) => risesAbove(worldPointToPlan({ x, z }, coordinates))),
+  );
+}
+
+export function CeilingSurfaces({
+  floor,
+  cutawayHeightMeters,
+  cutawayFootprint,
+}: {
+  floor: FloorSpec;
+  cutawayHeightMeters?: number | undefined;
+  cutawayFootprint?: MultiPolygon | undefined;
+}) {
   const rooms = indoorRoomsForFloor(floor);
   if (!rooms.length && floor.outdoorPlatforms?.length) return null;
   const ceilings = floor.ceilings ?? [
@@ -46,12 +75,25 @@ export function CeilingSurfaces({ floor }: { floor: FloorSpec }) {
   ];
   const allRoomIds = new Set(rooms.map((room) => room.id));
   return (
-    <group>
+    <group name="floor-ceilings">
       {ceilings.flatMap((ceiling) => {
         if (ceiling.kind === "sloped") {
-          return ceiling.planes.map((plane) => (
-            <SlopedCeilingSurface key={`${ceiling.id}-${plane.id}`} floor={floor} plane={plane} />
-          ));
+          return ceiling.planes.flatMap((plane) => {
+            // A lower ceiling can block the view into the selected upper floor.
+            if (
+              cutawayHeightMeters !== undefined &&
+              cutawayFootprint &&
+              crossesCutaway(plane, floor.coordinates, cutawayHeightMeters, cutawayFootprint)
+            )
+              return [];
+            return [
+              <SlopedCeilingSurface
+                key={`${ceiling.id}-${plane.id}`}
+                floor={floor}
+                plane={plane}
+              />,
+            ];
+          });
         }
         const coversEntireFloor =
           ceiling.roomIds.length === allRoomIds.size &&
@@ -83,29 +125,23 @@ export function CeilingSurfaces({ floor }: { floor: FloorSpec }) {
   );
 }
 
-function SlopedCeilingSurface({
-  floor,
-  plane,
-}: {
-  floor: FloorSpec;
-  plane: SlopedCeilingSpec["planes"][number];
-}) {
+function SlopedCeilingSurface({ floor, plane }: { floor: FloorSpec; plane: CeilingPlane }) {
+  const apertures = useStairSurfaceApertures("ceilingStairs");
   const geometry = useMemo(() => {
-    const contour = plane.boundary.map(([x, y]) => new Vector2(x, y));
-    const triangles = ShapeUtils.triangulateShape(contour, []);
-    const positions = triangles.flatMap((triangle) =>
-      triangle.flatMap((index) => {
-        const vertex = contour[index];
-        const point = [vertex.x, vertex.y] as const;
-        const [x, z] = planPointToWorld(point, floor.coordinates);
-        return [x, slopedCeilingHeightAtPoint(point, plane), z];
-      }),
+    const result = new ShapeGeometry(
+      cutSurfaceShapes(plane.boundary, floor.coordinates, apertures),
     );
-    const result = new BufferGeometry();
-    result.setAttribute("position", new Float32BufferAttribute(positions, 3));
+    const positions = result.getAttribute("position");
+    for (let index = 0; index < positions.count; index += 1) {
+      const x = positions.getX(index);
+      const z = -positions.getY(index);
+      const point = worldPointToPlan({ x, z }, floor.coordinates);
+      positions.setXYZ(index, x, slopedCeilingHeightAtPoint(point, plane), z);
+    }
     result.computeVertexNormals();
     return result;
-  }, [floor.coordinates, plane]);
+  }, [apertures, floor.coordinates, plane]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (
     <mesh geometry={geometry} receiveShadow={false}>

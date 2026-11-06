@@ -43,8 +43,9 @@ export const normalizeWallRuns = (
   walls: readonly EditorWall[],
   subsegments: readonly Subsegment[],
   edgeFace: ReadonlyMap<string, number>,
+  occupiedIds: readonly string[] = [],
 ) => {
-  const reservedIds = new Set(walls.map((wall) => wall.id));
+  const reservedIds = new Set([...occupiedIds, ...walls.map((wall) => wall.id)]);
   const classifications: Record<string, "interior" | "exterior"> = {};
   const runs: NormalizedWallRun[] = [];
   walls.forEach((sourceWall) => {

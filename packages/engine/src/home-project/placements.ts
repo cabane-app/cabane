@@ -1,10 +1,35 @@
-import { planPointToWorld } from "../geometry";
-import type { FloorSpec } from "../types";
+import { planPointToWorld, pointInsidePolygon, slopedCeilingHeightAtPoint } from "../geometry";
+import type { FloorSpec, PlanPoint } from "../types";
+import { pointOnPolygonBoundary } from "../validation/geometry";
 import type { ItemPlacement } from "./types";
 
 export interface ResolvedItemTransform {
   position: readonly [number, number, number];
   rotationYRadians: number;
+}
+
+/** Find the first ceiling surface above this room position. */
+export function ceilingSupportHeight(
+  floor: Pick<FloorSpec, "ceilings" | "defaultCeilingHeightMeters">,
+  roomId: string,
+  at: PlanPoint,
+): number | undefined {
+  const ceilings = floor.ceilings ?? [];
+  const flat = ceilings.find(
+    (ceiling) => ceiling.kind === "flat" && ceiling.roomIds.includes(roomId),
+  );
+  let height = flat?.kind === "flat" ? flat.heightMeters : undefined;
+  let sloped = false;
+  for (const ceiling of ceilings) {
+    if (ceiling.kind !== "sloped" || !ceiling.roomIds.includes(roomId)) continue;
+    sloped = true;
+    for (const plane of ceiling.planes) {
+      if (pointInsidePolygon(at, plane.boundary) || pointOnPolygonBoundary(at, plane.boundary)) {
+        height = Math.min(height ?? Infinity, slopedCeilingHeightAtPoint(at, plane));
+      }
+    }
+  }
+  return height ?? (sloped ? undefined : floor.defaultCeilingHeightMeters);
 }
 
 export const resolveItemTransform = (
@@ -20,11 +45,9 @@ export const resolveItemTransform = (
   }
 
   if (placement.kind === "ceiling") {
-    const ceiling = floor.ceilings?.find(
-      (candidate) => candidate.kind === "flat" && candidate.roomIds.includes(placement.roomId),
-    );
     const height =
-      ceiling?.kind === "flat" ? ceiling.heightMeters : floor.defaultCeilingHeightMeters;
+      ceilingSupportHeight(floor, placement.roomId, placement.at) ??
+      floor.defaultCeilingHeightMeters;
     const [x, z] = planPointToWorld(placement.at, floor.coordinates);
     return {
       position: [x, height - placement.dropMeters, z],

@@ -12,6 +12,7 @@ export function deleteWallSpans(
       ...draft.walls.flatMap((wall) => wall.niches ?? []),
       ...draft.openings,
       ...draft.rooms,
+      ...(draft.slopedCeilings ?? []),
       ...draft.junctions,
       ...(draft.hedges ?? []),
       ...(draft.pools ?? []),

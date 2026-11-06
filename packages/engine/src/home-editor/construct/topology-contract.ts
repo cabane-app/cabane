@@ -16,6 +16,7 @@ import type {
   PoolSpec,
   OutdoorPlatformSpec,
   HedgeSpec,
+  SlopedCeilingSpec,
   WallJunctionSpec,
   WallSpec,
 } from "../../types";
@@ -65,6 +66,7 @@ export interface FloorTopologyInput {
   walls: readonly EditorWall[];
   openings: readonly EditorOpening[];
   rooms: readonly EditorRoomIdentity[];
+  slopedCeilings?: readonly SlopedCeilingSpec[];
   reservedRoomNames?: readonly string[];
   junctions?: readonly WallJunctionSpec[];
   hedges?: readonly HedgeSpec[];

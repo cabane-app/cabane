@@ -5,9 +5,10 @@ import type {
   PlanPoint,
   Polygon,
   RoomSpec,
-  SlopedCeilingSpec,
   WallSpec,
 } from "./types";
+
+export { slopedCeilingHeightAtPoint } from "./architecture-geometry/sloped-ceiling-plane";
 
 export interface WorldPoint {
   x: number;
@@ -158,31 +159,6 @@ export const worldBoundsForPolygon = (
 
 export const findContainingRoom = (point: PlanPoint, rooms: readonly RoomSpec[]) =>
   rooms.find((room) => pointInsidePolygon(point, room.polygon)) ?? null;
-
-type SlopedCeilingPlane = SlopedCeilingSpec["planes"][number];
-
-export const slopedCeilingHeightAtPoint = (point: PlanPoint, plane: SlopedCeilingPlane) => {
-  const midpoint = (edge: readonly [PlanPoint, PlanPoint]): PlanPoint => [
-    (edge[0][0] + edge[1][0]) / 2,
-    (edge[0][1] + edge[1][1]) / 2,
-  ];
-  const low = midpoint(plane.lowEdge);
-  const high = midpoint(plane.highEdge);
-  const riseX = high[0] - low[0];
-  const riseY = high[1] - low[1];
-  const riseLengthSquared = riseX * riseX + riseY * riseY;
-  const progress =
-    riseLengthSquared < 1e-9
-      ? 0
-      : Math.max(
-          0,
-          Math.min(
-            1,
-            ((point[0] - low[0]) * riseX + (point[1] - low[1]) * riseY) / riseLengthSquared,
-          ),
-        );
-  return plane.lowHeightMeters + (plane.highHeightMeters - plane.lowHeightMeters) * progress;
-};
 
 export interface WallRun {
   id: string;

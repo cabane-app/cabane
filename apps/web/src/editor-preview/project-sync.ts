@@ -44,12 +44,8 @@ const layoutFloors = new WeakMap<FloorSpec, DraftLayoutFloorSpec>();
 export const layoutFloorFromEditorFloor = (floor: FloorSpec): DraftLayoutFloorSpec => {
   const cached = layoutFloors.get(floor);
   if (cached) return cached;
-  const { ceilings: _ceilings, ...architecture } = floor;
   const layout: DraftLayoutFloorSpec = {
-    ...architecture,
-    ...(floor.ceilings
-      ? { ceilings: floor.ceilings.filter((ceiling) => ceiling.kind === "flat") }
-      : {}),
+    ...floor,
     rooms: indoorRoomsForFloor(floor).map((room) => {
       const {
         furnishings: _furnishings,

@@ -246,6 +246,7 @@
       "home-editor-project-seed.test.mjs",
       "home-project-repository.test.mjs",
       "home-project.test.mjs",
+      "sloped-ceiling-layout.test.mjs",
       "manifest.test.mjs",
       "missing-model-recovery.test.mjs",
       "multiple-floor-storage.test.mjs",

@@ -5,7 +5,14 @@ import { isOutdoorPlatformOutline } from "../../outdoor-platforms/platform-geome
  * Cabane and keeps the data model independent from either application.
  */
 
-import type { FloorSpec, ManifestIssue, OpeningSpec, Polygon, WallSpec } from "../../types";
+import type {
+  FlatCeilingSpec,
+  FloorSpec,
+  ManifestIssue,
+  OpeningSpec,
+  Polygon,
+  WallSpec,
+} from "../../types";
 import { FLOOR_EDITOR_EPSILON, FloorTopologyInput, FloorTopologyResult } from "./topology-contract";
 import { footprintForFaces } from "./topology-footprint";
 import { buildGraph, connected, traverseFaces } from "./topology-graph";
@@ -95,18 +102,29 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
       ),
     );
   }
+  const slopedCeilingIds = (input.slopedCeilings ?? []).map((ceiling) => ceiling.id);
   const { runs: normalizedWallRuns, classifications } = normalizeWallRuns(
     input.walls,
     subsegments,
     edgeFace,
+    slopedCeilingIds,
   );
   const normalizedEditorWalls = normalizedWallRuns.map((run) => run.wall);
   const wallRuns = normalizedWallRuns.map(({ wall: _wall, ...run }) => run);
-  const junctions = deriveJunctions(normalizedEditorWalls, nodes, input.junctions ?? []);
+  const junctions = deriveJunctions(
+    normalizedEditorWalls,
+    nodes,
+    input.junctions ?? [],
+    slopedCeilingIds,
+  );
   const footprintResult = footprintForFaces(faces, issues);
 
   const assigned = new Set<string>();
-  const reservedRoomIds = new Set(input.rooms.map((room) => room.id));
+  const reservedRoomIds = new Set([
+    ...input.rooms.map((room) => room.id),
+    ...slopedCeilingIds,
+    ...(input.slopedCeilings ?? []).flatMap((ceiling) => ceiling.roomIds),
+  ]);
   const reservedNames = new Set(
     [...input.rooms.map((room) => room.name), ...(input.reservedRoomNames ?? [])].map((name) =>
       name.trim().toLowerCase(),
@@ -278,33 +296,45 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
       : [{ ...shared, kind: "passage", variant: "rectangular" }];
   });
   const roomIdentityById = new Map(input.rooms.map((identity) => [identity.id, identity]));
+  const survivingRoomIds = new Set(rooms.map((room) => room.id));
+  const slopedCeilings = (input.slopedCeilings ?? []).flatMap((ceiling) => {
+    const roomIds = ceiling.roomIds.filter((id) => survivingRoomIds.has(id));
+    if (!roomIds.length) return [];
+    return [roomIds.length === ceiling.roomIds.length ? ceiling : { ...ceiling, roomIds }];
+  });
+  const slopedRoomIds = new Set(slopedCeilings.flatMap((ceiling) => ceiling.roomIds));
+  const occupiedSlopeIds = new Set(slopedCeilingIds);
   // An accepted ceiling may span several rooms. Keep it one shared surface
   // rather than publishing duplicate IDs after the first unrelated edit.
-  const ceilings: Array<{ id: string; kind: "flat"; roomIds: string[]; heightMeters: number }> = [];
-  const ceilingGroups = new Map<string, Map<number, (typeof ceilings)[number]>>();
-  const reservedCeilingIds = new Set(
-    rooms.map((room) => roomIdentityById.get(room.id)?.ceilingId ?? `${room.id}-ceiling`),
-  );
+  const flatCeilings: Array<FlatCeilingSpec & { roomIds: string[] }> = [];
+  const ceilingGroups = new Map<string, Map<number, (typeof flatCeilings)[number]>>();
+  const reservedCeilingIds = new Set([
+    ...slopedCeilingIds,
+    ...rooms.map((room) => roomIdentityById.get(room.id)?.ceilingId ?? `${room.id}-ceiling`),
+  ]);
   for (const room of rooms) {
     const identity = roomIdentityById.get(room.id);
+    if (slopedRoomIds.has(room.id) && !identity?.ceilingId) continue;
     const preferredId = identity?.ceilingId ?? `${room.id}-ceiling`;
     const heightMeters = identity?.ceilingHeightMeters ?? ceilingHeight;
-    let groups = ceilingGroups.get(preferredId);
-    const existing = groups?.get(heightMeters);
+    const groups =
+      ceilingGroups.get(preferredId) ?? new Map<number, (typeof flatCeilings)[number]>();
+    const existing = groups.get(heightMeters);
     if (existing) {
       existing.roomIds.push(room.id);
       continue;
     }
     let id = preferredId;
-    if (groups) {
+    if (groups.size || occupiedSlopeIds.has(id)) {
       id = `${preferredId}-${room.id}`;
       let suffix = 2;
       while (reservedCeilingIds.has(id)) id = `${preferredId}-${room.id}-${suffix++}`;
-    } else ceilingGroups.set(preferredId, (groups = new Map<number, (typeof ceilings)[number]>()));
+    }
+    ceilingGroups.set(preferredId, groups);
     reservedCeilingIds.add(id);
     const ceiling = { id, kind: "flat" as const, roomIds: [room.id], heightMeters };
     groups.set(heightMeters, ceiling);
-    ceilings.push(ceiling);
+    flatCeilings.push(ceiling);
   }
   const floor: FloorSpec = {
     ...(input.belowGround !== undefined ? { belowGround: input.belowGround } : {}),
@@ -338,7 +368,7 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
     walls,
     wallJunctions: junctions,
     openings,
-    ceilings,
+    ceilings: [...flatCeilings, ...slopedCeilings],
   };
   return { floor, issues, faces, classifications, wallRuns };
 };
