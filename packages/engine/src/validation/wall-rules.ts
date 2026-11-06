@@ -158,6 +158,24 @@ export const validateWalls = (
         }
       }
     }
+    if (rawWall.gable !== undefined) {
+      if (!isObject(rawWall.gable) || !["solid", "glass"].includes(String(rawWall.gable.fill))) {
+        issues.push(
+          issue("wall.gable", `${wallPath}.gable`, "Wall gable fill must be solid or glass."),
+        );
+      } else if (
+        rawWall.gable.frameColor !== undefined &&
+        !isNonEmptyString(rawWall.gable.frameColor)
+      ) {
+        issues.push(
+          issue(
+            "wall.gable-frame-color",
+            `${wallPath}.gable.frameColor`,
+            "Wall gable frame color must be a non-empty CSS color when supplied.",
+          ),
+        );
+      }
+    }
   });
   const validWalls = walls.filter(
     (wall): wall is ValidWall =>

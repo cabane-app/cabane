@@ -1,7 +1,13 @@
 import type { EntityStateSnapshot } from "./entity-state";
 export type { EntityStateSnapshot } from "./entity-state";
 import type { WallSpec, WallJunctionSpec } from "./wall-types";
-export type { WallSpec, WallJunctionSpec, WallNicheSpec, WallSurfaceFinish } from "./wall-types";
+export type {
+  WallSpec,
+  WallJunctionSpec,
+  WallNicheSpec,
+  WallGableSpec,
+  WallSurfaceFinish,
+} from "./wall-types";
 export { WALL_SURFACE_PATTERNS } from "./wall-types";
 import type { StableDeviceModelId } from "./stable-device-model-id";
 export type { StableDeviceModelId } from "./stable-device-model-id";

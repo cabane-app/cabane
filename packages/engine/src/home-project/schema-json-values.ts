@@ -42,6 +42,10 @@ export const string = (value: unknown, path: string, issues: HomeProjectIssue[])
   addProjectIssue(issues, "project.string", path, "Expected a non-empty string.");
 };
 
+export const stringArray = (value: unknown, path: string, issues: HomeProjectIssue[]) => {
+  array(value, path, issues)?.forEach((entry, index) => string(entry, `${path}[${index}]`, issues));
+};
+
 export const finite = (value: unknown, path: string, issues: HomeProjectIssue[]) => {
   if (typeof value === "number" && Number.isFinite(value)) return;
   addProjectIssue(issues, "project.number", path, "Expected a finite number.");
