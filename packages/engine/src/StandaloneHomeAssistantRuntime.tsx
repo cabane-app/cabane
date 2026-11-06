@@ -61,7 +61,6 @@ export function StandaloneHomeAssistantRuntime({
   const [entityRegistry, setEntityRegistry] = useState<HomeAssistantEntityRegistryEntry[]>([]);
   const [entityStates, setEntityStates] =
     useState<Readonly<Record<EntityId, EntityStateSnapshot>>>(EMPTY_STATES);
-  const entityStatesRef = useRef(entityStates);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const originRef = useRef(normalizedUrl);
@@ -100,7 +99,6 @@ export function StandaloneHomeAssistantRuntime({
       },
       resolveDeviceKey: (entityId) =>
         registryDeviceIdsRef.current.get(entityId) ?? `entity:${entityId}`,
-      resolveEntityState: (entityId) => entityStatesRef.current[entityId],
     });
   }
 
@@ -115,7 +113,6 @@ export function StandaloneHomeAssistantRuntime({
     setAreas([]);
     setDevices([]);
     setEntityRegistry([]);
-    entityStatesRef.current = EMPTY_STATES;
     setEntityStates(EMPTY_STATES);
     setRefreshing(false);
     setRefreshError(null);
@@ -278,8 +275,7 @@ export function StandaloneHomeAssistantRuntime({
         const handleDisconnected = () => {
           if (!isCurrent()) return;
           schedulerRef.current?.cancelPendingValues();
-          entityStatesRef.current = markEntityStatesStale(entityStatesRef.current);
-          setEntityStates(entityStatesRef.current);
+          setEntityStates((current) => markEntityStatesStale(current));
           updateStatus("reconnecting");
         };
         const handleReconnectError = (_connection: Connection, reconnectError?: unknown) => {
@@ -309,7 +305,7 @@ export function StandaloneHomeAssistantRuntime({
           client.subscribeEntities(connection, (states) => {
             if (isCurrent()) {
               const snapshot = normalizeEntityStates(states, connection.connected === false);
-              entityStatesRef.current = snapshot;
+              schedulerRef.current?.observeEntityStates(snapshot);
               setEntityStates(snapshot);
             }
           }),

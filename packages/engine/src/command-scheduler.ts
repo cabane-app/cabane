@@ -1,6 +1,7 @@
 import type { EntityId, EntityStateSnapshot } from "./types";
 import {
   canceledClimateRangeEdit,
+  climateRangeForContext,
   resolveClimateRangeCall,
   type SupportedServiceCall,
 } from "./home-assistant-controls";
@@ -8,8 +9,18 @@ import {
 export const VALUE_DEBOUNCE_MS = 500;
 export const DEVICE_THROTTLE_MS = 2_000;
 export const CONTINUOUS_VALUE_THROTTLE_MS = 250;
+const CLIMATE_CONFIRMATION_MS = 10_000;
 
 type TimerHandle = ReturnType<typeof globalThis.setTimeout>;
+type ClimateRangeWrite = NonNullable<ReturnType<typeof resolveClimateRangeCall>>;
+type ClimateConfirmationResult = "reported" | "canceled" | "timed-out";
+
+interface ClimateConfirmation {
+  entityId: EntityId;
+  observe: (entity: EntityStateSnapshot | undefined) => void;
+  wait: () => Promise<ClimateConfirmationResult>;
+  cancel: () => void;
+}
 
 interface PendingWaiter {
   resolve: (value: unknown) => void;
@@ -34,7 +45,6 @@ interface DeviceQueue {
 export interface DeviceCommandSchedulerOptions {
   dispatch: (call: SupportedServiceCall) => Promise<unknown>;
   resolveDeviceKey: (entityId: EntityId) => string;
-  resolveEntityState?: (entityId: EntityId) => EntityStateSnapshot | undefined;
   debounceMs?: number;
   throttleMs?: number;
   now?: () => number;
@@ -45,20 +55,20 @@ export interface DeviceCommandSchedulerOptions {
 export class DeviceCommandScheduler {
   private readonly dispatch: DeviceCommandSchedulerOptions["dispatch"];
   private readonly resolveDeviceKey: DeviceCommandSchedulerOptions["resolveDeviceKey"];
-  private readonly resolveEntityState: DeviceCommandSchedulerOptions["resolveEntityState"];
   private readonly debounceMs: number;
   private readonly throttleMs: number;
   private readonly now: () => number;
   private readonly setTimer: NonNullable<DeviceCommandSchedulerOptions["setTimer"]>;
   private readonly clearTimer: NonNullable<DeviceCommandSchedulerOptions["clearTimer"]>;
   private readonly queues = new Map<string, DeviceQueue>();
+  private readonly climateConfirmations = new Set<ClimateConfirmation>();
+  private entityStates: Readonly<Partial<Record<EntityId, EntityStateSnapshot>>> = {};
   private nextSequence = 0;
   private disposed = false;
 
   constructor(options: DeviceCommandSchedulerOptions) {
     this.dispatch = options.dispatch;
     this.resolveDeviceKey = options.resolveDeviceKey;
-    this.resolveEntityState = options.resolveEntityState;
     this.debounceMs = options.debounceMs ?? VALUE_DEBOUNCE_MS;
     this.throttleMs = options.throttleMs ?? DEVICE_THROTTLE_MS;
     this.now = options.now ?? Date.now;
@@ -116,11 +126,20 @@ export class DeviceCommandScheduler {
     return promise;
   }
 
+  observeEntityStates(states: Readonly<Partial<Record<EntityId, EntityStateSnapshot>>>): void {
+    this.entityStates = states;
+    for (const confirmation of this.climateConfirmations) {
+      confirmation.observe(states[confirmation.entityId]);
+    }
+  }
+
   cancelPendingValues(): void {
     for (const queue of this.queues.values()) {
       this.cancelQueue(queue);
       queue.climateRangeInFlight = null;
     }
+    for (const confirmation of this.climateConfirmations) confirmation.cancel();
+    this.entityStates = {};
   }
 
   dispose(): void {
@@ -177,6 +196,51 @@ export class DeviceCommandScheduler {
     );
   }
 
+  private trackClimateConfirmation(entityId: EntityId, { edit, previous }: ClimateRangeWrite) {
+    const awaiting = new Set(
+      (["low", "high"] as const).filter(
+        (endpoint) =>
+          edit.targets[endpoint] !== undefined && edit.targets[endpoint] !== previous[endpoint],
+      ),
+    );
+    if (!awaiting.size) return null;
+
+    let settle!: (result: ClimateConfirmationResult) => void;
+    const result = new Promise<ClimateConfirmationResult>((resolve) => {
+      settle = resolve;
+    });
+    let timer: TimerHandle | null = null;
+    const finish = (outcome: ClimateConfirmationResult) => {
+      if (!this.climateConfirmations.delete(confirmation)) return;
+      if (timer !== null) this.clearTimer(timer);
+      settle(outcome);
+    };
+    const confirmation: ClimateConfirmation = {
+      entityId,
+      observe: (entity) => {
+        const range = climateRangeForContext(entity, edit.context);
+        if (!range) {
+          finish("canceled");
+          return;
+        }
+        for (const endpoint of awaiting) {
+          if (range[endpoint] !== previous[endpoint]) awaiting.delete(endpoint);
+        }
+        if (!awaiting.size) finish("reported");
+      },
+      wait: () => {
+        if (this.climateConfirmations.has(confirmation)) {
+          timer = this.setTimer(() => finish("timed-out"), CLIMATE_CONFIRMATION_MS);
+        }
+        return result;
+      },
+      cancel: () => finish("canceled"),
+    };
+    // Track state even when it arrives before the service response.
+    this.climateConfirmations.add(confirmation);
+    return confirmation;
+  }
+
   private async flushNext(queue: DeviceQueue) {
     if (this.disposed) return;
     const next = this.nextValue(queue);
@@ -187,11 +251,26 @@ export class DeviceCommandScheduler {
     const rangeEdit = pending.call.climateRangeEdit;
     if (rangeEdit) queue.climateRangeInFlight = pending;
     this.scheduleNext(queue);
+    let confirmation: ClimateConfirmation | null = null;
     try {
-      const call = rangeEdit
-        ? resolveClimateRangeCall(pending.call, this.resolveEntityState?.(pending.entityId))
-        : pending.call;
-      const result = await this.dispatch(call);
+      const write = rangeEdit
+        ? resolveClimateRangeCall(pending.call, this.entityStates[pending.entityId])
+        : null;
+      if (write) confirmation = this.trackClimateConfirmation(pending.entityId, write);
+      let result = await this.dispatch(write?.call ?? pending.call);
+      if (confirmation) {
+        const outcome = await confirmation.wait();
+        if (outcome === "timed-out") {
+          const error = new Error("Home Assistant did not report the updated climate targets.");
+          const queued = queue.pending.get(key);
+          if (rangeEdit && queued?.call.climateRangeEdit?.context === rangeEdit.context) {
+            queue.pending.delete(key);
+            for (const waiter of queued.waiters) waiter.reject(error);
+          }
+          throw error;
+        }
+        if (outcome === "canceled") result = canceledClimateRangeEdit;
+      }
       for (const waiter of pending.waiters) waiter.resolve(result);
     } catch (error) {
       for (const waiter of pending.waiters)
@@ -199,6 +278,7 @@ export class DeviceCommandScheduler {
           error instanceof Error ? error : new Error("Operation failed.", { cause: error }),
         );
     } finally {
+      confirmation?.cancel();
       if (queue.climateRangeInFlight === pending) {
         queue.climateRangeInFlight = null;
         this.scheduleNext(queue);

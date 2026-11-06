@@ -196,6 +196,17 @@ export const climateRangeContext = (
   { min, max, step }: ClimateRangeTarget,
 ) => JSON.stringify([entity.state, entity.attributes.temperature_unit, min, max, step]);
 
+export const climateRangeForContext = (
+  entity: EntityStateSnapshot | undefined,
+  context: string,
+) => {
+  if (!entity?.available || entity.stale) return null;
+  const target = climateTargetTemperature(entity);
+  return target?.kind === "range" && climateRangeContext(entity, target) === context
+    ? target
+    : null;
+};
+
 export const climateTemperatureRangeCall = (
   entity: EntityStateSnapshot,
   range: ClimateRangeTarget,
@@ -217,16 +228,20 @@ export const resolveClimateRangeCall = (
   entity: EntityStateSnapshot | undefined,
 ) => {
   const edit = call.climateRangeEdit;
-  if (!edit) return call;
-  const range = entity?.available && !entity.stale ? climateTargetTemperature(entity) : null;
-  if (!entity || range?.kind !== "range" || edit.context !== climateRangeContext(entity, range)) {
+  if (!edit) return null;
+  const range = climateRangeForContext(entity, edit.context);
+  if (!range) {
     throw new Error("The climate target range changed before the command was sent.");
   }
   const { low, high } = { low: range.low, high: range.high, ...edit.targets };
   if (![low, high].every(Number.isFinite) || low < range.min || high > range.max || low > high) {
     throw new Error("The requested climate targets no longer fit the current range.");
   }
-  return { ...call, data: { target_temp_low: low, target_temp_high: high } };
+  return {
+    call: { ...call, data: { target_temp_low: low, target_temp_high: high } },
+    previous: range,
+    edit,
+  };
 };
 
 export const climatePowerCall = (entity: EntityStateSnapshot, turnOn: boolean) =>

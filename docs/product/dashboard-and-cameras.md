@@ -149,7 +149,8 @@ feedback. Invalid or stale bindings limit mutation.
 Climate devices with a valid target range show both setpoints on one dial.
 Select a setpoint to use the shared step buttons, or drag its marker. Cabane
 sends the pair and keeps the latest Home Assistant value for an untouched
-setpoint.
+setpoint. Later edits wait for Home Assistant to report the earlier change.
+If the update times out, Cabane shows an error and clears the queued edit.
 
 Light dimmers span 0% to 100%. Reaching 0% turns the light off; positive values
 turn it on at the selected brightness. Decreasing an already-off light is a no-op,
