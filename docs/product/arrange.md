@@ -126,7 +126,8 @@ copy to one support kind.
 Checks run against each queued edit's result. Window fitting changes size and
 placement together in one validated undo step. Native ceiling devices retain
 their existing recessed mounting convention; personal GLBs use their explicit
-normalized bounds for ceiling clearance.
+normalized bounds for ceiling clearance. On a sloped ceiling, the vertical
+drop is measured from the plane at the placement point.
 
 Existing geometric placement problems are warnings, so the home remains visible
 and editable. Issues names the affected model and offers **Select**,

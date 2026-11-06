@@ -103,15 +103,18 @@ precision grid, preserving holes and ceiling undersides where nearly coincident
 terrace and lower-floor outlines meet. Numerical normalization affects derived
 geometry without rounding saved outlines. Wall bases extend to outdoor
 terrain, 5 cm below the indoor floor datum, without shifting openings or wall tops. Floor-level exterior doors and passages
-have solid thresholds bridging that terrain-to-floor difference. Ceilings support flat and
-sloped runtime surfaces. Project authoring has the narrower flat-ceiling schema.
+have solid thresholds bridging that terrain-to-floor difference. Layout projects
+and runtime manifests support flat and sloped ceiling surfaces.
 The exterior roof is separate procedural geometry, visible in Home's roof view.
 Connected ceiling areas merge at equal height, with higher floor coverage removed
 from lower sections. Concave outlines, detached sections, and courtyard holes are
 retained. Enclosed construction seams narrower than wall thickness plus 1 cm are
 bridged. Each exposed flat section gets one gable using the shared ridge axis,
 or a level roof with no gable rise when Flat is selected;
-authored sloped ceiling planes retain their slope. Roof faces split at the ridge
+authored sloped ceiling planes retain their slope. Adjacent authored planes
+that meet at the same height share a seam without vertical trim or infill.
+Perimeter infill closes the gable above walls that reach the eave height.
+Roof faces split at the ridge
 before triangulation. The default pitch is 25 degrees, limited to a 2 m rise and
 lowered where needed below taller neighboring ceiling tiers. Edges are flush with
 the derived coverage, with an 8 cm roof skin. Infill below the roof continues
@@ -119,8 +122,10 @@ the supporting exterior wall finish, including per-wall and face-color overrides
 down across the slab depth. Corner infill uses the supporting wall’s junction
 geometry rather than a fixed endpoint-distance cutoff. Batched walls, standalone
 walls, and roof infill share face-override/exterior-override/palette precedence. Only the thin roof edge and underside use the trim
-color. Interior ceiling slabs are hidden in exterior roof view and remain in
-Walk and the existing cutaway views. This simple
+color. Interior ceilings are hidden in exterior roof view. Walk retains them,
+with stair openings cut through both ceiling types. Cutaway hides ceilings on
+the selected floor and any lower sloped plane whose overlap with that floor
+rises above its level. This simple
 model clips a gable to irregular outlines; it does not solve intersecting roof
 valleys or expose pitch/overhang controls. Optional `home.roof` settings preserve
 old projects through defaults.

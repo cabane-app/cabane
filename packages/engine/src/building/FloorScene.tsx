@@ -3,6 +3,7 @@ import { ItemEntityReadings } from "../ItemEntityReadings";
 import { SolidRooms } from "../architecture-scene/SolidRooms";
 import { ArchitecturalOutdoorPlatforms, floorSlabPolygons } from "../outdoor-platforms";
 import { ArchitecturalHedges } from "../hedges";
+import type { MultiPolygon } from "polygon-clipping";
 export type FloorSceneProps = {
   sourceFloor: HomeManifest["floors"][number];
   below?: HomeManifest["floors"][number] | undefined;
@@ -10,6 +11,8 @@ export type FloorSceneProps = {
   above?: HomeManifest["floors"][number] | undefined;
   showGround: boolean;
   showCeiling: boolean;
+  ceilingCutawayHeightMeters?: number | undefined;
+  ceilingCutawayFootprint?: MultiPolygon | undefined;
   manifest: HomeManifest;
   walkMode: boolean;
   wallFadeEnabled: boolean;
@@ -69,6 +72,8 @@ export const FloorScene = memo(function FloorScene({
   sourceFloor,
   showGround,
   showCeiling,
+  ceilingCutawayHeightMeters,
+  ceilingCutawayFootprint,
   below,
   above,
   platformBelow,
@@ -242,7 +247,13 @@ export const FloorScene = memo(function FloorScene({
           />
         );
       })}
-      {showCeiling && <CeilingSurfaces floor={floor} />}
+      {showCeiling && (
+        <CeilingSurfaces
+          floor={floor}
+          cutawayHeightMeters={ceilingCutawayHeightMeters}
+          cutawayFootprint={ceilingCutawayFootprint}
+        />
+      )}
       {manifest.sceneItems.length > 0 ? (
         manifest.sceneItems
           .filter((item) => item.floorId === floor.id)

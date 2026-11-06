@@ -1,4 +1,5 @@
 import {
+  ceilingSupportHeight,
   physicalFloor,
   pointOnFloorSupport,
   pointInsidePolygon,
@@ -119,9 +120,8 @@ export function placementCandidate(
     } else if (kind === "ceiling" && rooms.length !== 1)
       return invalid("Choose a position inside one room.");
     if (kind === "ceiling") {
-      const ceiling = floor.ceilings?.find((item) => item.roomIds.includes(rooms[0].id));
-      const height =
-        ceiling?.kind === "flat" ? ceiling.heightMeters : floor.defaultCeilingHeightMeters;
+      const height = ceilingSupportHeight(floor, rooms[0].id, at);
+      if (height === undefined) return invalid("Choose a position below the room's ceiling.");
       const drop = input.drop ?? Math.max(0, definition.bounds.max[1]) + 0.003;
       if (
         !Number.isFinite(drop) ||

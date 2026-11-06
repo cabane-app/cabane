@@ -9,7 +9,7 @@ import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 import { pointInsidePolygon, worldPointToPlan } from "../geometry";
 import { pointStrictlyOutsideFloorFootprint } from "../floor-finishes/finish-geometry";
 import type { FloorSpec, ProjectModelRegistries, SceneModelEditorDescriptor } from "../types";
-import { resolveItemTransform } from "./placements";
+import { ceilingSupportHeight, resolveItemTransform } from "./placements";
 import { validateDeviceSlotsAgainstModel } from "./profiles";
 import type { HomeProject, SceneItemSpec } from "./types";
 import { addProjectIssue, addProjectWarning, type HomeProjectIssue } from "./validation-types";
@@ -112,8 +112,16 @@ const validatePlacementBounds = (
     }
     return;
   }
-  const ceiling = floor.ceilings?.find((candidate) => candidate.roomIds.includes(placement.roomId));
-  const height = ceiling?.kind === "flat" ? ceiling.heightMeters : floor.defaultCeilingHeightMeters;
+  const height = ceilingSupportHeight(floor, placement.roomId, placement.at);
+  if (height === undefined) {
+    addProjectWarning(
+      issues,
+      "project.ceiling-support",
+      `${path}.at`,
+      "Choose a position below the room's ceiling.",
+    );
+    return;
+  }
   if (
     placement.dropMeters < 0 ||
     placement.dropMeters > height ||

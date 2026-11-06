@@ -8,6 +8,8 @@ import {
 } from "../home-editor/construct/editor-state";
 import { validateLayoutFloorSpec } from "../home-editor/construct/layout-validation";
 import { isObject, isPolygon } from "../validation/core";
+import { ceilingSchema } from "./schema-ceiling";
+import type { HomeProjectIssue } from "./validation-types";
 
 export const FLOOR_LAYOUT_ACTIVE_STORAGE_PREFIX = "cabane:floor-layout:v1:active";
 export const FLOOR_LAYOUT_DRAFT_STORAGE_PREFIX = "cabane:floor-layout:v1:draft";
@@ -110,12 +112,22 @@ export const saveActiveFloorLayout = (
   return verification.floor;
 };
 
+const isDraftSlopedCeiling = (value: unknown) => {
+  if (!isObject(value) || value.kind !== "sloped") return false;
+  const issues: HomeProjectIssue[] = [];
+  ceilingSchema(value, "$", issues);
+  return issues.length === 0;
+};
+
 export const isFloorEditorDraft = (value: unknown): value is FloorEditorDraft => {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const record = value as Record<string, unknown>;
   const coordinates = record.coordinates;
   return (
     record.version === FLOOR_EDITOR_DRAFT_VERSION &&
+    (record.slopedCeilings === undefined ||
+      (Array.isArray(record.slopedCeilings) &&
+        record.slopedCeilings.every(isDraftSlopedCeiling))) &&
     (record.pools === undefined ||
       (Array.isArray(record.pools) &&
         record.pools.every(

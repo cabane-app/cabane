@@ -769,34 +769,201 @@
                   "optional": true,
                   "schema": {
                     "items": {
-                      "properties": {
-                        "heightMeters": {
-                          "optional": false,
-                          "schema": {
-                            "type": "number"
+                      "anyOf": [
+                        {
+                          "properties": {
+                            "heightMeters": {
+                              "optional": false,
+                              "schema": {
+                                "type": "number"
+                              }
+                            },
+                            "id": {
+                              "optional": false,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "kind": {
+                              "optional": false,
+                              "schema": {
+                                "const": "flat"
+                              }
+                            },
+                            "roomIds": {
+                              "optional": false,
+                              "schema": {
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            }
                           }
                         },
-                        "id": {
-                          "optional": false,
-                          "schema": {
-                            "type": "string"
-                          }
-                        },
-                        "kind": {
-                          "optional": false,
-                          "schema": {
-                            "const": "flat"
-                          }
-                        },
-                        "roomIds": {
-                          "optional": false,
-                          "schema": {
-                            "items": {
-                              "type": "string"
+                        {
+                          "properties": {
+                            "id": {
+                              "optional": false,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "kind": {
+                              "optional": false,
+                              "schema": {
+                                "const": "sloped"
+                              }
+                            },
+                            "planes": {
+                              "optional": false,
+                              "schema": {
+                                "items": {
+                                  "properties": {
+                                    "boundary": {
+                                      "optional": false,
+                                      "schema": {
+                                        "tuple": [
+                                          {
+                                            "tuple": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ],
+                                            "elementFlags": [1, 1]
+                                          },
+                                          {
+                                            "tuple": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ],
+                                            "elementFlags": [1, 1]
+                                          },
+                                          {
+                                            "tuple": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ],
+                                            "elementFlags": [1, 1]
+                                          },
+                                          {
+                                            "tuple": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ],
+                                            "elementFlags": [1, 1]
+                                          }
+                                        ],
+                                        "elementFlags": [1, 1, 1, 4]
+                                      }
+                                    },
+                                    "highEdge": {
+                                      "optional": false,
+                                      "schema": {
+                                        "tuple": [
+                                          {
+                                            "tuple": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ],
+                                            "elementFlags": [1, 1]
+                                          },
+                                          {
+                                            "tuple": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ],
+                                            "elementFlags": [1, 1]
+                                          }
+                                        ],
+                                        "elementFlags": [1, 1]
+                                      }
+                                    },
+                                    "highHeightMeters": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    "id": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "lowEdge": {
+                                      "optional": false,
+                                      "schema": {
+                                        "tuple": [
+                                          {
+                                            "tuple": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ],
+                                            "elementFlags": [1, 1]
+                                          },
+                                          {
+                                            "tuple": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ],
+                                            "elementFlags": [1, 1]
+                                          }
+                                        ],
+                                        "elementFlags": [1, 1]
+                                      }
+                                    },
+                                    "lowHeightMeters": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "roomIds": {
+                              "optional": false,
+                              "schema": {
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
                             }
                           }
                         }
-                      }
+                      ]
                     }
                   }
                 },
@@ -5930,34 +6097,201 @@
                 "optional": true,
                 "schema": {
                   "items": {
-                    "properties": {
-                      "heightMeters": {
-                        "optional": false,
-                        "schema": {
-                          "type": "number"
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "heightMeters": {
+                            "optional": false,
+                            "schema": {
+                              "type": "number"
+                            }
+                          },
+                          "id": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "kind": {
+                            "optional": false,
+                            "schema": {
+                              "const": "flat"
+                            }
+                          },
+                          "roomIds": {
+                            "optional": false,
+                            "schema": {
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         }
                       },
-                      "id": {
-                        "optional": false,
-                        "schema": {
-                          "type": "string"
-                        }
-                      },
-                      "kind": {
-                        "optional": false,
-                        "schema": {
-                          "const": "flat"
-                        }
-                      },
-                      "roomIds": {
-                        "optional": false,
-                        "schema": {
-                          "items": {
-                            "type": "string"
+                      {
+                        "properties": {
+                          "id": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "kind": {
+                            "optional": false,
+                            "schema": {
+                              "const": "sloped"
+                            }
+                          },
+                          "planes": {
+                            "optional": false,
+                            "schema": {
+                              "items": {
+                                "properties": {
+                                  "boundary": {
+                                    "optional": false,
+                                    "schema": {
+                                      "tuple": [
+                                        {
+                                          "tuple": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "elementFlags": [1, 1]
+                                        },
+                                        {
+                                          "tuple": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "elementFlags": [1, 1]
+                                        },
+                                        {
+                                          "tuple": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "elementFlags": [1, 1]
+                                        },
+                                        {
+                                          "tuple": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "elementFlags": [1, 1]
+                                        }
+                                      ],
+                                      "elementFlags": [1, 1, 1, 4]
+                                    }
+                                  },
+                                  "highEdge": {
+                                    "optional": false,
+                                    "schema": {
+                                      "tuple": [
+                                        {
+                                          "tuple": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "elementFlags": [1, 1]
+                                        },
+                                        {
+                                          "tuple": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "elementFlags": [1, 1]
+                                        }
+                                      ],
+                                      "elementFlags": [1, 1]
+                                    }
+                                  },
+                                  "highHeightMeters": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "id": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "lowEdge": {
+                                    "optional": false,
+                                    "schema": {
+                                      "tuple": [
+                                        {
+                                          "tuple": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "elementFlags": [1, 1]
+                                        },
+                                        {
+                                          "tuple": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "elementFlags": [1, 1]
+                                        }
+                                      ],
+                                      "elementFlags": [1, 1]
+                                    }
+                                  },
+                                  "lowHeightMeters": {
+                                    "optional": false,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "roomIds": {
+                            "optional": false,
+                            "schema": {
+                              "items": {
+                                "type": "string"
+                              }
+                            }
                           }
                         }
                       }
-                    }
+                    ]
                   }
                 }
               },

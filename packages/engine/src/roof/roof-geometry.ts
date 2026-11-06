@@ -6,6 +6,7 @@ import type { FloorSpec } from "../types";
 import { deriveRoofRegions, type RoofRegion } from "./roof-coverage";
 import { DEFAULT_ROOF_SETTINGS, ROOF_THICKNESS_METERS, type RoofSettings } from "./roof-settings";
 import { roofWallBreaks, createRoofWallFinish } from "./roof-wall-finish";
+import { sharedSlopeEdgeSpans } from "./roof-slope-seams";
 
 type Point = [number, number];
 const openRing = (ring: Point[]): Point[] =>
@@ -41,6 +42,7 @@ function appendSurface(
 
 function appendRegion(
   region: RoofRegion,
+  slopes: readonly RoofRegion[],
   floor: FloorSpec,
   settings: RoofSettings,
   exteriorColor: string,
@@ -109,7 +111,8 @@ function appendRegion(
     for (let i = 0; i < ring.length; i++) {
       const a = ring[i],
         b = ring[(i + 1) % ring.length];
-      const breaks = [0, ...roofWallBreaks(floor, a, b), 1];
+      const seams = sharedSlopeEdgeSpans(region, slopes, a, b);
+      const breaks = [0, ...roofWallBreaks(floor, a, b), ...seams.flat(), 1];
       if (
         !region.heightAt &&
         settings.direction !== "flat" &&
@@ -118,12 +121,13 @@ function appendRegion(
         const t = (ridge - a[axis]) / (b[axis] - a[axis]);
         breaks.push(t);
       }
-      const cuts: Point[] = [...new Set(breaks)]
-        .sort((a, b) => a - b)
-        .map((t) => [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]);
+      const cuts = [...new Set(breaks)].sort((a, b) => a - b);
+      const at = (t: number): Point => [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])];
       for (let j = 0; j < cuts.length - 1; j++) {
-        const p = cuts[j],
-          q = cuts[j + 1];
+        const middle = (cuts[j] + cuts[j + 1]) / 2;
+        if (seams.some(([start, end]) => middle > start && middle < end)) continue;
+        const p = at(cuts[j]),
+          q = at(cuts[j + 1]);
         if (Math.hypot(q[0] - p[0], q[1] - p[1]) < 1e-6) continue;
         const p0 = [p[0], bottom(), p[1]],
           p1 = [p[0], heightAt(p), p[1]],
@@ -150,9 +154,12 @@ export function buildRoofGeometries(
     infill: number[] = [],
     infillColors: number[] = [];
   const byId = new Map(floors.map((floor) => [floor.id, floor]));
-  for (const region of deriveRoofRegions(floors))
+  const regions = deriveRoofRegions(floors);
+  const slopes = regions.filter((region) => region.heightAt);
+  for (const region of regions)
     appendRegion(
       region,
+      slopes,
       byId.get(region.floorId)!,
       settings,
       exteriorColor,

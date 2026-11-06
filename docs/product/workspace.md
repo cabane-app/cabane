@@ -18,8 +18,13 @@ migration; omitted options keep the prior platform behavior. Older clients rejec
 the new fields until updated. Disabling or deleting the platform removes its room
 profile and reconciles room-area mappings while retaining explicit device mappings.
 
-The layout project accepts flat
-ceilings; the broader runtime manifest also supports sloped ceilings.
+Layout projects accept flat ceilings and authored sloped ceilings. A sloped
+ceiling names its rooms and defines one or more planes with a boundary, a low
+and high edge, and their heights in metres from the floor. The boundary lies
+between the two parallel edges. Plane IDs are unique within each ceiling.
+Imports, drafts, workspace backups and sync preserve the planes. Existing flat
+projects need no migration. Older panels reject projects containing slope
+planes until updated.
 
 Scene items refer to registered models by ID, carry an explicit floor ID and size, an optional `variant` ID, and use
 absolute, wall-relative, or ceiling-relative placement. Device items declare

@@ -56,6 +56,9 @@ export function ConstructionSelectionProperties({
   );
   const roomCeilingHeight =
     selectedRoomIdentity?.ceilingHeightMeters ?? editor.draft.defaultCeilingHeightMeters;
+  const hasSlopedCeiling =
+    selectedRoomId !== null &&
+    editor.draft.slopedCeilings?.some((ceiling) => ceiling.roomIds.includes(selectedRoomId));
   const resolvedWall = selectedWall
     ? editor.previewFloor.walls.find((wall) => wall.id === selectedWall.id)
     : undefined;
@@ -320,18 +323,22 @@ export function ConstructionSelectionProperties({
                 </fieldset>
                 <fieldset>
                   <legend>Ceiling</legend>
-                  <label>
-                    Ceiling
-                    <LengthInput
-                      label="Room ceiling height"
-                      min={0.3}
-                      step={0.05}
-                      value={roomCeilingHeight}
-                      onCommit={(ceilingHeightMeters) =>
-                        editor.updateSelectedRoom({ ceilingHeightMeters })
-                      }
-                    />
-                  </label>
+                  {hasSlopedCeiling ? (
+                    <p>Sloped ceiling from the project file.</p>
+                  ) : (
+                    <label>
+                      Ceiling
+                      <LengthInput
+                        label="Room ceiling height"
+                        min={0.3}
+                        step={0.05}
+                        value={roomCeilingHeight}
+                        onCommit={(ceilingHeightMeters) =>
+                          editor.updateSelectedRoom({ ceilingHeightMeters })
+                        }
+                      />
+                    </label>
+                  )}
                 </fieldset>
               </>
             )}

@@ -51,7 +51,12 @@ export function nicheDepthLimit(draft: FloorEditorDraft, wallId: string): number
   if (wall.thicknessMeters !== undefined) return Math.max(0, wall.thicknessMeters - 0.02);
   const { nodes, subsegments } = buildGraph(draft.walls, []);
   const { edgeFace } = traverseFaces(nodes, subsegments);
-  const { runs } = normalizeWallRuns(draft.walls, subsegments, edgeFace);
+  const { runs } = normalizeWallRuns(
+    draft.walls,
+    subsegments,
+    edgeFace,
+    draft.slopedCeilings?.map((ceiling) => ceiling.id),
+  );
   const thicknesses = runs
     .filter((run) => run.sourceWallId === wallId)
     .map((run) =>
