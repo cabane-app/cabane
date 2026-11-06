@@ -200,8 +200,10 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
     });
     return [
       ...regions,
+      // A slope stops at the floor above itself, not at the wall tops a flat roof
+      // reaches over: a wall under the slope near that floor would punch through it.
       ...slopes.flatMap((slope) =>
-        differenceClippingGeometry(slope.polygon, ...above).map((polygon) => ({
+        differenceClippingGeometry(slope.polygon, ...upperCoverage).map((polygon) => ({
           ...slope,
           polygon,
         })),
