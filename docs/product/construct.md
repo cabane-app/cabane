@@ -114,6 +114,11 @@ loop ends the drawing chain. Topology derives
 rooms, interior/exterior wall runs, junctions, footprint regions, and ceilings
 from the editable wall graph while retaining room identities where possible.
 Incomplete shells and ambiguous room merges produce actionable diagnostics.
+Construct draws and derives flat ceilings only. A saved sloped ceiling is kept
+over the rooms that still exist after an edit, in place of the flat ceiling the
+editor derives for them, and is dropped once none of its rooms remain. Wall
+`gable` settings have no Construct controls yet; a wall keeps its gable through
+moves and other wall edits.
 Room identity anchors stay strictly inside valid room polygons, including concave
 rooms. Renaming or editing room finishes preserves identities and metadata through
 history, Save and reopening without introducing a false merge.

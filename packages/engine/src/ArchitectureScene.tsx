@@ -172,6 +172,11 @@ export const ArchitectureScene = memo(function ArchitectureScene({
                       }
                       showGround={apartmentFloor === 0 && floor === ground && view !== "plan"}
                       showCeiling={view === "walk" || (view === "cutaway" && floor.id !== active)}
+                      ceilingMaxHeightMeters={
+                        view === "cutaway" && floor.id !== active
+                          ? floor.floorToFloorHeightMeters
+                          : undefined
+                      }
                       manifest={floorManifests.get(floor.id)!}
                       interactionMode={floor.id === active ? props.interactionMode : "editor"}
                       onSelectRoom={floor.id === active ? props.onSelectRoom : undefined}

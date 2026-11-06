@@ -96,21 +96,6 @@ const layoutOnlyIssues = (input: unknown): ManifestIssue[] => {
         );
       }
     });
-  if (Array.isArray(floor.ceilings))
-    floor.ceilings.forEach((ceiling, index) => {
-      if (
-        ceiling &&
-        typeof ceiling === "object" &&
-        !Array.isArray(ceiling) &&
-        (ceiling as Record<string, unknown>).kind === "sloped"
-      ) {
-        add(
-          "layout.sloped-ceiling",
-          `ceilings[${index}]`,
-          "The browser editor supports flat ceilings only.",
-        );
-      }
-    });
   return issues;
 };
 

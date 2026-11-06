@@ -33,7 +33,18 @@ function FlatCeilingSlab({
   );
 }
 
-export function CeilingSurfaces({ floor }: { floor: FloorSpec }) {
+/**
+ * Below the floor in view, a sloped ceiling that rises past the next floor's
+ * level (an A-frame open to the floor above) would cover it: pass that level as
+ * maxHeightMeters to leave such planes out.
+ */
+export function CeilingSurfaces({
+  floor,
+  maxHeightMeters,
+}: {
+  floor: FloorSpec;
+  maxHeightMeters?: number | undefined;
+}) {
   const rooms = indoorRoomsForFloor(floor);
   if (!rooms.length && floor.outdoorPlatforms?.length) return null;
   const ceilings = floor.ceilings ?? [
@@ -49,9 +60,15 @@ export function CeilingSurfaces({ floor }: { floor: FloorSpec }) {
     <group>
       {ceilings.flatMap((ceiling) => {
         if (ceiling.kind === "sloped") {
-          return ceiling.planes.map((plane) => (
-            <SlopedCeilingSurface key={`${ceiling.id}-${plane.id}`} floor={floor} plane={plane} />
-          ));
+          return ceiling.planes
+            .filter(
+              (plane) =>
+                maxHeightMeters === undefined ||
+                Math.max(plane.lowHeightMeters, plane.highHeightMeters) <= maxHeightMeters,
+            )
+            .map((plane) => (
+              <SlopedCeilingSurface key={`${ceiling.id}-${plane.id}`} floor={floor} plane={plane} />
+            ));
         }
         const coversEntireFloor =
           ceiling.roomIds.length === allRoomIds.size &&

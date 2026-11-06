@@ -1,9 +1,9 @@
 {
-  "revision": 37,
-  "fingerprint": "6a324a47ef170799a2da3e67503650776bfbfad4e0e29b114682cef277569cd1",
-  "summary": "Support glass railings on outdoor platforms",
+  "revision": 38,
+  "fingerprint": "34008b429fdcb3906902cd5c678ee2057bbfb6ab0eb209b143390aa38556da57",
+  "summary": "Allow sloped ceilings in layout projects and gable walls that rise to them",
   "breakingChanges": [
-    "Existing outdoor platforms keep their edge styles. Workspaces with glass railings require the updated Home Assistant panel. Update through HACS, restart Home Assistant, and reload before opening one on an older panel."
+    "No saved fields or IDs change for existing projects. Layout projects may now store sloped ceilings and wall gable settings; older frontends and Home Assistant panels reject projects that use them."
   ],
   "history": [
     {
@@ -256,6 +256,13 @@
       "summary": "Allow explicit switch and cover connections without device-class restrictions",
       "breakingChanges": [
         "No saved fields or IDs change. Existing smart plugs, power strips, curtains and garage covers accept compatible entities regardless of optional device class after updating the Home Assistant panel. Older panels can hide or reject these connections; automatic matching and typed sensor requirements remain strict."
+      ]
+    },
+    {
+      "revision": 37,
+      "summary": "Support glass railings on outdoor platforms",
+      "breakingChanges": [
+        "Existing outdoor platforms keep their edge styles. Workspaces with glass railings require the updated Home Assistant panel. Update through HACS, restart Home Assistant, and reload before opening one on an older panel."
       ]
     }
   ],

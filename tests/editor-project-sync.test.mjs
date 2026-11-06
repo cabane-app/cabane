@@ -106,6 +106,52 @@ await withModules(async (load) => {
     assert.deepEqual(Object.keys(next.openingProfiles), [floor.openings[0].id]);
   });
 
+  test("editor saves keep a floor's sloped ceilings, which the editor cannot draw", () => {
+    const editorFloor = ownerProjectManifest.floors[0];
+    const [first, second] = editorFloor.rooms;
+    const slope = {
+      id: "a-frame",
+      kind: "sloped",
+      roomIds: [first.id, "removed-room"],
+      planes: [
+        {
+          id: "plane",
+          boundary: first.polygon,
+          lowEdge: [first.polygon[0], first.polygon[1]],
+          highEdge: [first.polygon[2], first.polygon[3]],
+          lowHeightMeters: 2,
+          highHeightMeters: 4,
+        },
+      ],
+    };
+    const saved = {
+      ...project,
+      floors: [
+        {
+          ...project.floors[0],
+          ceilings: [
+            slope,
+            ...(project.floors[0].ceilings ?? []).flatMap((ceiling) => {
+              const roomIds = ceiling.roomIds.filter((id) => id !== first.id);
+              return roomIds.length ? [{ ...ceiling, roomIds }] : [];
+            }),
+          ],
+        },
+      ],
+    };
+    // The editor floor carries only the flat ceilings it derived for every room.
+    const next = projectFromEditorState(saved, editorFloor, saved.sceneItems);
+    const ceilings = next.floors[0].ceilings;
+    assert.deepEqual(
+      ceilings.filter((ceiling) => ceiling.kind === "sloped"),
+      [{ ...slope, roomIds: [first.id] }],
+    );
+    assert.ok(
+      ceilings.every((ceiling) => ceiling.kind === "sloped" || !ceiling.roomIds.includes(first.id)),
+    );
+    assert.ok(ceilings.some((ceiling) => ceiling.roomIds.includes(second.id)));
+  });
+
   test("creates one reversible command for a semantic editor change", () => {
     const after = { ...project, sceneItems: project.sceneItems.slice(1) };
     const command = projectCommandForEditorChange({
