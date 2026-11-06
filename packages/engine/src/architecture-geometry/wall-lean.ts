@@ -28,7 +28,7 @@ const leansByFloor = new WeakMap<FloorSpec, readonly WallLean[]>();
 const wallLeans = (floor: FloorSpec): readonly WallLean[] => {
   let leans = leansByFloor.get(floor);
   if (leans) return leans;
-  leans = floor.walls.flatMap((wall) => {
+  leans = (floor.walls ?? []).flatMap((wall) => {
     if (!wall.leanMeters) return [];
     const frame = wallFrame(wall, floor);
     const normal = wallExteriorNormal(wall, floor) ?? frame.normal;
@@ -60,17 +60,36 @@ const touches = (lean: WallLean, x: number, z: number) => {
   );
 };
 
-/** The horizontal shift of a world point at height `y` (metres above the floor). */
+/**
+ * The horizontal shift of a world point at height `y` (metres above the floor).
+ * Where leaning walls meet, the point moves to where their sheared faces cross:
+ * the shift whose component along each wall's normal is that wall's lean.
+ * Walls in line (a wall split in two) share one normal and so one shift.
+ */
 const leanOffsetAt = (leans: readonly WallLean[], x: number, y: number, z: number): Horizontal => {
-  let offsetX = 0;
-  let offsetZ = 0;
   const height = Math.max(y, 0);
+  const shifts: { normal: Horizontal; amount: number }[] = [];
   for (const lean of leans) {
     if (!touches(lean, x, z)) continue;
-    offsetX += lean.normal[0] * lean.slope * height;
-    offsetZ += lean.normal[1] * lean.slope * height;
+    const amount = lean.slope * height;
+    const same = shifts.find(
+      (shift) => shift.normal[0] * lean.normal[0] + shift.normal[1] * lean.normal[1] > 0.995,
+    );
+    if (same) same.amount = Math.max(same.amount, amount);
+    else shifts.push({ normal: lean.normal, amount });
   }
-  return [offsetX, offsetZ];
+  if (!shifts.length) return [0, 0];
+  const [first, second] = shifts;
+  if (second) {
+    // Solve n1·v = a1, n2·v = a2 for the corner of two walls at an angle.
+    const det = first.normal[0] * second.normal[1] - first.normal[1] * second.normal[0];
+    if (Math.abs(det) > 0.05)
+      return [
+        (first.amount * second.normal[1] - second.amount * first.normal[1]) / det,
+        (first.normal[0] * second.amount - second.normal[0] * first.amount) / det,
+      ];
+  }
+  return [first.normal[0] * first.amount, first.normal[1] * first.amount];
 };
 
 /** Shear a flat xyz position list in place. */
