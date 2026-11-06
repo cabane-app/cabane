@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { Color } from "three";
 import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
@@ -14,6 +15,10 @@ await withModules(async (load) => {
     "/packages/engine/src/home-project/serialization.ts",
   );
   const { validateWalls } = await load("/packages/engine/src/validation/wall-rules.ts");
+  const { constructEditorReducer, createConstructEditorState } = await load(
+    "/apps/web/src/editor-preview/construct/construct-controller-reducer.ts",
+  );
+  const { projectFromEditorState } = await load("/apps/web/src/editor-preview/project-sync.ts");
   const { makeThreeFloorProject } = await load("/tests/fixtures/multiple-floors.ts");
   const {
     createHomeProjectLifecycle,
@@ -215,12 +220,46 @@ await withModules(async (load) => {
       );
       assert.deepEqual(ridgeWall, []);
     }
-    const frontInfill = (geometry) =>
-      heights(geometry.infill).filter(([, y, z]) => Math.abs(z) < 0.01 && y > knee + 0.5);
-    assert.ok(frontInfill(plain).length > 0, "a plain wall still gets roof infill above it");
-    assert.deepEqual(frontInfill(glass), []);
+    const frontInfill = (geometry) => heights(geometry.infill).filter(([, , z]) => z <= 0.01);
+    assert.ok(frontInfill(plain).some(([x, y]) => x > 1 && x < 7 && y < 2));
+    const aboveGlass = frontInfill(glass);
+    assert.ok(aboveGlass.some(([x, y]) => Math.abs(x - 4) < 0.01 && Math.abs(y - ridge) < 0.01));
+    for (const [x, y] of aboveGlass) {
+      const ceiling = Math.max(knee, ridge - Math.abs(x - 4));
+      assert.ok(
+        y >= ceiling - 0.001 && y <= ceiling + 0.161,
+        "close the roof depth above the glazing",
+      );
+    }
     for (const geometry of [solid, glass, plain])
       Object.values(geometry).forEach((part) => part.dispose());
+  });
+
+  test("a partly shared roof edge keeps exposed infill at both ends", () => {
+    const floor = aFrame(undefined);
+    const east = floor.ceilings[0].planes[1];
+    east.boundary = [
+      [4, 2],
+      [4, 4],
+      [8, 4],
+      [8, 2],
+    ];
+    const roof = buildRoofGeometries([floor]);
+    try {
+      const vertices = heights(roof.infill);
+      const intervals = [];
+      for (let i = 0; i < vertices.length; i += 3) {
+        const triangle = vertices.slice(i, i + 3);
+        if (!triangle.every(([x]) => Math.abs(x - 4) < 0.001)) continue;
+        const zs = triangle.map(([, , z]) => z);
+        intervals.push([Math.min(...zs), Math.max(...zs)]);
+      }
+      assert.ok(intervals.some(([from, to]) => Math.abs(from) < 0.11 && to === 2));
+      assert.ok(intervals.some(([from, to]) => from === 4 && Math.abs(to - 6) < 0.11));
+      assert.ok(intervals.every(([from, to]) => to <= 2 || from >= 4));
+    } finally {
+      Object.values(roof).forEach((part) => part.dispose());
+    }
   });
 
   // An A carried over two floors.
@@ -273,12 +312,62 @@ await withModules(async (load) => {
 
   test("an A carried over two floors joins without infill between them", () => {
     const [lower, upper] = twoFloorAFrame();
+    upper.walls = [
+      {
+        id: "loft-front",
+        from: [0, 3],
+        to: [8, 3],
+        classification: "exterior",
+        thicknessMeters: 0.2,
+      },
+    ];
     const roof = buildRoofGeometries([lower, upper]);
     const joint = heights(roof.infill).filter(
       ([, y, z]) => Math.abs(z - 3) < 0.01 && y > knee + 0.5,
     );
     assert.deepEqual(joint, []);
     Object.values(roof).forEach((part) => part.dispose());
+  });
+
+  test("a rear gable keeps its exterior finish where the roof continues over a loft", () => {
+    const [lower, upper] = twoFloorAFrame();
+    lower.ceilings[0].planes = aFrame(undefined).ceilings[0].planes;
+    const rear = lower.walls.find((wall) => wall.id === "back");
+    rear.gable = { fill: "solid" };
+    rear.faceColors = { left: "#e8dfcd", right: "#e8dfcd" };
+    const roof = buildRoofGeometries([lower, upper], undefined, "#c97370");
+    try {
+      const expected = new Color("#e8dfcd");
+      const colors = roof.infill.getAttribute("color");
+      const indices = heights(roof.infill).flatMap(([x, y, z], index) =>
+        Math.abs(x - 4) < 0.001 && y > ridge - 0.001 && z >= 6 - 0.001 ? [index] : [],
+      );
+      assert.ok(indices.length > 0);
+      for (const index of indices) assert.ok(Math.abs(colors.getY(index) - expected.g) < 1e-5);
+    } finally {
+      Object.values(roof).forEach((part) => part.dispose());
+    }
+  });
+
+  test("a sloped eave covers its wall without a projection up to the next storey", () => {
+    const [lower, upper] = twoFloorAFrame();
+    lower.defaultCeilingHeightMeters = knee;
+    const walls = buildArchitecturalWallGeometries(lower, undefined, undefined, 0, {
+      above: upper,
+    });
+    try {
+      const eave = walls.flatMap(({ geometry }) => heights(geometry)).filter(([x]) => x < -0.09);
+      assert.ok(eave.length > 0);
+      assert.ok(eave.every(([, y]) => y <= knee + 0.001));
+    } finally {
+      walls.forEach(({ geometry }) => geometry.dispose());
+    }
+    const roof = buildRoofGeometries([lower, upper]);
+    try {
+      assert.ok(heights(roof.top).some(([x, , z]) => x < -0.09 && z < 3));
+    } finally {
+      Object.values(roof).forEach((part) => part.dispose());
+    }
   });
 
   test("projects save sloped ceilings and wall gables, and reject malformed ones", () => {
@@ -309,18 +398,28 @@ await withModules(async (load) => {
     assert.equal(parsed.project.floors[0].ceilings[0].kind, "sloped");
     assert.equal(parsed.project.floors[0].walls[0].gable.columns, 3);
     const broken = structuredClone(next);
-    broken.floors[0].walls[0].gable = { fill: "stained", columns: 0 };
+    broken.floors[0].walls[0].gable = {
+      fill: "glass",
+      columns: 1e12,
+      transomHeightsMeters: Array(33).fill(2.8),
+    };
     broken.floors[0].ceilings[0].planes[0].lowEdge = [[0, 0]];
     const paths = parseHomeProject(serializeHomeProject(broken)).issues.map((issue) => issue.path);
-    assert.ok(paths.some((path) => path.endsWith("walls[0].gable.fill")));
     assert.ok(paths.some((path) => path.endsWith("walls[0].gable.columns")));
+    assert.ok(paths.some((path) => path.endsWith("walls[0].gable.transomHeightsMeters")));
     assert.ok(paths.some((path) => path.endsWith("planes[0].lowEdge")));
-    const { issues } = validateWalls(aFrame({ fill: "stained" }), "floor", {
-      input: {},
-      options: {},
-      ids: new Map(),
-    });
-    assert.ok(issues.some((issue) => issue.code === "wall.gable"));
+    for (const [gable, code] of [
+      [{ fill: "stained" }, "wall.gable-fill"],
+      [{ fill: "solid", frameColor: "#123456" }, "wall.gable-glass-field"],
+      [broken.floors[0].walls[0].gable, "wall.gable-columns"],
+    ]) {
+      const { issues } = validateWalls(aFrame(gable), "floor", {
+        input: {},
+        options: {},
+        ids: new Map(),
+      });
+      assert.ok(issues.some((issue) => issue.code === code));
+    }
   });
 
   test("a two-floor A-frame survives import, save and a backup round trip", async () => {
@@ -406,9 +505,13 @@ await withModules(async (load) => {
     );
     const lifecycle = createHomeProjectLifecycle(repository, imported.record.draft);
     const loaded = await lifecycle.load();
-    const saved = await lifecycle.autosave(loaded.record, imported.record.draft);
+    const initial = createConstructEditorState(imported.record.draft.floors[0]);
+    const edited = constructEditorReducer(initial, { type: "set-floor-name", name: "Main hall" });
+    const revised = projectFromEditorState(imported.record.draft, edited.previewFloor, []);
+    const saved = await lifecycle.autosave(loaded.record, revised);
     assert.equal(saved.status, "saved");
     const stored = await repository.load(project.home.id);
+    assert.equal(stored.draft.floors[0].name, "Main hall");
     assert.deepEqual(shape(stored.draft), expected);
 
     const backup = exportWorkspaceBackup(

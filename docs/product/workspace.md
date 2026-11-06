@@ -18,11 +18,14 @@ migration; omitted options keep the prior platform behavior. Older clients rejec
 the new fields until updated. Disabling or deleting the platform removes its room
 profile and reconciles room-area mappings while retaining explicit device mappings.
 
-The layout project accepts flat and sloped ceilings. A sloped ceiling lists planes,
-each a boundary polygon rising from a low edge to a high edge. Walls may carry an
-optional `gable` (`fill` solid or glass, optional `frameColor`, `columns` and
-`transomHeightsMeters`) that rises above `heightMeters` to the sloped ceiling over
-it. Existing projects need no migration; older clients reject these fields.
+The layout project accepts flat and sloped ceilings. Each slope has a simple
+boundary polygon between parallel low and high reference edges. Edge heights
+are relative to the floor and can be signed where one roof continues across
+storeys. A wall's optional `gable` rises above `heightMeters` to the slope.
+With `fill: "glass"`, `frameColor` colors the frame, `columns` counts panes
+across the wall (1 to 32), and `transomHeightsMeters` lists up to 32 heights
+above the floor. `fill: "solid"` uses the wall finish. Existing flat projects
+need no migration. Older clients reject the new fields.
 
 Scene items refer to registered models by ID, carry an explicit floor ID and size, an optional `variant` ID, and use
 absolute, wall-relative, or ceiling-relative placement. Device items declare

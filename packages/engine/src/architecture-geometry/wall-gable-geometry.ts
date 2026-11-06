@@ -1,8 +1,11 @@
 import polygonClipping, { type MultiPolygon, type Polygon as ClipPolygon } from "polygon-clipping";
 import { ShapeUtils, Vector2 } from "three";
-import { pointInsidePolygon, slopedCeilingHeightAtPoint } from "../geometry";
+import { pointInsidePolygon } from "../geometry";
 import type { FloorSpec, OpeningSpec, PlanPoint, SlopedCeilingSpec, WallSpec } from "../types";
+import { MAX_GABLE_COLUMNS, MAX_GABLE_TRANSOMS } from "../wall-types";
 import { EPSILON } from "./architecture-geometry-contract";
+import { physicalFloor } from "./physical-floor";
+import { slopedCeilingHeightSampler } from "./sloped-ceiling-plane";
 import { wallFrame } from "./wall-coordinate-frame";
 
 type Plane = SlopedCeilingSpec["planes"][number];
@@ -29,26 +32,64 @@ const planeCovers = (plane: Plane, point: PlanPoint, tolerance: number) =>
     onSegment(point, vertex, plane.boundary[(index + 1) % plane.boundary.length], tolerance),
   );
 
-/** Where the segment a→b crosses the line through p→q, as a fraction of a→b. */
-const crossing = (a: PlanPoint, b: PlanPoint, p: PlanPoint, q: PlanPoint) => {
+/** Where the wall a→b crosses a boundary edge within the wall's half-width. */
+const crossing = (a: PlanPoint, b: PlanPoint, p: PlanPoint, q: PlanPoint, tolerance: number) => {
   const rx = b[0] - a[0],
     ry = b[1] - a[1],
     sx = q[0] - p[0],
     sy = q[1] - p[1];
   const denominator = rx * sy - ry * sx;
   if (Math.abs(denominator) < 1e-12) return null;
+  const alongEdge = ((p[0] - a[0]) * ry - (p[1] - a[1]) * rx) / denominator;
+  const margin = (tolerance * Math.hypot(rx, ry)) / Math.abs(denominator);
+  if (alongEdge < -margin || alongEdge > 1 + margin) return null;
   return ((p[0] - a[0]) * sy - (p[1] - a[1]) * sx) / denominator;
+};
+
+const preparePlanes = (ceilings: NonNullable<FloorSpec["ceilings"]>) =>
+  ceilings.flatMap((ceiling) =>
+    ceiling.kind === "sloped"
+      ? ceiling.planes.map((plane) => {
+          let minX = Infinity,
+            minY = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity;
+          for (const [x, y] of plane.boundary) {
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+          }
+          return { plane, minX, minY, maxX, maxY, heightAt: slopedCeilingHeightSampler(plane) };
+        })
+      : [],
+  );
+const preparedPlanes = new WeakMap<
+  NonNullable<FloorSpec["ceilings"]>,
+  ReturnType<typeof preparePlanes>
+>();
+const planesFor = (floor: FloorSpec) => {
+  if (!floor.ceilings) return [];
+  const existing = preparedPlanes.get(floor.ceilings);
+  if (existing) return existing;
+  const planes = preparePlanes(floor.ceilings);
+  preparedPlanes.set(floor.ceilings, planes);
+  return planes;
 };
 
 /**
  * The sloped ceiling over a wall's centerline, as a polyline of [meters along
  * the wall, height] points. Gaps where no plane covers the wall are omitted, so
- * the result may hold several runs. Planes stop rising past their low and high
- * edges, which adds breakpoints there.
+ * the result may hold several runs.
  */
 export function wallCeilingProfile(wall: WallSpec, floor: FloorSpec): [number, number][][] {
-  const planes = (floor.ceilings ?? []).flatMap((ceiling) =>
-    ceiling.kind === "sloped" ? ceiling.planes : [],
+  const tolerance = wall.thicknessMeters / 2 / floor.coordinates.metersPerPlanUnit + 1e-6;
+  const planes = planesFor(floor).filter(
+    ({ minX, minY, maxX, maxY }) =>
+      minX <= Math.max(wall.from[0], wall.to[0]) + tolerance &&
+      maxX >= Math.min(wall.from[0], wall.to[0]) - tolerance &&
+      minY <= Math.max(wall.from[1], wall.to[1]) + tolerance &&
+      maxY >= Math.min(wall.from[1], wall.to[1]) - tolerance,
   );
   if (!planes.length) return [];
   const length = wallFrame(wall, floor).length;
@@ -56,22 +97,18 @@ export function wallCeilingProfile(wall: WallSpec, floor: FloorSpec): [number, n
     wall.from[0] + (wall.to[0] - wall.from[0]) * t,
     wall.from[1] + (wall.to[1] - wall.from[1]) * t,
   ];
-  const tolerance = wall.thicknessMeters / 2 / floor.coordinates.metersPerPlanUnit + 1e-6;
   const breaks = new Set([0, 1]);
-  for (const plane of planes) {
+  for (const { plane } of planes) {
     plane.boundary.forEach((vertex, index) => {
       const t = crossing(
         wall.from,
         wall.to,
         vertex,
         plane.boundary[(index + 1) % plane.boundary.length],
+        tolerance,
       );
       if (t !== null && t > 0 && t < 1) breaks.add(t);
     });
-    for (const edge of [plane.lowEdge, plane.highEdge]) {
-      const t = crossing(wall.from, wall.to, edge[0], edge[1]);
-      if (t !== null && t > 0 && t < 1) breaks.add(t);
-    }
   }
   const ts = [...breaks].sort((a, b) => a - b);
   const runs: [number, number][][] = [];
@@ -80,20 +117,22 @@ export function wallCeilingProfile(wall: WallSpec, floor: FloorSpec): [number, n
     const [t0, t1] = [ts[index], ts[index + 1]];
     if ((t1 - t0) * length < 1e-6) continue;
     const middle = at((t0 + t1) / 2);
-    const covering = planes.filter((plane) => planeCovers(plane, middle, tolerance));
+    const covering = planes.filter(({ plane }) => planeCovers(plane, middle, tolerance));
     if (!covering.length) {
       if (run.length) runs.push(run);
       run = [];
       continue;
     }
-    const height = (t: number) =>
-      Math.max(...covering.map((plane) => slopedCeilingHeightAtPoint(at(t), plane)));
+    const height = (t: number) => {
+      const point = at(t);
+      return covering.reduce((top, { heightAt }) => Math.max(top, heightAt(point)), -Infinity);
+    };
     const start: [number, number] = [t0 * length, height(t0)];
     const last = run.at(-1);
     if (!last || Math.abs(last[0] - start[0]) > 1e-6) {
       if (run.length) runs.push(run);
       run = [start];
-    } else last[1] = Math.max(last[1], start[1]);
+    } else if (Math.abs(last[1] - start[1]) > EPSILON) run.push(start);
     run.push([t1 * length, height(t1)]);
   }
   if (run.length) runs.push(run);
@@ -153,6 +192,7 @@ export interface WallGableShapes {
   solid: MultiPolygon;
   frame: MultiPolygon;
   glass: MultiPolygon;
+  profile: readonly (readonly [number, number][])[];
 }
 
 /** The shape of a gable wall above the height its horizontal bands can draw. */
@@ -175,7 +215,7 @@ export function wallGableShapes(
     cursor = run.at(-1)![0];
   }
   if (cursor < length - 1e-6) top.push([cursor, height], [length, height]);
-  const bandTop = Math.min(height, ...top.map(([, y]) => y));
+  const bandTop = Math.max(0, Math.min(height, ...top.map(([, y]) => y)));
   if (Math.max(...top.map(([, y]) => y)) <= bandTop + EPSILON && height <= bandTop + EPSILON)
     return null;
   const outline: ClipPolygon = [
@@ -202,7 +242,7 @@ export function wallGableShapes(
     outline,
     rectangle(-1, height, length + 1, ceilingTop),
   );
-  const empty = { bandTop, solid: [], frame: [], glass: [] };
+  const empty = { bandTop, profile: runs, solid: [], frame: [], glass: [] };
   if (wall.gable.fill === "solid") {
     const solid = polygonClipping.difference(polygonClipping.union(below, above), ...cuts);
     return area(solid) > 1e-6 ? { ...empty, solid } : null;
@@ -213,7 +253,7 @@ export function wallGableShapes(
     polygonClipping.intersection(above, rectangle(inset, height, length - inset, ceilingTop)),
     ...cuts,
   );
-  const columns = Math.max(1, wall.gable.columns ?? 2);
+  const columns = Math.min(MAX_GABLE_COLUMNS, Math.max(1, wall.gable.columns ?? 2));
   const [minS, maxS] = pane.length
     ? [
         Math.min(...pane.flatMap((polygon) => polygon[0].map(([s]) => s))),
@@ -226,6 +266,7 @@ export function wallGableShapes(
       return rectangle(s - GABLE_MULLION_METERS, height, s + GABLE_MULLION_METERS, ceilingTop);
     }),
     ...(wall.gable.transomHeightsMeters ?? [])
+      .slice(0, MAX_GABLE_TRANSOMS)
       .filter((y) => y > height && y < ceilingTop)
       .map((y) => rectangle(minS, y - GABLE_MULLION_METERS, maxS, y + GABLE_MULLION_METERS)),
   ];
@@ -236,6 +277,7 @@ export function wallGableShapes(
   );
   return {
     bandTop,
+    profile: runs,
     solid: polygonClipping.difference(
       polygonClipping.union(below, polygonClipping.difference(above, pane)),
       ...cuts,
@@ -243,6 +285,29 @@ export function wallGableShapes(
     frame: polygonClipping.intersection(pane, bars),
     glass: polygonClipping.difference(pane, bars),
   };
+}
+
+const gablesByFloor = new WeakMap<FloorSpec, Map<string, WallGableShapes>>();
+
+/** Share wall sections between the opaque walls, glazing and roof infill. */
+export function wallGablesForFloor(
+  requestedFloor: FloorSpec,
+): ReadonlyMap<string, WallGableShapes> {
+  const cached = gablesByFloor.get(requestedFloor);
+  if (cached) return cached;
+  const floor = physicalFloor(requestedFloor);
+  let gables = gablesByFloor.get(floor);
+  if (!gables) {
+    gables = new Map();
+    for (const wall of floor.walls) {
+      if (!wall.gable) continue;
+      const shapes = wallGableShapes(wall, floor, floor.openings);
+      if (shapes) gables.set(wall.id, shapes);
+    }
+    gablesByFloor.set(floor, gables);
+  }
+  gablesByFloor.set(requestedFloor, gables);
+  return gables;
 }
 
 /** Lift wall-plane coordinates onto one face of the wall; side is +1, -1 or 0 (centerline). */

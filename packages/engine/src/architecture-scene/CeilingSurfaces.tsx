@@ -1,15 +1,29 @@
 import { indoorRoomsForFloor } from "../outdoor-platforms/platform-rooms";
-import { cutSurfaceShapes, useStairSurfaceApertures } from "../stairs/surface-apertures";
-import { BufferGeometry, DoubleSide, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
+import {
+  cutSurfaceShapes,
+  useSlopedCeilingApertures,
+  useStairSurfaceApertures,
+} from "../stairs/surface-apertures";
+import { DoubleSide, ShapeGeometry } from "three";
+import type { MultiPolygon } from "polygon-clipping";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
-import { planPointToWorld, slopedCeilingHeightAtPoint } from "../geometry";
+import { intersectClippingGeometry } from "../architecture-geometry/architecture-clipping";
+import { slopedCeilingHeightSampler } from "../architecture-geometry/sloped-ceiling-plane";
+import { planPointToWorld, worldPointToPlan } from "../geometry";
 
 import { ToonMaterial } from "../rendering";
 import { CEILING_SURFACE_COLOR } from "./surface-colors";
+import { WALK_EYE_HEIGHT } from "../navigation/walk-navigation-contract";
+import { WALK_HEAD_MARGIN } from "../opening-pose";
 
-import type { FloorSpec, Polygon, SlopedCeilingSpec } from "../types";
+import type { FloorSpec, PlanPoint, Polygon, SlopedCeilingSpec } from "../types";
+
+type CeilingPlane = SlopedCeilingSpec["planes"][number];
+
+const worldRing = (polygon: Polygon, coordinates: FloorSpec["coordinates"]) =>
+  polygon.map((point): [number, number] => [...planPointToWorld(point, coordinates)]);
 
 function FlatCeilingSlab({
   polygon,
@@ -33,19 +47,44 @@ function FlatCeilingSlab({
   );
 }
 
-/**
- * Below the floor in view, a sloped ceiling that rises past the next floor's
- * level (an A-frame open to the floor above) would cover it: pass that level as
- * maxHeightMeters to leave such planes out.
- */
+function crossesCutaway(
+  plane: CeilingPlane,
+  coordinates: FloorSpec["coordinates"],
+  height: number,
+  footprint: MultiPolygon,
+) {
+  const heightAt = slopedCeilingHeightSampler(plane);
+  const risesAbove = (point: PlanPoint) => heightAt(point) > height + 1e-6;
+  if (!plane.boundary.some(risesAbove)) return false;
+  const ring = worldRing(plane.boundary, coordinates);
+  const overlap = intersectClippingGeometry([ring], footprint);
+  return overlap.some(([ring]) =>
+    ring.some(([x, z]) => risesAbove(worldPointToPlan({ x, z }, coordinates))),
+  );
+}
+
 export function CeilingSurfaces({
   floor,
-  maxHeightMeters,
+  cutawayHeightMeters,
+  cutawayFootprint,
 }: {
   floor: FloorSpec;
-  maxHeightMeters?: number | undefined;
+  cutawayHeightMeters?: number | undefined;
+  cutawayFootprint?: MultiPolygon | undefined;
 }) {
   const rooms = indoorRoomsForFloor(floor);
+  const hiddenPlanes = useMemo(() => {
+    const hidden = new Set<CeilingPlane>();
+    if (cutawayHeightMeters === undefined || !cutawayFootprint) return hidden;
+    for (const ceiling of floor.ceilings ?? []) {
+      if (ceiling.kind !== "sloped") continue;
+      for (const plane of ceiling.planes) {
+        if (crossesCutaway(plane, floor.coordinates, cutawayHeightMeters, cutawayFootprint))
+          hidden.add(plane);
+      }
+    }
+    return hidden;
+  }, [floor.ceilings, floor.coordinates, cutawayHeightMeters, cutawayFootprint]);
   if (!rooms.length && floor.outdoorPlatforms?.length) return null;
   const ceilings = floor.ceilings ?? [
     {
@@ -57,18 +96,20 @@ export function CeilingSurfaces({
   ];
   const allRoomIds = new Set(rooms.map((room) => room.id));
   return (
-    <group>
+    <group name="floor-ceilings">
       {ceilings.flatMap((ceiling) => {
         if (ceiling.kind === "sloped") {
-          return ceiling.planes
-            .filter(
-              (plane) =>
-                maxHeightMeters === undefined ||
-                Math.max(plane.lowHeightMeters, plane.highHeightMeters) <= maxHeightMeters,
-            )
-            .map((plane) => (
-              <SlopedCeilingSurface key={`${ceiling.id}-${plane.id}`} floor={floor} plane={plane} />
-            ));
+          return ceiling.planes.flatMap((plane) => {
+            // A lower ceiling can block the view into the selected upper floor.
+            if (hiddenPlanes.has(plane)) return [];
+            return [
+              <SlopedCeilingSurface
+                key={`${ceiling.id}-${plane.id}`}
+                floor={floor}
+                plane={plane}
+              />,
+            ];
+          });
         }
         const coversEntireFloor =
           ceiling.roomIds.length === allRoomIds.size &&
@@ -100,29 +141,35 @@ export function CeilingSurfaces({
   );
 }
 
-function SlopedCeilingSurface({
-  floor,
-  plane,
-}: {
-  floor: FloorSpec;
-  plane: SlopedCeilingSpec["planes"][number];
-}) {
+function SlopedCeilingSurface({ floor, plane }: { floor: FloorSpec; plane: CeilingPlane }) {
+  const apertures = useSlopedCeilingApertures();
   const geometry = useMemo(() => {
-    const contour = plane.boundary.map(([x, y]) => new Vector2(x, y));
-    const triangles = ShapeUtils.triangulateShape(contour, []);
-    const positions = triangles.flatMap((triangle) =>
-      triangle.flatMap((index) => {
-        const vertex = contour[index];
-        const point = [vertex.x, vertex.y] as const;
-        const [x, z] = planPointToWorld(point, floor.coordinates);
-        return [x, slopedCeilingHeightAtPoint(point, plane), z];
-      }),
-    );
-    const result = new BufferGeometry();
-    result.setAttribute("position", new Float32BufferAttribute(positions, 3));
+    const heightAt = slopedCeilingHeightSampler(plane);
+    const coordinates = floor.coordinates;
+    const boundary = worldRing(plane.boundary, coordinates);
+    const minHeight = Math.min(...plane.boundary.map(heightAt));
+    const cuts = apertures.flatMap(({ polygon, riseMeters }) => {
+      const clearance = riseMeters + WALK_EYE_HEIGHT + WALK_HEAD_MARGIN;
+      if (minHeight > clearance) return [];
+      const overlap = intersectClippingGeometry([boundary], [worldRing(polygon, coordinates)]);
+      return overlap.some(([ring]) =>
+        ring.some(([x, z]) => heightAt(worldPointToPlan({ x, z }, coordinates)) <= clearance),
+      )
+        ? [polygon]
+        : [];
+    });
+    const result = new ShapeGeometry(cutSurfaceShapes(plane.boundary, coordinates, cuts));
+    const positions = result.getAttribute("position");
+    for (let index = 0; index < positions.count; index += 1) {
+      const x = positions.getX(index);
+      const z = -positions.getY(index);
+      const point = worldPointToPlan({ x, z }, coordinates);
+      positions.setXYZ(index, x, heightAt(point), z);
+    }
     result.computeVertexNormals();
     return result;
-  }, [floor.coordinates, plane]);
+  }, [apertures, floor.coordinates, plane]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (
     <mesh geometry={geometry} receiveShadow={false}>

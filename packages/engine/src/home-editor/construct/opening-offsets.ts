@@ -38,7 +38,8 @@ export const availableOpeningOffsetRanges = ({
     }));
   const { nodes, subsegments } = buildGraph(draft.walls, []);
   const { edgeFace } = traverseFaces(nodes, subsegments);
-  const { runs } = normalizeWallRuns(draft.walls, subsegments, edgeFace);
+  const occupiedIds = draft.slopedCeilings?.map((ceiling) => ceiling.id);
+  const { runs } = normalizeWallRuns(draft.walls, subsegments, edgeFace, occupiedIds);
   const walls = runs.map(({ wall, classification }) => ({
     ...wall,
     thicknessMeters:
@@ -65,7 +66,7 @@ export const availableOpeningOffsetRanges = ({
         0.002) /
       draft.coordinates.metersPerPlanUnit
     : 0;
-  const junctions = deriveJunctions(walls, nodes, draft.junctions);
+  const junctions = deriveJunctions(walls, nodes, draft.junctions, occupiedIds);
   for (const run of runs.filter((run) => run.sourceWallId === wallId)) {
     const owner = walls.find((wall) => wall.id === run.wallId)!;
     const length = Math.hypot(owner.to[0] - owner.from[0], owner.to[1] - owner.from[1]);

@@ -21,11 +21,20 @@ import { FloorScene, type FloorSceneProps } from "./building/FloorScene";
 import { deriveFloorLevels } from "./building/floor-levels";
 import { visibleFloorIds, type FloorView } from "./building/floor-visibility";
 import { BuildingRoof } from "./roof";
+import { planPointToWorld } from "./geometry";
+import type { MultiPolygon } from "polygon-clipping";
 export { ArchitecturalFloor, ArchitecturalWall } from "./building/FloorScene";
 
 type ArchitectureSceneProps = Omit<
   FloorSceneProps,
-  "sourceFloor" | "showGround" | "showCeiling" | "below" | "above" | "platformBelow"
+  | "sourceFloor"
+  | "showGround"
+  | "showCeiling"
+  | "ceilingCutawayHeightMeters"
+  | "ceilingCutawayFootprint"
+  | "below"
+  | "above"
+  | "platformBelow"
 > & {
   selectedRoomId: string | null;
   activeFloorId?: string;
@@ -43,6 +52,13 @@ export const ArchitectureScene = memo(function ArchitectureScene({
     manifest.floors.find((floor) => !floor.belowGround)?.id ??
     manifest.floors[0]?.id;
   const view = walkMode ? "walk" : (floorView ?? "cutaway");
+  const viewedFloor = manifest.floors.find((floor) => floor.id === active);
+  const cutawayFootprint = useMemo<MultiPolygon | undefined>(() => {
+    if (view !== "cutaway" || !viewedFloor) return undefined;
+    return (viewedFloor.footprintRegions ?? [viewedFloor.footprint]).map((polygon) => [
+      polygon.map((point) => [...planPointToWorld(point, viewedFloor.coordinates)]),
+    ]);
+  }, [view, viewedFloor]);
   const visible = new Set(
     visibleFloorIds(
       manifest.floors.map((floor) => floor.id),
@@ -83,24 +99,31 @@ export const ArchitectureScene = memo(function ArchitectureScene({
       "id" | "outdoorPlatforms"
     >[];
     const apertures = JSON.parse(apertureKey) as ReturnType<typeof deriveStairApertures>;
+    const terrain = JSON.parse(terrainApertureKey) as import("./types").Polygon[];
     return new Map(
-      floors.map((floor) => [
-        floor.id,
-        {
-          terrain: JSON.parse(terrainApertureKey) as import("./types").Polygon[],
-          floor: apertures
-            .filter((a) => a.floorId === floor.id && a.surface === "floor")
-            .map((a) => a.polygon),
-          ceiling: [
-            ...apertures
-              .filter((a) => a.floorId === floor.id && a.surface === "ceiling")
+      floors.map((floor, index) => {
+        const ceilingStairs = apertures.flatMap((aperture) =>
+          aperture.floorId === floor.id && aperture.surface === "ceiling"
+            ? [{ polygon: aperture.polygon, riseMeters: aperture.riseMeters }]
+            : [],
+        );
+        return [
+          floor.id,
+          {
+            terrain,
+            floor: apertures
+              .filter((a) => a.floorId === floor.id && a.surface === "floor")
               .map((a) => a.polygon),
-            ...(floors[floors.indexOf(floor) + 1]?.outdoorPlatforms ?? [])
-              .filter((platform) => isOutdoorPlatformOutline(platform.polygon))
-              .map((platform) => platform.polygon),
-          ],
-        },
-      ]),
+            ceilingStairs,
+            ceiling: [
+              ...ceilingStairs.map(({ polygon }) => polygon),
+              ...(floors[index + 1]?.outdoorPlatforms ?? [])
+                .filter((platform) => isOutdoorPlatformOutline(platform.polygon))
+                .map((platform) => platform.polygon),
+            ],
+          },
+        ];
+      }),
     );
   }, [apertureKey, apertureFloorsKey, terrainApertureKey]);
   const floorManifests = useMemo(
@@ -117,13 +140,14 @@ export const ArchitectureScene = memo(function ArchitectureScene({
     [manifest],
   );
   const levels = deriveFloorLevels(manifest.floors);
+  const activeElevation = levels.find((level) => level.floorId === active)?.elevationMeters ?? 0;
   const apartmentFloor = manifest.home.apartmentFloor ?? 0;
   const lowest = manifest.floors[0];
   const base = levels[0]?.elevationMeters ?? 0;
   const contextBounds = lowest ? worldBoundsForFloorScene(lowest) : null;
   const offset =
     props.interactionMode === "editor" && view !== "plan" && view !== "whole"
-      ? -(levels.find((level) => level.floorId === active)?.elevationMeters ?? 0)
+      ? -activeElevation
       : 0;
   // Unshadowed point lights stay on the viewed storey so fixtures below cannot
   // illuminate the floor above.
@@ -172,11 +196,12 @@ export const ArchitectureScene = memo(function ArchitectureScene({
                       }
                       showGround={apartmentFloor === 0 && floor === ground && view !== "plan"}
                       showCeiling={view === "walk" || (view === "cutaway" && floor.id !== active)}
-                      ceilingMaxHeightMeters={
-                        view === "cutaway" && floor.id !== active
-                          ? floor.floorToFloorHeightMeters
+                      ceilingCutawayHeightMeters={
+                        view === "cutaway"
+                          ? activeElevation - levels[index].elevationMeters
                           : undefined
                       }
+                      ceilingCutawayFootprint={cutawayFootprint}
                       manifest={floorManifests.get(floor.id)!}
                       interactionMode={floor.id === active ? props.interactionMode : "editor"}
                       onSelectRoom={floor.id === active ? props.onSelectRoom : undefined}

@@ -4,14 +4,20 @@ import { Path, Shape } from "three";
 import { planPointToWorld } from "../geometry";
 import type { FloorCoordinates, PlanPoint, Polygon } from "../types";
 
+type SlopedCeilingAperture = { polygon: Polygon; riseMeters: number };
+
 export const StairSurfaceApertures = createContext<{
   floor: readonly Polygon[];
   ceiling: readonly Polygon[];
+  ceilingStairs?: readonly SlopedCeilingAperture[];
   terrain?: readonly Polygon[];
 }>({ floor: [], ceiling: [], terrain: [] });
 const EMPTY_APERTURES: readonly Polygon[] = [];
+const EMPTY_CEILING_STAIRS: readonly SlopedCeilingAperture[] = [];
 export const useStairSurfaceApertures = (surface: "floor" | "ceiling" | "terrain") =>
   useContext(StairSurfaceApertures)[surface] ?? EMPTY_APERTURES;
+export const useSlopedCeilingApertures = () =>
+  useContext(StairSurfaceApertures).ceilingStairs ?? EMPTY_CEILING_STAIRS;
 export const cutSurfaceShapes = (
   polygon: Polygon,
   coordinates: FloorCoordinates,

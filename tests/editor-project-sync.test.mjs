@@ -16,6 +16,9 @@ await withModules(async (load) => {
   );
   const { ownerHomeProject } = await load("/tests/fixtures/bundled-home.ts");
   const { collectBindingSlots, validateHomeProject } = await load("/packages/engine/src/index.ts");
+  const { constructEditorReducer, createConstructEditorState } = await load(
+    "/apps/web/src/editor-preview/construct/construct-controller-reducer.ts",
+  );
   const { createFurnishingEditorState, furnishingEditorReducer: reduce } = await load(
     "/apps/web/src/editor-preview/furnish/editor-state.ts",
   );
@@ -106,13 +109,13 @@ await withModules(async (load) => {
     assert.deepEqual(Object.keys(next.openingProfiles), [floor.openings[0].id]);
   });
 
-  test("editor saves keep a floor's sloped ceilings, which the editor cannot draw", () => {
+  test("Construct keeps imported slopes and gables through a room edit and undo", () => {
     const editorFloor = ownerProjectManifest.floors[0];
     const [first, second] = editorFloor.rooms;
     const slope = {
       id: "a-frame",
       kind: "sloped",
-      roomIds: [first.id, "removed-room"],
+      roomIds: [first.id],
       planes: [
         {
           id: "plane",
@@ -124,11 +127,14 @@ await withModules(async (load) => {
         },
       ],
     };
+    const gable = { fill: "glass", columns: 4, transomHeightsMeters: [3.4] };
+    const withGable = (wall, index) => (index === 0 ? { ...wall, gable } : wall);
     const saved = {
       ...project,
       floors: [
         {
           ...project.floors[0],
+          walls: project.floors[0].walls.map(withGable),
           ceilings: [
             slope,
             ...(project.floors[0].ceilings ?? []).flatMap((ceiling) => {
@@ -139,17 +145,38 @@ await withModules(async (load) => {
         },
       ],
     };
-    // The editor floor carries only the flat ceilings it derived for every room.
-    const next = projectFromEditorState(saved, editorFloor, saved.sceneItems);
+    const initial = createConstructEditorState({
+      ...editorFloor,
+      walls: editorFloor.walls.map(withGable),
+      ceilings: saved.floors[0].ceilings,
+    });
+    const room = initial.history.present.rooms.find(({ id }) => id === first.id);
+    assert.ok(room);
+    const edited = constructEditorReducer(initial, {
+      type: "update-room-metadata",
+      roomId: first.id,
+      anchor: room.anchor,
+      changes: { name: "Cathedral hall" },
+    });
+    assert.notEqual(edited, initial);
+    const next = projectFromEditorState(saved, edited.previewFloor, saved.sceneItems);
     const ceilings = next.floors[0].ceilings;
     assert.deepEqual(
       ceilings.filter((ceiling) => ceiling.kind === "sloped"),
-      [{ ...slope, roomIds: [first.id] }],
+      [slope],
+    );
+    assert.equal(next.floors[0].rooms.find(({ id }) => id === first.id).name, "Cathedral hall");
+    assert.deepEqual(
+      next.floors[0].walls.find(({ id }) => id === editorFloor.walls[0].id).gable,
+      gable,
     );
     assert.ok(
       ceilings.every((ceiling) => ceiling.kind === "sloped" || !ceiling.roomIds.includes(first.id)),
     );
     assert.ok(ceilings.some((ceiling) => ceiling.roomIds.includes(second.id)));
+    const undone = constructEditorReducer(edited, { type: "undo" });
+    assert.deepEqual(undone.previewFloor.ceilings, initial.previewFloor.ceilings);
+    assert.deepEqual(undone.previewFloor.walls, initial.previewFloor.walls);
   });
 
   test("creates one reversible command for a semantic editor change", () => {

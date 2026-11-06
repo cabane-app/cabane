@@ -57,16 +57,20 @@ export function wallSurfaceRepeatHeight(finish: WallSurfaceFinish | undefined): 
  * such as the triangle at the end of an A-frame. Without a sloped ceiling above
  * it, the wall stops at heightMeters as usual.
  */
-export interface WallGableSpec {
-  /** Glass fills the gable above heightMeters, which then acts as its header. */
-  fill: "solid" | "glass";
-  /** Frame and mullion color of a glass gable. */
-  frameColor?: string;
-  /** Glass panes across the gable, split by vertical mullions (default 2). */
-  columns?: number;
-  /** Heights above the floor of horizontal transoms in a glass gable. */
-  transomHeightsMeters?: readonly number[];
-}
+export type WallGableSpec =
+  | { fill: "solid" }
+  | {
+      /** Glass fills the gable above heightMeters, which then acts as its header. */
+      fill: "glass";
+      frameColor?: string;
+      /** Glass panes across the gable, split by vertical mullions (default 2). */
+      columns?: number;
+      /** Heights above the floor of horizontal transoms in a glass gable. */
+      transomHeightsMeters?: readonly number[];
+    };
+
+export const MAX_GABLE_COLUMNS = 32;
+export const MAX_GABLE_TRANSOMS = 32;
 
 export interface WallSpec {
   id: string;

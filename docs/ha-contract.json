@@ -1,9 +1,9 @@
 {
   "revision": 38,
-  "fingerprint": "34008b429fdcb3906902cd5c678ee2057bbfb6ab0eb209b143390aa38556da57",
-  "summary": "Allow sloped ceilings in layout projects and gable walls that rise to them",
+  "fingerprint": "157afb63167bb31c8306a85f7a0b6530f8adf30f4faa67792a71071e78b94493",
+  "summary": "Allow authored sloped ceilings and solid or glazed wall gables in layout projects",
   "breakingChanges": [
-    "No saved fields or IDs change for existing projects. Layout projects may now store sloped ceilings and wall gable settings; older frontends and Home Assistant panels reject projects that use them."
+    "Existing flat projects keep their saved fields and IDs. Update older frontends and Home Assistant panels before opening a layout with sloped ceilings or wall gables."
   ],
   "history": [
     {

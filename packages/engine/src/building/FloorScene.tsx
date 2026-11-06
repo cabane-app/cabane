@@ -10,8 +10,8 @@ export type FloorSceneProps = {
   above?: HomeManifest["floors"][number] | undefined;
   showGround: boolean;
   showCeiling: boolean;
-  /** Leave out sloped ceiling planes that rise above this height. */
-  ceilingMaxHeightMeters?: number | undefined;
+  ceilingCutawayHeightMeters?: number | undefined;
+  ceilingCutawayFootprint?: import("polygon-clipping").MultiPolygon | undefined;
   manifest: HomeManifest;
   walkMode: boolean;
   wallFadeEnabled: boolean;
@@ -72,7 +72,8 @@ export const FloorScene = memo(function FloorScene({
   sourceFloor,
   showGround,
   showCeiling,
-  ceilingMaxHeightMeters,
+  ceilingCutawayHeightMeters,
+  ceilingCutawayFootprint,
   below,
   above,
   platformBelow,
@@ -251,7 +252,13 @@ export const FloorScene = memo(function FloorScene({
           />
         );
       })}
-      {showCeiling && <CeilingSurfaces floor={floor} maxHeightMeters={ceilingMaxHeightMeters} />}
+      {showCeiling && (
+        <CeilingSurfaces
+          floor={floor}
+          cutawayHeightMeters={ceilingCutawayHeightMeters}
+          cutawayFootprint={ceilingCutawayFootprint}
+        />
+      )}
       {manifest.sceneItems.length > 0 ? (
         manifest.sceneItems
           .filter((item) => item.floorId === floor.id)

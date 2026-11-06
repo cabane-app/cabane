@@ -2,7 +2,7 @@ import { splitWallSurfaceGeometry } from "../architecture-geometry/wall-surface-
 import { useWallSurfaceTextures } from "./wall-surface-textures";
 import { wallFrame } from "../architecture-geometry/wall-coordinate-frame";
 import { wallFaceFinish, wallEdgeFinish } from "../architecture-geometry/wall-face-finish";
-import { BufferGeometry, Color, DoubleSide, Float32BufferAttribute } from "three";
+import { BufferGeometry, Color, Float32BufferAttribute } from "three";
 
 import { useEffect, useMemo } from "react";
 import { useWallRoomSelection } from "./useWallRoomSelection";
@@ -171,13 +171,7 @@ export function ArchitecturalWalls({
         >
           {/* The same tint as window glass. */}
           <mesh geometry={geometry} receiveShadow>
-            <ToonMaterial
-              color="#9bcbd2"
-              transparent
-              opacity={0.48}
-              depthWrite={false}
-              side={DoubleSide}
-            />
+            <ToonMaterial color="#9bcbd2" transparent opacity={0.48} depthWrite={false} />
           </mesh>
         </CameraFacingFade>
       ))}

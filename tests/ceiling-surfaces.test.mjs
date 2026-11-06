@@ -190,11 +190,26 @@ await withModules(async (load) => {
         },
       ],
     };
-    for (const [maxHeightMeters, expected] of [
+    const separated = room.map(([x, z]) => [x + 10, z]);
+    const shallow = [
+      [0, 0],
+      [8, 0],
+      [8, 0.5],
+      [0, 0.5],
+    ];
+    for (const [cutawayFootprint, expected] of [
       [undefined, 2],
-      [3, 1],
+      [[[separated]], 2],
+      [[[shallow]], 2],
+      [[[room]], 1],
     ]) {
-      const renderer = await create(createElement(CeilingSurfaces, { floor, maxHeightMeters }));
+      const renderer = await create(
+        createElement(CeilingSurfaces, {
+          floor,
+          cutawayHeightMeters: 3,
+          cutawayFootprint,
+        }),
+      );
       try {
         assert.equal(renderer.scene.findAllByType("Mesh").length, expected);
       } finally {

@@ -44,12 +44,8 @@ const layoutFloors = new WeakMap<FloorSpec, DraftLayoutFloorSpec>();
 export const layoutFloorFromEditorFloor = (floor: FloorSpec): DraftLayoutFloorSpec => {
   const cached = layoutFloors.get(floor);
   if (cached) return cached;
-  const { ceilings: _ceilings, ...architecture } = floor;
   const layout: DraftLayoutFloorSpec = {
-    ...architecture,
-    ...(floor.ceilings
-      ? { ceilings: floor.ceilings.filter((ceiling) => ceiling.kind === "flat") }
-      : {}),
+    ...floor,
     rooms: indoorRoomsForFloor(floor).map((room) => {
       const {
         furnishings: _furnishings,
@@ -72,31 +68,15 @@ export const layoutFloorFromEditorFloor = (floor: FloorSpec): DraftLayoutFloorSp
   return layout;
 };
 
-/**
- * The editor draws flat ceilings only. Keep the sloped ceilings a floor already
- * has over rooms that still exist, in place of the flat ones it gives them.
- */
-const withSlopedCeilings = (
+const keepCeilingOrder = (
   candidate: DraftLayoutFloorSpec,
   previous: DraftLayoutFloorSpec,
 ): DraftLayoutFloorSpec => {
-  const roomIds = new Set(candidate.rooms.map((room) => room.id));
-  const sloped = (previous.ceilings ?? []).flatMap((ceiling) => {
-    if (ceiling.kind !== "sloped") return [];
-    const kept = ceiling.roomIds.filter((id) => roomIds.has(id));
-    return kept.length ? [{ ...ceiling, roomIds: kept }] : [];
-  });
-  if (!sloped.length) return candidate;
-  const slopedRooms = new Set(sloped.flatMap((ceiling) => ceiling.roomIds));
-  const flat = (candidate.ceilings ?? []).flatMap((ceiling) => {
-    const kept = ceiling.roomIds.filter((id) => !slopedRooms.has(id));
-    return kept.length ? [{ ...ceiling, roomIds: kept }] : [];
-  });
-  // Keep the saved order, so an unchanged floor still compares equal.
+  if (!candidate.ceilings?.some((ceiling) => ceiling.kind === "sloped")) return candidate;
   const order = new Map((previous.ceilings ?? []).map((ceiling, index) => [ceiling.id, index]));
   return {
     ...candidate,
-    ceilings: [...flat, ...sloped].sort(
+    ceilings: [...candidate.ceilings].sort(
       (a, b) => (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity),
     ),
   };
@@ -109,7 +89,7 @@ export const projectFromEditorState = (
 ): HomeProject => {
   const previous = base.floors.find((entry) => entry.id === floor.id);
   if (!previous) return base; // A top-floor removal can precede the editor replacement render.
-  const candidate = withSlopedCeilings(layoutFloorFromEditorFloor(floor), previous);
+  const candidate = keepCeilingOrder(layoutFloorFromEditorFloor(floor), previous);
   const layoutFloor = sameJson(candidate, previous) ? previous : candidate;
   const floors =
     layoutFloor === previous

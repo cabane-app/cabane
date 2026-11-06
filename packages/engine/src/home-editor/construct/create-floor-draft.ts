@@ -14,6 +14,13 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
   floorToFloorHeightMeters: floor.floorToFloorHeightMeters,
   ...(floor.belowGround !== undefined ? { belowGround: floor.belowGround } : {}),
   floorName: floor.name,
+  ...(floor.ceilings?.some((ceiling) => ceiling.kind === "sloped")
+    ? {
+        slopedCeilings: structuredClone(
+          floor.ceilings.filter((ceiling) => ceiling.kind === "sloped"),
+        ),
+      }
+    : {}),
   ...(floor.hedges ? { hedges: floor.hedges.map((hedge) => ({ ...hedge })) } : {}),
   ...(floor.outdoorPlatforms
     ? {

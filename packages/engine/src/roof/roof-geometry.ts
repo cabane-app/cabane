@@ -3,9 +3,18 @@ import { DEFAULT_WALL_COLORS } from "../wall-colors";
 import polygonClipping, { type Polygon as ClipPolygon } from "polygon-clipping";
 import { BufferGeometry, Color, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
 import type { FloorSpec } from "../types";
+import { deriveFloorLevels } from "../building/floor-levels";
 import { deriveRoofRegions, type RoofRegion } from "./roof-coverage";
-import { DEFAULT_ROOF_SETTINGS, ROOF_THICKNESS_METERS, type RoofSettings } from "./roof-settings";
-import { roofWallBreaks, createRoofWallFinish, createGableWallTest } from "./roof-wall-finish";
+import {
+  DEFAULT_ROOF_SETTINGS,
+  ROOF_CEILING_DEPTH_METERS,
+  ROOF_THICKNESS_METERS,
+  type RoofSettings,
+} from "./roof-settings";
+import { createRoofWallLookup, roofWallFaceColor } from "./roof-wall-finish";
+import { createRoofGableSpans } from "./roof-gable-spans";
+import { alignRoofRim, roofRimOffset, type RoofRimSegment } from "./roof-rim";
+import { sharedSlopeEdgeSpans } from "./roof-slope-seams";
 
 type Point = [number, number];
 const openRing = (ring: Point[]): Point[] =>
@@ -41,47 +50,16 @@ function appendSurface(
 
 function appendRegion(
   region: RoofRegion,
-  floor: FloorSpec,
+  walls: ReturnType<typeof createRoofWallLookup>,
   settings: RoofSettings,
   exteriorColor: string,
   top: number[],
   edges: number[],
   infill: number[],
   infillColors: number[],
-  neighbors: readonly RoofRegion[] = [],
+  slopes: readonly RoofRegion[],
+  gableSpans?: ReturnType<typeof createRoofGableSpans>,
 ) {
-  const roofWallFinish = createRoofWallFinish(floor);
-  const gableWall = createGableWallTest(floor);
-  // Authored slopes that continue each other at the same height, like the two
-  // halves of an A or one A carried over two floors, meet at a ridge or a
-  // joint rather than a wall: neither closes that edge with infill.
-  const slopeSeam = (p: Point, q: Point) => {
-    if (!region.heightAt) return false;
-    const length = Math.hypot(q[0] - p[0], q[1] - p[1]);
-    // Authored boundaries may wind either way, so look on both sides of the edge.
-    const middle: Point = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
-    const probes = [1, -1].map((side): Point => [
-      (p[0] + q[0]) / 2 + ((q[1] - p[1]) / length) * 0.02 * side,
-      (p[1] + q[1]) / 2 - ((q[0] - p[0]) / length) * 0.02 * side,
-    ]);
-    return neighbors.some(
-      (other) =>
-        other !== region &&
-        other.heightAt &&
-        Math.abs(other.heightAt(middle) - region.heightAt!(middle)) < 0.02 &&
-        probes.some(
-          (probe) =>
-            polygonClipping.intersection(other.polygon, [
-              [
-                [probe[0] - 0.001, probe[1] - 0.001],
-                [probe[0] + 0.001, probe[1] - 0.001],
-                [probe[0] + 0.001, probe[1] + 0.001],
-                [probe[0] - 0.001, probe[1] + 0.001],
-              ],
-            ]).length > 0,
-        ),
-    );
-  };
   const points = region.polygon[0];
   const { axis, ridge, heightAt } = roofRegionSurface(region, settings);
   const topHeight = (point: Point) => heightAt(point) + ROOF_THICKNESS_METERS;
@@ -127,21 +105,21 @@ function appendRegion(
             ],
           ],
         ];
-  const surfaces =
-    region.heightAt || settings.direction === "flat"
-      ? [region.polygon]
-      : halves.flatMap((half) => polygonClipping.intersection(region.polygon, half));
-  for (const polygon of surfaces) appendSurface(top, polygon, topHeight);
-  // The ceiling remains an interior surface. Exterior infill closes the full
-  // slab/gable depth down to it; only the roof skin uses the trim material.
-  const bottom = () => region.baseHeight - 0.16;
-  for (const polygon of surfaces) appendSurface(edges, polygon, heightAt, true);
-  for (const sourceRing of region.polygon) {
+  const rims = region.polygon.map((sourceRing, ringIndex) => {
     const ring = openRing(sourceRing);
+    const rim: RoofRimSegment[] = [];
     for (let i = 0; i < ring.length; i++) {
       const a = ring[i],
         b = ring[(i + 1) % ring.length];
-      const breaks = [0, ...roofWallBreaks(floor, a, b), 1];
+      const seams = sharedSlopeEdgeSpans(region, slopes, a, b);
+      const gables = gableSpans?.(a, b, heightAt) ?? [];
+      const breaks = [
+        0,
+        ...walls.breaks(a, b),
+        ...seams.flat(),
+        ...gables.flatMap(({ start, end }) => [start, end]),
+        1,
+      ];
       if (
         !region.heightAt &&
         settings.direction !== "flat" &&
@@ -150,26 +128,55 @@ function appendRegion(
         const t = (ridge - a[axis]) / (b[axis] - a[axis]);
         breaks.push(t);
       }
-      const cuts: Point[] = [...new Set(breaks)]
-        .sort((a, b) => a - b)
-        .map((t) => [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]);
+      const cuts = [...new Set(breaks)].sort((a, b) => a - b);
+      const at = (t: number): Point => [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])];
       for (let j = 0; j < cuts.length - 1; j++) {
-        const p = cuts[j],
-          q = cuts[j + 1];
+        const middle = (cuts[j] + cuts[j + 1]) / 2;
+        const p = at(cuts[j]);
+        const q = at(cuts[j + 1]);
         if (Math.hypot(q[0] - p[0], q[1] - p[1]) < 1e-6) continue;
-        const p0 = [p[0], bottom(), p[1]],
-          p1 = [p[0], heightAt(p), p[1]],
-          p2 = [p[0], topHeight(p), p[1]];
-        const q0 = [q[0], bottom(), q[1]],
-          q1 = [q[0], heightAt(q), q[1]],
-          q2 = [q[0], topHeight(q), q[1]];
-        if (slopeSeam(p, q)) continue;
-        edges.push(...p1, ...p2, ...q2, ...p1, ...q2, ...q1);
-        if (gableWall(p, q)) continue;
-        infill.push(...p0, ...p1, ...q1, ...p0, ...q1, ...q0);
-        const color = new Color(roofWallFinish(p, q, exteriorColor));
-        for (let vertex = 0; vertex < 6; vertex++) infillColors.push(color.r, color.g, color.b);
+        const seam = seams.some(([start, end]) => start <= middle && middle <= end);
+        const gable = gables.find(({ start, end }) => start <= middle && middle <= end);
+        const support = seam ? undefined : (gable ?? walls.find(p, q));
+        rim.push({
+          from: p,
+          to: q,
+          seam,
+          gabled: gable !== undefined,
+          finish: roofWallFaceColor(support, p, q, exteriorColor),
+          offset:
+            region.heightAt && ringIndex === 0 && !seam ? roofRimOffset(support, p, q) : undefined,
+        });
       }
+    }
+    return alignRoofRim(rim);
+  });
+  const surfaces = region.heightAt
+    ? [rims.map((rim) => rim.map(({ from }) => from))]
+    : settings.direction === "flat"
+      ? [region.polygon]
+      : halves.flatMap((half) => polygonClipping.intersection(region.polygon, half));
+  for (const polygon of surfaces) {
+    appendSurface(top, polygon, topHeight);
+    appendSurface(edges, polygon, heightAt, true);
+  }
+  // The ceiling remains an interior surface. Exterior infill closes the full
+  // slab/gable depth down to it; only the roof skin uses the trim material.
+  const bottom = region.baseHeight - ROOF_CEILING_DEPTH_METERS;
+  for (const rim of rims) {
+    for (const { from: p, to: q, seam, gabled, finish } of rim) {
+      if (seam || Math.hypot(q[0] - p[0], q[1] - p[1]) < 1e-6) continue;
+      const p1 = [p[0], heightAt(p), p[1]],
+        p2 = [p[0], p1[1] + ROOF_THICKNESS_METERS, p[1]];
+      const q1 = [q[0], heightAt(q), q[1]],
+        q2 = [q[0], q1[1] + ROOF_THICKNESS_METERS, q[1]];
+      // A gable reaches the ceiling. Close the remaining depth up to the roof skin.
+      const p0 = [p[0], gabled ? p1[1] - ROOF_CEILING_DEPTH_METERS : bottom, p[1]];
+      const q0 = [q[0], gabled ? q1[1] - ROOF_CEILING_DEPTH_METERS : bottom, q[1]];
+      edges.push(...p1, ...p2, ...q2, ...p1, ...q2, ...q1);
+      infill.push(...p0, ...p1, ...q1, ...p0, ...q1, ...q0);
+      const color = new Color(finish);
+      for (let vertex = 0; vertex < 6; vertex++) infillColors.push(color.r, color.g, color.b);
     }
   }
 }
@@ -185,18 +192,40 @@ export function buildRoofGeometries(
     infillColors: number[] = [];
   const byId = new Map(floors.map((floor) => [floor.id, floor]));
   const regions = deriveRoofRegions(floors);
-  for (const region of regions)
+  const slopes = regions.filter((region) => region.heightAt);
+  const wallsByFloor = new Map<string, ReturnType<typeof createRoofWallLookup>>();
+  // A gable can rise from a lower storey into the roof over the floor above.
+  const gableLookups = slopes.length
+    ? deriveFloorLevels(floors).flatMap(({ floorId, elevationMeters }) => {
+        const floor = byId.get(floorId)!;
+        return floor.walls.some((wall) => wall.gable)
+          ? [createRoofGableSpans(floor, elevationMeters)]
+          : [];
+      })
+    : [];
+  const gableSpans: ReturnType<typeof createRoofGableSpans> | undefined = gableLookups.length
+    ? (from, to, heightAt) => gableLookups.flatMap((lookup) => lookup(from, to, heightAt))
+    : undefined;
+  for (const region of regions) {
+    const floor = byId.get(region.floorId)!;
+    let walls = wallsByFloor.get(floor.id);
+    if (!walls) {
+      walls = createRoofWallLookup(floor);
+      wallsByFloor.set(floor.id, walls);
+    }
     appendRegion(
       region,
-      byId.get(region.floorId)!,
+      walls,
       settings,
       exteriorColor,
       top,
       edges,
       infill,
       infillColors,
-      regions,
+      slopes,
+      region.heightAt ? gableSpans : undefined,
     );
+  }
   const wallInfill = meshGeometry(infill);
   wallInfill.setAttribute("color", new Float32BufferAttribute(infillColors, 3));
   return { top: meshGeometry(top), edges: meshGeometry(edges), infill: wallInfill };

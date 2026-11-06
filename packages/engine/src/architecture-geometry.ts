@@ -8,7 +8,7 @@ import { physicalFloor } from "./architecture-geometry/physical-floor";
 import {
   DEFAULT_GABLE_FRAME_COLOR,
   extrudeWallPlaneShapes,
-  wallGableShapes,
+  wallGablesForFloor,
 } from "./architecture-geometry/wall-gable-geometry";
 import { type MultiPolygon } from "polygon-clipping";
 
@@ -47,12 +47,7 @@ export function buildArchitecturalWallGeometries(
   // Continue exterior finish across the structural slab between ceiling and next level.
   // A gable wall's horizontal bands stop where its gable begins; the gable
   // follows the sloped ceiling above them and is drawn after the bands.
-  const gables = new Map(
-    sourceFloor.walls.flatMap((wall) => {
-      const shapes = wallGableShapes(wall, sourceFloor, sourceFloor.openings);
-      return shapes ? [[wall.id, shapes] as const] : [];
-    }),
-  );
+  const gables = wallGablesForFloor(sourceFloor);
   const floor =
     neighbors.above || gables.size
       ? {
@@ -123,6 +118,15 @@ export function buildArchitecturalWallGeometries(
         continue;
       buffers.fadeNormals.push(normal);
     }
+    return buffers;
+  };
+  const buffersForFace = (normal: Horizontal | null, finish?: WallSurfaceFinish) => {
+    if (!finish) return buffersFor(normal);
+    const buffers = buffersFor(
+      normal,
+      `${normal?.join(":") ?? "interior"}:${finishIds.get(finish)}`,
+    );
+    buffers.finish = finish;
     return buffers;
   };
   const insideColor = new Color(interiorColor);
@@ -319,13 +323,7 @@ export function buildArchitecturalWallGeometries(
               outside ? outsideColor : insideColor,
             );
             const fadeNormal = fadeNormalAt(center, band.activeWalls);
-            const buffers = face.finish
-              ? buffersFor(
-                  fadeNormal,
-                  `${fadeNormal?.join(":") ?? "interior"}:${finishIds.get(face.finish)}`,
-                )
-              : buffersFor(fadeNormal);
-            if (face.finish) buffers.finish = face.finish;
+            const buffers = buffersForFace(fadeNormal, face.finish);
             const aBottom = [a[0], band.bottom, a[1]] as const;
             const bBottom = [b[0], band.bottom, b[1]] as const;
             const aTop = [a[0], band.top, a[1]] as const;
@@ -348,21 +346,20 @@ export function buildArchitecturalWallGeometries(
       exteriorNormal !== null &&
       exteriorNormal[0] * frame.normal[0] + exteriorNormal[1] * frame.normal[1] > 0 ===
         (face === "left");
-    const faceColor = (face: "left" | "right" | "edge") =>
-      customColor(
-        face === "edge"
-          ? wallEdgeFinish(wall, interiorColor)
-          : wallFaceFinish(
-              wall,
-              face,
-              outside(face),
-              outside(face) ? exteriorColor : interiorColor,
-            ),
-      );
-    extrudeWallPlaneShapes(shapes.solid, wall, floor, wall.thicknessMeters, (a, b, c, face) =>
-      addTriangle(buffers, a, b, c, faceColor(face)),
-    );
-    const frameColor = customColor(wall.gable?.frameColor ?? DEFAULT_GABLE_FRAME_COLOR);
+    extrudeWallPlaneShapes(shapes.solid, wall, floor, wall.thicknessMeters, (a, b, c, face) => {
+      if (face === "edge") {
+        addTriangle(buffers, a, b, c, customColor(wallEdgeFinish(wall, interiorColor)));
+        return;
+      }
+      const finish = wall.faceFinishes?.[face];
+      const isOutside = outside(face);
+      const color = finish
+        ? "white"
+        : wallFaceFinish(wall, face, isOutside, isOutside ? exteriorColor : interiorColor);
+      addTriangle(buffersForFace(exteriorNormal, finish), a, b, c, customColor(color), frame, face);
+    });
+    if (wall.gable?.fill !== "glass") continue;
+    const frameColor = customColor(wall.gable.frameColor ?? DEFAULT_GABLE_FRAME_COLOR);
     extrudeWallPlaneShapes(
       shapes.frame,
       wall,
@@ -398,8 +395,10 @@ export function buildArchitecturalWallGeometries(
 /** The glass of every glass gable on a floor, grouped by the facade it fades with. */
 export function buildWallGableGlass(floor: FloorSpec) {
   const groups = new Map<string, { outwardNormal: Horizontal | null; positions: number[] }>();
+  const gables = wallGablesForFloor(floor);
+  if (!gables.size) return [];
   for (const wall of floor.walls) {
-    const shapes = wallGableShapes(wall, floor, floor.openings);
+    const shapes = gables.get(wall.id);
     if (!shapes?.glass.length) continue;
     const outwardNormal = wallExteriorNormal(wall, floor);
     const key = outwardNormal

@@ -3247,41 +3247,48 @@
                         "gable": {
                           "optional": true,
                           "schema": {
-                            "properties": {
-                              "columns": {
-                                "optional": true,
-                                "schema": {
-                                  "type": "number"
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "columns": {
+                                    "optional": true,
+                                    "schema": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "fill": {
+                                    "optional": false,
+                                    "schema": {
+                                      "const": "glass"
+                                    }
+                                  },
+                                  "frameColor": {
+                                    "optional": true,
+                                    "schema": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "transomHeightsMeters": {
+                                    "optional": true,
+                                    "schema": {
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  }
                                 }
                               },
-                              "fill": {
-                                "optional": false,
-                                "schema": {
-                                  "anyOf": [
-                                    {
-                                      "const": "glass"
-                                    },
-                                    {
+                              {
+                                "properties": {
+                                  "fill": {
+                                    "optional": false,
+                                    "schema": {
                                       "const": "solid"
                                     }
-                                  ]
-                                }
-                              },
-                              "frameColor": {
-                                "optional": true,
-                                "schema": {
-                                  "type": "string"
-                                }
-                              },
-                              "transomHeightsMeters": {
-                                "optional": true,
-                                "schema": {
-                                  "items": {
-                                    "type": "number"
                                   }
                                 }
                               }
-                            }
+                            ]
                           }
                         },
                         "heightMeters": {
@@ -8657,41 +8664,48 @@
                       "gable": {
                         "optional": true,
                         "schema": {
-                          "properties": {
-                            "columns": {
-                              "optional": true,
-                              "schema": {
-                                "type": "number"
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "columns": {
+                                  "optional": true,
+                                  "schema": {
+                                    "type": "number"
+                                  }
+                                },
+                                "fill": {
+                                  "optional": false,
+                                  "schema": {
+                                    "const": "glass"
+                                  }
+                                },
+                                "frameColor": {
+                                  "optional": true,
+                                  "schema": {
+                                    "type": "string"
+                                  }
+                                },
+                                "transomHeightsMeters": {
+                                  "optional": true,
+                                  "schema": {
+                                    "items": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
                               }
                             },
-                            "fill": {
-                              "optional": false,
-                              "schema": {
-                                "anyOf": [
-                                  {
-                                    "const": "glass"
-                                  },
-                                  {
+                            {
+                              "properties": {
+                                "fill": {
+                                  "optional": false,
+                                  "schema": {
                                     "const": "solid"
                                   }
-                                ]
-                              }
-                            },
-                            "frameColor": {
-                              "optional": true,
-                              "schema": {
-                                "type": "string"
-                              }
-                            },
-                            "transomHeightsMeters": {
-                              "optional": true,
-                              "schema": {
-                                "items": {
-                                  "type": "number"
                                 }
                               }
                             }
-                          }
+                          ]
                         }
                       },
                       "heightMeters": {
