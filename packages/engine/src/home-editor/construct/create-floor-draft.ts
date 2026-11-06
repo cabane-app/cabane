@@ -58,6 +58,7 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
     ...(wall.faceFinishes ? { faceFinishes: structuredClone(wall.faceFinishes) } : {}),
     ...(wall.niches ? { niches: wall.niches.map((niche) => ({ ...niche })) } : {}),
     ...(wall.gable ? { gable: structuredClone(wall.gable) } : {}),
+    ...(wall.leanMeters ? { leanMeters: wall.leanMeters } : {}),
   })),
   openings: floor.openings.map((opening) => {
     const shared = {

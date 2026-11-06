@@ -200,64 +200,56 @@ export const FloorScene = memo(function FloorScene({
       {sourceFloor.openings.map((opening) => {
         const wall = floor.walls.find((candidate) => candidate.id === opening.wallId);
         if (!wall) return null;
+        const CustomModel = opening.visualModel
+          ? Object.hasOwn(manifest.extensions.openingModels, opening.visualModel)
+            ? manifest.extensions.openingModels[opening.visualModel]
+            : undefined
+          : undefined;
+        const rendered = CustomModel ? (
+          <SceneOpeningRenderer
+            model={CustomModel}
+            wall={wall}
+            opening={opening}
+            floor={sourceFloor}
+            position={openingPositions[opening.id] ?? 0}
+            reducedMotion={reducedMotion}
+          />
+        ) : opening.kind === "door" ? (
+          <SceneOpeningRenderer
+            model={DoorModel}
+            walkMode={walkMode}
+            onInteract={interactionMode === "runtime" ? onInteract : undefined}
+            wall={wall}
+            opening={opening}
+            floor={floor}
+            position={openingPositions[opening.id] ?? 0}
+            reducedMotion={reducedMotion}
+          />
+        ) : opening.kind === "window" ? (
+          <SceneOpeningRenderer
+            model={WindowModel}
+            wall={wall}
+            opening={opening}
+            floor={floor}
+            position={openingPositions[opening.id] ?? 0}
+            reducedMotion={reducedMotion}
+          />
+        ) : (
+          <SceneOpeningRenderer
+            model={PassageModel}
+            wall={wall}
+            opening={opening}
+            floor={floor}
+            position={1}
+            reducedMotion={reducedMotion}
+          />
+        );
+        // Windows and doors shear with a leaning wall.
         return (
           <WallLeanGroup key={opening.id} wall={wall} floor={floor}>
-            {renderOpening(wall)}
+            {rendered}
           </WallLeanGroup>
         );
-        function renderOpening(wall: (typeof floor.walls)[number]) {
-          const CustomModel = opening.visualModel
-            ? Object.hasOwn(manifest.extensions.openingModels, opening.visualModel)
-              ? manifest.extensions.openingModels[opening.visualModel]
-              : undefined
-            : undefined;
-          if (CustomModel) {
-            return (
-              <SceneOpeningRenderer
-                model={CustomModel}
-                key={opening.id}
-                wall={wall}
-                opening={opening}
-                floor={sourceFloor}
-                position={openingPositions[opening.id] ?? 0}
-                reducedMotion={reducedMotion}
-              />
-            );
-          }
-          return opening.kind === "door" ? (
-            <SceneOpeningRenderer
-              model={DoorModel}
-              walkMode={walkMode}
-              onInteract={interactionMode === "runtime" ? onInteract : undefined}
-              key={opening.id}
-              wall={wall}
-              opening={opening}
-              floor={floor}
-              position={openingPositions[opening.id] ?? 0}
-              reducedMotion={reducedMotion}
-            />
-          ) : opening.kind === "window" ? (
-            <SceneOpeningRenderer
-              model={WindowModel}
-              key={opening.id}
-              wall={wall}
-              opening={opening}
-              floor={floor}
-              position={openingPositions[opening.id] ?? 0}
-              reducedMotion={reducedMotion}
-            />
-          ) : (
-            <SceneOpeningRenderer
-              model={PassageModel}
-              key={opening.id}
-              wall={wall}
-              opening={opening}
-              floor={floor}
-              position={1}
-              reducedMotion={reducedMotion}
-            />
-          );
-        }
       })}
       {showCeiling && <CeilingSurfaces floor={floor} maxHeightMeters={ceilingMaxHeightMeters} />}
       {manifest.sceneItems.length > 0 ? (

@@ -441,4 +441,19 @@ await withModules(async (load) => {
     });
     assert.deepEqual(gables(history), [["front", [0, 0.5], [8, 0.5], gable]]);
   });
+
+  test("a glass gable on a leaning wall leans with it", () => {
+    const glassTop = (lean) => {
+      const floor = aFrame({ fill: "glass" });
+      floor.walls[0] = { ...floor.walls[0], ...(lean ? { leanMeters: lean } : {}) };
+      const points = buildWallGableGlass(floor).flatMap(({ geometry }) => heights(geometry));
+      const top = Math.max(...points.map(([, y]) => y));
+      return { top, z: points.filter(([, y]) => y > top - 0.01).map(([, , z]) => z) };
+    };
+    // The front wall runs along y = 0, so it leans across z.
+    // The shear carries on above the wall's 2.4 m top, up the gable.
+    const upright = glassTop(0);
+    const leaning = glassTop(0.4);
+    near(Math.abs(leaning.z[0] - upright.z[0]), (0.4 * upright.top) / 2.4);
+  });
 });

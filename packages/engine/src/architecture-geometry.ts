@@ -414,6 +414,7 @@ export function buildWallGableGlass(floor: FloorSpec) {
     });
   }
   return [...groups.values()].map(({ outwardNormal, positions }) => {
+    leanPositions(positions, floor);
     const geometry = new BufferGeometry();
     geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
     geometry.computeVertexNormals();

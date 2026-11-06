@@ -176,6 +176,21 @@ export const validateWalls = (
         );
       }
     }
+    if (rawWall.leanMeters !== undefined) {
+      const height = Number(rawWall.heightMeters ?? rawFloor.defaultWallHeightMeters);
+      if (
+        !isFiniteNumber(rawWall.leanMeters) ||
+        (Number.isFinite(height) && Math.abs(rawWall.leanMeters) > height)
+      ) {
+        issues.push(
+          issue(
+            "wall.lean",
+            `${wallPath}.leanMeters`,
+            "A wall can lean at most as far as it is high (45 degrees).",
+          ),
+        );
+      }
+    }
   });
   const validWalls = walls.filter(
     (wall): wall is ValidWall =>
