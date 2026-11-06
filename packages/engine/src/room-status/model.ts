@@ -1,6 +1,6 @@
 import { isAuxiliaryEntitySlot } from "../entity-slot-roles";
 import { omitUndefinedProperties } from "../defined-properties";
-import { collectBindingSlots } from "../runtime-binding-profile";
+import { collectBindingSlots, entityAreaId } from "../runtime-binding-profile";
 import type {
   EntityId,
   EntityStateSnapshot,
@@ -22,6 +22,7 @@ export interface RoomStatusSummary {
   readonly connected?: boolean;
   readonly temperature?: RoomStatusReading;
   readonly humidity?: RoomStatusReading;
+  readonly aqi?: RoomStatusReading;
   readonly heating: boolean;
   readonly cooling: boolean;
   readonly lighting?: "on" | "off";
@@ -115,6 +116,22 @@ export const deriveRoomStatusMap = (
       )
       .map((descriptor) => [descriptor.openingId!, descriptor.roomIds] as const),
   );
+  const uniqueAqiEntityByArea = new Map<string, EntityId | null>();
+  for (const entry of runtime.entityRegistry) {
+    const { entity_id: entityId } = entry;
+    if (
+      entry.disabled_by ||
+      entry.hidden_by ||
+      !entityId.startsWith("sensor.") ||
+      runtime.entityStates[entityId]?.attributes.device_class !== "aqi"
+    ) {
+      continue;
+    }
+    const areaId = entityAreaId(entry, runtime);
+    if (!areaId) continue;
+    // Count matches before checking availability so the source stays stable during outages.
+    uniqueAqiEntityByArea.set(areaId, uniqueAqiEntityByArea.has(areaId) ? null : entityId);
+  }
 
   return Object.fromEntries(
     manifest.floors
@@ -161,6 +178,7 @@ export const deriveRoomStatusMap = (
             runtime,
           ),
           humidity: roomReading(area?.humidity_entity_id, "humidity", reliableEntities, runtime),
+          aqi: area && areaReading(uniqueAqiEntityByArea.get(area.area_id), runtime),
           heating: climateModes.includes("heating"),
           cooling: climateModes.includes("cooling"),
           lighting:

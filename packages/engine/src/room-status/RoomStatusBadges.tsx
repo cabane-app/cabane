@@ -7,6 +7,7 @@ type StatusKind =
   | "disconnected"
   | "temperature"
   | "humidity"
+  | "aqi"
   | "heating"
   | "cooling"
   | "light"
@@ -37,6 +38,14 @@ const statusItems = (summary: RoomStatusSummary, includeHumidity = true): readon
       kind: "humidity",
       label: `Humidity ${readingText(summary.humidity.value, summary.humidity.unit)}`,
       visibleText: readingText(summary.humidity.value, summary.humidity.unit),
+    });
+  }
+  if (summary.aqi) {
+    const reading = readingText(summary.aqi.value, summary.aqi.unit);
+    items.push({
+      kind: "aqi",
+      label: `Air quality index ${reading}`,
+      visibleText: `AQI ${reading}`,
     });
   }
   if (summary.heating) items.push({ kind: "heating", label: "Heating" });
@@ -78,6 +87,11 @@ function StatusGlyph({ kind }: { kind: StatusKind }) {
       break;
     case "humidity":
       content = <path d="M12 3s5 5.6 5 10a5 5 0 0 1-10 0c0-4.4 5-10 5-10Z" />;
+      break;
+    case "aqi":
+      content = (
+        <path d="M3 8h11a2.5 2.5 0 1 0-2.5-2.5M3 12h16a2 2 0 1 0-2-2M3 16h10a2.5 2.5 0 1 1-2.5 2.5" />
+      );
       break;
     case "heating":
       content = (

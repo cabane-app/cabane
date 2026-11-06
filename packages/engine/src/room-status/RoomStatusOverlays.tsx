@@ -10,7 +10,14 @@ import type { RoomStatusMap, RoomStatusSummary } from "./model";
 export const roomStatusOverlayPriority = (summary: RoomStatusSummary) => {
   if (summary.doorOpen || summary.heating || summary.cooling) return 3;
   if (summary.lighting === "on" || summary.presence === "present") return 2;
-  if (summary.temperature || summary.humidity || summary.lighting || summary.presence) return 1;
+  if (
+    summary.temperature ||
+    summary.humidity ||
+    summary.aqi ||
+    summary.lighting ||
+    summary.presence
+  )
+    return 1;
   return 0;
 };
 
@@ -22,7 +29,11 @@ const roomStatusOverlayLabelWidth = (roomName: string, summary: RoomStatusSummar
     Number(Boolean(summary.presence)) +
     Number(summary.doorOpen);
   const statusWidth =
-    12 + (summary.temperature ? 58 : 0) + (summary.humidity ? 58 : 0) + iconCount * 21;
+    12 +
+    (summary.temperature ? 58 : 0) +
+    (summary.humidity ? 58 : 0) +
+    (summary.aqi ? 58 : 0) +
+    iconCount * 21;
   const nameWidth = 58 + roomName.length * 5.4;
   return Math.min(246, Math.max(88, statusWidth, nameWidth));
 };
