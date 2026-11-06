@@ -24,6 +24,12 @@ await withModules(async (load) => {
     "/apps/web/src/workspaces/workspace-transfer.ts",
   );
   const { ownerProjectRegistries } = await load("/apps/web/src/project-runtime.ts");
+  const {
+    createFloorEditorDraft,
+    createFloorEditorHistory,
+    deriveFloorTopology,
+    floorEditorReducer,
+  } = await load("/packages/engine/src/index.ts");
 
   // An 8 m wide A-frame, 6 m deep: knee walls of 1 m on both sides, ridge at
   // 5 m along x = 4. The gable wall runs across the front at y = 0.
@@ -411,5 +417,28 @@ await withModules(async (load) => {
     );
     const restored = parseWorkspaceImport(backup, ownerProjectRegistries);
     assert.deepEqual(shape(restored.record.draft), expected);
+  });
+
+  test("Construct keeps a wall's gable when the floor or the wall itself is edited", () => {
+    const gable = { fill: "glass", columns: 3, transomHeightsMeters: [3] };
+    const draft = createFloorEditorDraft(aFrame(gable));
+    const gables = (history) =>
+      deriveFloorTopology(history.present)
+        .floor.walls.filter((wall) => wall.gable)
+        .map((wall) => [wall.id, wall.from, wall.to, wall.gable]);
+    let history = createFloorEditorHistory(draft);
+    assert.deepEqual(gables(history), [["front", [0, 0], [8, 0], gable]]);
+    history = floorEditorReducer(history, { type: "add-wall", from: [4, 0], to: [4, 6] });
+    history = floorEditorReducer(history, {
+      type: "update-wall-metadata",
+      wallId: "front",
+      changes: { heightMeters: 2.2, thicknessMeters: 0.15 },
+    });
+    history = floorEditorReducer(history, {
+      type: "translate-wall",
+      wallId: "front",
+      delta: [0, 0.5],
+    });
+    assert.deepEqual(gables(history), [["front", [0, 0.5], [8, 0.5], gable]]);
   });
 });

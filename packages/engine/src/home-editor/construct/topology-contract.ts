@@ -35,6 +35,7 @@ export interface EditorWall {
   faceColors?: WallSpec["faceColors"];
   faceFinishes?: WallSpec["faceFinishes"];
   niches?: WallSpec["niches"];
+  gable?: WallSpec["gable"];
 }
 
 type EditableOpening<T extends OpeningSpec> = T extends OpeningSpec
