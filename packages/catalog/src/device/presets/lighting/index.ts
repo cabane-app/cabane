@@ -21,3 +21,5 @@ export {
 } from "./rattan-bell-pendant";
 export { UnderCabinetLedStripModel, UNDER_CABINET_LED_STRIP_SIZE } from "./under-cabinet-led-strip";
 export { WhiteDomePendantModel } from "./white-dome-pendant";
+
+export { HearthTableLampModel, HEARTH_TABLE_LAMP_SIZE } from "./hearth-table-lamp";

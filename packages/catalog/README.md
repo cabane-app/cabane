@@ -1163,3 +1163,15 @@ has a terracotta pitched roof with a ridge beam and king posts; the solar canopy
 has twelve framed blue panels. Solar panels are decorative, with no HA binding.
 Only the four posts obstruct walking, leaving the sheltered parking bay open.
 These are generic visual models, not construction specifications.
+
+## Hearth table lamp
+
+`hearth-table-lamp` (`HearthTableLampModel`, `HEARTH_TABLE_LAMP_SIZE`) appears in
+Arrange → Bedroom → Lighting and All items. Its cream flared base, brass-tone
+side dimmer, transparent open chimney, and amber candle bulb follow the supplied
+reference photos. [Manufacturer dimensions](https://www.ikea.com/de/en/p/taernaby-table-lamp-dimmable-beige-60508072/)
+provide the 15 cm base diameter, 25 cm height, and 10 cm chimney width.
+Internal profiles and hardware proportions are inferred; the loose cord is omitted.
+The surface-contact origin is Y=0, with centered X/Z bounds. Uniform resizing
+preserves proportions. Each copy supports a manual `light` binding, existing
+on/off and brightness controls, and engine-owned warm illumination.

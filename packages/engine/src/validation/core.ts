@@ -128,6 +128,7 @@ export const STABLE_MODELS = new Set([
   "low-garden-lantern",
   "pergola-string-lights",
   "garden-lantern-pole",
+  "hearth-table-lamp",
   "table-lamp",
   "woven-pendant",
   "children-pendant",

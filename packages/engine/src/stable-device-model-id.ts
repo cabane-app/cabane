@@ -26,6 +26,7 @@ export type StableDeviceModelId =
   | "low-garden-lantern"
   | "garden-lantern-pole"
   | "pergola-string-lights"
+  | "hearth-table-lamp"
   | "table-lamp"
   | "woven-pendant"
   | "children-pendant"
