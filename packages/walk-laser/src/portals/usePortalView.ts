@@ -14,10 +14,9 @@ export function usePortalView(entry: PortalAnchor, exit: PortalAnchor) {
   useFrame(({ camera, scene, gl }) => {
     if (!surface.current) return;
     surface.current.visible = false;
-    surface.current.updateWorldMatrix(true, false);
-    if (!view.update(camera, entry, exit, surface.current.matrixWorld)) return;
+    if (!view.update(camera, entry, exit)) return;
     capture.render(gl, scene, view.camera, exit);
     surface.current.visible = true;
   }, 0.5);
-  return { surface, texture: capture.target.texture, screenRect: view.screenRect };
+  return { surface, texture: capture.target.texture };
 }

@@ -20,8 +20,7 @@ export function CeilingFanModel(props: HomeDeviceModelProps) {
         <Outlines color={palette.charcoal} thickness={0.0015} screenspace={false} />
       </mesh>
       <group position={[0, 0.1, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        {/* Keep the housing shadow without refreshing the house map for spinning blades. */}
-        <FanRotor {...props} radius={0.6} count={4} color="#b99367" castMovingShadows={false} />
+        <FanRotor {...props} radius={0.6} count={4} color="#b99367" />
       </group>
       <StatusBeacon visualState={props.visualState} position={[0, 0.045, 0.078]} scale={0.45} />
     </group>

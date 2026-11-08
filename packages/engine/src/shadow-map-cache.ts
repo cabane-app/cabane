@@ -6,26 +6,11 @@ import {
   type BufferAttribute,
   type Camera,
   type DirectionalLight,
-  type Light,
-  type LightShadow,
-  type MeshToonMaterial,
   type Scene,
   type Texture,
   type WebGLRenderer,
 } from "three";
 import { sceneLightMaterialHooks } from "./scene-light-wall-mask";
-
-const positionAttribute = ["position"];
-
-function hasUpdatingShadowLight(object: Object3D, camera: Camera): boolean {
-  if (!object.visible) return false;
-  if ((object as Light).isLight && object.castShadow && object.layers.test(camera.layers)) {
-    const shadow = (object as Light & { shadow?: LightShadow }).shadow;
-    if (!shadow || shadow.autoUpdate || shadow.needsUpdate) return true;
-  }
-  for (const child of object.children) if (hasUpdatingShadowLight(child, camera)) return true;
-  return false;
-}
 
 /** Compare render inputs without allocating a scene-sized signature every frame. */
 class ShadowInputs {
@@ -140,28 +125,16 @@ export class ShadowMapCache {
       s.add(geometry.index?.version);
       s.add(geometry.drawRange.start);
       s.add(geometry.drawRange.count);
-      const toon = mesh.material as MeshToonMaterial;
-      // A single toon material without alpha clipping or displacement only
-      // needs positions and indices for its silhouette.
-      const simpleDepth =
-        !Array.isArray(mesh.material) &&
-        toon.isMeshToonMaterial &&
-        !(toon.alphaTest > 0) &&
-        !toon.alphaHash &&
-        !toon.alphaToCoverage &&
-        !toon.displacementMap;
-      for (const name of simpleDepth ? positionAttribute : Object.keys(geometry.attributes)) {
+      for (const name of Object.keys(geometry.attributes)) {
         const a = geometry.attributes[name];
         s.add(name);
         s.add(a);
-        s.add(a && ("data" in a ? a.data.version : a.version));
+        s.add("data" in a ? a.data.version : a.version);
       }
-      if (!simpleDepth) {
-        for (const group of geometry.groups) {
-          s.add(group.start);
-          s.add(group.count);
-          s.add(group.materialIndex);
-        }
+      for (const group of geometry.groups) {
+        s.add(group.start);
+        s.add(group.count);
+        s.add(group.materialIndex);
       }
       const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const material of materials) {
@@ -238,24 +211,18 @@ export class ShadowMapCache {
       return;
     }
     if (scene.matrixWorldAutoUpdate) scene.updateMatrixWorld();
-    const track = hasUpdatingShadowLight(scene, camera);
-    const update = track && this.needsUpdate(scene, camera, renderer.shadowMap.type);
-    if (!track) this.reset();
+    const update = this.needsUpdate(scene, camera, renderer.shadowMap.type);
     const autoUpdate = scene.matrixWorldAutoUpdate;
     try {
       scene.matrixWorldAutoUpdate = false; // The same update already ran above.
-      // Leave native updates enabled when no map currently needs tracking. A
-      // render hook can still activate a light during the draw.
-      if (track) {
-        renderer.shadowMap.autoUpdate = false;
-        renderer.shadowMap.needsUpdate ||= update;
-      }
+      renderer.shadowMap.autoUpdate = false;
+      renderer.shadowMap.needsUpdate ||= update;
       draw();
     } catch (error) {
       this.reset();
       throw error;
     } finally {
-      if (track) renderer.shadowMap.autoUpdate = true;
+      renderer.shadowMap.autoUpdate = true;
       scene.matrixWorldAutoUpdate = autoUpdate;
     }
   }

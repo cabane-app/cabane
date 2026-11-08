@@ -4,8 +4,6 @@ import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
 
 export const TUFTED_DIAMOND_RUG_SIZE = [2.6, 0.016, 2] as const;
-const diamondExtrusion = { depth: 0.004, bevelEnabled: false };
-
 export function TuftedDiamondRug({
   size = TUFTED_DIAMOND_RUG_SIZE,
   color,
@@ -47,7 +45,7 @@ export function TuftedDiamondRug({
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
           >
-            <extrudeGeometry args={[diamond, diamondExtrusion]} />
+            <extrudeGeometry args={[diamond, { depth: 0.004, bevelEnabled: false }]} />
             <ToonMaterial color="#c9c2b0" />
           </mesh>
         )),

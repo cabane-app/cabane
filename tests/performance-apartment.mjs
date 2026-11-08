@@ -15,7 +15,6 @@ export async function prepareApartment() {
   history.replaceState(null, "", path);
   return {
     path,
-    description: "Synthetic apartment · 12 small rooms · catalog furniture.",
     workload: {
       fixture: "synthetic-apartment-v1",
       rooms: 12,

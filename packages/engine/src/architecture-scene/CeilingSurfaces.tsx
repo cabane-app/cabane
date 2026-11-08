@@ -21,7 +21,6 @@ import { WALK_HEAD_MARGIN } from "../opening-pose";
 import type { FloorSpec, PlanPoint, Polygon, SlopedCeilingSpec } from "../types";
 
 type CeilingPlane = SlopedCeilingSpec["planes"][number];
-const ceilingExtrusion = { depth: 0.16, bevelEnabled: false };
 
 const worldRing = (polygon: Polygon, coordinates: FloorSpec["coordinates"]) =>
   polygon.map((point): [number, number] => [...planPointToWorld(point, coordinates)]);
@@ -42,7 +41,7 @@ function FlatCeilingSlab({
   );
   return (
     <mesh position={[0, height, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
-      <extrudeGeometry args={[shape, ceilingExtrusion]} />
+      <extrudeGeometry args={[shape, { depth: 0.16, bevelEnabled: false }]} />
       <ToonMaterial color={CEILING_SURFACE_COLOR} side={DoubleSide} />
     </mesh>
   );

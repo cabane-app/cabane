@@ -24,12 +24,6 @@ type Batch = {
   selectedIds: number[];
 };
 
-type BatchGroup = { chunk: number; sources: Mesh[]; vertices: number };
-
-// The full-detail and LOD buffers are transformed, copied and uploaded together.
-// Bound the work of a single rebuild and of all rebuilds in the same frame.
-const PACKED_VERTICES_PER_FRAME = 65_536;
-
 /** Render-only substitution. Original objects/materials remain intact between frames. */
 export class SceneToonBatcher {
   private batches = new Map<string, Batch>();
@@ -130,7 +124,6 @@ export class SceneToonBatcher {
     (batch.mesh.material as MeshToonMaterial).dispose();
   }
 
-  /** Draw and report whether there are more batches to build on the next frame. */
   render(
     renderer: WebGLRenderer,
     scene: Scene,
@@ -146,42 +139,29 @@ export class SceneToonBatcher {
       renderer.clippingPlanes.length
     ) {
       render();
-      return false;
+      return;
     }
     if (scene.matrixWorldAutoUpdate) scene.updateMatrixWorld();
-    const groups = new Map<string, BatchGroup>();
-    const lastChunkByMaterial = new Map<string, BatchGroup>();
+    const groups = new Map<string, Mesh[]>();
     scene.traverse((object) => {
       const source = object as Mesh;
       if (!source.isMesh) return;
       const key = toonBatchKey(source, false, true);
       if (key === null) return;
-      let vertices = 0;
-      for (const geometry of geometryLodFamily(source.geometry))
-        vertices += geometry.attributes.position.count;
-      if (vertices > PACKED_VERTICES_PER_FRAME) return;
-      let group = lastChunkByMaterial.get(key);
-      if (!group || group.vertices + vertices > PACKED_VERTICES_PER_FRAME) {
-        group = { chunk: (group?.chunk ?? -1) + 1, sources: [], vertices: 0 };
-        lastChunkByMaterial.set(key, group);
-        groups.set(`${key}#${group.chunk}`, group);
-      }
-      group.sources.push(source);
-      group.vertices += vertices;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(source);
     });
     for (const [key, batch] of this.batches) {
-      if ((groups.get(key)?.sources.length ?? 0) < 2) {
+      if ((groups.get(key)?.length ?? 0) < 2) {
         this.disposeBatch(batch);
         this.batches.delete(key);
       }
     }
     const originals: Array<[Mesh, Mesh["material"], number]> = [];
     const attached: BatchedMesh[] = [];
-    let remaining = PACKED_VERTICES_PER_FRAME;
-    let pending = false;
     this.inverse.copy(scene.matrixWorld).invert();
     try {
-      for (const [key, { sources, vertices }] of groups) {
+      for (const [key, sources] of groups) {
         if (sources.length < 2) continue;
         let batch = this.batches.get(key);
         if (
@@ -198,17 +178,9 @@ export class SceneToonBatcher {
             );
           })
         ) {
-          if (batch) {
-            this.disposeBatch(batch);
-            this.batches.delete(key);
-          }
-          if (vertices > remaining) {
-            pending = true;
-            continue; // Draw the sources normally until their replacement is ready.
-          }
+          if (batch) this.disposeBatch(batch);
           batch = this.build(sources);
           this.batches.set(key, batch);
-          remaining -= vertices;
         }
         for (let index = 0; index < sources.length; index++) {
           const source = sources[index];
@@ -249,7 +221,6 @@ export class SceneToonBatcher {
       }
       for (const mesh of attached) scene.remove(mesh);
     }
-    return pending;
   }
 
   dispose() {

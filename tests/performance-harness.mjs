@@ -51,20 +51,14 @@ const preparedHome = devHome
   ? await devHome.prepareDevelopmentHome()
   : __PERFORMANCE_SCENARIO__ === "apartment"
     ? await (await import("./performance-apartment.mjs")).prepareApartment()
-    : ["larch", "larch-connected"].includes(__PERFORMANCE_SCENARIO__)
-      ? await (
-          await import("./performance-larch.mjs")
-        ).prepareLarch({
-          connected: __PERFORMANCE_SCENARIO__ === "larch-connected",
-        })
-      : null;
+    : null;
 await import("../apps/web/src/main.tsx");
 
 const panel = document.createElement("aside");
 panel.className = "perf-panel";
 panel.setAttribute("aria-label", "Performance benchmark");
 panel.innerHTML = `<strong>Performance benchmark</strong>
-  <p>${devHome ? "Repo home · live dev HA · night · cloudy · 10 lights on." : (preparedHome?.description ?? "Open <b>Explore the demo</b>.")} Keep Orbit view and this tab visible.</p>
+  <p>${devHome ? "Repo home · live dev HA · night · cloudy · 10 lights on." : preparedHome ? "Synthetic apartment · 12 small rooms · catalog furniture." : "Open <b>Explore the demo</b>."} Keep Orbit view and this tab visible.</p>
   <label>Device / experiment <input id="perf-label" value="manual" maxlength="100"></label>
   <button id="perf-run">Run benchmark · 3 × 10s</button>
   <button id="perf-gestures">Record my gestures · 10s</button>
@@ -106,7 +100,7 @@ const download = (name, type, content) => {
 };
 
 async function replayRooms({ seconds, signal }) {
-  const nav = document.querySelector("nav.room-navigation");
+  const nav = document.querySelector('nav[aria-label="Rooms on this floor"]');
   const floor = nav?.querySelector(".room-navigation__floor");
   const rooms = [...(nav?.querySelectorAll(".room-navigation__rooms button[title]") ?? [])];
   if (!rooms.length || floor?.getAttribute("aria-pressed") !== "true")
@@ -314,9 +308,4 @@ gestureButton.addEventListener("click", () =>
     path: "manual-gestures-v1",
   }).catch(() => {}),
 );
-window.__cabanePerf = {
-  ready,
-  run,
-  getState: () => mainRoot()?.store.getState(),
-  connectedLights: preparedHome?.connectedLights,
-};
+window.__cabanePerf = { ready, run };

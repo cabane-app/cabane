@@ -1431,15 +1431,6 @@ await withModules(async (load) => {
         createElement(definition.component, { ...props, state: snapshot(25) }),
       );
       const rotor = renderer.scene.findByProps({ name: "fan-rotor" }).instance;
-      const ceilingBlades =
-        id === "ceiling-fan"
-          ? rotor.children.filter((child) => child.name.startsWith("fan-blade-"))
-          : [];
-      if (id === "ceiling-fan") {
-        assert.equal(ceilingBlades.length, 4);
-        assert.ok(ceilingBlades.every((blade) => !blade.castShadow));
-        assert.ok(renderer.scene.findByProps({ name: "fan-motor" }).instance.castShadow);
-      }
       await renderer.advanceFrames(1, 0.02);
       const slow = Math.abs(rotor.rotation[axis]);
       assert.ok(slow > 0);
@@ -1460,7 +1451,6 @@ await withModules(async (load) => {
         const stoppedAt = rotor.rotation[axis];
         await renderer.advanceFrames(2, 0.02);
         assert.equal(rotor.rotation[axis], stoppedAt, `${id}: ${JSON.stringify(scenario)}`);
-        assert.ok(ceilingBlades.every((blade) => blade.castShadow));
       }
       await renderer.unmount();
     }

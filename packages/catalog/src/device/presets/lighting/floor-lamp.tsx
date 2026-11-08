@@ -27,12 +27,7 @@ export function FloorLampModel({ state, visualState }: HomeDeviceModelProps) {
         <cylinderGeometry args={[0.025, 0.03, 1.5, 10]} />
         <ToonMaterial color="#596660" />
       </mesh>
-      <mesh
-        name="floor-lamp-emitter"
-        position={[0, 1.55, 0]}
-        castShadow
-        userData={{ skipStaticBatch: true }}
-      >
+      <mesh name="floor-lamp-emitter" position={[0, 1.55, 0]} castShadow>
         <coneGeometry args={[0.32, 0.48, 16, 1, true]} />
         <ToonMaterial
           color={shadeColor(visualState)}

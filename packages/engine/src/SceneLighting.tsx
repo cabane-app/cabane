@@ -80,7 +80,7 @@ export function SolarLighting({
   useEffect(() => {
     transitioning.current = true;
     invalidate();
-  }, [invalidate, target, lightTarget, shadowMapSize]);
+  }, [invalidate, target, lightTarget]);
   useFrame((_, delta) => {
     const sun = sunRef.current;
     const hemisphere = hemisphereRef.current;
@@ -118,12 +118,6 @@ export function SolarLighting({
       background.copy(targetBackground);
       transitioning.current = false;
     } else invalidate();
-    // Preserve the shadow shader across day/night changes. The dark sun contributes no light.
-    const shadowsActive = sun.intensity > 0;
-    if (sun.shadow.autoUpdate !== shadowsActive) {
-      sun.shadow.autoUpdate = shadowsActive;
-      sun.shadow.needsUpdate = shadowsActive;
-    }
   }, -1);
   return (
     <>
@@ -157,7 +151,6 @@ export function SolarLighting({
           .toArray()}
         color={initial.current.sunColor}
         intensity={initial.current.sunIntensity}
-        shadow-autoUpdate={initial.current.sunIntensity > 0}
         shadow-intensity={0.62}
         shadow-radius={2}
         shadow-mapSize-width={shadowMapSize}

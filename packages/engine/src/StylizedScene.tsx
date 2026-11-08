@@ -110,12 +110,9 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
       gl.autoClear = true;
       gl.setRenderTarget(target);
       resources.shadows.render(gl, scene, camera, () =>
-        resources.lod.render(scene, camera, size.y / gl.getPixelRatio(), () => {
-          const pending = resources.batches.render(gl, scene, camera, () =>
-            lightWalls.render(gl, scene, camera),
-          );
-          if (pending) invalidate();
-        }),
+        resources.lod.render(scene, camera, size.y / gl.getPixelRatio(), () =>
+          resources.batches.render(gl, scene, camera, () => lightWalls.render(gl, scene, camera)),
+        ),
       );
       material.uniforms.hasImportedModels.value = resources.importedMask.render(
         gl,

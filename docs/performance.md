@@ -115,16 +115,7 @@ npm run perf -- --label candidate --output test-results/performance/candidate.js
 npm run perf -- --scenario demo --label old-demo
 npm run perf -- --scenario apartment --path idle-v1 --profile desktop --label apartment-idle
 npm run perf -- --scenario apartment --path rooms-v1 --profile desktop --label apartment-rooms
-npm run perf -- --scenario larch --path touch-orbit-v1 --label larch-touch
-npm run perf -- --scenario larch-connected --path rooms-v1 --label larch-rooms
 ```
-
-The `larch` scenario opens the checked-in Larch Observatory workspace with two
-floors, 13 rooms and 315 placed items. The `larch-connected` scenario opens the
-same house at night with three Cathedral hall lights on a simulated Home
-Assistant connection. It sends real dashboard commands through the app's
-Home Assistant client to an in-memory fixture. Open Cathedral hall to operate
-the light controls. Both scenarios use isolated storage.
 
 The disconnected `apartment` scenario uses a synthetic 12-room plan with 96 native
 furniture items, including round tables. It needs no HA session or private export.
