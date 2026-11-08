@@ -34,33 +34,34 @@ export function StatusBeacon({
   position: readonly [number, number, number];
   scale?: number;
 }) {
+  // Live state swaps the beacon's tiny meshes. Keep those swaps out of static batches.
   return (
     <group name={`device-state-${visualState}`} position={position} scale={scale}>
       {visualState === "disconnected" && (
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]} userData={{ skipStaticBatch: true }}>
           <torusGeometry args={[0.018, 0.005, 6, 12, Math.PI * 1.55]} />
           <ToonMaterial color={stateColor(visualState)} />
         </mesh>
       )}
       {visualState === "unavailable" && (
-        <mesh rotation={[0, 0, Math.PI / 4]}>
+        <mesh rotation={[0, 0, Math.PI / 4]} userData={{ skipStaticBatch: true }}>
           <boxGeometry args={[0.026, 0.026, 0.012]} />
           <ToonMaterial color={stateColor(visualState)} />
         </mesh>
       )}
       {visualState === "connected-inactive" && (
-        <mesh>
+        <mesh userData={{ skipStaticBatch: true }}>
           <sphereGeometry args={[0.014, 10, 6]} />
           <ToonMaterial color={stateColor(visualState)} />
         </mesh>
       )}
       {visualState === "connected-active" && (
         <group>
-          <mesh>
+          <mesh userData={{ skipStaticBatch: true }}>
             <sphereGeometry args={[0.016, 10, 6]} />
             <ToonMaterial color={stateColor(visualState)} />
           </mesh>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]} userData={{ skipStaticBatch: true }}>
             <torusGeometry args={[0.026, 0.004, 5, 12]} />
             <ToonMaterial color={stateColor(visualState)} />
           </mesh>

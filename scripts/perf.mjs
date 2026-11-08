@@ -13,7 +13,8 @@ import { loadDevelopmentHome } from "./scene-performance/development-home.mjs";
 import { replayTouchOrbit } from "./scene-performance/touch-replay.mjs";
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const buildDirectory = resolve(repository, "test-results/performance/build");
+const buildDirectory = ({ port }) =>
+  resolve(repository, `test-results/performance/build${port === 4180 ? "" : `-${port}`}`);
 const harnessPath = "/tests/performance-harness.html";
 const profiles = {
   mobile: {
@@ -34,7 +35,7 @@ const help = `Usage: npm run perf -- [options]
   --output PATH       JSON report (default: test-results/performance/NAME-TIMESTAMP.json)
   --baseline PATH     Compare with a report from the same machine and configuration
   --profile NAME      mobile (390x844, DPR 3, touch) or desktop (1440x960, DPR 1)
-  --scenario NAME     dev-home (default, live local HA), demo, or apartment (synthetic 12 rooms)
+  --scenario NAME     dev-home (live local HA), larch, larch-connected, demo, or apartment
   --path NAME         orbit-v1, idle-v1, rooms-v1 (room buttons), or touch-orbit-v1
   --cpu-rate N        Chromium CPU slowdown multiplier (default: 1, unthrottled)
   --seconds N         Measured motion per run, excluding warmup (default: 10)
@@ -109,8 +110,8 @@ function parseOptions(args) {
   }
   if (!Object.hasOwn(profiles, options.profile))
     throw new Error("--profile must be mobile or desktop.");
-  if (!["dev-home", "demo", "apartment"].includes(options.scenario))
-    throw new Error("--scenario must be dev-home, demo, or apartment.");
+  if (!["dev-home", "larch", "larch-connected", "demo", "apartment"].includes(options.scenario))
+    throw new Error("--scenario must be dev-home, larch, larch-connected, demo, or apartment.");
   if (!["orbit-v1", "idle-v1", "rooms-v1", "touch-orbit-v1"].includes(options.path))
     throw new Error("--path must be orbit-v1, idle-v1, rooms-v1, or touch-orbit-v1.");
   if (options.path === "touch-orbit-v1" && options.profile !== "mobile")
@@ -138,7 +139,8 @@ function parseOptions(args) {
   return options;
 }
 
-async function buildHarness(source, scenario = "dev-home") {
+async function buildHarness(source, options) {
+  const { scenario } = options;
   source ??= await sourceMetadata(scenario);
   if (scenario === "dev-home") await loadDevelopmentHome(repository);
   console.log("Building the production performance harness…");
@@ -155,7 +157,7 @@ async function buildHarness(source, scenario = "dev-home") {
     },
     build: {
       target: "es2022",
-      outDir: buildDirectory,
+      outDir: buildDirectory(options),
       emptyOutDir: true,
       chunkSizeWarningLimit: Infinity,
       sourcemap: true,
@@ -210,22 +212,27 @@ async function serveHarness(options) {
         },
       },
     ],
-    build: { outDir: buildDirectory },
+    build: { outDir: buildDirectory(options) },
     preview: { host: options.host, port: options.port, strictPort: true },
   });
 }
 
 async function sourceMetadata(scenario) {
-  const homeFiles =
-    scenario === "apartment"
-      ? [await readFile(resolve(repository, "tests/fixtures/performance-apartment.ts"), "utf8")]
-      : scenario === "dev-home"
-        ? [await readFile(resolve(repository, "home/showcase/furnished.project.json"), "utf8")]
-        : await Promise.all(
-            ["project", "layout", "items"].map((name) =>
-              readFile(resolve(repository, `home/src/${name}.json`), "utf8"),
-            ),
-          );
+  const larch = ["home/dev-workspaces/larch-observatory.project.json"];
+  const fixturePaths = {
+    apartment: ["tests/fixtures/performance-apartment.ts"],
+    "dev-home": ["home/showcase/furnished.project.json"],
+    larch,
+    "larch-connected": [
+      ...larch,
+      "tests/performance-larch.mjs",
+      "tests/performance-home-assistant.mjs",
+    ],
+    demo: ["project", "layout", "items"].map((name) => `home/src/${name}.json`),
+  };
+  const homeFiles = await Promise.all(
+    fixturePaths[scenario].map((path) => readFile(resolve(repository, path), "utf8")),
+  );
   return {
     commit: execFileSync("git", ["rev-parse", "HEAD"], {
       cwd: repository,
@@ -246,7 +253,7 @@ async function measure(options) {
     ? JSON.parse(await readFile(resolve(options.baseline), "utf8"))
     : null;
   const source = await sourceMetadata(options.scenario);
-  await buildHarness(source, options.scenario);
+  await buildHarness(source, options);
   let server, browser;
   try {
     server = await serveHarness(options);
@@ -346,7 +353,7 @@ async function measure(options) {
 }
 
 async function serve(options) {
-  await buildHarness(undefined, options.scenario);
+  await buildHarness(undefined, options);
   const server = await serveHarness(options);
   const urls = [...(server.resolvedUrls?.local ?? []), ...(server.resolvedUrls?.network ?? [])];
   console.log("Performance harness ready:");

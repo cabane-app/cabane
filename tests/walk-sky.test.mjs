@@ -148,9 +148,12 @@ await withModules(async (load) => {
   });
 
   await test("Walk sky follows rendered solar state, fallback, and mode transitions", async () => {
-    const props = { mode: "day", shadowMapSize: 1024, walkMode: true };
+    const props = { mode: "night", shadowMapSize: 1024, walkMode: true };
     const renderer = await create(createElement(SolarLighting, props));
     try {
+      const sun = renderer.scene.children.find((node) => node.instance.isDirectionalLight).instance;
+      assert.equal(sun.castShadow, true);
+      assert.equal(sun.shadow.autoUpdate, false, "the initial dark sun needs no shadow map");
       for (const input of [
         { mode: "day" },
         { mode: "night" },
@@ -164,12 +167,14 @@ await withModules(async (load) => {
           },
         })),
       ]) {
+        const wasDark = sun.intensity === 0;
         await renderer.update(createElement(SolarLighting, { ...props, ...input }));
         await renderer.advanceFrames(1, 1 / 60);
         const sky = renderer.scene.findByProps({ name: "walk-sky" }).instance;
-        const sun = renderer.scene.children.find(
-          (node) => node.instance.isDirectionalLight,
-        ).instance;
+        if (wasDark && sun.intensity > 0) {
+          assert.equal(sun.shadow.autoUpdate, true);
+          assert.equal(sun.shadow.needsUpdate, true, "daylight refreshes the map immediately");
+        }
         assert.ok(
           sky.material.uniforms.sunDirection.value.distanceTo(sun.position.clone().normalize()) <
             1e-6,
@@ -179,6 +184,9 @@ await withModules(async (load) => {
         assert.equal(sky.frustumCulled, false);
         await renderer.advanceFrames(180, 1 / 60);
         const expected = deriveSolarLighting(input.sunState, input.mode);
+        assert.equal(sun.castShadow, true, "day and night use the same shadow shader");
+        assert.equal(sun.shadow.autoUpdate, expected.sunIntensity > 0);
+        sun.shadow.needsUpdate = false;
         assert.ok(
           sun.position.distanceTo(
             new Vector3(...expected.sunPosition).normalize().multiplyScalar(18),
@@ -190,6 +198,16 @@ await withModules(async (load) => {
           "GPU daylight must follow the solar transition",
         );
       }
+      const daylight = { ...props, mode: "day" };
+      await renderer.update(createElement(SolarLighting, daylight));
+      await renderer.advanceFrames(180, 1 / 60);
+      await renderer.update(createElement(SolarLighting, { ...daylight, shadowMapSize: 2048 }));
+      await renderer.advanceFrames(180, 1 / 60);
+      const resizedSun = renderer.scene.children.find(
+        (node) => node.instance.isDirectionalLight,
+      ).instance;
+      assert.equal(resizedSun.shadow.mapSize.x, 2048);
+      assert.equal(resizedSun.shadow.autoUpdate, true);
       await renderer.update(createElement(SolarLighting, { ...props, walkMode: false }));
       assert.equal(renderer.scene.findAllByProps({ name: "walk-sky" }).length, 0);
     } finally {

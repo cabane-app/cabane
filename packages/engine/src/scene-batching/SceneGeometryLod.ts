@@ -75,6 +75,8 @@ export class SceneGeometryLod {
     }
     if (scene.matrixWorldAutoUpdate) scene.updateMatrixWorld();
     camera.updateWorldMatrix(true, false);
+    const perspective = camera.projectionMatrix.elements[15] === 0;
+    const projectionScale = (viewportHeight * camera.projectionMatrix.elements[5]) / 2;
     const originals: Array<[Mesh, BufferGeometry]> = [];
     const used = new Set<BufferGeometry>();
     try {
@@ -96,21 +98,17 @@ export class SceneGeometryLod {
           this.queue.push({ source, entry });
         }
         if (!entry.levels.length) return;
-        if (!source.boundingSphere) source.computeBoundingSphere();
-        const sphere = source.boundingSphere!;
         const projectedScale = (matrix: Matrix4) => {
           const scale = matrix.getMaxScaleOnAxis();
+          if (!perspective) return scale * projectionScale;
+          if (!source.boundingSphere) source.computeBoundingSphere();
+          const sphere = source.boundingSphere!;
           this.center
             .copy(sphere.center)
             .applyMatrix4(matrix)
             .applyMatrix4(camera.matrixWorldInverse);
           const distance = Math.max(0.001, -this.center.z - sphere.radius * scale);
-          const perspective = camera.projectionMatrix.elements[15] === 0;
-          return (
-            (scale * viewportHeight * camera.projectionMatrix.elements[5]) /
-            2 /
-            (perspective ? distance : 1)
-          );
+          return (scale * projectionScale) / distance;
         };
         const instances = mesh as InstancedMesh;
         let pixelsPerUnit = 0;

@@ -62,11 +62,19 @@ function wallPlanes(renderer: WebGLRenderer, scene: Scene, camera: Camera): Vect
   return planes;
 }
 
-const maskedLighting = ShaderChunk.lights_fragment_begin.replace(
-  "getPointLightInfo( pointLight, geometryPosition, directLight );",
-  `getPointLightInfo( pointLight, geometryPosition, directLight );
-    directLight.color *= step(-0.001, dot(cabaneLightWallPlanes[ i ], vec4(geometryPosition, 1.0)));`,
-);
+const pointLightInfo = "getPointLightInfo( pointLight, geometryPosition, directLight );";
+const directLightContribution =
+  "RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );";
+// Keep preallocated lights in the program layout so switching them on only
+// changes uniforms. Their zero color needs no attenuation, mask or shading.
+const maskedLighting = ShaderChunk.lights_fragment_begin
+  .replace(
+    pointLightInfo,
+    `if (pointLight.color != vec3(0.0)) {
+      ${pointLightInfo}
+      directLight.color *= step(-0.001, dot(cabaneLightWallPlanes[ i ], vec4(geometryPosition, 1.0)));`,
+  )
+  .replace(directLightContribution, `${directLightContribution}\n    }`);
 
 /** Clip each source at its wall's inner face, retaining illumination around the bulb. */
 export class SceneLightWallMask {
@@ -113,7 +121,7 @@ export class SceneLightWallMask {
           customProgramCacheKey === Material.prototype.customProgramCacheKey
             ? onBeforeCompile.toString()
             : customProgramCacheKey.call(this);
-        return `${key}|cabane-light-wall-mask-v1`;
+        return `${key}|cabane-light-wall-mask-v2`;
       };
       patches.set(material, installed);
       installed.onDispose = () => {
