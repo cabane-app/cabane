@@ -1,5 +1,137 @@
 # Performance measurements
 
+## 2026-11-08 — Larch Observatory interaction hitches
+
+[Investigation plan](performance-plan.md). The production harness opens the
+checked-in Larch Observatory with 13 rooms on two floors and 315 placed items.
+The connected scenario operates three existing Cathedral hall fixtures through
+the real dashboard and Home Assistant client, backed by an in-memory server
+fixture. Benchmark commands and profiles are in the
+[measurement guide](performance.md#repeatable-local-measurements).
+
+### What made the frames miss
+
+- During Walk, a finished LOD wave replaced eight batch buffers in one frame.
+  A profiled 235 ms gap repacked 2.89 million vertices, with 1.90 million in
+  the largest batch. Packing spent about 165–168 ms on the CPU and WebGL
+  submission spent 46–54 ms. This occurred with the gun equipped and during
+  ordinary walking. The representative original worst gap was 287 ms.
+- A warm Floor lamp toggle submitted four replacement buffers containing
+  1.21–1.63 million vertices. The HA fixture responded within a millisecond,
+  while the light took about 127–140 ms to appear. No shader compilation was
+  observed during the toggles. Four arched bookcases and six parts of the
+  diamond rug recreated extrusion geometry on each state update. The live
+  status marker also changed which meshes belonged to static batches.
+- One rotating ceiling fan invalidated the entire sun shadow map on every
+  daylight frame. Isolating just its blade shadows cut the median Orbit load
+  from 341 draws and 244,000 submitted triangles to 270 and 145,000.
+  The housing retains its shadow and stationary blades still cast, including
+  when reduced motion is enabled. Same-camera Orbit and Walk comparisons
+  showed the change concentrated near the fan.
+- At night the sun contributed zero direct light but still drew the map.
+  Suspending just its shadow refresh removed 71 draws and about 97,000
+  triangles per measured night frame. The engine can reuse the shader and
+  refresh the map as the sun illuminates the scene again. In a separate
+  same-page A/B/A, skipping the dormant caster fingerprint reduced median
+  CPU time for that stage from 1.2–1.3 ms to 0.1 ms.
+
+The point-slot, wall-plane, contour, toon-gradient and DPR ablations used the
+same house and camera path. In the single night runs the reference p95 varied
+from 9.6 to 11.8 ms. The contour blit, point-range guard and flat toon-gradient
+variants measured 9.9, 10.5 and 11.2 ms respectively. The native shadow
+comparisons gave the clearest workload signal. The Larch daylight scene had
+61 preallocated point slots with zero intensity. Retaining slots lets warm
+toggles reuse compiled shaders.
+
+At a desktop drawing buffer of 1,800 × 1,200, the zero-intensity slots were
+the expensive part of the fragment pass. Two three-second day references
+measured p95 30.5 and 30.0 ms with the same 358 draws. Skipping their lighting
+calculations measured 9.8 ms with all 61 slots still allocated. Removing the
+slots as a control measured 9.2 ms. Disabling target MSAA and reducing DPR to 1
+measured 25.2 and 23.7 ms respectively. These controls kept the camera path and
+scene fixed. The shader guard keeps the point-light layout stable as fixtures
+switch on and off.
+In the production build, two matched five-second desktop captures moved from
+29.8 to 9.6 ms p95 on direct Orbit and from 29.1 to 9.7 ms on room transitions.
+The final worst intervals were 13.7 and 18.5 ms respectively.
+
+### Comparisons
+
+Chromium uses ANGLE Metal on an Apple M5 Pro. The emulated mobile Orbit
+viewport is 390 × 844, device DPR 3 and effective DPR 1.25. Warm, unthrottled
+day Orbit initially measured 10.8 ms p95 for direct camera motion and 11.3 ms
+for the real touch replay, with no interval above 33.3 ms.
+The final three-repeat mobile touch series measured 9.3 ms p95 by day and
+9.6 ms with 61 active lamps at night. The worst intervals were 12.4 and
+10.8 ms respectively. Room transitions measured 9.8 ms p95 and 21.3 ms
+maximum. None of these captures replaced a static batch buffer.
+
+| Larch interaction                                             | Before                  | Combined build        |
+| ------------------------------------------------------------- | ----------------------- | --------------------- |
+| Plain Walk, median p95 / median p99 / worst gap               | 12.7 / 15.4 / 225.1 ms  | 10.2 / 13.7 / 22.4 ms |
+| Plain Walk, CPU ×2, p95 / worst gap                           | 26.6 / 45.9 ms          | 22.4 / 44.2 ms        |
+| Six Floor lamp toggles during Orbit, frame p95 / p99 / max    | 23.5 / 125.2 / 174.5 ms | 11.6 / 27.3 / 33.9 ms |
+| Floor lamp tap to first frame with new emitter intensity      | 126.6–139.7 ms          | 26.9–33.3 ms          |
+| Six Hearth dimmer updates during Orbit, frame p95 / p99 / max | —                       | 9.8 / 12.4 / 28.0 ms  |
+| Walk and fire together, median p95 / median p99 / worst gap   | 14.7 / 23.1 / 259.6 ms  | 13.9 / 22.1 / 48.2 ms |
+| Walk through linked portals, frame p95 / p99 / max            | 38.7 / 41.9 / 62.2 ms   | 27.3 / 28.7 / 30.3 ms |
+| Chromium touch Orbit, CPU ×4, median p95 across three runs    | 49.2 ms                 | 42.7 ms               |
+| Playwright WebKit direct Orbit, median p95 across three runs  | 20 ms                   | 21 ms                 |
+
+The dimmer replay verifies each Home Assistant brightness state and the
+corresponding emitter intensity. Its action trace includes the dashboard's
+command coalescing delay separately from the first rendered response.
+The first 32k vertex limit removed the large Walk hitches but raised
+steady CPU ×4 touch Orbit to 54.2 ms p95 and 482 median draws. With the 64k limit
+and daylight shadow reuse that intermediate candidate submitted 306 draws and
+143,000 triangles per frame, compared with 341 and 242,000 on the original.
+The final CPU ×4 series still exceeds the working 60 Hz target, with 76.5%
+of intervals above 33.3 ms versus 100% on the original. WebKit used an
+effective DPR of 2 and averaged 60 FPS in both builds. All six WebKit captures
+stayed below 33.3 ms and median submitted triangles dropped from 290,000
+to 167,000.
+An additional three-second WebKit check with the final point-light guard
+measured 60 FPS, a p95 of 19 ms and a worst interval of 23 ms.
+
+The three plain Walk replays used the normal touch joysticks at 844 × 390
+with effective DPR 1.25. Median draws dropped from 246 to 206 and median
+triangles from 1.48 million to 500,000. The candidate had zero gaps above
+33.3 ms. The original CPU ×2 Walk capture lowered its DPR to 1 and then 0.85.
+Three final runs held DPR at 1.25 and had 0.93–0.98% of intervals above
+33.3 ms, with a median p95 of 22.4 ms. This stress check differs in DPR and
+run count from the original.
+
+At CPU ×2, the warmed Orbit candidate measured 20.7 ms p95 with touch and
+20.6 ms with direct motion. Reusing serialized material grouping keys measured
+20.0 and 18.7 ms respectively. The same touch replay with scene hover picking
+suppressed measured 19.9 ms. All paths moved the camera with zero gaps above
+33.3 ms, so the next changes stayed in the renderer.
+The final daylight signature reads only positions and indices for a single
+toon material without alpha clipping or displacement. In an A/B/A at CPU ×2
+with 1,727 casters, the signature took 2.2–2.3 ms per frame in the original
+path and 1.9 ms in the candidate, using medians. The whole-frame p95 stayed
+near 20 ms in all three captures.
+
+Walk and zap used three matched four-second captures per build at 844 × 390,
+device DPR 3 and effective DPR 1.25. Every candidate shot was sent with
+trusted touch input while both joysticks were active and produced visible
+feedback. Six tasks of at least 50 ms in the original dropped to zero.
+Occasional 42–48 ms intervals remained around third-finger input, with no
+batch replacements in those intervals. The candidate stayed below 1% over
+33.3 ms in each capture. Its peak pack was 65,512 vertices in one frame,
+compared with 3.21 million in the original.
+
+The linked portal comparison used one matched traversal per build with both
+destination views rendering in every measured frame. Cropping each camera to
+its aperture reduced the two passes' median draws from 2,917 to 1,515 and
+triangles from 1.24 million to 687,000. The camera view preserves perspective
+and the traversal reaches the paired exit.
+
+Raw JSON, profiles and same-camera visual comparisons remain under ignored
+`test-results/performance/`. These mobile captures use the Mac's GPU.
+Safari iOS stayed on its first-launch screen while the Mac was locked.
+Timing on a physical phone remains unverified.
+
 ## 2026-11-04: issue 106, apartment room transitions and native bundle
 
 [Issue 106](https://github.com/cabane-app/cabane/issues/106) includes stationary
