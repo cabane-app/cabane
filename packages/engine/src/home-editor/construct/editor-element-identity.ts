@@ -11,6 +11,7 @@ const occupiedElementIds = (draft: FloorEditorDraft) =>
       room.ceilingId,
       ...(room.floorZones ?? []).map((zone) => zone.id),
     ]),
+    ...(draft.slopedCeilings ?? []).map((ceiling) => ceiling.id),
     ...draft.junctions.map((junction) => junction.id),
     ...(draft.hedges ?? []).map((hedge) => hedge.id),
     ...(draft.outdoorPlatforms ?? []).flatMap((platform) => [

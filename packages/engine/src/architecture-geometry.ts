@@ -1,10 +1,16 @@
 import { DEFAULT_WALL_COLORS } from "./wall-colors";
 import { wallCapFinishRegions } from "./architecture-geometry/wall-cap-finishes";
 import { wallStructuralHeight } from "./architecture-geometry/wall-structural-height";
+import { wallGableCornerBands } from "./architecture-geometry/wall-gable-corners";
 import { wallSolidBands } from "./architecture-geometry/wall-solid-bands";
 import { wallFaceFinish, wallEdgeFinish } from "./architecture-geometry/wall-face-finish";
 import { wallLevelContact } from "./architecture-geometry/wall-level-contact";
 import { physicalFloor } from "./architecture-geometry/physical-floor";
+import {
+  DEFAULT_GABLE_FRAME_COLOR,
+  extrudeWallPlaneShapes,
+  wallGablesForFloor,
+} from "./architecture-geometry/wall-gable-geometry";
 import { type MultiPolygon } from "polygon-clipping";
 
 import { BufferGeometry, Color, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
@@ -40,15 +46,23 @@ export function buildArchitecturalWallGeometries(
 ): ArchitecturalWallGeometryGroup[] {
   const sourceFloor = physicalFloor(requestedFloor);
   // Continue exterior finish across the structural slab between ceiling and next level.
-  const floor = neighbors.above
-    ? {
-        ...sourceFloor,
-        walls: sourceFloor.walls.map((wall) => ({
-          ...wall,
-          heightMeters: wallStructuralHeight(wall, sourceFloor),
-        })),
-      }
-    : sourceFloor;
+  // A gable wall's horizontal bands stop where its gable begins; the gable
+  // follows the sloped ceiling above them and is drawn after the bands.
+  const gables = wallGablesForFloor(sourceFloor);
+  const floor =
+    neighbors.above || gables.size
+      ? {
+          ...sourceFloor,
+          walls: sourceFloor.walls.map((wall) => ({
+            ...wall,
+            heightMeters:
+              gables.get(wall.id)?.bandTop ??
+              (neighbors.above
+                ? wallStructuralHeight(wall, sourceFloor)
+                : (wall.heightMeters ?? sourceFloor.defaultWallHeightMeters)),
+          })),
+        }
+      : sourceFloor;
   const wallData = new Map(
     floor.walls.map((wall) => [
       wall,
@@ -68,7 +82,7 @@ export function buildArchitecturalWallGeometries(
     uvs: number[];
     finish?: WallSurfaceFinish;
   };
-  const bands = wallSolidBands(floor);
+  const bands = wallSolidBands(floor, wallGableCornerBands(floor, gables));
   // Image payloads can be large. Intern each finish once, outside the band/triangle loops.
   const finishIds = new Map<WallSurfaceFinish, number>();
   const finishDefinitions = new Map<string, number>();
@@ -105,6 +119,15 @@ export function buildArchitecturalWallGeometries(
         continue;
       buffers.fadeNormals.push(normal);
     }
+    return buffers;
+  };
+  const buffersForFace = (normal: Horizontal | null, finish?: WallSurfaceFinish) => {
+    if (!finish) return buffersFor(normal);
+    const buffers = buffersFor(
+      normal,
+      `${normal?.join(":") ?? "interior"}:${finishIds.get(finish)}`,
+    );
+    buffers.finish = finish;
     return buffers;
   };
   const insideColor = new Color(interiorColor);
@@ -301,13 +324,7 @@ export function buildArchitecturalWallGeometries(
               outside ? outsideColor : insideColor,
             );
             const fadeNormal = fadeNormalAt(center, band.activeWalls);
-            const buffers = face.finish
-              ? buffersFor(
-                  fadeNormal,
-                  `${fadeNormal?.join(":") ?? "interior"}:${finishIds.get(face.finish)}`,
-                )
-              : buffersFor(fadeNormal);
-            if (face.finish) buffers.finish = face.finish;
+            const buffers = buffersForFace(fadeNormal, face.finish);
             const aBottom = [a[0], band.bottom, a[1]] as const;
             const bBottom = [b[0], band.bottom, b[1]] as const;
             const aTop = [a[0], band.top, a[1]] as const;
@@ -319,6 +336,39 @@ export function buildArchitecturalWallGeometries(
       }),
     );
   });
+
+  for (const wall of floor.walls) {
+    const shapes = gables.get(wall.id);
+    if (!shapes) continue;
+    const exteriorNormal = wallData.get(wall)!.exteriorNormal;
+    const buffers = buffersFor(exteriorNormal);
+    const frame = wallData.get(wall)!.frame;
+    const outside = (face: "left" | "right") =>
+      exteriorNormal !== null &&
+      exteriorNormal[0] * frame.normal[0] + exteriorNormal[1] * frame.normal[1] > 0 ===
+        (face === "left");
+    extrudeWallPlaneShapes(shapes.solid, wall, floor, wall.thicknessMeters, (a, b, c, face) => {
+      if (face === "edge") {
+        addTriangle(buffers, a, b, c, customColor(wallEdgeFinish(wall, interiorColor)));
+        return;
+      }
+      const finish = wall.faceFinishes?.[face];
+      const isOutside = outside(face);
+      const color = finish
+        ? "white"
+        : wallFaceFinish(wall, face, isOutside, isOutside ? exteriorColor : interiorColor);
+      addTriangle(buffersForFace(exteriorNormal, finish), a, b, c, customColor(color), frame, face);
+    });
+    if (wall.gable?.fill !== "glass") continue;
+    const frameColor = customColor(wall.gable.frameColor ?? DEFAULT_GABLE_FRAME_COLOR);
+    extrudeWallPlaneShapes(
+      shapes.frame,
+      wall,
+      floor,
+      Math.min(wall.thicknessMeters, 0.12),
+      (a, b, c) => addTriangle(buffers, a, b, c, frameColor),
+    );
+  }
 
   return [...buffersByDirection.values()].map((buffers) => {
     const geometry = new BufferGeometry();
@@ -341,6 +391,32 @@ export function buildArchitecturalWallGeometries(
       fadeNormals: buffers.fadeNormals,
       center,
     };
+  });
+}
+/** The glass of every glass gable on a floor, grouped by the facade it fades with. */
+export function buildWallGableGlass(floor: FloorSpec) {
+  const groups = new Map<string, { outwardNormal: Horizontal | null; positions: number[] }>();
+  const gables = wallGablesForFloor(floor);
+  if (!gables.size) return [];
+  for (const wall of floor.walls) {
+    const shapes = gables.get(wall.id);
+    if (!shapes?.glass.length) continue;
+    const outwardNormal = wallExteriorNormal(wall, floor);
+    const key = outwardNormal
+      ? `${outwardNormal[0].toFixed(4)}:${outwardNormal[1].toFixed(4)}`
+      : "interior";
+    const group = groups.get(key) ?? { outwardNormal, positions: [] };
+    groups.set(key, group);
+    extrudeWallPlaneShapes(shapes.glass, wall, floor, 0.024, (a, b, c, face) => {
+      if (face !== "edge") group.positions.push(...a, ...b, ...c);
+    });
+  }
+  return [...groups.values()].map(({ outwardNormal, positions }) => {
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+    geometry.computeVertexNormals();
+    geometry.computeBoundingSphere();
+    return { geometry, outwardNormal };
   });
 }
 export { JUNCTION_SEAM_OVERLAP_METERS } from "./architecture-geometry/architecture-geometry-contract";

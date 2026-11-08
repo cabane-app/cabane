@@ -449,7 +449,7 @@ await withModules(async (load) => {
         }
   });
 
-  test("sloped roof edges inside wall thickness retain the outward face override", () => {
+  test("sloped roof closures keep their inside and outside face overrides", () => {
     const floor = makeFloor([rectangle(0, 0, 8, 6)]);
     floor.walls = floor.footprint.map((from, i, points) => ({
       id: `wall-${i}`,
@@ -484,10 +484,21 @@ await withModules(async (load) => {
     ];
     const geometries = buildRoofGeometries([floor], DEFAULT_ROOF_SETTINGS, "#ff0000");
     try {
-      const colors = geometries.infill.attributes.color;
-      assert.ok(colors.count > 0);
-      for (let i = 0; i < colors.count; i++)
-        assert.equal(new Color().fromBufferAttribute(colors, i).getHexString(), "123456");
+      const { color, position } = geometries.infill.attributes;
+      let outsideFaces = 0;
+      let insideFaces = 0;
+      for (let i = 0; i < color.count; i++) {
+        const x = position.getX(i);
+        const z = position.getZ(i);
+        const outside = x < 0 || x > 8 || z < 0 || z > 6;
+        if (outside) outsideFaces++;
+        else insideFaces++;
+        assert.equal(
+          new Color().fromBufferAttribute(color, i).getHexString(),
+          outside ? "123456" : "abcdef",
+        );
+      }
+      assert.ok(outsideFaces > 0 && insideFaces > 0);
     } finally {
       Object.values(geometries).forEach((geometry) => geometry.dispose());
     }

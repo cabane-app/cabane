@@ -6,11 +6,19 @@ import {
   unionClippingPolygons,
 } from "../architecture-geometry/architecture-clipping";
 import { physicalFloor } from "../architecture-geometry/physical-floor";
+import {
+  slopedCeilingHeightSampler,
+  slopedCeilingProjection,
+} from "../architecture-geometry/sloped-ceiling-plane";
 import { wallSolidFootprintPolygons } from "../architecture-geometry/wall-solid-footprints";
 import { deriveFloorLevels } from "../building/floor-levels";
-import { planPointToWorld, slopedCeilingHeightAtPoint, worldPointToPlan } from "../geometry";
+import { planPointToWorld, polygonSignedArea, worldPointToPlan } from "../geometry";
 import type { FloorSpec, PlanPoint } from "../types";
-import { ROOF_MAX_RISE_METERS, ROOF_THICKNESS_METERS } from "./roof-settings";
+import {
+  ROOF_CEILING_DEPTH_METERS,
+  ROOF_MAX_RISE_METERS,
+  ROOF_THICKNESS_METERS,
+} from "./roof-settings";
 
 export interface RoofRegion {
   floorId: string;
@@ -19,6 +27,7 @@ export interface RoofRegion {
   maxRise: number;
   /** Authored slopes already define their outer silhouette. */
   heightAt?: (point: [number, number]) => number;
+  slopeProgressAt?: (point: [number, number]) => number;
 }
 
 const worldPolygon = (points: readonly PlanPoint[], floor: FloorSpec): ClipPolygon => [
@@ -83,20 +92,23 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
   const floors = requestedFloors.map(physicalFloor);
   const levels = deriveFloorLevels(floors);
   const domains = floors.map(coveredFloor);
-  const coverDomains = floors.map((floor, index) =>
-    unionClippingPolygons([
-      ...domains[index],
-      ...(floor.outdoorPlatforms ?? [])
-        .filter((p) => isOutdoorPlatformOutline(p.polygon))
-        .map((p) => worldPolygon(p.polygon, floor)),
-    ]),
+  const platformPolygons = floors.map((floor) =>
+    (floor.outdoorPlatforms ?? [])
+      .filter((platform) => isOutdoorPlatformOutline(platform.polygon))
+      .map((platform) => worldPolygon(platform.polygon, floor)),
   );
-  return floors.flatMap((floor, index) => {
+  const coverDomains = domains.map((domain, index) =>
+    unionClippingPolygons([...domain, ...platformPolygons[index]]),
+  );
+  const roofsByFloor: RoofRegion[][] = floors.map(() => []);
+  // Work downwards so a lower authored slope can meet the actual roof above it.
+  for (let index = floors.length - 1; index >= 0; index--) {
+    const floor = floors[index];
     const rooms = indoorRoomsForFloor(floor);
     const domain = domains[index];
-    if (!domain.length) return [];
+    if (!domain.length) continue;
     const elevation = levels[index].elevationMeters;
-    const upperCoverage = coverDomains.slice(index + 1).filter((polygon) => polygon.length);
+    const upperCoverage = coverDomains.slice(index + 1);
     // Drawn platforms stop at wall centerlines. Cover the supporting wall tops
     // too, otherwise their outer halves become narrow, full-height gables.
     // Restrict the extension to wall solids so exposed rooms keep their roofs.
@@ -121,19 +133,30 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
     for (const ceiling of ceilings) {
       if (ceiling.kind === "sloped") {
         for (const plane of ceiling.planes) {
+          const heightAt = slopedCeilingHeightSampler(plane);
+          const progressAt = slopedCeilingProjection(plane);
+          const polygon = worldPolygon(plane.boundary, floor);
+          // Keep the interior on the left even for authored clockwise outlines.
+          if (polygonSignedArea(plane.boundary) < 0) polygon[0].reverse();
           slopes.push({
             floorId: floor.id,
-            polygon: worldPolygon(plane.boundary, floor),
-            baseHeight: elevation + Math.min(plane.lowHeightMeters, plane.highHeightMeters) + 0.16,
+            polygon,
+            baseHeight: elevation + plane.lowHeightMeters + ROOF_CEILING_DEPTH_METERS,
             maxRise: 0,
+            ...(progressAt
+              ? {
+                  slopeProgressAt: ([x, z]: [number, number]) =>
+                    progressAt(worldPointToPlan({ x, z }, floor.coordinates)),
+                }
+              : {}),
             heightAt: ([x, z]) =>
               elevation +
-              0.16 +
-              slopedCeilingHeightAtPoint(worldPointToPlan({ x, z }, floor.coordinates), plane),
+              ROOF_CEILING_DEPTH_METERS +
+              heightAt(worldPointToPlan({ x, z }, floor.coordinates)),
           });
         }
       } else {
-        const height = elevation + ceiling.heightMeters + 0.16;
+        const height = elevation + ceiling.heightMeters + ROOF_CEILING_DEPTH_METERS;
         const polygons = flat.get(height) ?? [];
         const coveredRooms = rooms.filter((room) => ceiling.roomIds.includes(room.id));
         for (const room of coveredRooms)
@@ -170,7 +193,7 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
               (other, offset) =>
                 levels[index + 1 + offset].elevationMeters +
                 other.defaultCeilingHeightMeters +
-                0.16 -
+                ROOF_CEILING_DEPTH_METERS -
                 tier.baseHeight -
                 ROOF_THICKNESS_METERS,
             ),
@@ -185,16 +208,32 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
         ...above,
         ...higher.map((other) => other.polygons),
         ...slopes.map((slope) => slope.polygon),
-      ).map((polygon) => ({ floorId: floor.id, polygon, baseHeight: tier.baseHeight, maxRise }));
+      ).map((polygon) => ({
+        floorId: floor.id,
+        polygon,
+        baseHeight: tier.baseHeight,
+        maxRise,
+      }));
     });
-    return [
+    const aboveAuthoredSlope = slopes.length
+      ? above.flatMap((coverage, offset) => {
+          const upperIndex = index + 1 + offset;
+          const upperRoof = roofsByFloor[upperIndex];
+          if (!upperRoof.some((region) => region.heightAt)) return [coverage];
+          // The upper wall assembly extends past its authored ceiling. Cutting
+          // to the wall edge would leave a gap where the two slopes should meet.
+          return [...upperRoof.map((region) => region.polygon), ...platformPolygons[upperIndex]];
+        })
+      : [];
+    roofsByFloor[index] = [
       ...regions,
       ...slopes.flatMap((slope) =>
-        differenceClippingGeometry(slope.polygon, ...above).map((polygon) => ({
+        differenceClippingGeometry(slope.polygon, ...aboveAuthoredSlope).map((polygon) => ({
           ...slope,
           polygon,
         })),
       ),
     ];
-  });
+  }
+  return roofsByFloor.flat();
 }

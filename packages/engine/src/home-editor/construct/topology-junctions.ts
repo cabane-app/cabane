@@ -12,6 +12,7 @@ export const deriveJunctions = (
   walls: readonly EditorWall[],
   nodes: readonly Node[],
   previous: readonly WallJunctionSpec[],
+  occupiedIds: readonly string[] = [],
 ) =>
   nodes.flatMap((node): WallJunctionSpec[] => {
     const wallIds = walls
@@ -24,11 +25,17 @@ export const deriveJunctions = (
         samePoint(junction.at, node.point) &&
         [...junction.wallIds].sort().join("|") === wallIds.join("|"),
     );
+    const base = `junction-${wallIds.join("-")}-${pointKey(node.point).replaceAll(",", "-").replaceAll(".", "_")}`;
+    let id = prior?.id ?? base;
+    if (!prior && occupiedIds.includes(id)) {
+      let suffix = 2;
+      do {
+        id = `${base}-${suffix++}`;
+      } while (occupiedIds.includes(id) || previous.some((junction) => junction.id === id));
+    }
     return [
       {
-        id:
-          prior?.id ??
-          `junction-${wallIds.join("-")}-${pointKey(node.point).replaceAll(",", "-").replaceAll(".", "_")}`,
+        id,
         at: node.point,
         wallIds: wallIds as [string, string, ...string[]],
       },

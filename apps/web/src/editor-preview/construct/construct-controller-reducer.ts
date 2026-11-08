@@ -33,6 +33,7 @@ export const topologyForDraft = (
       walls: draft.walls,
       openings: draft.openings,
       rooms: draft.rooms,
+      slopedCeilings: draft.slopedCeilings,
       reservedRoomNames,
       junctions: draft.junctions,
       ...(draft.hedges === undefined ? {} : { hedges: draft.hedges }),

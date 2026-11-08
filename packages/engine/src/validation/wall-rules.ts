@@ -1,6 +1,7 @@
 import { WALL_SURFACE_PATTERNS } from "../types";
 import { wallSurfaceImageError } from "../wall-image";
 import { validateWallNiches } from "./wall-niche-rules";
+import { validateWallGable } from "./wall-gable-rules";
 import { wallLengthPlanUnits } from "../geometry";
 
 import type { ManifestIssue } from "../types";
@@ -158,6 +159,8 @@ export const validateWalls = (
         }
       }
     }
+    if (rawWall.gable !== undefined)
+      issues.push(...validateWallGable(rawWall.gable, `${wallPath}.gable`));
   });
   const validWalls = walls.filter(
     (wall): wall is ValidWall =>

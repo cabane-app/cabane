@@ -2,7 +2,7 @@ import type { CustomModel, CustomModelLight } from "../imported-models/contracts
 import type {
   Assumption,
   EntityBindingSlotSpec,
-  FlatCeilingSpec,
+  CeilingSpec,
   FloorSpec,
   FloorCoordinates,
   Polygon,
@@ -38,7 +38,7 @@ export type LayoutFloorSpec = Omit<
   footprint: Polygon;
   rooms: readonly LayoutRoomSpec[];
   openings: readonly LayoutOpeningSpec[];
-  ceilings?: readonly FlatCeilingSpec[];
+  ceilings?: readonly CeilingSpec[];
 };
 /** Serializable construction draft; an empty footprint is not a renderable floor. */
 export type DraftLayoutFloorSpec = Omit<LayoutFloorSpec, "footprint"> & {
