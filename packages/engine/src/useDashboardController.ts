@@ -196,8 +196,8 @@ export function useDashboardController({
     [automaticOpeningIds, resolvedBindings.openings],
   );
   const sunState = runtime.entityStates["sun.sun"];
-  const displayLighting = demoSession && setupOpen ? "day" : lightingMode;
-  const solarLighting = resolveSolarLighting(displayLighting, sunState, localTime);
+  const solarLighting = resolveSolarLighting(lightingMode, sunState, localTime);
+  const nightLighting = solarLighting.night;
   const allLightsCall = allLightsOffCall(runtime.entityStates);
   useEffect(() => {
     if (walkthrough) return;
@@ -310,7 +310,7 @@ export function useDashboardController({
         } else enterWalkMode();
         break;
       case "lighting-mode":
-        chooseLightingMode(solarLighting.night ? "day" : "night");
+        chooseLightingMode(nightLighting ? "day" : "night");
         break;
       case "wall-fade":
         setWallFadeEnabled((current) => !current);
@@ -445,7 +445,7 @@ export function useDashboardController({
     chooseLightingMode,
     sunState,
     solarLighting,
-    nightLighting: solarLighting.night,
+    nightLighting,
     floor,
     poseRef,
     movementInputRef,
