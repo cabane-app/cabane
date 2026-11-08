@@ -6,19 +6,26 @@ import { memo, useEffect, useMemo } from "react";
 import { useTerrainSurface } from "../terrain/TerrainSurface";
 import { conformToTerrain } from "../terrain/terrain-geometry";
 
-import { cutPoolOpenings, poolVerticalLayout } from "../pools";
+import { cutPoolOpenings, poolVerticalLayout, worldBoundsForFloorScene } from "../pools";
 
 import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 
 import { ToonMaterial } from "../rendering";
 
 import type { FloorSpec } from "../types";
+import { CountrysideDiorama } from "./countryside/CountrysideDiorama";
 
-const roundedDioramaShape = (centerX: number, centerZ: number, size: number, radius: number) => {
-  const left = centerX - size / 2;
-  const right = centerX + size / 2;
-  const near = centerZ - size / 2;
-  const far = centerZ + size / 2;
+const roundedDioramaShape = (
+  centerX: number,
+  centerZ: number,
+  width: number,
+  depth: number,
+  radius: number,
+) => {
+  const left = centerX - width / 2;
+  const right = centerX + width / 2;
+  const near = centerZ - depth / 2;
+  const far = centerZ + depth / 2;
   const shape = new Shape();
   shape.moveTo(left + radius, -near);
   shape.lineTo(right - radius, -near);
@@ -49,26 +56,31 @@ export const DioramaGround = memo(function DioramaGround({
   const terrain = useTerrainSurface();
   const centerX = terrain?.centerX ?? requestedCenterX;
   const centerZ = terrain?.centerZ ?? requestedCenterZ;
-  const size = terrain?.size ?? requestedSize;
+  const bounds = worldBoundsForFloorScene(floor);
+  const width = terrain?.size ?? Math.min(requestedSize, bounds.width + 7);
+  const depth = terrain?.size ?? Math.min(requestedSize, bounds.depth + 7);
   const apertures = useStairSurfaceApertures("floor");
   const terrainApertures = useStairSurfaceApertures("terrain");
   const baseShape = useMemo(
     () =>
       cutStairGroundOpenings(
-        cutPoolOpenings(roundedDioramaShape(centerX, centerZ, size, 0.42), floor),
+        cutPoolOpenings(roundedDioramaShape(centerX, centerZ, width, depth, 0.42), floor),
         floor.coordinates,
         [...apertures, ...terrainApertures, ...(terrain?.cutouts ?? [])],
       ),
-    [centerX, centerZ, size, floor, apertures, terrainApertures, terrain],
+    [centerX, centerZ, width, depth, floor, apertures, terrainApertures, terrain],
   );
   const grassShape = useMemo(
     () =>
       cutStairGroundOpenings(
-        cutPoolOpenings(roundedDioramaShape(centerX, centerZ, size - 0.1, 0.36), floor),
+        cutPoolOpenings(
+          roundedDioramaShape(centerX, centerZ, width - 0.1, depth - 0.1, 0.36),
+          floor,
+        ),
         floor.coordinates,
         [...apertures, ...terrainApertures, ...(terrain?.cutouts ?? [])],
       ),
-    [centerX, centerZ, size, floor, apertures, terrainApertures, terrain],
+    [centerX, centerZ, width, depth, floor, apertures, terrainApertures, terrain],
   );
   const topY = GROUND_ELEVATION_METERS;
   const grassThickness = 0.1;
@@ -104,6 +116,13 @@ export const DioramaGround = memo(function DioramaGround({
   );
   return (
     <group>
+      <CountrysideDiorama
+        centerX={centerX}
+        centerZ={centerZ}
+        width={width}
+        depth={depth}
+        color={color}
+      />
       <mesh
         name="diorama-base"
         geometry={baseGeometry}
