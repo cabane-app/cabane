@@ -91,6 +91,7 @@ export { neutralDemoManifest } from "./demo";
 export * from "./building";
 export * from "./stairs";
 
+export { ActiveSceneLightPool } from "./SceneLightPool";
 export { StylizedScene } from "./StylizedScene";
 
 export { requestWalkPointerLock } from "./request-walk-pointer-lock";

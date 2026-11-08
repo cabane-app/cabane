@@ -18,7 +18,7 @@ import { withModules } from "./test-server.mjs";
 await withModules(async (load) => {
   const { ShadowMapCache } = await load("/packages/engine/src/shadow-map-cache.ts");
   const { applyCameraFadeToMesh } = await load("/packages/engine/src/rendering.tsx");
-  const { SceneLightWallMask } = await load("/packages/engine/src/scene-light-wall-mask.ts");
+  const { ScenePointShadows } = await load("/packages/engine/src/scene-point-shadows.ts");
   const fixture = () => {
     const scene = new Scene(),
       camera = new PerspectiveCamera(),
@@ -47,22 +47,22 @@ await withModules(async (load) => {
       assert.equal(f.cache.needsUpdate(f.scene, f.camera, PCFShadowMap), false);
     }
   });
-  test("the engine's beauty-only wall-light mask does not invalidate unchanged shadow depth", () => {
+  test("sampling point shadows does not invalidate unchanged solar depth", () => {
     const f = fixture();
-    const mask = new SceneLightWallMask();
+    const pointShadows = new ScenePointShadows();
     try {
-      mask.prepareMaterial(f.caster.material);
+      pointShadows.prepareMaterial(f.caster.material);
       assert.equal(f.dirty(), false, "known fragment lighting hooks do not change shadow depth");
       f.caster.position.x++;
       assert.equal(f.dirty(), true);
       assert.equal(f.dirty(), false);
-      mask.dispose();
+      pointShadows.dispose();
       f.caster.material.onBeforeCompile = () => {};
-      mask.prepareMaterial(f.caster.material);
-      assert.equal(f.dirty(), true, "authored custom shaders stay conservative under the mask");
+      pointShadows.prepareMaterial(f.caster.material);
+      assert.equal(f.dirty(), true, "authored custom shaders stay conservative with the atlas");
       assert.equal(f.dirty(), true);
     } finally {
-      mask.dispose();
+      pointShadows.dispose();
     }
   });
   test("noncasting animation and opaque tint changes reuse shadows; moving casters and sun refresh immediately", () => {

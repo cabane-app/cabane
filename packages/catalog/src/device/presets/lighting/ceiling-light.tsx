@@ -12,7 +12,7 @@ export function CeilingLightModel({ state, visualState }: HomeDeviceModelProps) 
         <ToonMaterial color="#a8aaa4" />
         <Outlines color={palette.charcoal} thickness={0.004} />
       </mesh>
-      <mesh position={[0, 0.04, 0]} castShadow>
+      <mesh name="ceiling-light-diffuser" position={[0, 0.04, 0]}>
         <cylinderGeometry args={[0.18, 0.19, 0.08, 24]} />
         <ToonMaterial
           color={finish.color}

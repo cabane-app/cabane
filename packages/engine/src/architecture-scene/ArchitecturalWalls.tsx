@@ -2,7 +2,7 @@ import { splitWallSurfaceGeometry } from "../architecture-geometry/wall-surface-
 import { useWallSurfaceTextures } from "./wall-surface-textures";
 import { wallFrame } from "../architecture-geometry/wall-coordinate-frame";
 import { wallFaceFinish, wallEdgeFinish } from "../architecture-geometry/wall-face-finish";
-import { BufferGeometry, Color, Float32BufferAttribute } from "three";
+import { BufferGeometry, Color, DoubleSide, Float32BufferAttribute } from "three";
 
 import { useEffect, useMemo } from "react";
 import { useWallRoomSelection } from "./useWallRoomSelection";
@@ -112,11 +112,12 @@ export function ArchitecturalWall({
       {geometry.map(({ geometry, name, finish }) => {
         const texture = finish ? textures.get(finish) : null;
         return (
-          <mesh key={name} name={name} geometry={geometry} castShadow>
+          <mesh key={name} name={name} geometry={geometry} castShadow receiveShadow>
             <ToonMaterial
               key={texture ? "pattern" : "solid"}
               color={texture ? "white" : (finish?.color ?? "white")}
               map={texture}
+              shadowSide={DoubleSide}
               vertexColors
             />
           </mesh>
@@ -178,11 +179,18 @@ export function ArchitecturalWalls({
       {groups.map(({ geometry, outwardNormal, fadeNormals, finish }, index) => {
         const texture = finish ? textures.get(finish) : null;
         const wall = (
-          <mesh key={`mesh-${index}`} geometry={geometry} castShadow {...selectionHandlers}>
+          <mesh
+            key={`mesh-${index}`}
+            geometry={geometry}
+            castShadow
+            receiveShadow
+            {...selectionHandlers}
+          >
             <ToonMaterial
               key={texture ? "pattern" : "solid"}
               color={texture ? "white" : (finish?.color ?? "white")}
               map={texture}
+              shadowSide={DoubleSide}
               vertexColors
             />
             <RoomWallEmphasis

@@ -115,12 +115,12 @@ the runtime derives a per-instance sample request from the transformed length,
 keeping the authored count as a minimum.
 
 There is no eight-point logical model limit or source-discarding floor cutoff.
-The shared [execution policy](model-lighting.md#rendering) approximates all active
-sources within 64 physical lights per preview or floor. It reduces strip samples
-and, when necessary, merges nearby logical sources while conserving total
-brightness. Saved declarations and requested counts remain intact. The pool
-reuses bounded zero-intensity slots when lights turn off, avoiding
-shader rebuilds within its existing capacity. Off, unavailable, stale and
+The shared [execution policy](model-lighting.md#rendering) allocates one emitter
+per logical source within the 64-slot budget, then uses remaining slots for strip
+samples. Larger floors group nearby sources while preserving total brightness.
+Saved declarations and requested counts remain intact. Dashboard slots stay
+mounted when lights turn off so ordinary state changes reuse the shader and
+shadow map. Off, unavailable, stale and
 disconnected connected lights have zero source and emissive intensity. Local
 Always on, Always off and Night only modes apply to both. Strip lighting
 approximates a line with points compatible with native toon and imported PBR

@@ -7,11 +7,8 @@ import {
   Mesh,
   MeshToonMaterial,
   MeshStandardMaterial,
-  Group,
   PointLight,
   SphereGeometry,
-  Vector3,
-  Vector4,
   PerspectiveCamera,
   Scene,
 } from "three";
@@ -23,11 +20,11 @@ await withModules(async (load) => {
   const { registerGeometryLods } = await load(
     "/packages/engine/src/scene-batching/geometry-lod-family.ts",
   );
-  const { SceneLightWallMask } = await load("/packages/engine/src/scene-light-wall-mask.ts");
-  function fixture() {
+  const { ScenePointShadows } = await load("/packages/engine/src/scene-point-shadows.ts");
+  function fixture(prepareMaterial) {
     const scene = new Scene(),
       camera = new PerspectiveCamera(),
-      batcher = new SceneToonBatcher();
+      batcher = new SceneToonBatcher(prepareMaterial);
     const a = new Mesh(new BoxGeometry(), new MeshToonMaterial({ color: "red" }));
     const b = new Mesh(new BoxGeometry(), new MeshToonMaterial({ color: "blue" }));
     const child = new Mesh(
@@ -37,6 +34,8 @@ await withModules(async (load) => {
     a.add(child);
     scene.add(a, b);
     const renderer = {
+      info: { render: { frame: 0 } },
+      shadowMap: { enabled: false },
       extensions: { has: () => true },
       localClippingEnabled: false,
       clippingPlanes: [],
@@ -268,78 +267,70 @@ await withModules(async (load) => {
     }
   });
 
-  test("wall lighting masks follow floor and camera transforms and isolate shared previews", () => {
-    const mask = new SceneLightWallMask(),
-      otherMask = new SceneLightWallMask();
-    const scene = new Scene(),
-      floor = new Group(),
-      camera = new PerspectiveCamera();
-    floor.position.y = 2.6;
-    floor.rotation.y = 0.7;
-    const light = new PointLight();
-    light.position.set(0.5, 1, 1);
-    light.userData.cabaneLightWallPlane = [1, 0, 0, -0.05];
-    floor.add(light);
-    scene.add(floor);
-    const material = new MeshStandardMaterial(),
-      mesh = new Mesh(new BoxGeometry(), material);
-    scene.add(mesh);
-    const original = material.onBeforeCompile;
-    let shader;
-    const renderer = {
-      info: { render: { frame: 0 } },
-      render(currentScene, currentCamera) {
-        currentScene.updateMatrixWorld(true);
-        currentCamera.updateMatrixWorld(true);
-        material.onBeforeRender(this, currentScene, currentCamera, mesh.geometry, mesh, null);
-        shader = {
-          uniforms: {},
-          vertexShader: "",
-          fragmentShader: "#include <lights_fragment_begin>",
-        };
-        material.onBeforeCompile(shader, this);
-        this.info.render.frame++;
-      },
+  test("point shadow hooks compose with authored materials and isolate shared canvases", () => {
+    const owner = new ScenePointShadows();
+    const otherOwner = new ScenePointShadows();
+    const f = fixture();
+    const material = new MeshStandardMaterial();
+    const mesh = new Mesh(new BoxGeometry(), material);
+    let renders = 0;
+    const onBeforeRender = () => renders++;
+    const onBeforeCompile = (shader) => {
+      shader.uniforms.authored = { value: true };
     };
-    for (const x of [0, 3]) {
-      camera.position.set(x, 4, 5);
-      camera.lookAt(0, 2.6, 0);
-      mask.render(renderer, scene, camera);
-      const plane = shader.uniforms.cabaneLightWallPlanes.value[0];
-      const distance = (x) => {
-        const point = new Vector3(x, 1, 1)
-          .applyMatrix4(floor.matrixWorld)
-          .applyMatrix4(camera.matrixWorldInverse);
-        return plane.dot(new Vector4(point.x, point.y, point.z, 1));
-      };
-      assert.ok(distance(0.1) > 0, "wall-side shade remains illuminated");
-      assert.ok(distance(-0.1) < 0, "receivers behind the wall are masked");
-    }
+    const customProgramCacheKey = () => "authored";
+    Object.assign(material, { onBeforeCompile, onBeforeRender, customProgramCacheKey });
+    f.scene.add(mesh, new PointLight());
     const preview = new Scene();
-    preview.add(new Mesh(mesh.geometry, material), new PointLight());
-    otherMask.render(renderer, preview, camera);
-    assert.deepEqual(shader.uniforms.cabaneLightWallPlanes.value[0].toArray(), [0, 0, 0, 1]);
-    mask.dispose();
-    assert.notEqual(
-      material.onBeforeCompile,
-      original,
-      "another canvas still owns the shared material",
+    const previewMesh = new Mesh(mesh.geometry, material);
+    preview.add(previewMesh);
+
+    const shaderFor = (scene, object) => {
+      const shader = {
+        uniforms: {},
+        vertexShader: "",
+        fragmentShader: "#include <lights_fragment_begin>",
+      };
+      f.renderer.info.render.frame++;
+      material.onBeforeRender(f.renderer, scene, f.camera, mesh.geometry, object, null);
+      material.onBeforeCompile(shader, f.renderer);
+      return shader;
+    };
+
+    owner.update(f.renderer, f.scene, f.camera);
+    otherOwner.update(f.renderer, preview, f.camera);
+    const mainShader = shaderFor(f.scene, mesh);
+    const mainPoints = mainShader.uniforms.cabanePointShadows.value;
+    assert.deepEqual(
+      mainPoints.map((point) => point.toArray()),
+      [[-1, 0, 0, 0]],
     );
-    otherMask.dispose();
-    assert.equal(material.onBeforeCompile, original);
-    const reopened = new SceneLightWallMask();
-    reopened.render(renderer, scene, camera);
+    assert.equal(mainShader.uniforms.authored.value, true);
+    assert.equal(material.customProgramCacheKey(), "authored|cabane-point-shadows");
+    assert.deepEqual(shaderFor(preview, previewMesh).uniforms.cabanePointShadows.value, []);
+    assert.deepEqual(shaderFor(new Scene(), mesh).uniforms.cabanePointShadows.value, []);
+    assert.equal(renders, 3, "the authored render hook runs for every draw");
+
+    owner.dispose();
+    assert.notEqual(material.onBeforeCompile, onBeforeCompile, "the preview still owns the hook");
+    otherOwner.dispose();
+    assert.equal(material.onBeforeCompile, onBeforeCompile);
+    assert.equal(material.onBeforeRender, onBeforeRender);
+    assert.equal(material.customProgramCacheKey, customProgramCacheKey);
+
+    const reopened = new ScenePointShadows();
+    reopened.update(f.renderer, f.scene, f.camera);
     material.dispose();
-    assert.equal(material.onBeforeCompile, original, "disposed materials retain no lighting hooks");
-    reopened.render(renderer, scene, camera);
-    assert.equal(shader.fragmentShader.match(/uniform vec4 cabaneLightWallPlanes/g).length, 1);
+    assert.equal(material.onBeforeCompile, onBeforeCompile);
+    reopened.update(f.renderer, f.scene, f.camera);
+    const reopenedShader = shaderFor(f.scene, mesh);
+    assert.equal(reopenedShader.fragmentShader.match(/uniform vec4 cabanePointShadows/g).length, 1);
     reopened.dispose();
   });
 
-  test("wall lighting preserves static toon buffers and the existing batching shader", () => {
-    const f = fixture(),
-      mask = new SceneLightWallMask();
-    mask.render(f.renderer, f.scene, f.camera);
+  test("point shadows preserve static toon buffers and compose the batching shader", () => {
+    const shadows = new ScenePointShadows();
+    const f = fixture((material) => shadows.prepareMaterial(material));
     let previous;
     f.renderer.render = (scene) => {
       const batch = scene.children.find((object) => object.isBatchedMesh);
@@ -353,17 +344,15 @@ await withModules(async (load) => {
       };
       batch.material.onBeforeCompile(shader, f.renderer);
       assert.match(shader.vertexShader, /batchingMatrix = mat4\(1.0\)/);
-      assert.match(shader.fragmentShader, /directLight.color \*= step/);
-      assert.match(
-        shader.fragmentShader,
-        /if \(pointLight\.color != vec3\(0\.0\)\) \{\s*getPointLightInfo/,
-      );
+      assert.match(shader.fragmentShader, /directLight.color \*= cabaneSamplePointShadow/);
+      const guard = shader.fragmentShader.indexOf("if (pointLight.color != vec3(0.0)");
+      assert.ok(guard >= 0 && guard < shader.fragmentShader.indexOf("getPointLightInfo("));
     };
-    for (let i = 0; i < 3; i++)
-      f.batcher.render(f.renderer, f.scene, f.camera, () =>
-        mask.render(f.renderer, f.scene, f.camera),
-      );
+    for (let i = 0; i < 3; i++) {
+      shadows.update(f.renderer, f.scene, f.camera);
+      f.batcher.render(f.renderer, f.scene, f.camera, () => f.renderer.render(f.scene));
+    }
     f.batcher.dispose();
-    mask.dispose();
+    shadows.dispose();
   });
 });

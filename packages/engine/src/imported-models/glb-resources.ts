@@ -117,8 +117,17 @@ export async function loadGlb(bytes: Uint8Array, includePoses = false) {
     if (!(object instanceof Mesh)) return;
     object.userData.importedModel = true;
     object.layers.enable(IMPORTED_MODEL_LAYER);
-    object.castShadow = object.receiveShadow = true;
     const mesh = object as Mesh<BufferGeometry, Material | Material[]>;
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    // Native shadow maps do not model transmission: clear glass must not become
+    // a solid enclosure around an imported lamp's emitter. Cutouts still cast.
+    mesh.castShadow = !materials.every(
+      (material) =>
+        material.alphaTest === 0 &&
+        ((material.transparent && material.opacity < 1) ||
+          ((material as Material & { transmission?: number }).transmission ?? 0) > 0),
+    );
+    mesh.receiveShadow = true;
     meshes++;
     const instances = "count" in object && typeof object.count === "number" ? object.count : 1;
     triangles +=

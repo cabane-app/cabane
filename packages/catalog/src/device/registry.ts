@@ -300,7 +300,8 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.326, 0, -0.326], max: [0.326, 1.796, 0.326] },
     outlineContact: false,
     sceneLight: {
-      position: [0, 1.47, 0],
+      // Keep the bulb inside the shade with clearance above the support pole.
+      position: [0, 1.65, 0],
       color: "#ffdba0",
       maxIntensity: 5,
       distance: 4.5,

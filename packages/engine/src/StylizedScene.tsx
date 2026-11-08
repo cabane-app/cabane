@@ -17,7 +17,7 @@ import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 import { ShadowMapCache } from "./shadow-map-cache";
 import { SceneGeometryLod } from "./scene-batching/SceneGeometryLod";
 import { SceneToonBatcher } from "./scene-batching/SceneToonBatcher";
-import { SceneLightWallMask, SceneLightWallMaskContext } from "./scene-light-wall-mask";
+import { ScenePointShadows, ScenePointShadowsContext } from "./scene-point-shadows";
 
 /** Decorative mesh shells are replaced by a single visible-depth contour pass. */
 export const SceneContourContext = createContext(false);
@@ -26,7 +26,7 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
   const style = useSceneStyle();
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
-  const lightWalls = useContext(SceneLightWallMaskContext)!;
+  const pointShadows = useContext(ScenePointShadowsContext)!;
   const resources = useMemo(() => {
     const target = new WebGLRenderTarget(1, 1, {
       type: HalfFloatType,
@@ -62,10 +62,10 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
       quad: new FullScreenQuad(material),
       size: new Vector2(),
       shadows: new ShadowMapCache(),
-      batches: new SceneToonBatcher(),
+      batches: new SceneToonBatcher((material) => pointShadows.prepareMaterial(material)),
       lod: new SceneGeometryLod(invalidate),
     };
-  }, [antialias, invalidate]);
+  }, [antialias, invalidate, pointShadows]);
   useEffect(
     () => () => {
       resources.target.dispose();
@@ -112,7 +112,7 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
       resources.shadows.render(gl, scene, camera, () =>
         resources.lod.render(scene, camera, size.y / gl.getPixelRatio(), () => {
           const pending = resources.batches.render(gl, scene, camera, () =>
-            lightWalls.render(gl, scene, camera),
+            gl.render(scene, camera),
           );
           if (pending) invalidate();
         }),
@@ -147,16 +147,32 @@ export function StylizedScene({
   active?: boolean;
 }) {
   const style = useSceneStyle();
-  const lightWalls = useMemo(() => new SceneLightWallMask(), []);
-  useEffect(() => () => lightWalls.dispose(), [lightWalls]);
+  const pointShadows = useMemo(() => new ScenePointShadows(), []);
+  const gl = useThree((state) => state.gl);
+  useEffect(() => {
+    gl.domElement.addEventListener("webglcontextrestored", pointShadows.reset);
+    return () => {
+      gl.domElement.removeEventListener("webglcontextrestored", pointShadows.reset);
+      pointShadows.dispose();
+    };
+  }, [gl, pointShadows]);
+  // Before the portal capture and beauty pass. Camera orientation is irrelevant
+  // to the shadow maps, and both cameras can sample the same atlas.
+  useFrame(
+    ({ gl, scene, camera, invalidate }) => {
+      if (active && pointShadows.update(gl, scene, camera)) invalidate();
+    },
+    enabled ? 0.25 : 0,
+  );
+
   return (
-    <SceneLightWallMaskContext.Provider value={lightWalls}>
+    <ScenePointShadowsContext.Provider value={pointShadows}>
       <SceneContourContext.Provider value={enabled}>
         <SceneStyleContext.Provider value={active ? style : "default"}>
           {children}
         </SceneStyleContext.Provider>
         {enabled && <SceneContourPass antialias={antialias} active={active} />}
       </SceneContourContext.Provider>
-    </SceneLightWallMaskContext.Provider>
+    </ScenePointShadowsContext.Provider>
   );
 }

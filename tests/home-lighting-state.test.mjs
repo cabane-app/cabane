@@ -408,7 +408,7 @@ await withModules(async (load) => {
       assert.equal(light.props.intensity, 1.4);
       assert.equal(light.props.distance, 2.5);
       assert.equal(light.props.decay, 2);
-      assert.equal(light.props.castShadow, false);
+      assert.equal(light.instance.userData.cabaneSceneLight, true);
       const model = await create(
         createElement(engine.SceneItemRenderer, {
           item,
@@ -467,7 +467,7 @@ await withModules(async (load) => {
     await renderer.update(createElement(engine.HomeAssistantSceneLighting, props));
     const light = renderer.scene.findByProps({ name: `ha-device-light-${item.id}` });
     assert.equal(light.props.intensity, definition.sceneLight.maxIntensity);
-    assert.equal(light.props.castShadow, false);
+    assert.equal(light.instance.userData.cabaneSceneLight, true);
     await renderer.unmount();
   });
 
@@ -536,15 +536,7 @@ await withModules(async (load) => {
             "the shade's upper and wall-facing sides must receive light before the wall",
           );
           assert.ok(Math.abs(light.position.y - elevationMeters - 0.42) < 1e-9);
-          const plane = light.userData.cabaneLightWallPlane;
-          if (wallDistance < 0.6) {
-            assert.deepEqual(plane, [0, 0, 1, -0.05]);
-            assert.ok(
-              plane[2] * 0.1 + plane[3] > 0,
-              "the space between the bulb and wall remains lit",
-            );
-            assert.ok(plane[2] * -0.1 + plane[3] < 0, "the wall still blocks receivers behind it");
-          } else assert.equal(plane, null);
+          assert.equal(light.userData.cabaneSceneLight, true);
         }
       }
     } finally {
@@ -552,7 +544,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("primary bedroom bedside lamps cannot illuminate the gallery behind their wall", async () => {
+  test("primary bedroom bedside lamps and doorway sources all use shadow maps", async () => {
     const floor = homeManifest.floors.find((candidate) => candidate.id === "first-floor");
     const items = ownerHomeProject.sceneItems
       .filter(
@@ -573,14 +565,7 @@ await withModules(async (load) => {
     for (const item of items) {
       const light = renderer.scene.findByProps({ name: `ha-device-light-${item.id}` }).instance;
       assert.equal(light.isPointLight, true);
-      const plane = light.userData.cabaneLightWallPlane;
-      assert.ok(plane, `${item.id} should keep its room's wall mask`);
-      assert.ok(plane[0] * light.position.x + plane[2] * light.position.z + plane[3] > 0);
-      assert.ok(
-        plane[0] * 10.5 + plane[2] * light.position.z + plane[3] < 0,
-        `${item.id} must not illuminate the gallery`,
-      );
-      assert.equal(light.castShadow, false);
+      assert.equal(light.userData.cabaneSceneLight, true);
     }
     await renderer.update(
       createElement(engine.HomeAssistantSceneLighting, {
@@ -603,11 +588,6 @@ await withModules(async (load) => {
       renderer.scene.findByProps({ name: `ha-device-light-${items[0].id}` }).instance.isPointLight,
       true,
       "the bedroom doorway must remain an opening for light",
-    );
-    assert.equal(
-      renderer.scene.findByProps({ name: `ha-device-light-${items[0].id}` }).instance.userData
-        .cabaneLightWallPlane,
-      null,
     );
     await renderer.unmount();
   });
@@ -675,7 +655,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("keeps the two-floor demo within the existing unshadowed light path", async () => {
+  test("keeps every demo emitter on the native shadow path", async () => {
     for (const floor of homeManifest.floors) {
       const sceneItems = homeManifest.sceneItems
         .filter((item) => item.floorId === floor.id && item.kind === "device")
@@ -695,8 +675,8 @@ await withModules(async (load) => {
       assert.ok(lights.length > 0);
       assert.ok(lights.length <= sceneItems.length, `${floor.id} must not multiply light sources`);
       assert.ok(
-        lights.every((light) => !light.castShadow),
-        `${floor.id} must not allocate physical-light shadow maps`,
+        lights.every((light) => light.userData.cabaneSceneLight),
+        `${floor.id} must use shadowed physical lights`,
       );
       await renderer.unmount();
     }

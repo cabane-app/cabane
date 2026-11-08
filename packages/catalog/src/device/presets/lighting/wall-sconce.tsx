@@ -22,7 +22,6 @@ export function WallSconceModel({ state, visualState }: HomeDeviceModelProps) {
         radius={0.035}
         smoothness={2}
         position={[0, 0.17, 0.0925]}
-        castShadow
       >
         <ToonMaterial
           color={finish.color}

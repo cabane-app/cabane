@@ -1035,7 +1035,7 @@ await withModules(async (load) => {
     });
     assert.ok(Math.abs(floorLamp.instance.intensity - (5 * 128) / 255) < 1e-12);
     assert.equal(floorLamp.instance.color.getHexString(), "ff4020");
-    assert.equal(floorLamp.instance.castShadow, false);
+    assert.equal(floorLamp.instance.userData.cabaneSceneLight, true);
     assert.equal(
       renderer.scene.findByProps({
         name: "ha-device-light-fixture-terracotta-pendant",

@@ -14,7 +14,7 @@ function WovenTier({
   readonly color: string;
 }) {
   return (
-    <mesh position={[0, y, 0]} castShadow>
+    <mesh position={[0, y, 0]}>
       <cylinderGeometry args={[top, bottom, 0.12, 24, 1, true]} />
       <ToonMaterial color={color} transparent opacity={0.58} depthWrite={false} side={2} />
       <Outlines color="#6d4f34" thickness={0.005} screenspace={false} />

@@ -37,6 +37,8 @@ export class SceneToonBatcher {
   private inverse = new Matrix4();
   private matrix = new Matrix4();
 
+  constructor(private prepareMaterial?: (material: MeshToonMaterial) => void) {}
+
   private build(sources: Mesh[]): Batch {
     const families = sources.map((source) => geometryLodFamily(source.geometry));
     const revisions = families.map((family) => family.map(geometryRevision));
@@ -63,6 +65,7 @@ export class SceneToonBatcher {
       );
     };
     material.customProgramCacheKey = () => "cabane-static-toon-batch-v1";
+    this.prepareMaterial?.(material);
     const geometries = families.flatMap((family) => [...family]);
     const vertices = geometries.reduce(
       (sum, geometry) => sum + geometry.attributes.position.count,

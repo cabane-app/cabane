@@ -31,6 +31,23 @@ await withModules(async (load) => {
   const part = (root, key) =>
     root.getObjectsByProperty("isMesh", true).find((mesh) => mesh.userData.modelGlowKey === key);
 
+  test("selected diffuser meshes transmit their source light and restore authored shadows", () => {
+    const root = new THREE.Group(),
+      mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshStandardMaterial());
+    mesh.name = "Diffuser";
+    mesh.castShadow = true;
+    root.add(mesh);
+    const id = api.modelLightingSurfaces(root)[0].id;
+    const highlight = api.controlModelLightMaterials(root, {}, id);
+    assert.equal(mesh.castShadow, true, "selection highlight is not a diffuser declaration");
+    highlight.dispose();
+    const control = api.controlModelLightMaterials(root, { emissiveSurfaces: [id] });
+    assert.equal(mesh.castShadow, false);
+    control.update({ ...state, state: "off" }, "#ffffff");
+    assert.equal(mesh.castShadow, false, "brightness must not change shadow geometry");
+    control.dispose();
+    assert.equal(mesh.castShadow, true);
+  });
   await test("bench keys survive variants and wrappers; legacy ordinals cannot glow the cushion", async () => {
     const scenes = [];
     try {
