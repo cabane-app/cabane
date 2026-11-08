@@ -26,7 +26,7 @@ bolt is replaced; its physical display retains the four-state status beacon.
 Fireplace flames animate while connected on or locally set to Always on, with warm
 engine-owned illumination. Off removes them; reduced motion keeps them static.
 
-TVs display a comic-book Superman flight with a fluttering red cape and drifting clouds; live camera surfaces take precedence.
+TVs display slow teal, blue and violet aurora ribbons rendered by a single lightweight shader; live camera surfaces take precedence.
 Washer and dryer doors show tumbling fabric. Coffee makers and kettles emit stylized
 steam. Oven and microwave windows turn warm while active; their interior lamps
 stay steady rather than flickering. Existing lighting, covers, fans, sprinklers
