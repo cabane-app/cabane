@@ -16,6 +16,30 @@ camera.
 
 ## Visual assets
 
+### Campagne diorama prototype
+
+The current development prototype adds a procedural countryside surround to every
+3D diorama, without a setting or saved-project field. The original flat plot fits
+the floor scene's rectangular bounds; custom terrain retains its square grade.
+A roughly nine-metre landscape band reclaims two metres of the otherwise empty
+lawn margin and surrounds the house with a connected oak grove, rolling meadow,
+fern beds, wildflower patches, coursed dry-stone walls, a gate, an open winding
+footpath and a broad reed-lined pond. The plinth exposes irregular earth strata;
+oak branches use curved, fluted timber and layered lobed-leaf sprays. The default
+orbital overview frames the whole island from a lower, asymmetric angle. Saved
+views remain intact; Reset view applies the new framing. Geometry
+is deterministic and merged into six vertex-coloured meshes using the shared toon
+materials. A separate shadow catcher grounds the miniature. No downloaded assets
+or network requests are involved.
+
+This is a visual prototype, not a navigable terrain expansion: the surrounding
+props are non-interactive and do not add Walk support or collisions. The house's
+pool and stair cutouts remain owned by the original ground. Plan views omit the
+surround. Selection, theme controls, mobile performance acceptance and release
+integration remain outside this prototype.
+
+### Asset handling
+
 Catalog and workspace previews copy the rendered WebGL drawing buffer through
 explicit RGBA readback before resizing or encoding. This avoids GPU canvas-copy
 channel swaps while retaining image orientation and transparent model cutouts.

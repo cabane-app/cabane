@@ -215,20 +215,33 @@ function OrbitCameraRig({
           buildingFloors!.at(-1)!.floorToFloorHeightMeters -
           buildingBase
         : 0) + (showRoof ? ROOF_MAX_RISE_METERS + ROOF_THICKNESS_METERS + 0.16 : 0);
-    const span = Math.max(bounds.width, bounds.depth, buildingHeight, 2);
+    const span = Math.max(bounds.width + 24, bounds.depth + 24, buildingHeight, 26);
     const stacked = showRoof || (buildingFloors?.length ?? 0) > 1;
-    const targetHeight = stacked ? buildingBase + buildingHeight / 2 : 0.2 + elevation;
-    const zoom = cameraZoomForViewport(
-      width,
-      height,
-      stacked ? { width: bounds.width, depth: bounds.depth + buildingHeight * 0.75 } : bounds,
-      false,
+    const targetHeight = stacked ? buildingBase + buildingHeight / 2 : 1.0 + elevation;
+    // The prototype overview frames the entire miniature, including the oak grove.
+    // A lower, asymmetric view exposes trunks, walls and the cut-earth plinth.
+    const azimuth = Math.atan2(1.2, 0.75);
+    const elevationAngle = Math.atan2(1.0, Math.hypot(1.2, 0.75));
+    const landscapeWidth = bounds.width + 26,
+      landscapeDepth = bounds.depth + 24;
+    const projectedWidth = Math.cos(azimuth) * landscapeWidth + Math.sin(azimuth) * landscapeDepth;
+    const projectedHeight =
+      Math.sin(elevationAngle) *
+        (Math.sin(azimuth) * landscapeWidth + Math.cos(azimuth) * landscapeDepth) +
+      Math.cos(elevationAngle) * Math.max(10, buildingHeight);
+    const zoom = clamp(
+      Math.min(
+        Math.max(100, width - 72) / projectedWidth,
+        Math.max(100, height - 140) / projectedHeight,
+      ),
+      4,
+      115,
     );
     return {
       position: [
-        bounds.centerX + span * 0.82,
-        span * 1.16 + 2.8 + targetHeight,
-        bounds.centerZ + span * 0.92,
+        bounds.centerX + span * 1.2,
+        span + targetHeight,
+        bounds.centerZ + span * 0.75,
       ] as const,
       target: [bounds.centerX, targetHeight, bounds.centerZ] as const,
       zoom,

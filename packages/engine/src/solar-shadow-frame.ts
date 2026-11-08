@@ -16,8 +16,8 @@ export const solarShadowFrame = (floors: readonly RenderableFloorSpec[]) => {
     maxZ = -Infinity;
   floors.forEach((floor, index) => {
     const bounds = worldBoundsForFloorScene(floor);
-    // Match the rendered outdoor ground and include free-standing walls.
-    const halfGround = (Math.max(bounds.width, bounds.depth) + 7) / 2;
+    // Include the prototype landscape and oak crowns beyond the authored plot.
+    const halfGround = (Math.max(bounds.width, bounds.depth) + 7) / 2 + 9;
     minX = Math.min(minX, bounds.centerX - halfGround);
     maxX = Math.max(maxX, bounds.centerX + halfGround);
     minZ = Math.min(minZ, bounds.centerZ - halfGround);
@@ -31,8 +31,8 @@ export const solarShadowFrame = (floors: readonly RenderableFloorSpec[]) => {
         maxZ = Math.max(maxZ, z + wall.thicknessMeters);
       }
     const elevation = levels[index].elevationMeters;
-    minY = Math.min(minY, elevation - 0.1);
-    maxY = Math.max(maxY, elevation + legacyFloorHeight(floor) + 2.2);
+    minY = Math.min(minY, elevation - 1.1);
+    maxY = Math.max(maxY, Math.max(10, elevation + legacyFloorHeight(floor) + 2.2));
   });
   const radius = Math.max(1, Math.hypot(maxX - minX, maxY - minY, maxZ - minZ) / 2 + 0.5);
   return {
