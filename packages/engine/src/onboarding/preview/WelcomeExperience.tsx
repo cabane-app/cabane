@@ -34,8 +34,9 @@ export function WelcomeExperience({
   const invitation = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (invited && window.matchMedia("(max-width: 860px)").matches) {
-      invitation.current?.scrollIntoView({
+    const panel = invitation.current;
+    if (invited && panel && getComputedStyle(panel).gridRowStart === "invitation") {
+      panel.scrollIntoView({
         block: "nearest",
         behavior: preview.reducedMotion ? "instant" : "smooth",
       });
