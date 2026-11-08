@@ -1,9 +1,9 @@
 {
-  "revision": 38,
-  "fingerprint": "157afb63167bb31c8306a85f7a0b6530f8adf30f4faa67792a71071e78b94493",
-  "summary": "Allow authored sloped ceilings and solid or glazed wall gables in layout projects",
+  "revision": 39,
+  "fingerprint": "2a5a9d3d33c809f729a9ef2d2eb6e553c8bf83c1e580d086e67fc92052d8d1b7",
+  "summary": "Add a Grass finish for outdoor spaces",
   "breakingChanges": [
-    "Existing flat projects keep their saved fields and IDs. Update older frontends and Home Assistant panels before opening a layout with sloped ceilings or wall gables."
+    "Workspaces that use the Grass finish require an updated Cabane panel. Update the integration through HACS, restart Home Assistant, and reload before opening one on an older panel."
   ],
   "history": [
     {
@@ -263,6 +263,13 @@
       "summary": "Support glass railings on outdoor platforms",
       "breakingChanges": [
         "Existing outdoor platforms keep their edge styles. Workspaces with glass railings require the updated Home Assistant panel. Update through HACS, restart Home Assistant, and reload before opening one on an older panel."
+      ]
+    },
+    {
+      "revision": 38,
+      "summary": "Allow authored sloped ceilings and solid or glazed wall gables in layout projects",
+      "breakingChanges": [
+        "Existing flat projects keep their saved fields and IDs. Update older frontends and Home Assistant panels before opening a layout with sloped ceilings or wall gables."
       ]
     }
   ],

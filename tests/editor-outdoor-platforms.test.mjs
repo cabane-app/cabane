@@ -46,10 +46,11 @@ await withModules(async (load) => {
       }
       assert.equal(hint.type, "p");
       assert.equal(finish.props.children[0].props.children, "Floor finish");
+      assert.equal(finish.props.children[1].props.showGrass, target === "outdoor-platform");
       assert.equal(Boolean(edges), target === "outdoor-platform");
     }
   });
-  test("Outdoor space drawing commits the creation style, selects the platform and retains it through wall edits", async () => {
+  test("Outdoor space drawing commits Grass by default, selects the platform and retains it through wall edits", async () => {
     let editor;
     const renderer = await create(
       createElement(() => {
@@ -71,6 +72,7 @@ await withModules(async (load) => {
       assert.equal(editor.selection.kind, "outdoor-platform");
       assert.equal(editor.tool, "select");
       const before = structuredClone(editor.draft.outdoorPlatforms[0]);
+      assert.deepEqual(before.finish, { kind: "grass" });
       act(() =>
         editor.dispatch({
           type: "update-outdoor-platform",
@@ -135,6 +137,8 @@ await withModules(async (load) => {
     );
     try {
       act(() => editor.setFloorPaintTarget("outdoor-platform"));
+      const finish = { kind: "preset", preset: "gravel" };
+      act(() => editor.setPlatformSettings({ ...editor.platformSettings, finish }));
       for (const point of [
         [10, 0],
         [14, 0],
@@ -143,6 +147,7 @@ await withModules(async (load) => {
         [10, 0],
       ])
         act(() => editor.poolDrawing.place(point));
+      assert.deepEqual(editor.draft.outdoorPlatforms[0].finish, finish);
       assert.equal(editor.tool, "select");
       act(() => editor.setTool("floor")); // The F shortcut and toolbar share this entry point.
       assert.equal(editor.tool, "floor");

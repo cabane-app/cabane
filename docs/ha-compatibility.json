@@ -1208,6 +1208,16 @@
                                     }
                                   }
                                 }
+                              },
+                              {
+                                "properties": {
+                                  "kind": {
+                                    "optional": false,
+                                    "schema": {
+                                      "const": "grass"
+                                    }
+                                  }
+                                }
                               }
                             ]
                           }
@@ -2370,6 +2380,16 @@
                                     }
                                   }
                                 }
+                              },
+                              {
+                                "properties": {
+                                  "kind": {
+                                    "optional": false,
+                                    "schema": {
+                                      "const": "grass"
+                                    }
+                                  }
+                                }
                               }
                             ]
                           }
@@ -2674,6 +2694,16 @@
                                     }
                                   }
                                 }
+                              },
+                              {
+                                "properties": {
+                                  "kind": {
+                                    "optional": false,
+                                    "schema": {
+                                      "const": "grass"
+                                    }
+                                  }
+                                }
                               }
                             ]
                           }
@@ -2788,6 +2818,16 @@
                                                   "const": "travertine"
                                                 }
                                               ]
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "properties": {
+                                          "kind": {
+                                            "optional": false,
+                                            "schema": {
+                                              "const": "grass"
                                             }
                                           }
                                         }
@@ -6625,6 +6665,16 @@
                                   }
                                 }
                               }
+                            },
+                            {
+                              "properties": {
+                                "kind": {
+                                  "optional": false,
+                                  "schema": {
+                                    "const": "grass"
+                                  }
+                                }
+                              }
                             }
                           ]
                         }
@@ -7787,6 +7837,16 @@
                                   }
                                 }
                               }
+                            },
+                            {
+                              "properties": {
+                                "kind": {
+                                  "optional": false,
+                                  "schema": {
+                                    "const": "grass"
+                                  }
+                                }
+                              }
                             }
                           ]
                         }
@@ -8091,6 +8151,16 @@
                                   }
                                 }
                               }
+                            },
+                            {
+                              "properties": {
+                                "kind": {
+                                  "optional": false,
+                                  "schema": {
+                                    "const": "grass"
+                                  }
+                                }
+                              }
                             }
                           ]
                         }
@@ -8205,6 +8275,16 @@
                                                 "const": "travertine"
                                               }
                                             ]
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "properties": {
+                                        "kind": {
+                                          "optional": false,
+                                          "schema": {
+                                            "const": "grass"
                                           }
                                         }
                                       }

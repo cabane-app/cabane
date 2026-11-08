@@ -300,7 +300,11 @@ export const FloorFinishSurfaces = memo(function FloorFinishSurfaces({
             }
             {...(platform.useAsRoom ? { interactionColor: "#c9a477" } : {})}
             emphasis={roomSurfaceEmphasis(
-              variant === "scene" && Boolean(onSelectRoom) && Boolean(platform.useAsRoom),
+              // In the overview, Grass blends into the surrounding terrain.
+              variant === "scene" &&
+                Boolean(onSelectRoom) &&
+                Boolean(platform.useAsRoom) &&
+                (platform.finish.kind !== "grass" || selectedRoomId !== null),
               selectedRoomId,
               outdoorPlatformRoomId(platform.id),
             )}

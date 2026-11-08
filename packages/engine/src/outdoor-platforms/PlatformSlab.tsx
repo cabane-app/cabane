@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { DoubleSide, ExtrudeGeometry, Path, Shape, ShapeGeometry } from "three";
+import { BackSide, DoubleSide, ExtrudeGeometry, Path, Shape, ShapeGeometry } from "three";
 import { ToonMaterial } from "../rendering";
 import { useStairSurfaceApertures } from "../stairs/surface-apertures";
 import { differenceClippingGeometry } from "../architecture-geometry/architecture-clipping";
@@ -7,21 +7,26 @@ import { planPointToWorld } from "../geometry";
 import type { FloorSpec, OutdoorPlatformSpec } from "../types";
 import { derivePlatformSlabPieces } from "./platform-slab-coverage";
 import { CEILING_SURFACE_COLOR } from "../architecture-scene/surface-colors";
+import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 
 const PLATFORM_SLAB_EDGE_COLOR = "#d4c6ae";
 const CEILING_LINER_OFFSET_METERS = 0.002;
+const TERRAIN_CLEARANCE_METERS = 0.002;
 
 /** One slab, with its underside matching any authored room ceiling below. */
 export function PlatformSlab({
   platform,
   floor,
   below,
+  buryInTerrain = false,
 }: {
   platform: OutdoorPlatformSpec;
   floor: FloorSpec;
   below?: FloorSpec | undefined;
+  buryInTerrain?: boolean;
 }) {
   const apertures = useStairSurfaceApertures("floor");
+  const slabTop = buryInTerrain ? GROUND_ELEVATION_METERS - TERRAIN_CLEARANCE_METERS : 0;
   const pieces = useMemo(
     () =>
       derivePlatformSlabPieces(platform, floor, below).map((piece) => {
@@ -45,23 +50,22 @@ export function PlatformSlab({
           });
           return shape;
         });
+        const depth = slabTop - piece.bottom;
         return {
           ...piece,
-          slabGeometry: new ExtrudeGeometry(shapes, {
-            depth: piece.depth,
-            bevelEnabled: false,
-          }),
+          slabGeometry:
+            depth > 0 ? new ExtrudeGeometry(shapes, { depth, bevelEnabled: false }) : null,
           ceilingGeometry: new ShapeGeometry(shapes),
         };
       }),
-    // Slab geometry uses polygon, coordinate transform, lower ceiling and apertures; rail and style edits do not change it.
+    // Slab geometry uses the outline, transform, lower ceiling, apertures and visual top.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [platform.polygon, floor.coordinates, below, apertures],
+    [platform.polygon, floor.coordinates, below, apertures, slabTop],
   );
   useEffect(
     () => () =>
       pieces.forEach((piece) => {
-        piece.slabGeometry.dispose();
+        piece.slabGeometry?.dispose();
         piece.ceilingGeometry.dispose();
       }),
     [pieces],
@@ -70,17 +74,19 @@ export function PlatformSlab({
     <group name={`platform-slab-${platform.id}`}>
       {pieces.map((piece, index) => (
         <group key={index}>
-          <mesh
-            name={`platform-slab-${platform.id}-structure-${index}`}
-            geometry={piece.slabGeometry}
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, piece.bottom, 0]}
-            castShadow
-            receiveShadow
-          >
-            <ToonMaterial attach="material-0" color={CEILING_SURFACE_COLOR} />
-            <ToonMaterial attach="material-1" color={PLATFORM_SLAB_EDGE_COLOR} />
-          </mesh>
+          {piece.slabGeometry && (
+            <mesh
+              name={`platform-slab-${platform.id}-structure-${index}`}
+              geometry={piece.slabGeometry}
+              rotation={[-Math.PI / 2, 0, 0]}
+              position={[0, piece.bottom, 0]}
+              castShadow={!buryInTerrain}
+              receiveShadow
+            >
+              <ToonMaterial attach="material-0" color={CEILING_SURFACE_COLOR} />
+              <ToonMaterial attach="material-1" color={PLATFORM_SLAB_EDGE_COLOR} />
+            </mesh>
+          )}
           <mesh
             name={`platform-slab-${platform.id}-ceiling-${index}`}
             geometry={piece.ceilingGeometry}
@@ -88,7 +94,10 @@ export function PlatformSlab({
             position={[0, piece.bottom - CEILING_LINER_OFFSET_METERS, 0]}
             receiveShadow={false}
           >
-            <ToonMaterial color={CEILING_SURFACE_COLOR} side={DoubleSide} />
+            <ToonMaterial
+              color={CEILING_SURFACE_COLOR}
+              side={buryInTerrain ? BackSide : DoubleSide}
+            />
           </mesh>
         </group>
       ))}

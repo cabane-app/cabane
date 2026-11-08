@@ -1,3 +1,4 @@
+import { DEFAULT_TERRAIN_GRASS_COLOR } from "../terrain/terrain-settings";
 import { paintWoodPlanks } from "./wood-planks";
 import { paintCeramicTile } from "./ceramic-tile";
 import { paintBlueQuatrefoilTile } from "./blue-quatrefoil-tile";
@@ -6,12 +7,8 @@ import { paintDirt } from "./dirt";
 import { paintPineBark } from "./pine-bark";
 import { paintTomettes } from "./tomettes";
 import { paintStones } from "./stones";
-import {
-  FLOOR_PATTERN_PRESET_IDS,
-  type FloorFinishSpec,
-  type FloorPatternPresetId,
-  type RoomSpec,
-} from "../types";
+import { FLOOR_PATTERN_PRESET_IDS, type FloorFinishSpec, type FloorPatternPresetId } from "./types";
+import type { RoomSpec } from "../types";
 
 export type FloorPatternVariant = "plan" | "scene";
 
@@ -95,7 +92,7 @@ export const FLOOR_FINISH_PRESETS: readonly FloorFinishPreset[] = [
   {
     id: "stepping-stones",
     label: "Stepping stones",
-    representativeColor: "#91a06a",
+    representativeColor: DEFAULT_TERRAIN_GRASS_COLOR,
     repeatMeters: 1.8,
   },
   { id: "pebbles", label: "River pebbles", representativeColor: "#aaa698", repeatMeters: 0.6 },
@@ -379,13 +376,21 @@ export const DEFAULT_ROOM_FLOOR_FINISH: FloorFinishSpec = {
   color: "#d3cec5",
 };
 
+export const GRASS_FLOOR_FINISH = { kind: "grass" } as const satisfies FloorFinishSpec;
+
 export const resolveRoomFloorFinish = (room: Pick<RoomSpec, "floorFinish">): FloorFinishSpec =>
   room.floorFinish ?? DEFAULT_ROOM_FLOOR_FINISH;
 
-export const floorFinishRepresentativeColor = (finish: FloorFinishSpec) =>
-  finish.kind === "solid"
-    ? finish.color
-    : (finish.color ?? floorFinishPreset(finish.preset).representativeColor);
+export const floorFinishRepresentativeColor = (finish: FloorFinishSpec) => {
+  switch (finish.kind) {
+    case "solid":
+      return finish.color;
+    case "preset":
+      return finish.color ?? floorFinishPreset(finish.preset).representativeColor;
+    case "grass":
+      return DEFAULT_TERRAIN_GRASS_COLOR;
+  }
+};
 
 if (FLOOR_FINISH_PRESETS.length !== FLOOR_PATTERN_PRESET_IDS.length) {
   throw new Error("Floor finish preset registry is incomplete.");

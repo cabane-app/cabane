@@ -138,9 +138,9 @@ uses meter-scaled analytic ripples and a grazing-angle sheen, with no textures,
 additional geometry, or reflection render targets. Ripple time advances only on
 existing scene frames and pauses for reduced motion; idle demand rendering stays
 idle. Water retains scene lighting and received shadows.
-Floor finishes support solid
-colors and the preset IDs exported by `FLOOR_PATTERN_PRESET_IDS`, including wood,
-stone/tile, dirt, bark, and outdoor stone treatments. Ordered room/ground zones
+Floor finishes support solid colors, Grass with the default terrain color, and
+the preset IDs exported by `FLOOR_PATTERN_PRESET_IDS`, including wood, stone/tile,
+dirt, bark, and outdoor stone treatments. Ordered room/ground zones
 compose finishes; implementation belongs to the engine finish modules.
 Procedural wood retains its deterministic grain, palette and joints while
 uploading the completed pixel buffer once per texture. Per-pixel canvas draw
@@ -319,7 +319,9 @@ Optional `FloorSpec.outdoorPlatforms` stores an independent polygon and finish,
 a default edge configuration, and an ordered edge record for every polygon edge.
 Platform and edge IDs share the architecture identity namespace. Missing platforms
 mean none in existing projects; no version migration is needed. Procedural toon
-slabs and barriers render at the floor's existing level. Glass railings use
+slabs and barriers render at the floor's existing level. On default flat terrain,
+Grass conceals the exposed slab rim while keeping the platform surface at floor
+level. Glass railings use
 translucent panels between solid posts. Platform
 coverage participates in scene bounds, placement support, stair landing support,
 walk spawn and elevated-floor boundary checks; Open removes its barrier while

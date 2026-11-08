@@ -18,6 +18,7 @@ export const validateFloorFinish = (raw: unknown, path: string): ManifestIssue[]
   if (!isObject(raw)) {
     return [issue("floor-finish.type", path, "Floor finish must be an object.")];
   }
+  if (raw.kind === "grass") return [];
   if (raw.kind === "solid") {
     return isNonEmptyString(raw.color)
       ? []
@@ -42,7 +43,13 @@ export const validateFloorFinish = (raw: unknown, path: string): ManifestIssue[]
       ? []
       : [issue("floor-finish.preset", `${path}.preset`, "Floor preset is not supported.")];
   }
-  return [issue("floor-finish.kind", `${path}.kind`, "Floor finish kind must be solid or preset.")];
+  return [
+    issue(
+      "floor-finish.kind",
+      `${path}.kind`,
+      "Floor finish kind must be solid, preset, or grass.",
+    ),
+  ];
 };
 
 export const validateFloorZones = (

@@ -113,6 +113,7 @@ export function PlatformProperties({
         <legend>Floor finish</legend>
         <FloorFinishPalette
           value={platform.finish}
+          showGrass
           onChange={(finish) => editor.updatePlatform(platform.id, { finish })}
         />
       </fieldset>
