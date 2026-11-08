@@ -260,7 +260,7 @@ await withModules(async (load) => {
 
   test("single curtains fit separate windows on one wall and retain independent dimensions", () => {
     const entry = get("single-window-curtain");
-    assert.equal(filterCatalog(entries, "living-room", "single window curtain")[0], entry);
+    assert.equal(filterCatalog(entries, "living-room", "curtains")[0], entry);
     const source = ownerHomeProject.floors[0];
     const firstWindow = windowPlacements(entry.definition, source, [10, 4])[0];
     assert.ok(firstWindow);

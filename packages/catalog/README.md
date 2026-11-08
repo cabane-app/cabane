@@ -966,13 +966,15 @@ The ceiling lamp and soundbar declare no smart capabilities.
 the existing wall television's media-player behavior. Its back plane is Z=0,
 width/height resize independently, and household mapping stays in runtime slots.
 
-The `single-window-curtain` furnishing preset covers one window with its own
-track and a single gathered panel. Arrange → Living room → Decor offers Gathered
-left and Gathered right variants, as viewed from the room. Each instance has
+The **Curtains** (`single-window-curtain`) furnishing preset fits one opening.
+Arrange → Living room → Decor offers **Single panel, gathered left**,
+**Single panel, gathered right** (as viewed from the room), and
+**Linen pair with tiebacks** variants. Each instance has
 independent width (track length), height (drop), depth, and elevation controls.
 Fit to window aligns one window; adding another prefers an unoccupied window.
 The inferred default envelope is 120 × 240 × 12 cm; the panel drops 232 cm
-below its track. Existing paired and motorized curtains remain unchanged.
+below its track in the single-panel variants. The linen pair uses a slim rod
+and full-height fabric.
 
 ## Rattan bell pendant
 
@@ -1178,7 +1180,7 @@ on/off and brightness controls, and engine-owned warm illumination.
 
 ## Tied linen curtains
 
-The `single-window-curtain` preset in Arrange → Living room → Decor offers
+The **Curtains** (`single-window-curtain`) preset in Arrange → Living room → Decor offers
 **Linen pair with tiebacks** (`linen-tiebacks`), inspired by a supplied photo:
 two warm beige pleated panels, round pale tiebacks, and a slim pale rod.
 The shared 120 × 240 × 12 cm envelope (width × height × depth) is inferred,

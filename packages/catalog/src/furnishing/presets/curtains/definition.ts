@@ -4,12 +4,12 @@ import { SingleWindowCurtain } from "./single-window-curtain";
 export const singleWindowCurtainDefinition = defineFurnishingModel({
   defaultRoomType: "living-room",
   component: SingleWindowCurtain,
-  label: "Single window curtain",
+  label: "Curtains",
   defaultColor: "#d8c8ad",
   category: "Decor",
   variants: [
-    { id: "left", label: "Gathered left" },
-    { id: "right", label: "Gathered right" },
+    { id: "left", label: "Single panel, gathered left" },
+    { id: "right", label: "Single panel, gathered right" },
     { id: "linen-tiebacks", label: "Linen pair with tiebacks" },
   ],
   defaultSize: [1.2, 2.4, 0.12],
