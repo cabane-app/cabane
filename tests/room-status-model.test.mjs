@@ -23,7 +23,13 @@ await withModules(async (load) => {
     return deriveRoomStatusMap(manifest, profile, resolved, runtime)["demo-room"];
   };
 
-  const addAqiSensor = (runtime, entityId, registry = {}, state = {}) => {
+  const areaReadings = [
+    { key: "aqi", deviceClass: "aqi", value: "42", unit: null },
+    { key: "co2", deviceClass: "carbon_dioxide", value: "820", unit: "ppm" },
+    { key: "noise", deviceClass: "sound_pressure", value: "41.5", unit: "dBA" },
+  ];
+
+  const addAreaSensor = (runtime, reading, entityId, registry = {}, state = {}) => {
     runtime.entityRegistry.push({
       entity_id: entityId,
       area_id: "demo_room",
@@ -34,8 +40,11 @@ await withModules(async (load) => {
     });
     runtime.entityStates[entityId] = {
       entityId,
-      state: "42",
-      attributes: { device_class: "aqi" },
+      state: reading.value,
+      attributes: {
+        device_class: reading.deviceClass,
+        ...(reading.unit === null ? {} : { unit_of_measurement: reading.unit }),
+      },
       available: true,
       stale: false,
       ...state,
@@ -120,38 +129,79 @@ await withModules(async (load) => {
     assert.equal(summary.temperature.value, "23");
   });
 
-  test("finds an unbound AQI sensor through its device area and respects entity area overrides", () => {
+  test("finds one visible, enabled sensor per class in the mapped area and keeps their units", () => {
     const summary = derive(({ runtime }) => {
-      addAqiSensor(runtime, "sensor.demo_aqi", { area_id: null, device_id: "device-switch" });
-      addAqiSensor(runtime, "sensor.outdoor_aqi", {
-        area_id: "outside",
-        device_id: "device-switch",
+      for (const reading of areaReadings) {
+        addAreaSensor(runtime, reading, `sensor.demo_${reading.key}`, {
+          area_id: null,
+          device_id: "device-switch",
+        });
+        addAreaSensor(runtime, reading, `sensor.outdoor_${reading.key}`, {
+          area_id: "outside",
+          device_id: "device-switch",
+        });
+        addAreaSensor(runtime, reading, `sensor.hidden_${reading.key}`, { hidden_by: "user" });
+        addAreaSensor(runtime, reading, `sensor.disabled_${reading.key}`, { disabled_by: "user" });
+      }
+      addAreaSensor(
+        runtime,
+        { deviceClass: "pm25", value: "12", unit: "µg/m³" },
+        "sensor.demo_pm25",
+      );
+      addAreaSensor(
+        runtime,
+        { deviceClass: "signal_strength", value: "-42", unit: "dB" },
+        "sensor.demo_signal",
+      );
+    });
+    for (const { key, value, unit } of areaReadings) {
+      assert.deepEqual(summary[key], { value, unit }, key);
+    }
+  });
+
+  test("keeps a class ambiguous when a second sensor is unavailable and shows the other classes", () => {
+    for (const ambiguous of areaReadings) {
+      const summary = derive(({ runtime }) => {
+        for (const reading of areaReadings) {
+          addAreaSensor(runtime, reading, `sensor.demo_${reading.key}`);
+        }
+        addAreaSensor(
+          runtime,
+          ambiguous,
+          `sensor.second_${ambiguous.key}`,
+          {},
+          {
+            state: "unavailable",
+            available: false,
+          },
+        );
       });
-      addAqiSensor(runtime, "sensor.hidden_aqi", { hidden_by: "user" });
-      addAqiSensor(runtime, "sensor.disabled_aqi", { disabled_by: "user" });
-      addAqiSensor(runtime, "sensor.demo_pm25", {}, { attributes: { device_class: "pm25" } });
-    });
-    assert.deepEqual(summary.aqi, { value: "42", unit: null });
+      for (const { key, value, unit } of areaReadings) {
+        assert.deepEqual(summary[key], key === ambiguous.key ? undefined : { value, unit }, key);
+      }
+    }
   });
 
-  test("omits an ambiguous AQI reading even when only one sensor is available", () => {
-    const summary = derive(({ runtime }) => {
-      addAqiSensor(runtime, "sensor.demo_aqi");
-      addAqiSensor(runtime, "sensor.second_aqi", {}, { state: "unavailable", available: false });
-    });
-    assert.equal(summary.aqi, undefined);
-  });
-
-  test("omits a unique AQI sensor when its reading is stale or its area is unlinked", () => {
-    const stale = derive(({ runtime }) => {
-      addAqiSensor(runtime, "sensor.demo_aqi", {}, { stale: true });
-    });
+  test("omits unique area readings that are unknown, unavailable, stale, or unlinked", () => {
+    for (const state of [
+      { state: "unknown" },
+      { state: "unavailable", available: false },
+      { stale: true },
+    ]) {
+      const summary = derive(({ runtime }) => {
+        for (const reading of areaReadings) {
+          addAreaSensor(runtime, reading, `sensor.demo_${reading.key}`, {}, state);
+        }
+      });
+      for (const { key } of areaReadings) assert.equal(summary[key], undefined, key);
+    }
     const unlinked = derive(({ profile, runtime }) => {
       delete profile.roomAreaIds["demo-room"];
-      addAqiSensor(runtime, "sensor.demo_aqi");
+      for (const reading of areaReadings) {
+        addAreaSensor(runtime, reading, `sensor.demo_${reading.key}`);
+      }
     });
-    assert.equal(stale.aqi, undefined);
-    assert.equal(unlinked.aqi, undefined);
+    for (const { key } of areaReadings) assert.equal(unlinked[key], undefined, key);
   });
 
   test("aggregates only exact reliable climate, light, presence, and adjacent door bindings", () => {

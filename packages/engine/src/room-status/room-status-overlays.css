@@ -58,6 +58,10 @@
   text-shadow: 0 2px 10px rgba(16, 25, 21, 0.7);
   white-space: nowrap;
 }
+.room-status-overlay .room-status-badges {
+  justify-content: center;
+  max-width: calc(100cqw - 24px);
+}
 .room-status-overlay__stem {
   width: 1px;
   height: 24px;

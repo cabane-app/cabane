@@ -63,7 +63,6 @@
   color: #efc3a9;
 }
 .room-status-badges[data-variant="compact"] {
-  flex-wrap: nowrap;
   gap: 1px;
   padding: 4px 6px;
   background: rgba(21, 33, 28, 0.78);

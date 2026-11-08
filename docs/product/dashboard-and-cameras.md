@@ -352,21 +352,23 @@ desktop drags must continue through re-renders and release cleanly for the next
 gesture. Manual input still interrupts a room-camera transition.
 
 Room overlay preferences are available from More options in overview, room view,
-Walk, and draft Explore. Temperature, humidity, air quality (AQI), heating, cooling,
-lights, presence, and open-door indicators each default to enabled. Choices persist
-in browser-local preferences and affect overview labels, accessibility text, and
-decluttering, while room detail sheets retain all available information. The dialog
-scrolls on short screens.
+Walk, and draft Explore. Temperature, humidity, air quality (AQI), CO₂, Noise,
+heating, cooling, lights, presence, and open-door indicators each default to
+enabled. Choices persist in browser-local preferences and affect overview labels,
+accessibility text, and decluttering, while room detail sheets retain all
+available information. The dialog scrolls on short screens.
 Temperature and humidity prefer a usable sensor explicitly selected on the mapped
 HA area, then fall back to the first usable mapped room sensor of that device class
 in resolved order (primary, secondary, diagnostic, then modeled devices).
 Unknown, unavailable, and stale readings are skipped; unbound area sensors are not
 fallback candidates. This does not create bindings or change HA configuration.
 
-The room bubble picks up AQI directly from the mapped HA area when it has exactly
-one enabled, visible sensor of device class `aqi` and that sensor has a usable
-reading. Sensors inherit their device's area unless they have an area of their own.
-Multiple AQI sensors keep the badge hidden even when one goes offline.
+Room status picks up AQI (`aqi`), CO₂ (`carbon_dioxide`), and Noise (`sound_pressure`)
+directly from the mapped HA area. Each reading needs exactly one enabled, visible
+sensor of its class in the area and uses the unit reported by HA. Sensors inherit
+their device's area unless they have an area of their own. Unknown, unavailable,
+and stale readings are skipped. Multiple sensors of the same class keep that
+badge hidden even when one goes offline.
 
 Room panels offer Reorder devices beside Walk inside when at least two modules are visible. Reorder mode displays a compact list with pointer/touch drag handles and keyboard-accessible up/down buttons. Done or Escape returns to controls. Each move saves browser-local order per home and room using local module IDs; new modules append in default order and missing modules are ignored. Ordering does not change bindings or call Home Assistant services. The normal grid follows the saved sequence without dense gap filling.
 
