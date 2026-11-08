@@ -447,7 +447,7 @@ they do not claim to reproduce a particular manufacturer. Dimensions are
 | `kitchen-base-cabinet`     | 60 × 63 × 90            | Off-white modular case, oak worktop, drawer, two doors and plinth                                                 | Kitchen      |
 | `kitchen-sink-cabinet`     | 60 × 63 × 112           | Off-white two-door base, pale worktop, inset basin, drain and 112 cm-high faucet envelope                         | Kitchen      |
 | `kitchen-wall-cabinet`     | 60 × 35 × 80            | Off-white wall case with two doors and low pulls                                                                  | Kitchen      |
-| `freestanding-bathtub`     | 170 × 78 × 60           | Seamless warm-white oval shell, rolled rim, sloping soaking basin, inset drain and slim overflow                                                 | Bathroom     |
+| `freestanding-bathtub`     | 170 × 78 × 60           | Seamless warm-white oval shell, rolled rim, sloping soaking basin, inset drain and slim overflow                  | Bathroom     |
 | `dark-oak-vessel-vanity`   | 80 × 52 × 123 overall   | Dark oak two-door vanity, white vessel basin and tall matte-black faucet                                          | Bathroom     |
 | `shower-assembly`          | 202 × 91 × 230 overall  | Walk-in tray, partial frameless glass screen with stabilizer and clamps, wall-mounted rain shower and hand shower | Bathroom     |
 | `white-corner-wardrobe`    | 180 × 120 × 235 overall | White L-shaped floor-to-ceiling storage, three long-run doors and one return door                                 | Bedroom      |
@@ -1187,3 +1187,51 @@ The shared 120 × 240 × 12 cm envelope (width × height × depth) is inferred,
 not measured from the photo. Adjust all three dimensions to suit the opening;
 variants retain the placed size. Color changes both fabric panels. The bottom
 is Y=0 and wall support is Z=0. This is static decor with no device binding.
+
+## Oak-and-stone kitchen
+
+Four coordinated generic presets combine smoked oak, ivory stone and muted bronze.
+All dimensions below are inferred, in width × height × depth centimetres. Find
+these in Arrange → Kitchen → Kitchen or All items. They resize independently
+on all axes, start at floor Y=0 with centered footprints, and face +Z.
+
+| Model ID                   | Dimensions     | Construction                                          |
+| -------------------------- | -------------- | ----------------------------------------------------- |
+| `oak-stone-drawer-cabinet` | 120 × 92 × 66  | Preparation drawers or Induction cooktop variant      |
+| `oak-stone-sink-cabinet`   | 120 × 122 × 66 | Recessed undermount basin, bronze tap, 92 cm worktop  |
+| `oak-appliance-pantry`     | 80 × 230 × 66  | Tall storage, static integrated oven and lower drawer |
+| `oak-stone-kitchen-island` | 220 × 94 × 100 | Waterfall stone ends, drawer banks, oak battens       |
+
+The island's drawers face +Z; its seating overhang faces -Z. The sink's overall
+height includes its tap. Appliance details are static, with no device bindings.
+
+## Atelier library
+
+Three matching smoked-oak pieces combine recessed bronze pulls, composed book
+shelves, pale stone and flax upholstery. These generic dimensions are inferred.
+Find them in Arrange → Living room → Storage (bookcase/credenza) or Seating
+(bench). All axes resize independently; floor-contact Y=0, centered footprints,
+front +Z. The public components are `AtelierLibraryBookcase`,
+`AtelierLibraryCredenza` and `AtelierLibraryBench`.
+
+| Model ID                   | Dimensions, cm |
+| -------------------------- | -------------- |
+| `atelier-library-bookcase` | 120 × 250 × 42 |
+| `atelier-library-credenza` | 180 × 76 × 44  |
+| `atelier-library-bench`    | 180 × 48 × 55  |
+
+## Observatory accents
+
+Five generic static furnishings use restrained bronze, limestone and travertine.
+Dimensions are inferred. All have centered X/Z footprints and Y=0 at the
+underside; set the armillary's elevation to its supporting surface. The bench
+resizes independently on all axes; the other pieces resize uniformly. The
+planter is a hollow vessel with recessed soil, ready for a separately placed plant.
+
+| Model ID                    | Dimensions, cm | Arrange room / category |
+| --------------------------- | -------------- | ----------------------- |
+| `bronze-armillary`          | 52 × 68 × 52   | Office / Decor          |
+| `loop-sculpture`            | 55 × 165 × 45  | Living room / Decor     |
+| `travertine-garden-bench`   | 180 × 45 × 50  | Outdoor / Seating       |
+| `carved-stone-planter`      | 64 × 72 × 64   | Outdoor / Garden        |
+| `travertine-pedestal-table` | 50 × 52 × 50   | Living room / Tables    |

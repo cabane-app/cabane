@@ -1,3 +1,6 @@
+import { atelierLibraryDefinitions } from "./presets/atelier-library/definitions";
+import { observatoryAccentDefinitions } from "./presets/observatory-accents/definitions";
+import { oakStoneKitchenDefinitions } from "./presets/kitchen/oak-stone/definitions";
 import {
   twoSeatLoveseatDefinition,
   indoorChaiseLongueDefinition,
@@ -164,6 +167,9 @@ import {
 } from "./presets/outdoor";
 
 const stableFurnishingDefinitions = {
+  ...atelierLibraryDefinitions,
+  ...observatoryAccentDefinitions,
+  ...oakStoneKitchenDefinitions,
   "drying-rack": defineFurnishingModel({
     component: DryingRack,
     label: "Drying rack",

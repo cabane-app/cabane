@@ -268,6 +268,54 @@
           "style": "post-rail",
           "to": [-13.26, -1.15],
           "widthMeters": 0.3
+        },
+        {
+          "from": [-14.5, -8.3],
+          "heightMeters": 0.85,
+          "id": "ground-floor:hedge-50",
+          "style": "masonry",
+          "to": [-13, -8.3],
+          "widthMeters": 0.4
+        },
+        {
+          "from": [-7, -8.3],
+          "heightMeters": 0.85,
+          "id": "ground-floor:hedge-51",
+          "style": "masonry",
+          "to": [3.4, -8.3],
+          "widthMeters": 0.4
+        },
+        {
+          "from": [6.6, -8.3],
+          "heightMeters": 0.85,
+          "id": "ground-floor:hedge-52",
+          "style": "masonry",
+          "to": [32.5, -8.3],
+          "widthMeters": 0.4
+        },
+        {
+          "from": [32.5, -8.3],
+          "heightMeters": 1.35,
+          "id": "ground-floor:hedge-53",
+          "style": "clipped",
+          "to": [32.5, 19.5],
+          "widthMeters": 0.65
+        },
+        {
+          "from": [32.5, 19.5],
+          "heightMeters": 1.35,
+          "id": "ground-floor:hedge-54",
+          "style": "clipped",
+          "to": [-14.5, 19.5],
+          "widthMeters": 0.65
+        },
+        {
+          "from": [-14.5, 19.5],
+          "heightMeters": 1.35,
+          "id": "ground-floor:hedge-55",
+          "style": "clipped",
+          "to": [-14.5, -8.3],
+          "widthMeters": 0.65
         }
       ],
       "id": "ground-floor",
@@ -1278,16 +1326,6 @@
           "widthPlanUnits": 1.4
         },
         {
-          "id": "larch-loft:passage-21",
-          "kind": "passage",
-          "offsetFromWallStartPlanUnits": 2.675,
-          "openingHeightMeters": 2.37,
-          "sillHeightMeters": 0,
-          "variant": "rectangular",
-          "wallId": "larch-loft:wall-19",
-          "widthPlanUnits": 1.25
-        },
-        {
           "color": "#454541",
           "finish": "white",
           "id": "larch-loft:door-22",
@@ -1356,6 +1394,20 @@
           "variant": "plain",
           "wallId": "larch-loft:wall-14",
           "widthPlanUnits": 3.4
+        },
+        {
+          "color": "#75604b",
+          "finish": "wood",
+          "id": "larch-loft:door-30",
+          "kind": "door",
+          "leafCount": 2,
+          "offsetFromWallStartPlanUnits": 2.5,
+          "openingHeightMeters": 2.25,
+          "operation": "hinged",
+          "sillHeightMeters": 0,
+          "variant": "panel",
+          "wallId": "larch-loft:wall-19",
+          "widthPlanUnits": 1.6
         }
       ],
       "outdoorPlatforms": [
@@ -1847,8 +1899,8 @@
     "ground-floor:window-46": {},
     "ground-floor:window-47": {},
     "larch-loft:door-22": {},
+    "larch-loft:door-30": {},
     "larch-loft:passage-20": {},
-    "larch-loft:passage-21": {},
     "larch-loft:window-23": {},
     "larch-loft:window-24": {},
     "larch-loft:window-25": {},
@@ -2058,20 +2110,6 @@
     },
     {
       "floorId": "ground-floor",
-      "id": "8b999e3d-4992-466e-9832-ee671f4f3198",
-      "kind": "furnishing",
-      "modelId": "terracotta-planter",
-      "placement": {
-        "at": [0.75, -1.05],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.5, 0.5, 0.5],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
       "id": "2c6abcad-5e4a-4ca7-91a1-d50ccbbf3a75",
       "kind": "furnishing",
       "modelId": "garden-shrub",
@@ -2083,48 +2121,6 @@
       },
       "size": [1.35, 0.92, 1.15],
       "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "64b37f2e-bacc-4293-8766-b89cd5c24ff6",
-      "kind": "furnishing",
-      "modelId": "terracotta-planter",
-      "placement": {
-        "at": [9.25, -1.05],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.5, 0.5, 0.5],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "502daba8-8cfa-4883-b8cb-06e3800eba67",
-      "kind": "furnishing",
-      "modelId": "garden-bench",
-      "placement": {
-        "at": [1.5, -1.65],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 1.5707963267948966
-      },
-      "size": [1.5, 0.9, 0.6],
-      "variant": "linen"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "aeb0efe2-d322-4ffc-98e9-ee0ce32ce3ae",
-      "kind": "furnishing",
-      "modelId": "garden-bench",
-      "placement": {
-        "at": [8.55, -1.65],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": -1.5707963267948966
-      },
-      "size": [1.5, 0.9, 0.6],
-      "variant": "sage"
     },
     {
       "color": "#3c4a47",
@@ -3188,60 +3184,6 @@
         "rotationYRadians": 1.5707963267948966
       },
       "size": [1.6, 0.82, 0.88],
-      "variant": "default"
-    },
-    {
-      "entitySlots": [
-        {
-          "autoMap": "manual",
-          "compatibleDomains": ["media_player"],
-          "deviceRole": "primary",
-          "id": "be36f29e-c69f-4a10-b091-9baf61b8fe85",
-          "presentation": {
-            "dashboardRole": "primary",
-            "label": "Speaker"
-          },
-          "required": true
-        }
-      ],
-      "floorId": "ground-floor",
-      "id": "cc4aa959-c381-4391-a3c6-faf8eafa685f",
-      "kind": "device",
-      "modelId": "speaker",
-      "placement": {
-        "at": [-6.74, 0.32],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.26, 0.39, 0.26],
-      "variant": "default"
-    },
-    {
-      "entitySlots": [
-        {
-          "autoMap": "manual",
-          "compatibleDomains": ["media_player"],
-          "deviceRole": "primary",
-          "id": "2a8227b8-73e5-4806-932f-e3a8ce680645",
-          "presentation": {
-            "dashboardRole": "primary",
-            "label": "Speaker"
-          },
-          "required": true
-        }
-      ],
-      "floorId": "ground-floor",
-      "id": "8380e6aa-6724-4ebb-a15c-2730da819049",
-      "kind": "device",
-      "modelId": "speaker",
-      "placement": {
-        "at": [-6.7, 2.63],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.26, 0.39, 0.26],
       "variant": "default"
     },
     {
@@ -5085,7 +5027,7 @@
         "elevationMeters": 1.51,
         "face": "right",
         "kind": "wall",
-        "offsetFromWallStartPlanUnits": 2.3,
+        "offsetFromWallStartPlanUnits": 1.05,
         "rotationOffsetRadians": 0,
         "wallId": "larch-loft:wall-10"
       },
@@ -5291,10 +5233,10 @@
       "kind": "furnishing",
       "modelId": "compact-toilet",
       "placement": {
-        "at": [-0.58, 10.2],
+        "at": [-0.402, 10.2],
         "elevationMeters": 0,
         "kind": "absolute",
-        "rotationYRadians": -1.5707963267948966
+        "rotationYRadians": 1.5707963267948966
       },
       "size": [0.39, 0.724, 0.6],
       "variant": "default"
@@ -5700,20 +5642,6 @@
       "variant": "clay"
     },
     {
-      "floorId": "ground-floor",
-      "id": "e1b41790-8c8d-4933-97e7-da91c4a86f39",
-      "kind": "furnishing",
-      "modelId": "pedestal-side-table",
-      "placement": {
-        "at": [8.14, 0.91],
-        "elevationMeters": 0.02,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.5, 0.55, 0.5],
-      "variant": "default"
-    },
-    {
       "entitySlots": [
         {
           "autoMap": "manual",
@@ -5734,7 +5662,7 @@
       "modelId": "hearth-table-lamp",
       "placement": {
         "at": [8.16, 0.91],
-        "elevationMeters": 0.571,
+        "elevationMeters": 0.541,
         "kind": "absolute",
         "rotationYRadians": 0
       },
@@ -6166,20 +6094,6 @@
     },
     {
       "floorId": "ground-floor",
-      "id": "18c35ff5-7b47-444b-9f43-1d680afb4984",
-      "kind": "furnishing",
-      "modelId": "leafy-planter",
-      "placement": {
-        "at": [2.9, 8.23],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [0.8, 1.25, 0.8],
-      "variant": "terracotta"
-    },
-    {
-      "floorId": "ground-floor",
       "id": "0a829a39-8e92-44e3-8e0a-5d15db2506c0",
       "kind": "furnishing",
       "modelId": "leafy-planter",
@@ -6194,26 +6108,12 @@
     },
     {
       "floorId": "ground-floor",
-      "id": "788be6bb-1bcb-4448-bfc1-b20c02da2eba",
-      "kind": "furnishing",
-      "modelId": "low-media-console",
-      "placement": {
-        "at": [8.1, 8.46],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [1.65, 0.55, 0.42],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
       "id": "4619d072-4fff-4aea-b7f9-f74b0513cf1a",
       "kind": "furnishing",
       "modelId": "ring-ceramic-vase",
       "placement": {
         "at": [7.61, 8.47],
-        "elevationMeters": 0.553,
+        "elevationMeters": 0.763,
         "kind": "absolute",
         "rotationYRadians": -0.3
       },
@@ -6227,7 +6127,7 @@
       "modelId": "book-row",
       "placement": {
         "at": [8.56, 8.46],
-        "elevationMeters": 0.553,
+        "elevationMeters": 0.763,
         "kind": "absolute",
         "rotationYRadians": 3.141592653589793
       },
@@ -6322,48 +6222,6 @@
       "variant": "default"
     },
     {
-      "floorId": "ground-floor",
-      "id": "601d083a-9920-4529-b663-a825005d9a83",
-      "kind": "furnishing",
-      "modelId": "kitchen-sink-cabinet",
-      "placement": {
-        "at": [13.99, 8.608],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [0.6, 1.12, 0.63],
-      "variant": "wood"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "ec9b4886-182b-4c85-b357-354278070127",
-      "kind": "furnishing",
-      "modelId": "kitchen-base-cabinet",
-      "placement": {
-        "at": [14.6, 8.608],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [0.6, 0.9, 0.63],
-      "variant": "wood"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "ae5bf902-2833-442c-aca0-ae0a49f7acd6",
-      "kind": "furnishing",
-      "modelId": "kitchen-hob-cabinet",
-      "placement": {
-        "at": [15.21, 8.608],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [0.6, 0.91, 0.63],
-      "variant": "wood"
-    },
-    {
       "entitySlots": [
         {
           "autoMap": "manual",
@@ -6392,30 +6250,16 @@
       "variant": "default"
     },
     {
-      "floorId": "ground-floor",
-      "id": "7661d7c7-c8c1-4aee-8c0e-2587e4e7a0d8",
-      "kind": "furnishing",
-      "modelId": "kitchen-island",
-      "placement": {
-        "at": [14.62, 6.81],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 1.5707963267948966
-      },
-      "size": [2.1, 0.94, 0.94],
-      "variant": "default"
-    },
-    {
       "color": "#78876a",
       "floorId": "ground-floor",
       "id": "7bbcbfa7-8460-4cfc-9705-3592d2dd25de",
       "kind": "furnishing",
       "modelId": "counter-stool",
       "placement": {
-        "at": [13.83, 6.36],
+        "at": [14.08, 6.02],
         "elevationMeters": 0.001,
         "kind": "absolute",
-        "rotationYRadians": 1.5707963267948966
+        "rotationYRadians": 0
       },
       "size": [0.48, 0.92, 0.5],
       "variant": "default"
@@ -6427,10 +6271,10 @@
       "kind": "furnishing",
       "modelId": "counter-stool",
       "placement": {
-        "at": [13.83, 7.16],
+        "at": [14.92, 6.02],
         "elevationMeters": 0.001,
         "kind": "absolute",
-        "rotationYRadians": 1.5707963267948966
+        "rotationYRadians": 0
       },
       "size": [0.48, 0.92, 0.5],
       "variant": "default"
@@ -6441,8 +6285,8 @@
       "kind": "furnishing",
       "modelId": "capsule-coffee-machine",
       "placement": {
-        "at": [14.56, 8.62],
-        "elevationMeters": 0.903,
+        "at": [14.83, 8.58],
+        "elevationMeters": 0.923,
         "kind": "absolute",
         "rotationYRadians": 3.141592653589793
       },
@@ -6455,10 +6299,10 @@
       "kind": "furnishing",
       "modelId": "ring-ceramic-vase",
       "placement": {
-        "at": [14.59, 7.41],
+        "at": [15.1, 6.9],
         "elevationMeters": 0.943,
         "kind": "absolute",
-        "rotationYRadians": 1.0471975511965976
+        "rotationYRadians": 0
       },
       "size": [0.18, 0.3, 0.06],
       "variant": "default"
@@ -6469,7 +6313,7 @@
       "kind": "furnishing",
       "modelId": "tabletop-candle",
       "placement": {
-        "at": [14.58, 6.37],
+        "at": [13.95, 6.9],
         "elevationMeters": 0.943,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -6497,7 +6341,7 @@
       "lightState": "night-only",
       "modelId": "terracotta-pendant",
       "placement": {
-        "at": [14.62, 6.16],
+        "at": [14.05, 6.9],
         "elevationMeters": 2.018,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -6525,7 +6369,7 @@
       "lightState": "night-only",
       "modelId": "terracotta-pendant",
       "placement": {
-        "at": [14.62, 7.32],
+        "at": [14.95, 6.9],
         "elevationMeters": 2.018,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -7200,96 +7044,12 @@
     },
     {
       "floorId": "ground-floor",
-      "id": "f69e1617-e9c2-44a3-9b9c-086ec726b063",
-      "kind": "furnishing",
-      "modelId": "oak-bookshelf",
-      "placement": {
-        "at": [2.43, 12.738],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [0.8, 1.9, 0.3],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "e46ed0b5-642b-47a5-80a3-2f1339cbedc8",
-      "kind": "furnishing",
-      "modelId": "double-arched-bookcase",
-      "placement": {
-        "at": [3.35, 12.718],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [1, 1.73, 0.36],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "4247c0fd-6fdc-42b2-8e55-b2a59da7729a",
-      "kind": "furnishing",
-      "modelId": "double-arched-bookcase",
-      "placement": {
-        "at": [6.68, 12.718],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [1, 1.73, 0.36],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "5c841d7b-c598-4acf-ba3a-2412fd4d9501",
-      "kind": "furnishing",
-      "modelId": "double-arched-bookcase",
-      "placement": {
-        "at": [7.72, 12.718],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [1, 1.73, 0.36],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "b99c57d2-653a-48f1-af12-c46079529ae2",
-      "kind": "furnishing",
-      "modelId": "double-arched-bookcase",
-      "placement": {
-        "at": [8.76, 12.718],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [1, 1.73, 0.36],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "8b6a0892-5317-4e55-832c-95c31d52ba71",
-      "kind": "furnishing",
-      "modelId": "six-door-oak-sideboard",
-      "placement": {
-        "at": [5.01, 12.686],
-        "elevationMeters": 0.001,
-        "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
-      },
-      "size": [2.08, 0.68, 0.42],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
       "id": "8be7836c-494a-4440-bdf9-4c23c8631aec",
       "kind": "furnishing",
       "modelId": "decorative-globe",
       "placement": {
-        "at": [4.23, 12.65],
-        "elevationMeters": 0.682,
+        "at": [7.95, 8.46],
+        "elevationMeters": 0.763,
         "kind": "absolute",
         "rotationYRadians": 3.141592653589793
       },
@@ -7316,8 +7076,8 @@
       "lightState": "night-only",
       "modelId": "hearth-table-lamp",
       "placement": {
-        "at": [5.76, 12.68],
-        "elevationMeters": 0.682,
+        "at": [8.8, 8.46],
+        "elevationMeters": 0.763,
         "kind": "absolute",
         "rotationYRadians": 3.141592653589793
       },
@@ -7330,8 +7090,8 @@
       "kind": "furnishing",
       "modelId": "tabletop-candle",
       "placement": {
-        "at": [5.53, 12.65],
-        "elevationMeters": 0.682,
+        "at": [8.22, 8.46],
+        "elevationMeters": 0.763,
         "kind": "absolute",
         "rotationYRadians": 0
       },
@@ -7624,20 +7384,6 @@
       "variant": "default"
     },
     {
-      "floorId": "larch-loft",
-      "id": "ec0c6a9a-07ce-490c-95cf-ff73c94fcc33",
-      "kind": "furnishing",
-      "modelId": "decorative-globe",
-      "placement": {
-        "at": [3.18, 12.67],
-        "elevationMeters": 0.543,
-        "kind": "absolute",
-        "rotationYRadians": -0.7853981633974483
-      },
-      "size": [0.34, 0.43, 0.29],
-      "variant": "default"
-    },
-    {
       "entitySlots": [
         {
           "autoMap": "manual",
@@ -7733,6 +7479,272 @@
         "rotationYRadians": 3.141592653589793
       },
       "size": [0.32, 0.52, 0.32],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "4dd9a7e0-2d8c-484e-bd20-727785511d6e",
+      "kind": "furnishing",
+      "modelId": "oak-stone-sink-cabinet",
+      "placement": {
+        "at": [14.08, 8.592],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.8, 1.22, 0.66],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "0e61acd3-8e07-47d5-b666-80848605ce88",
+      "kind": "furnishing",
+      "modelId": "oak-stone-drawer-cabinet",
+      "placement": {
+        "at": [14.83, 8.592],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.7, 0.92, 0.66],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "2bbcf9b9-ce75-469f-b5fb-cfb699556b67",
+      "kind": "furnishing",
+      "modelId": "oak-stone-drawer-cabinet",
+      "placement": {
+        "at": [15.53, 8.592],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.7, 0.92, 0.66],
+      "variant": "induction"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "e7227d7d-a383-41d6-a9c4-8cd4f8e42a59",
+      "kind": "furnishing",
+      "modelId": "oak-appliance-pantry",
+      "placement": {
+        "at": [10.55, 4.932],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [0.8, 2.3, 0.66],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "b44b0e2e-0883-40c3-a917-d8cb6b896e04",
+      "kind": "furnishing",
+      "modelId": "oak-stone-kitchen-island",
+      "placement": {
+        "at": [14.5, 6.9],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [1.8, 0.94, 0.9],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "3d09643c-e733-4ada-a915-fe5ad48e2daa",
+      "kind": "furnishing",
+      "modelId": "atelier-library-bookcase",
+      "placement": {
+        "at": [2.48, 12.688],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.85, 2.5, 0.42],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "15e0be0d-4fc7-4f57-8ead-0272df210461",
+      "kind": "furnishing",
+      "modelId": "atelier-library-bookcase",
+      "placement": {
+        "at": [3.35, 12.688],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [0.85, 2.5, 0.42],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "99e37f90-7c9e-4996-9dda-b71163426f6b",
+      "kind": "furnishing",
+      "modelId": "atelier-library-bookcase",
+      "placement": {
+        "at": [6.8, 12.688],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [1.2, 2.5, 0.42],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "0044c34b-410e-4db7-a0f0-087cc390d98f",
+      "kind": "furnishing",
+      "modelId": "atelier-library-bookcase",
+      "placement": {
+        "at": [8.02, 12.688],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [1.2, 2.5, 0.42],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "b51b505f-2a2a-481b-a4e4-3052b9f918a8",
+      "kind": "furnishing",
+      "modelId": "atelier-library-bookcase",
+      "placement": {
+        "at": [9.24, 12.688],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [1.2, 2.5, 0.42],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "7b49c1d7-5e1e-40ad-bc59-aa113f91ee5b",
+      "kind": "furnishing",
+      "modelId": "atelier-library-bench",
+      "placement": {
+        "at": [5, 12.623],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [2.1, 0.48, 0.55],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "b146da4e-cf71-4d3e-9d6d-641f9decbe91",
+      "kind": "furnishing",
+      "modelId": "atelier-library-credenza",
+      "placement": {
+        "at": [8.1, 8.46],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793
+      },
+      "size": [1.8, 0.76, 0.44],
+      "variant": "default"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "573805b7-8574-40d1-806c-ca78832f18ac",
+      "kind": "furnishing",
+      "modelId": "bronze-armillary",
+      "placement": {
+        "at": [3.18, 12.67],
+        "elevationMeters": 0.543,
+        "kind": "absolute",
+        "rotationYRadians": -0.7853981633974483
+      },
+      "size": [0.364, 0.476, 0.364],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "8c09908f-9f5b-41bc-80aa-7f2871afb3d8",
+      "kind": "furnishing",
+      "modelId": "travertine-pedestal-table",
+      "placement": {
+        "at": [8.14, 0.91],
+        "elevationMeters": 0.02,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [0.5, 0.52, 0.5],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "dd8853c6-da86-4252-a066-5f556d33da81",
+      "kind": "furnishing",
+      "modelId": "travertine-garden-bench",
+      "placement": {
+        "at": [1.5, -1.65],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 1.5707963267948966
+      },
+      "size": [1.8, 0.45, 0.5],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "8b9eb4e6-1ef4-4c91-83b5-c064e278fbbd",
+      "kind": "furnishing",
+      "modelId": "travertine-garden-bench",
+      "placement": {
+        "at": [8.55, -1.65],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": -1.5707963267948966
+      },
+      "size": [1.8, 0.45, 0.5],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "2d14e5c1-bf85-42fc-87e7-57d1ec98aaf3",
+      "kind": "furnishing",
+      "modelId": "carved-stone-planter",
+      "placement": {
+        "at": [0.75, -1.05],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [0.64, 0.72, 0.64],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "9d71dcf2-cdfb-47b8-95c4-9bc67df21dfb",
+      "kind": "furnishing",
+      "modelId": "carved-stone-planter",
+      "placement": {
+        "at": [9.25, -1.05],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [0.64, 0.72, 0.64],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "73167038-e23f-433d-826a-9a05f3275777",
+      "kind": "furnishing",
+      "modelId": "loop-sculpture",
+      "placement": {
+        "at": [2.9, 8.23],
+        "elevationMeters": 0.001,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [0.55, 1.65, 0.45],
       "variant": "default"
     }
   ],
