@@ -1,9 +1,9 @@
 {
-  "revision": 37,
-  "fingerprint": "6a324a47ef170799a2da3e67503650776bfbfad4e0e29b114682cef277569cd1",
-  "summary": "Support glass railings on outdoor platforms",
+  "revision": 38,
+  "fingerprint": "1b081d3b553f059e0cc6489f8197d2e9dff702af1d20237981317182a06b5f6d",
+  "summary": "Add a Grass finish for outdoor spaces",
   "breakingChanges": [
-    "Existing outdoor platforms keep their edge styles. Workspaces with glass railings require the updated Home Assistant panel. Update through HACS, restart Home Assistant, and reload before opening one on an older panel."
+    "Workspaces that use the Grass finish require an updated Cabane panel. Update the integration through HACS, restart Home Assistant, and reload before opening one on an older panel."
   ],
   "history": [
     {
@@ -256,6 +256,13 @@
       "summary": "Allow explicit switch and cover connections without device-class restrictions",
       "breakingChanges": [
         "No saved fields or IDs change. Existing smart plugs, power strips, curtains and garage covers accept compatible entities regardless of optional device class after updating the Home Assistant panel. Older panels can hide or reject these connections; automatic matching and typed sensor requirements remain strict."
+      ]
+    },
+    {
+      "revision": 37,
+      "summary": "Support glass railings on outdoor platforms",
+      "breakingChanges": [
+        "Existing outdoor platforms keep their edge styles. Workspaces with glass railings require the updated Home Assistant panel. Update through HACS, restart Home Assistant, and reload before opening one on an older panel."
       ]
     }
   ],

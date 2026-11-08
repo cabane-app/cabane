@@ -129,9 +129,9 @@ uses meter-scaled analytic ripples and a grazing-angle sheen, with no textures,
 additional geometry, or reflection render targets. Ripple time advances only on
 existing scene frames and pauses for reduced motion; idle demand rendering stays
 idle. Water retains scene lighting and received shadows.
-Floor finishes support solid
-colors and the preset IDs exported by `FLOOR_PATTERN_PRESET_IDS`, including wood,
-stone/tile, dirt, bark, and outdoor stone treatments. Ordered room/ground zones
+Floor finishes support solid colors, Grass with the default terrain color, and
+the preset IDs exported by `FLOOR_PATTERN_PRESET_IDS`, including wood, stone/tile,
+dirt, bark, and outdoor stone treatments. Ordered room/ground zones
 compose finishes; implementation belongs to the engine finish modules.
 Procedural wood retains its deterministic grain, palette and joints while
 uploading the completed pixel buffer once per texture. Per-pixel canvas draw

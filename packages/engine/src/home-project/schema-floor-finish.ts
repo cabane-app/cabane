@@ -7,6 +7,10 @@ const FLOOR_PRESETS = new Set<string>(FLOOR_PATTERN_PRESET_IDS);
 export const floorFinish = (value: unknown, path: string, issues: HomeProjectIssue[]) => {
   const candidate = record(value, path, issues);
   if (!candidate) return;
+  if (candidate.kind === "grass") {
+    keys(candidate, ["kind"], path, issues);
+    return;
+  }
   if (candidate.kind === "solid") {
     keys(candidate, ["kind", "color"], path, issues);
     string(candidate.color, `${path}.color`, issues);
@@ -40,7 +44,7 @@ export const floorFinish = (value: unknown, path: string, issues: HomeProjectIss
     issues,
     "project.floor-finish-kind",
     `${path}.kind`,
-    "Floor finish kind must be solid or preset.",
+    "Floor finish kind must be solid, preset, or grass.",
   );
 };
 

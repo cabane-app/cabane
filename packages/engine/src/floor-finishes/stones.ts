@@ -1,10 +1,11 @@
+import { DEFAULT_TERRAIN_GRASS_COLOR } from "../terrain/terrain-settings";
 import { patternRandom, periodicMotif } from "./periodic-motifs";
 
 export function paintStones(context: CanvasRenderingContext2D, path: boolean, quiet: boolean) {
   const size = context.canvas.width;
   const random = patternRandom(31991);
   // Matches the default home palette's grass, including in palette previews.
-  context.fillStyle = path ? "#91a06a" : "#827f72";
+  context.fillStyle = path ? DEFAULT_TERRAIN_GRASS_COLOR : "#827f72";
   context.fillRect(0, 0, size, size);
   const colors = quiet
     ? ["#b9b6a8", "#a7a89b", "#c4c0b2", "#999c91"]

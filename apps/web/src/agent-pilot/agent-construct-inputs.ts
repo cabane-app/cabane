@@ -1,5 +1,6 @@
 import {
   FLOOR_PATTERN_PRESET_IDS,
+  GRASS_FLOOR_FINISH,
   OUTDOOR_PLATFORM_EDGE_PRESETS,
   type DoorConfiguration,
   type EditorWallAttachment,
@@ -78,11 +79,15 @@ export function polygon(value: unknown, name: string): Polygon {
 
 export function finish(value: unknown): FloorFinishSpec {
   const input = object(value, "finish", ["kind", "color", "preset"]);
+  if (input.kind === "grass") {
+    object(input, "finish", ["kind"]);
+    return GRASS_FLOOR_FINISH;
+  }
   if (input.kind === "solid") {
     if (input.preset !== undefined) throw new Error("Solid finishes do not have a preset.");
     return { kind: "solid", color: color(input.color, "finish.color") };
   }
-  if (input.kind !== "preset") throw new Error("finish.kind must be solid or preset.");
+  if (input.kind !== "preset") throw new Error("finish.kind must be solid, preset, or grass.");
   return {
     kind: "preset",
     preset: oneOf(input.preset, "finish.preset", FLOOR_PATTERN_PRESET_IDS),

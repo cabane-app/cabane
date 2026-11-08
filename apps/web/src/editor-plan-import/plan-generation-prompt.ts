@@ -1,4 +1,4 @@
-import { DEFAULT_WALL_COLORS } from "@cabane/engine";
+import { DEFAULT_TERRAIN_GRASS_COLOR, DEFAULT_WALL_COLORS } from "@cabane/engine";
 import { planGenerationSchema } from "./plan-generation-schema";
 
 /** Only the local workspace identity is shared; never include its design or bindings. */
@@ -42,7 +42,7 @@ Use drawn widths and locations whenever readable. If vertical dimensions are mis
 
 7. PROJECT ENVELOPE AND ASSUMPTIONS
 Set schemaVersion to 2, seedRevision to "ai-plan-v1", and home.id to the exact constant in the schema. This ID is required to import into my current workspace. Choose a descriptive English home.name and floor.name; home.locale is "en".
-Use a restrained default home.palette unless I request colors: accent "#d48a54", secondary "#758f83", exterior "${DEFAULT_WALL_COLORS.exterior}", interior "${DEFAULT_WALL_COLORS.interior}", ground "#91a06a". Room accent may use "#d48a54". Colors are display defaults, not evidence of real finishes.
+Use a restrained default home.palette unless I request colors: accent "#d48a54", secondary "#758f83", exterior "${DEFAULT_WALL_COLORS.exterior}", interior "${DEFAULT_WALL_COLORS.interior}", ground "${DEFAULT_TERRAIN_GRASS_COLOR}". Room accent may use "#d48a54". Colors are display defaults, not evidence of real finishes.
 floors contains exactly one complete floor. Set stairs, sceneItems, shortcuts to []; set roomProfiles and openingProfiles to {}. Do not include bindings, devices, actionBar, roof, navigation, camera poses, or extra keys outside the schema.
 Record material assumptions as {id, subjectId, summary, basis}. subjectId identifies the affected floor, room, wall, opening, or home. basis is "measured", "plan", "photo", "inferred", or "user". Include scale calibration, uncertain dimensions, heights, topology interpretations, opening orientations, and accepted simplifications. State concretely what is uncertain rather than inventing numeric confidence. Do not hide uncertainty in comments (JSON cannot contain comments).
 

@@ -11,6 +11,12 @@ import type { HomeProject, SceneItemSpec } from "./home-project/types";
 import type { ActionBarConfiguration } from "./action-bar/action-bar-config";
 import type { HomeDeviceModelProps } from "./device-model-props";
 export type { DeviceModelReading, HomeDeviceModelProps } from "./device-model-props";
+import type { FloorFinishSpec } from "./floor-finishes/types";
+export {
+  FLOOR_PATTERN_PRESET_IDS,
+  type FloorFinishSpec,
+  type FloorPatternPresetId,
+} from "./floor-finishes/types";
 
 export type PlanPoint = readonly [x: number, y: number];
 export type Polygon = readonly [PlanPoint, PlanPoint, PlanPoint, ...PlanPoint[]];
@@ -109,37 +115,6 @@ export interface DeviceSlotSpec {
   entitySlots: readonly EntityBindingSlotSpec[];
   placement: DevicePlacement;
 }
-
-export const FLOOR_PATTERN_PRESET_IDS = [
-  "light-oak",
-  "light-oak-horizontal",
-  "oak-herringbone",
-  "travertine",
-  "terracotta-tile",
-  "terrazzo",
-  "dark-walnut",
-  "limestone",
-  "square-tile",
-  "subway-tile",
-  "checkerboard-tile",
-  "encaustic-tile",
-  "black-white-patchwork",
-  "blue-quatrefoil-tile",
-  "sand",
-  "gravel",
-  "light-dirt",
-  "dark-dirt",
-  "pine-bark",
-  "tomettes",
-  "stepping-stones",
-  "pebbles",
-] as const;
-
-export type FloorPatternPresetId = (typeof FLOOR_PATTERN_PRESET_IDS)[number];
-
-export type FloorFinishSpec =
-  | { kind: "solid"; color: string }
-  | { kind: "preset"; preset: FloorPatternPresetId; color?: string };
 
 export interface FloorFinishZoneSpec {
   id: string;

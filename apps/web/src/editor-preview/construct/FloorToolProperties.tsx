@@ -55,6 +55,7 @@ export function FloorToolProperties({
         <legend>Floor finish</legend>
         <FloorFinishPalette
           value={isPlatform ? settings.finish : painting.finish}
+          showGrass={isPlatform}
           onChange={(finish) =>
             isPlatform
               ? editor.setPlatformSettings({ ...settings, finish })

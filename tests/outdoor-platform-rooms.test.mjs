@@ -204,8 +204,10 @@ await withModules(async (load) => {
     assert.ok(["on", "off"].includes(status.lighting));
   });
 
-  test("outdoor rooms persist through IndexedDB publication, reopening, and portable project JSON", async () => {
+  test("outdoor rooms with Grass persist through IndexedDB publication, reopening, and portable project JSON", async () => {
     const project = fixture();
+    const finish = { kind: "grass" };
+    project.floors[0].outdoorPlatforms[0].finish = finish;
     project.roomProfiles["balcony:room"] = { dashboardSlots: [] };
     const factory = new IDBFactory();
     const repository = e.createHomeProjectRepository(
@@ -239,6 +241,7 @@ await withModules(async (load) => {
     );
     const portable = e.parseHomeProject(e.serializeHomeProject(reopened.published));
     assert.equal(portable.valid, true);
+    assert.deepEqual(portable.project.floors[0].outdoorPlatforms[0].finish, finish);
     assert.equal(manifestFor(portable.project).floors[0].rooms[1].id, "balcony:room");
     assert.equal(e.createFloorEditorDraft(manifestFor(portable.project).floors[0]).rooms.length, 1);
     assert.equal(
@@ -336,20 +339,19 @@ await withModules(async (load) => {
     }
   });
 
-  test("the platform surface selects its room once and ordinary platforms keep their original surface", async () => {
+  test("Grass platforms match the terrain in overview and remain selectable as rooms", async () => {
     for (const enabled of [false, true]) {
       const project = fixture(enabled);
+      project.floors[0].outdoorPlatforms[0].finish = { kind: "grass" };
       const floor = manifestFor(project).floors[0];
       const selected = [];
-      const renderer = await create(
-        createElement(e.FloorFinishSurfaces, {
-          floor,
-          variant: "scene",
-          reducedMotion: true,
-          selectedRoomId: enabled ? "balcony:room" : null,
-          onSelectRoom: (id) => selected.push(id),
-        }),
-      );
+      const props = {
+        floor,
+        variant: "scene",
+        reducedMotion: true,
+        onSelectRoom: (id) => selected.push(id),
+      };
+      const renderer = await create(createElement(e.FloorFinishSurfaces, props));
       try {
         assert.equal(renderer.scene.findAllByProps({ name: "room-balcony:room" }).length, 0);
         assert.equal(
@@ -357,6 +359,8 @@ await withModules(async (load) => {
           enabled ? 1 : 0,
         );
         const surface = renderer.scene.findByProps({ name: "platform-finish-balcony" });
+        const surfaceColor = () => `#${surface.instance.material.color.getHexString()}`;
+        assert.equal(surfaceColor(), project.home.palette.ground);
         if (enabled) {
           const pointer = {
             pointerId: 1,
@@ -366,6 +370,10 @@ await withModules(async (load) => {
           await renderer.fireEvent(surface, "pointerDown", pointer);
           await renderer.fireEvent(surface, "pointerUp", pointer);
           assert.deepEqual(selected, ["balcony:room"]);
+          await renderer.update(
+            createElement(e.FloorFinishSurfaces, { ...props, selectedRoomId: "balcony:room" }),
+          );
+          assert.notEqual(surfaceColor(), project.home.palette.ground);
         } else assert.equal(surface.props.onPointerDown, undefined);
       } finally {
         await renderer.unmount();

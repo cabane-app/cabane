@@ -1,7 +1,11 @@
-import { FLOOR_FINISH_PRESETS, paintFloorPattern, type FloorFinishSpec } from "@cabane/engine";
+import {
+  FLOOR_FINISH_PRESETS,
+  GRASS_FLOOR_FINISH,
+  floorFinishRepresentativeColor,
+  paintFloorPattern,
+  type FloorFinishSpec,
+} from "@cabane/engine";
 import { useEffect, useRef } from "react";
-
-const finishKey = (finish: FloorFinishSpec) => (finish.kind === "solid" ? "solid" : finish.preset);
 
 function PresetSwatch({
   preset,
@@ -25,12 +29,14 @@ function PresetSwatch({
 
 export function FloorFinishPalette({
   value,
+  showGrass = false,
   onChange,
 }: {
   value: FloorFinishSpec;
+  showGrass?: boolean;
   onChange: (finish: FloorFinishSpec) => void;
 }) {
-  const selected = finishKey(value);
+  const selected = value.kind === "preset" ? value.preset : value.kind;
   const solidColor = value.kind === "solid" ? value.color : "#d3cec5";
   return (
     <section className="floor-finish-palette" aria-label="Floor finish">
@@ -44,6 +50,20 @@ export function FloorFinishPalette({
           <span style={{ background: solidColor }} aria-hidden="true" />
           <small>Solid</small>
         </button>
+        {(showGrass || value.kind === "grass") && (
+          <button
+            type="button"
+            aria-label="Grass"
+            aria-pressed={selected === "grass"}
+            onClick={() => onChange(GRASS_FLOOR_FINISH)}
+          >
+            <span
+              style={{ background: floorFinishRepresentativeColor(GRASS_FLOOR_FINISH) }}
+              aria-hidden="true"
+            />
+            <small>Grass</small>
+          </button>
+        )}
         {FLOOR_FINISH_PRESETS.map((preset) => (
           <button
             key={preset.id}

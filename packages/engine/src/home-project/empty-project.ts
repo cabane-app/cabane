@@ -1,3 +1,4 @@
+import { DEFAULT_TERRAIN_GRASS_COLOR } from "../terrain/terrain-settings";
 import { DEFAULT_WALL_COLORS } from "../wall-colors";
 import type { HomeProject } from "./types";
 
@@ -14,7 +15,7 @@ export function createEmptyHomeProject(id: string, name: string): HomeProject {
         secondary: "#758f83",
         exterior: DEFAULT_WALL_COLORS.exterior,
         interior: DEFAULT_WALL_COLORS.interior,
-        ground: "#91a06a",
+        ground: DEFAULT_TERRAIN_GRASS_COLOR,
       },
     },
     coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },

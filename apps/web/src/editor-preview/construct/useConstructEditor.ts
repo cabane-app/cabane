@@ -12,6 +12,7 @@ import {
   createFloorEditorSelection,
   duplicateOpeningOffset,
   floorEditorSelectionTargets,
+  GRASS_FLOOR_FINISH,
   nearestAvailableOpeningOffset,
   pointInsidePolygon,
   roomAnchorForPolygon,
@@ -86,7 +87,7 @@ export const useConstructEditor = (
   const [platformSettings, setPlatformSettings] = useState<
     ConstructEditorController["platformSettings"]
   >({
-    finish: { kind: "solid", color: "#c8b79b" },
+    finish: GRASS_FLOOR_FINISH,
     defaultEdge: { kind: "railing", heightMeters: 1 },
   });
   const [selectedPlatformEdgeId, setSelectedPlatformEdgeId] = useState<string | null>(null);

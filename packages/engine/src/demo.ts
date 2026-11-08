@@ -1,3 +1,4 @@
+import { DEFAULT_TERRAIN_GRASS_COLOR } from "./terrain/terrain-settings";
 import { DEFAULT_WALL_COLORS } from "./wall-colors";
 import { defineHomeManifest } from "./validation";
 
@@ -12,7 +13,7 @@ export const neutralDemoManifest = defineHomeManifest({
       secondary: "#7ca39a",
       exterior: DEFAULT_WALL_COLORS.exterior,
       interior: DEFAULT_WALL_COLORS.interior,
-      ground: "#91a06a",
+      ground: DEFAULT_TERRAIN_GRASS_COLOR,
     },
   },
   floors: [

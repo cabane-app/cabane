@@ -6,6 +6,8 @@ export interface TerrainSettings {
   bottomRightMeters: number;
 }
 
+export const DEFAULT_TERRAIN_GRASS_COLOR = "#91a06a";
+
 export const FLAT_TERRAIN: TerrainSettings = {
   topLeftMeters: 0,
   topRightMeters: 0,

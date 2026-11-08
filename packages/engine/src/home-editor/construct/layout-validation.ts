@@ -1,3 +1,4 @@
+import { DEFAULT_TERRAIN_GRASS_COLOR } from "../../terrain/terrain-settings";
 import { DEFAULT_WALL_COLORS } from "../../wall-colors";
 import { omitUndefinedProperties } from "../../defined-properties";
 import { legacyFloorHeight } from "../../building/floor-levels";
@@ -22,7 +23,7 @@ const validationEnvelope = (floor: unknown): LegacyHomeManifest => ({
       secondary: "#718b7f",
       exterior: DEFAULT_WALL_COLORS.exterior,
       interior: DEFAULT_WALL_COLORS.interior,
-      ground: "#91a06a",
+      ground: DEFAULT_TERRAIN_GRASS_COLOR,
     },
   },
   floors: [floor as LayoutFloorSpec],
