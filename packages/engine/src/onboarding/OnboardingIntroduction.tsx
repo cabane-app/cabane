@@ -1,4 +1,3 @@
-import { useCabaneAssetUrl } from "../CabaneDom";
 import { useEffect, useRef } from "react";
 import { OnboardingPrivacy } from "./OnboardingPrivacy";
 
@@ -22,85 +21,85 @@ export function OnboardingIntroduction({
   error: string | null;
   links?: OnboardingLinks | undefined;
 }) {
-  const previewBaseUrl = useCabaneAssetUrl("onboarding/");
   const title = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     title.current?.focus({ preventScroll: true });
   }, []);
   return (
-    <aside
-      className="setup-task-surface onboarding-intro"
-      aria-labelledby="onboarding-title"
-      aria-busy={busy}
-    >
-      <div className="onboarding-intro__body">
-        <div className="onboarding-intro__top">
-          <span>cabane</span>
+    <section className="onboarding-intro" aria-labelledby="onboarding-title" aria-busy={busy}>
+      <header className="onboarding-intro__top">
+        <span className="onboarding-wordmark">
+          cabane<span aria-hidden="true">.</span>
+        </span>
+        <nav aria-label="Source and self-hosting">
+          {links && links.available !== false && (
+            <>
+              <a href={links.source} target="_blank" rel="noreferrer">
+                Source code <span aria-hidden="true">↗</span>
+              </a>
+              <a href={links.selfHost} target="_blank" rel="noreferrer">
+                Self-hosting <span aria-hidden="true">↗</span>
+              </a>
+            </>
+          )}
           <button
             type="button"
-            aria-label="Dismiss introduction"
+            className="onboarding-skip"
             onClick={onDismiss}
             disabled={busy}
+            aria-label="Dismiss introduction"
           >
-            ×
+            Skip intro <span aria-hidden="true">↗</span>
           </button>
-        </div>
-        <p className="onboarding-eyebrow">Your home, made tangible</p>
+        </nav>
+      </header>
+      <div className="onboarding-intro__body">
+        <p className="onboarding-eyebrow">A home for Home Assistant</p>
         <h1 ref={title} tabIndex={-1} id="onboarding-title">
-          Your home. In 3D.
+          Your home.
           <br />
-          Under your control.
+          In your hands.
         </h1>
         <p className="onboarding-intro__description">
-          Build your rooms, arrange furniture and devices, then connect Home Assistant to bring them
-          to life.
+          Build your rooms in 3D. Connect your devices.
+          <br className="onboarding-desktop-break" /> See your home respond.
         </p>
-        <div className="onboarding-previews" aria-label="Build, connect, and control">
-          {[
-            ["build", "Build & arrange", "A room in Cabane’s layout and furniture editor"],
-            ["connect", "Connect", "Home Assistant connection setup for a modeled device"],
-            ["control", "Control", "A light controlled from the 3D home"],
-          ].map(([name, label, alt], index) => (
-            <figure key={name}>
-              <img src={`${previewBaseUrl}${name}.png`} alt={alt} width={320} height={200} />
-              <figcaption>
-                <span>{index + 1}</span> {label}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
         <div className="onboarding-entry-actions">
           <button type="button" className="is-primary" onClick={onExplore} disabled={busy}>
-            <strong>
-              Explore the demo <span aria-hidden="true">↗</span>
-            </strong>
-            <small>Try the simulated devices. No connection needed.</small>
+            Explore the demo <span aria-hidden="true">→</span>
           </button>
           <button type="button" onClick={onBuild} disabled={busy}>
-            <strong>Build my home</strong>
-            <small>Start with an empty home. Connect devices whenever you’re ready.</small>
+            Build my home <span aria-hidden="true">↗</span>
           </button>
         </div>
+        <p className="onboarding-intro__reassurance">No account. No connection needed to try.</p>
         {error && (
           <p className="onboarding-error" role="alert">
             {error}
           </p>
         )}
-        <footer>
-          <p>Your home is saved in this browser.</p>
-          <OnboardingPrivacy />
-          {links && links.available !== false && (
-            <nav aria-label="Source and self-hosting">
-              <a href={links.source} target="_blank" rel="noreferrer">
-                Source code ↗
-              </a>
-              <a href={links.selfHost} target="_blank" rel="noreferrer">
-                Self-hosting ↗
-              </a>
-            </nav>
-          )}
-        </footer>
       </div>
-    </aside>
+      <div className="onboarding-demo-label">
+        <span aria-hidden="true" />
+        Live 3D demo <span className="onboarding-demo-label__detail">/ Simulated devices</span>
+      </div>
+      <footer className="onboarding-intro__footer">
+        <div className="onboarding-method" aria-label="Construct, Arrange, Connect">
+          <span>
+            <b>Construct</b> your rooms
+          </span>
+          <span>
+            <b>Arrange</b> your furniture
+          </span>
+          <span>
+            <b>Connect</b> your devices
+          </span>
+        </div>
+        <div className="onboarding-intro__privacy">
+          <p>Your home stays in your browser.</p>
+          <OnboardingPrivacy />
+        </div>
+      </footer>
+    </section>
   );
 }

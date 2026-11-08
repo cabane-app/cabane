@@ -80,7 +80,9 @@ Refresh resumes the same local Build destination; editor mode changes continue
 on its existing workspace-scoped URLs. Direct Welcome/Demo visits never recreate
 a deleted demo, and missing Build workspaces retain the usual recovery link.
 Browser Back to Welcome reopens the introduction even after it was dismissed.
-The scene remains visible; portrait layouts omit previews to keep actions clear.
+Welcome presents the live demo beside the introduction on desktop and below the entry
+actions on narrow screens. Its daylight presentation does not change saved lighting
+preferences. Explore opens the same demo scene with its normal controls and preferences.
 
 The demo is identified by installation metadata, not its editable name or a
 missing HA connection. Only it receives the isolated memory-only simulation.

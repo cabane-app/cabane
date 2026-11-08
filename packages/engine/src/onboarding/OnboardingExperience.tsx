@@ -27,6 +27,7 @@ import { createLaunchOnboardingState } from "./onboarding-state";
 import { OnboardingIntroduction, type OnboardingLinks } from "./OnboardingIntroduction";
 import { useFirstControlConfirmation } from "./useFirstControlConfirmation";
 import "./onboarding.css";
+import "./welcome.css";
 
 export interface OnboardingOptions {
   isDemo: boolean;
@@ -204,7 +205,7 @@ export function CabaneAppExperience({
   return (
     <div
       ref={shell}
-      className={`cabane-app setup-shell ${surface ? "setup-shell--open onboarding-shell--open" : "setup-shell--closed"}`}
+      className={`cabane-app setup-shell ${surface ? "setup-shell--open" : "setup-shell--closed"} ${surface === "intro" ? "onboarding-shell--open" : ""}`}
       style={
         {
           "--home-accent": manifest.home.palette.accent,
