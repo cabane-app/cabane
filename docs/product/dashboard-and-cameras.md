@@ -23,9 +23,9 @@ browser storage leaves floor navigation available without remembering the choice
 
 The Orbit header combines the floor summary and room navigation in one top row.
 The leading button uses the current floor name, connection indicator, session
-information and home-presence summary. It replaces the separate heading and the
-Overview label, scrolls in the same row as the rooms, and returns to the
-remembered floor view when clicked. It also toggles a second row of floor pills.
+information and home-presence summary. It stays visible beside the room choices
+and returns to the remembered floor view when clicked. It also toggles a second
+row of floor pills.
 Choosing a floor closes that row, clears the room selection, restores the new floor view
 and updates the room list. Escape, an outside pointer press or selecting a room
 closes the floor choices; Escape restores focus to the floor button. Empty floors
@@ -33,9 +33,9 @@ remain navigable. Scroll gutters leave room for pill shadows and focus outlines.
 
 Room pills list only the active floor's rooms with their resolved HA names.
 Pills, room surfaces, status labels and room shortcuts share selection behavior.
-When the active floor has devices outside its rooms, **Outside rooms** opens
-their controls from the same strip on desktop and mobile. The panel uses the
-devices' existing bindings and leaves the camera and room selection in place.
+When the active floor has devices outside its rooms, **Outside rooms** appears
+after the regular rooms and opens their controls. The panel uses the devices'
+existing bindings and leaves the camera and room selection in place.
 It shows device controls without a room photo, area status, or Walk inside action.
 The selected pill is exposed to assistive technology and stays visible after
 selection or resize. The strip is absent in Walk, roof view and device overlays,
@@ -137,8 +137,12 @@ Room names use the mapped HA area name, falling back to the local modeled name w
 the area is unmapped or unavailable. Those rooms show a broken-chain Connect icon
 in overview labels and the room/walk heading, and a “Not connected” status pill
 alongside temperature and humidity in room heroes.
-On mobile, hide the room selection pills and keep the current floor pill, its
-expandable floor choices, and **Outside rooms** when present. Rooms remain
+Below 900 px of dashboard width, a **Rooms** button beside the current floor
+opens a popover with that floor's room choices in the same order. The button
+appears when the floor has a room or an **Outside rooms** action. Choosing a
+room, pressing Escape, or pressing outside the navigation dismisses the
+popover. Closing **Outside rooms** restores focus to the **Rooms** button at
+narrow widths and to the **Outside rooms** pill at wider widths. Rooms remain
 selectable in the scene.
 
 Room and device controls use content-sized cards with wrapping titles and compact
