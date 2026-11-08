@@ -157,8 +157,8 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
     walkMode && !walkthrough
       ? props.walkTools?.find((tool) => tool.id === equippedToolId)
       : undefined;
-  const toolInputEnabled =
-    documentVisible && !setupOpen && !mappingOpen && !deviceOverlay && !selectedCamera;
+  const sceneControlsBlocked = setupOpen || mappingOpen || deviceOverlay || Boolean(selectedCamera);
+  const toolInputEnabled = documentVisible && !sceneControlsBlocked;
   const actionBarItems = resolvePublishedActionBarItems(manifest.actionBar, props.walkTools);
   const overlayStatuses = useMemo(
     () => filterOverlayStatuses(roomStatuses, overlayPreferences),
@@ -215,11 +215,12 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
           }
         >
           <div ref={roomFocus.ref} className="room-focus-frame" aria-hidden="true" />
-          <div className="building-floor-controls" hidden={Boolean(outsideControlRoom)}>
+          <div className="building-floor-controls" hidden={sceneControlsBlocked}>
             {!walkMode && (
               <OrbitNavigation controls={orbitView.controls} locked={orbitView.locked} />
             )}
             <FloorPicker
+              disabled={sceneControlsBlocked}
               unavailable={
                 walkMode
                   ? Object.fromEntries(

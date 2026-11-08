@@ -9,6 +9,17 @@
   container-type: inline-size;
 }
 
+.building-floor-controls,
+.scene-action-dock {
+  position: absolute;
+  z-index: 12;
+}
+
+.building-floor-controls {
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+}
+
 .scene-canvas,
 .scene-canvas canvas {
   width: 100%;

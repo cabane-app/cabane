@@ -1,6 +1,4 @@
 .scene-action-dock {
-  position: absolute;
-  z-index: 12;
   right: max(7px, env(safe-area-inset-right));
   bottom: max(8px, env(safe-area-inset-bottom));
   left: max(7px, env(safe-area-inset-left));

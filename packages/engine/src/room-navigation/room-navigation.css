@@ -274,12 +274,6 @@
     right: 0;
     translate: none;
   }
-  .cabane-shell.mode-room .building-floor-controls {
-    bottom: calc(54dvh + 16px);
-  }
-  .cabane-shell.mode-room .orbit-navigation {
-    display: none;
-  }
 }
 @media (max-height: 540px) and (orientation: landscape) {
   .room-navigation {
@@ -330,10 +324,6 @@
   }
   .cabane-shell.mode-room:not(.device-overlay-open) .scene-action-dock {
     display: none;
-  }
-  .cabane-shell.mode-room .building-floor-controls {
-    bottom: 16px;
-    right: calc(40cqw + 28px);
   }
 }
 @media (prefers-reduced-motion: reduce) {

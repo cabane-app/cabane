@@ -1,4 +1,7 @@
 @container (max-width: 699px) {
+  .mode-room > .building-floor-controls {
+    display: none;
+  }
   .device-control-overlay__backdrop {
     display: none;
   }

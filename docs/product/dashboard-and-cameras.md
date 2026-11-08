@@ -99,8 +99,11 @@ The floor picker uses directly selectable diamond layers at the bottom right in
 Orbit, Construct, and Arrange. Hover or keyboard focus spreads the stack upward
 and fades in floor names; the bottom layer stays anchored. On touch, the first
 tap expands the stack and the next selects a floor. Expanded labels are also
-click targets. Escape and outside taps dismiss the stack. Existing floor shortcuts
-and unavailable walking-entry guards still apply. Show roof / Hide roof is available
+click targets. Escape and outside taps dismiss the stack. In Home, the floating
+picker shares the action dock's default layer and hides in compact room views
+and while device, camera, or setup surfaces are open. The overview header also
+offers floor choices. Existing floor shortcuts and unavailable walking-entry
+guards still apply. Show roof / Hide roof is available
 in the action bar’s View group (R), and is disabled while walking. Roof view shows all floors, keeps walls solid,
 hides room status overlays, and preserves the current camera position, angle, target, and zoom.
 The diamond floor picker restores per-floor views in Orbit and preserves the camera in Construct and Arrange. Selecting a floor restores the

@@ -1,4 +1,7 @@
 @media (orientation: landscape) and (max-height: 600px) and (max-width: 1100px) {
+  .mode-room > .building-floor-controls {
+    display: none;
+  }
   .device-control-overlay__backdrop {
     display: none;
   }
