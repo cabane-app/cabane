@@ -29,9 +29,11 @@
 .room-status-badges[data-variant="detailed"] .room-status-badge {
   width: auto;
 }
-.room-status-badges[data-variant="detailed"] .room-status-badge__label {
+.room-status-badge__label {
   line-height: 1;
   text-align: left;
+  /* Center the visible glyphs of the dashboard font on the icon. */
+  transform: translateY(1px);
 }
 .room-status-badge__icon {
   display: grid;
