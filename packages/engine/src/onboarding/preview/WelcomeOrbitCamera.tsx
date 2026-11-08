@@ -22,7 +22,7 @@ export function WelcomeOrbitCamera({
   usePreviewPlayback(playing, (seconds) => {
     advance(seconds);
     const orbit = controls.current;
-    if (orbit) orbit.setAzimuthalAngle(orbit.getAzimuthalAngle() - seconds * 0.145);
+    if (orbit) orbit.setAzimuthalAngle(orbit.getAzimuthalAngle() - seconds * 0.25);
   });
   const { width, height } = useThree((state) => state.size);
   const frame = useMemo(() => {

@@ -6,7 +6,7 @@ import { createWelcomeWalkLoop } from "./welcome-walk-loop";
 export type WelcomePreviewMode = "orbit" | "walk";
 type OrbitStage = "Ground floor" | "Upstairs" | "Roof";
 
-const ORBIT_SECONDS = 21;
+const ORBIT_SECONDS = 12;
 const FLOOR_SECONDS = ORBIT_SECONDS / 3;
 
 export function useWelcomePreview(manifest: HomeManifest) {

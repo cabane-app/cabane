@@ -7,7 +7,7 @@ import { WALK_EYE_HEIGHT, type BoxWalkCollider } from "../../navigation/walk-nav
 import type { HomeManifest, PlanPoint, RenderableFloorSpec } from "../../types";
 
 const LIVING_ROOM_ID = "open-plan-living";
-const WALK_SPEED = 0.88;
+const WALK_SPEED = 1.55;
 const CLEARANCE_SAMPLE_SPACING = 0.05;
 
 // An eye-level tour of the bundled villa: past the dining table, along the
