@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Mesh, PerspectiveCamera, Quaternion, Scene, Vector3, Vector4 } from "three";
+import { Matrix4, Mesh, PerspectiveCamera, Quaternion, Scene, Vector3, Vector4 } from "three";
 import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
@@ -16,6 +16,7 @@ await withModules(async (load) => {
     rotation: new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(...normal)),
   });
   const entry = anchor([0, 1.18, 0], [0, 0, 1]);
+  const aperture = new Matrix4().compose(entry.center, entry.rotation, new Vector3(0.58, 1.1, 1));
   const viewer = () => {
     const c = new PerspectiveCamera(68, 1.6, 0.05, 100);
     c.position.set(0.3, 1.52, 3);
@@ -40,7 +41,9 @@ await withModules(async (load) => {
         source.updateMatrixWorld();
         const before = source.matrixWorld.clone(),
           projection = source.projectionMatrix.clone();
-        assert.equal(rig.update(source, entry, exit), true);
+        assert.equal(rig.update(source, entry, exit, aperture), true);
+        const { x: left, y: bottom, z: width, w: height } = rig.screenRect;
+        assert.ok(width < 0.5 && height < 0.8, "capture is cropped around the aperture");
         for (const [px, py] of [
           [0, 0],
           [0.3, 0.5],
@@ -54,8 +57,8 @@ await withModules(async (load) => {
             .applyQuaternion(exit.rotation)
             .add(exit.center)
             .project(rig.camera);
-          close(incoming.x, outgoing.x);
-          close(incoming.y, outgoing.y);
+          close((incoming.x + 1 - 2 * left) / width - 1, outgoing.x);
+          close((incoming.y + 1 - 2 * bottom) / height - 1, outgoing.y);
           close(outgoing.z, -1);
         }
         const front = exit.center.clone().addScaledVector(exit.normal, 0.2).project(rig.camera);
@@ -72,15 +75,19 @@ await withModules(async (load) => {
       source = viewer(),
       exit = anchor([4, 1.18, 0], [1, 0, 0]);
     source.position.z = -1;
-    assert.equal(rig.update(source, entry, exit), false);
+    assert.equal(rig.update(source, entry, exit, aperture), false);
     source.position.z = 0.001;
-    assert.equal(rig.update(source, entry, exit), false);
+    assert.equal(rig.update(source, entry, exit, aperture), false);
     source.position.z = 3;
     source.lookAt(0, 1.52, 10);
-    assert.equal(rig.update(source, entry, exit), false);
+    assert.equal(rig.update(source, entry, exit, aperture), false);
     source.lookAt(entry.center);
-    assert.equal(rig.update(source, entry, exit), true);
+    assert.equal(rig.update(source, entry, exit, aperture), true);
     assert.ok(rig.camera.projectionMatrix.elements.every(Number.isFinite));
+    source.position.set(0.3, 1.52, 0.075);
+    source.lookAt(entry.center);
+    assert.equal(rig.update(source, entry, exit, aperture), true);
+    assert.deepEqual(rig.screenRect.toArray(), [0, 0, 1, 1]);
   });
 
   for (const fails of [false, true])

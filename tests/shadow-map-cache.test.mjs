@@ -12,6 +12,7 @@ import {
   Scene,
   PCFShadowMap,
   ShaderMaterial,
+  Texture,
 } from "three";
 import { withModules } from "./test-server.mjs";
 await withModules(async (load) => {
@@ -127,6 +128,26 @@ await withModules(async (load) => {
     assert.equal(f.dirty(), true);
     assert.equal(f.dirty(), false);
   });
+  test("opaque toon depth tracks positions and indices, with full inputs for textured silhouettes", () => {
+    const f = fixture();
+    const { geometry, material } = f.caster;
+    geometry.attributes.normal.needsUpdate = true;
+    geometry.clearGroups();
+    assert.equal(f.dirty(), false, "single opaque materials do not use normal data or groups");
+    geometry.attributes.position.needsUpdate = true;
+    assert.equal(f.dirty(), true);
+    assert.equal(f.dirty(), false);
+    geometry.index.needsUpdate = true;
+    assert.equal(f.dirty(), true);
+    material.displacementMap = new Texture();
+    assert.equal(f.dirty(), true);
+    assert.equal(f.dirty(), false);
+    geometry.attributes.normal.needsUpdate = true;
+    assert.equal(f.dirty(), true, "displacement uses normals in the depth shader");
+    geometry.attributes.uv.needsUpdate = true;
+    assert.equal(f.dirty(), true, "displacement uses texture coordinates");
+    material.displacementMap.dispose();
+  });
   test("custom shader, deformation and render hooks conservatively redraw on every frame", () => {
     for (const change of [
       (f) => (f.caster.material = new ShaderMaterial()),
@@ -147,6 +168,41 @@ await withModules(async (load) => {
     f.caster.morphTargetInfluences[0] = 0;
     assert.equal(f.dirty(), true);
     assert.equal(f.dirty(), false);
+  });
+  test("fingerprints casters only when a visible shadow light can update its map", () => {
+    const f = fixture();
+    const renderer = {
+      shadowMap: { enabled: true, autoUpdate: true, type: PCFShadowMap, needsUpdate: false },
+      localClippingEnabled: false,
+      clippingPlanes: [],
+    };
+    let fingerprints = 0;
+    f.cache.needsUpdate = () => {
+      fingerprints++;
+      return true;
+    };
+    const render = (tracking) => {
+      const before = fingerprints;
+      f.cache.render(renderer, f.scene, f.camera, () => {
+        assert.equal(f.scene.matrixWorldAutoUpdate, false);
+        assert.equal(renderer.shadowMap.autoUpdate, !tracking);
+        assert.equal(renderer.shadowMap.needsUpdate, tracking);
+        renderer.shadowMap.needsUpdate = false;
+      });
+      assert.equal(fingerprints - before, Number(tracking));
+      assert.equal(f.scene.matrixWorldAutoUpdate, true);
+      assert.equal(renderer.shadowMap.autoUpdate, true);
+    };
+    f.light.shadow.autoUpdate = false;
+    render(false);
+    f.light.shadow.needsUpdate = true;
+    render(true);
+    f.light.shadow.needsUpdate = false;
+    f.light.shadow.autoUpdate = true;
+    f.light.layers.set(1);
+    render(false);
+    f.camera.layers.enable(1);
+    render(true);
   });
   test("render restores renderer settings after failure and forces a fresh map on retry", () => {
     const f = fixture();

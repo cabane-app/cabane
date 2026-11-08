@@ -9,6 +9,7 @@ import {
   MeshStandardMaterial,
   Group,
   PointLight,
+  SphereGeometry,
   Vector3,
   Vector4,
   PerspectiveCamera,
@@ -47,7 +48,8 @@ await withModules(async (load) => {
     const f = fixture();
     const draw = (flat) => {
       for (const mesh of [f.a, f.b]) {
-        mesh.material.defines = flat ? { TOON: "", FLAT_SHADED: "" } : { TOON: "" };
+        if (flat) mesh.material.defines.FLAT_SHADED = "";
+        else delete mesh.material.defines.FLAT_SHADED;
       }
       f.renderer.render = (scene) => {
         const batch = scene.children.find((object) => object.isBatchedMesh);
@@ -220,6 +222,52 @@ await withModules(async (load) => {
     f.batcher.dispose();
   });
 
+  test("large LOD updates spread batch construction across frames", () => {
+    const f = fixture();
+    const source = new SphereGeometry(1, 64, 64);
+    const low = new SphereGeometry(1, 32, 32);
+    const sources = Array.from({ length: 24 }, () => new Mesh(source, f.a.material));
+    const scene = new Scene();
+    scene.add(...sources);
+    const build = () => {
+      const seen = new Set();
+      let frames = 0;
+      let pending;
+      do {
+        let newVertices = 0;
+        pending = f.batcher.render(f.renderer, scene, f.camera, () => {
+          const batches = scene.children.filter((object) => object.isBatchedMesh);
+          for (const batch of batches) {
+            if (seen.has(batch.geometry)) continue;
+            seen.add(batch.geometry);
+            newVertices += batch.geometry.attributes.position.count;
+          }
+          const drawnDirectly = sources.filter((mesh) => mesh.layers.test(f.camera.layers));
+          assert.equal(
+            batches.reduce((count, batch) => count + batch.instanceCount, 0) + drawnDirectly.length,
+            sources.length,
+            "unfinished batches leave their sources in the regular render",
+          );
+        });
+        assert.ok(newVertices <= 65_536, `Packed ${newVertices} vertices in one frame`);
+        frames++;
+      } while (pending && frames < 12);
+      assert.equal(pending, false);
+      assert.ok(frames > 1);
+      assert.ok(sources.every((mesh) => mesh.material === f.a.material));
+    };
+    try {
+      build();
+      registerGeometryLods(source, [low]);
+      for (const mesh of sources) mesh.geometry = low;
+      build();
+    } finally {
+      f.batcher.dispose();
+      source.dispose();
+      low.dispose();
+    }
+  });
+
   test("wall lighting masks follow floor and camera transforms and isolate shared previews", () => {
     const mask = new SceneLightWallMask(),
       otherMask = new SceneLightWallMask();
@@ -306,6 +354,10 @@ await withModules(async (load) => {
       batch.material.onBeforeCompile(shader, f.renderer);
       assert.match(shader.vertexShader, /batchingMatrix = mat4\(1.0\)/);
       assert.match(shader.fragmentShader, /directLight.color \*= step/);
+      assert.match(
+        shader.fragmentShader,
+        /if \(pointLight\.color != vec3\(0\.0\)\) \{\s*getPointLightInfo/,
+      );
     };
     for (let i = 0; i < 3; i++)
       f.batcher.render(f.renderer, f.scene, f.camera, () =>

@@ -3,6 +3,8 @@ import { Path, Shape } from "three";
 import { ToonMaterial } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
 
+const frameExtrusion = { depth: 0.36, bevelEnabled: false, curveSegments: 24 };
+
 /** Two genuine rounded openings cut through a white case, with a recessed back. */
 export function ArchedBookcaseFrame() {
   const shape = useMemo(() => {
@@ -26,7 +28,7 @@ export function ArchedBookcaseFrame() {
   return (
     <group>
       <mesh name="double-arched-case" position={[0, 0, -0.18]} castShadow receiveShadow>
-        <extrudeGeometry args={[shape, { depth: 0.36, bevelEnabled: false, curveSegments: 24 }]} />
+        <extrudeGeometry args={[shape, frameExtrusion]} />
         <ToonMaterial color="#eeeee5" />
       </mesh>
       <RoundedFurniturePanel
