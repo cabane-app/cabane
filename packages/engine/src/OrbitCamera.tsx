@@ -22,6 +22,7 @@ import type { FloorSpec, RoomSpec } from "./types";
 import { ROOF_MAX_RISE_METERS, ROOF_THICKNESS_METERS } from "./roof/roof-settings";
 import { RoomCameraTransition, type RoomFocusFrame } from "./room-navigation";
 import { useCameraWheelZoom } from "./useCameraWheelZoom";
+import { useOrbitTouchMotion } from "./useOrbitTouchMotion";
 
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(maximum, Math.max(minimum, value));
@@ -168,6 +169,7 @@ function OrbitCameraRig({
 }: OrbitCameraProps) {
   const orbitRef = useRef<OrbitControlsImpl | null>(null);
   useCameraWheelZoom(orbitRef);
+  const stopTouchGlide = useOrbitTouchMotion(orbitRef, reducedMotion);
   const interruptRoomFlight = useRef<(() => void) | null>(null);
   const attachControls = useCallback(
     (controls: OrbitControlsImpl | null) => {
@@ -181,12 +183,14 @@ function OrbitCameraRig({
   // callback stable so dashboard updates cannot strand an active touch/drag.
   const manual = useRef(false);
   const interruptNavigation = useCallback(() => {
+    stopTouchGlide();
     interruptRoomFlight.current?.();
     manual.current = true;
-  }, []);
+  }, [stopTouchGlide]);
   const automaticNavigation = useCallback(() => {
+    stopTouchGlide();
     manual.current = false;
-  }, []);
+  }, [stopTouchGlide]);
   const { width, height } = useThree((state) => state.size);
   const defaultFraming = useMemo(() => {
     const bounds = worldBoundsForFloorScene(floor);
@@ -326,6 +330,7 @@ function OrbitCameraRig({
   useEffect(() => {
     const controls = orbitRef.current;
     if (!locked || !controls) return;
+    stopTouchGlide();
     interruptRoomFlight.current?.();
     manual.current = false;
     controls.enableDamping = false;
@@ -337,7 +342,7 @@ function OrbitCameraRig({
     (controls.object as ThreeOrthographicCamera).updateProjectionMatrix();
     controls.update();
     controls.enableDamping = true;
-  }, [locked]);
+  }, [locked, stopTouchGlide]);
   const previousViewport = useRef({ width, height });
   useEffect(() => {
     const previous = previousViewport.current;
