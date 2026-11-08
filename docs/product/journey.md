@@ -84,8 +84,9 @@ Welcome renders the demo beside the introduction on desktop and below the entry
 actions on narrow screens. Its Orbit and Walk previews have their own cameras.
 Playback starts with a first-person loop through the furnished living area when
 a safe route is available. It then orbits the ground floor, upper floor and roof
-before returning to Walk. The active view button shows progress. Visitors can pause
-playback, zoom in Orbit, or walk around the furnished living area with keyboard
+before returning to Walk. The preview darkens during Walk, turns on its light fixtures
+at dusk, and returns to daylight during Orbit. The active view button shows progress.
+Visitors can pause playback, zoom in Orbit, or walk around the furnished living area with keyboard
 controls or a touch hold. With reduced motion enabled, previews start still.
 A click or tap on the preview offers to open the full demo. That action and Explore
 both open the regular demo dashboard with its own camera and lighting preferences.

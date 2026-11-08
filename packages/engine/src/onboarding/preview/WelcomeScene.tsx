@@ -17,12 +17,14 @@ import { resolveHomeAssistantBindings } from "../../home-assistant-resolver";
 import { resolveOpeningPositions } from "../../opening-pose";
 import { worldBoundsForFloorScene } from "../../pools/pool-footprint";
 import { useDocumentVisible } from "../../scene-input-preferences";
+import { SceneNightContext } from "../../scene-light-state";
 import type { RuntimeBindingProfileManager } from "../../RuntimeBindingSetup";
 import type { ArchitectureModelRegistry, DeviceModelRegistry, HomeManifest } from "../../types";
 import { WelcomeLighting } from "./WelcomeLighting";
 import { WelcomeOrbitCamera } from "./WelcomeOrbitCamera";
 import { WelcomeWalkCamera } from "./WelcomeWalkCamera";
 import type { useWelcomePreview } from "./useWelcomePreview";
+import { welcomeLightingManifest } from "./welcome-lighting-manifest";
 import { WELCOME_WALK_HOLD_MS } from "./welcome-walk-input";
 
 const ignoreInteraction = () => undefined;
@@ -68,6 +70,10 @@ export function WelcomeScene({
   const [inView, setInView] = useState(false);
   const documentVisible = useDocumentVisible();
   const runtime = useHomeAssistantRuntime();
+  const lightingManifest = useMemo(
+    () => welcomeLightingManifest(manifest, deviceModels),
+    [manifest, deviceModels],
+  );
   const bindings = useMemo(
     () => resolveHomeAssistantBindings(manifest, manager.profile, runtime, deviceModels),
     [manifest, manager.profile, runtime, deviceModels],
@@ -167,7 +173,11 @@ export function WelcomeScene({
           >
             <Suspense fallback={null}>
               <StylizedScene>
-                <WelcomeLighting floors={manifest.floors} walk={walk} />
+                <WelcomeLighting
+                  floors={manifest.floors}
+                  walk={walk}
+                  daylightRef={preview.daylightRef}
+                />
                 {walk && preview.loop ? (
                   <WelcomeWalkCamera
                     manifest={manifest}
@@ -187,21 +197,23 @@ export function WelcomeScene({
                   />
                 )}
                 <DioramaFrameContext.Provider value={walk ? null : groundFrame}>
-                  <ArchitectureScene
-                    activeFloorId={activeFloor.id}
-                    floorView={wholeBuilding ? "whole" : "cutaway"}
-                    selectedRoomId={null}
-                    manifest={manifest}
-                    architectureModels={architectureModels}
-                    deviceModels={deviceModels}
-                    resolvedBindings={bindings}
-                    openingPositions={openingPositions}
-                    interactionMode="editor"
-                    walkMode={walk}
-                    wallFadeEnabled={!walk && !wholeBuilding}
-                    reducedMotion={preview.reducedMotion}
-                    onInteract={ignoreInteraction}
-                  />
+                  <SceneNightContext.Provider value={preview.night}>
+                    <ArchitectureScene
+                      activeFloorId={activeFloor.id}
+                      floorView={wholeBuilding ? "whole" : "cutaway"}
+                      selectedRoomId={null}
+                      manifest={lightingManifest}
+                      architectureModels={architectureModels}
+                      deviceModels={deviceModels}
+                      resolvedBindings={bindings}
+                      openingPositions={openingPositions}
+                      interactionMode="editor"
+                      walkMode={walk}
+                      wallFadeEnabled={!walk && !wholeBuilding}
+                      reducedMotion={preview.reducedMotion}
+                      onInteract={ignoreInteraction}
+                    />
+                  </SceneNightContext.Provider>
                 </DioramaFrameContext.Provider>
               </StylizedScene>
             </Suspense>

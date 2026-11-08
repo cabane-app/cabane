@@ -661,5 +661,6 @@
 }
 
 .welcome-scene[data-view="orbit"] canvas {
+  background-color: rgb(18 29 49 / var(--welcome-nightfall, 0));
   filter: drop-shadow(0 14px 14px rgb(60 47 28 / 15%));
 }

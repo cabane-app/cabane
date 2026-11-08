@@ -8,6 +8,12 @@ type OrbitStage = "Ground floor" | "Upstairs" | "Roof";
 
 const ORBIT_SECONDS = 12;
 const FLOOR_SECONDS = ORBIT_SECONDS / 3;
+const LAMP_DAYLIGHT = 0.35;
+
+function timeLapseProgress(progress: number, from: number, until: number) {
+  const t = Math.max(0, Math.min(1, (progress - from) / (until - from)));
+  return t * t * (3 - 2 * t);
+}
 
 export function useWelcomePreview(manifest: HomeManifest) {
   const reducedMotion = useReducedMotion();
@@ -15,7 +21,10 @@ export function useWelcomePreview(manifest: HomeManifest) {
   const [playingOverride, setPlayingOverride] = useState<boolean | null>(null);
   const [walkBlocked, setWalkBlocked] = useState(false);
   const [orbitStage, setOrbitStage] = useState<OrbitStage>("Ground floor");
+  const [night, setNight] = useState(false);
   const elapsed = useRef(0);
+  const daylightRef = useRef(1);
+  const startingDaylight = useRef(1);
   const progressRef = useRef<HTMLSpanElement>(null);
   const ground = manifest.floors.find((floor) => !floor.belowGround) ?? manifest.floors[0];
   const upper = manifest.floors.filter((floor) => !floor.belowGround).at(-1) ?? ground;
@@ -29,6 +38,7 @@ export function useWelcomePreview(manifest: HomeManifest) {
   const pause = useCallback(() => setPlayingOverride(false), []);
   const resetProgress = useCallback(() => {
     elapsed.current = 0;
+    startingDaylight.current = daylightRef.current;
     if (progressRef.current) progressRef.current.style.transform = "scaleX(0)";
     setOrbitStage("Ground floor");
   }, []);
@@ -46,7 +56,14 @@ export function useWelcomePreview(manifest: HomeManifest) {
     const duration = mode === "walk" && loop ? loop.durationSeconds : ORBIT_SECONDS;
     const next = Math.min(elapsed.current + seconds, duration);
     elapsed.current = next;
-    if (progressRef.current) progressRef.current.style.transform = `scaleX(${next / duration})`;
+    const progress = next / duration;
+    if (progressRef.current) progressRef.current.style.transform = `scaleX(${progress})`;
+    const dusk = mode === "walk";
+    const time = timeLapseProgress(progress, dusk ? 0.22 : 0.15, 0.75);
+    const start = startingDaylight.current;
+    daylightRef.current = start + ((dusk ? 0 : 1) - start) * time;
+    const lampsOn = daylightRef.current <= LAMP_DAYLIGHT;
+    if (lampsOn !== night) setNight(lampsOn);
     if (next >= duration) {
       if (walkAvailable) setMode(mode === "walk" ? "orbit" : "walk");
       else resetProgress();
@@ -75,6 +92,8 @@ export function useWelcomePreview(manifest: HomeManifest) {
     upper,
     advance,
     progressRef,
+    daylightRef,
+    night,
     reducedMotion,
   };
 }
