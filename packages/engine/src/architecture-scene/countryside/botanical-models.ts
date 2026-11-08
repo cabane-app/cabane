@@ -1,13 +1,45 @@
-import { CylinderGeometry, OctahedronGeometry, SphereGeometry, Quaternion, Euler } from "three";
+import {
+  CylinderGeometry,
+  OctahedronGeometry,
+  BufferGeometry,
+  Float32BufferAttribute,
+  Color,
+  Quaternion,
+  Euler,
+} from "three";
+import { paintOak } from "./oak-model";
 import { branchTransform, LandscapeGeometry, type Point } from "./geometry-builder";
 
-const leaves = ["#718d39", "#8a9c42", "#a0ad4b", "#657e35", "#b0b85b", "#829746"];
+const leaves = ["#536c2b", "#7b8b36", "#939d40", "#48602c", "#a2a84b", "#6d8135"];
 const bark = ["#73614b", "#897357", "#9a8160"];
 
 /** Broad oak crowns with visible branching and individually modelled leaf sprays. */
 export function botanicalModels(random: () => number) {
   const twig = new CylinderGeometry(0.65, 1, 1, 7);
-  const lobe = new SphereGeometry(1, 7, 4);
+  const lobe = new OctahedronGeometry(1, 0);
+  const oakLeaf = new BufferGeometry();
+  const leafPoints = [
+    [0, 0.1, -1],
+    [0.45, 0, -0.65],
+    [0.25, 0.05, -0.35],
+    [0.6, 0, -0.05],
+    [0.35, 0.04, 0.2],
+    [0.42, 0, 0.5],
+    [0, 0.05, 1],
+    [-0.42, 0, 0.5],
+    [-0.35, 0.04, 0.2],
+    [-0.6, 0, -0.05],
+    [-0.25, 0.05, -0.35],
+    [-0.45, 0, -0.65],
+  ];
+  oakLeaf.setAttribute(
+    "position",
+    new Float32BufferAttribute(
+      leafPoints.flatMap((p, i) => [0, 0.1, 0, ...leafPoints[(i + 1) % leafPoints.length], ...p]),
+      3,
+    ),
+  );
+  oakLeaf.computeVertexNormals();
   const leaf = new OctahedronGeometry(1, 0);
   const wood = new LandscapeGeometry(),
     foliage = new LandscapeGeometry(),
@@ -18,52 +50,33 @@ export function botanicalModels(random: () => number) {
     wood.add(twig, pick(bark), position, [radius, length, radius], rotation);
   }
   function spray(x: number, y: number, z: number, radius: number, shade: string) {
-    foliage.add(lobe, shade, [x, y, z], [radius, radius * 0.6, radius * 0.85]);
-    for (let i = 0; i < 9; i++) {
-      const angle = random() * Math.PI * 2,
-        r = radius * (0.65 + random() * 0.5);
+    foliage.add(
+      lobe,
+      shade,
+      [x, y - radius * 0.12, z],
+      [radius * 0.8, radius * 0.38, radius * 0.75],
+    );
+    for (let i = 0; i < 8; i++) {
+      const angle = i * 2.399 + random() * 0.4,
+        r = radius * (0.5 + random() * 0.55);
+      const tint = new Color(shade).multiplyScalar(0.9 + random() * 0.22);
       foliage.add(
-        leaf,
-        pick(leaves),
-        [x + Math.cos(angle) * r, y + (random() - 0.2) * radius, z + Math.sin(angle) * r],
-        [radius * 0.38, radius * 0.15, radius * 0.3],
-        new Quaternion().setFromEuler(new Euler(random(), angle, random())),
+        oakLeaf,
+        "#" + tint.getHexString(),
+        [x + Math.cos(angle) * r, y + (random() - 0.15) * radius * 0.6, z + Math.sin(angle) * r],
+        [radius * 0.8, radius * 0.8, radius * 0.8],
+        new Quaternion().setFromEuler(
+          new Euler((random() - 0.5) * 1.1, angle, (random() - 0.5) * 0.7),
+        ),
       );
     }
   }
   function oak(x: number, y: number, z: number, size: number) {
-    const point = (a: number, b: number, c: number): Point => [
-      x + a * size,
-      y + b * size,
-      z + c * size,
-    ];
-    branch(point(0, 0, 0), point(0.12, 2.15, -0.1), size * 0.27);
-    for (let i = 0; i < 7; i++) {
-      const a = i * 2.399;
-      branch(point(Math.cos(a) * 0.65, 0.025, Math.sin(a) * 0.65), point(0, 0.7, 0), size * 0.13);
-    }
-    for (let i = 0; i < 11; i++) {
-      const angle = i * 2.399,
-        r = i < 8 ? 1.25 + random() * 0.5 : 0.55;
-      const bx = Math.cos(angle) * r,
-        bz = Math.sin(angle) * r;
-      const by = 2.5 + random() * 0.75 + (i >= 8 ? 0.9 : 0);
-      branch(
-        point(0.1, 1.35 + random() * 0.4, 0),
-        point(bx * 0.65, by - 0.4, bz * 0.65),
-        size * 0.12,
-      );
-      branch(point(bx * 0.65, by - 0.4, bz * 0.65), point(bx, by, bz), size * 0.065);
-      for (let j = 0; j < 23; j++) {
-        const a = j * 2.399,
-          r = Math.sqrt(random()) * 0.95;
-        const p = point(bx + Math.cos(a) * r, by + (random() - 0.3) * 0.65, bz + Math.sin(a) * r);
-        spray(...p, size * (0.18 + random() * 0.16), pick(leaves));
-      }
-    }
+    paintOak(wood, spray, random, x, y, z, size);
   }
   function shrub(x: number, y: number, z: number, size: number) {
-    for (let j = 0; j < 20; j++) {
+    const shade = pick(leaves);
+    for (let j = 0; j < 32; j++) {
       const angle = j * 2.399,
         r = Math.sqrt(random()) * size;
       spray(
@@ -71,7 +84,7 @@ export function botanicalModels(random: () => number) {
         y + 0.2 + (1 - r / size) * size * 0.65,
         z + Math.sin(angle) * r,
         size * 0.23,
-        pick(leaves),
+        shade,
       );
     }
   }
@@ -82,8 +95,24 @@ export function botanicalModels(random: () => number) {
       const bx = x + (random() - 0.5) * size,
         bz = z + (random() - 0.5) * size;
       const tip: Point = [bx + Math.cos(a) * h * 0.4, y + h, bz + Math.sin(a) * h * 0.4];
-      meadow.triangle([bx - 0.025, y, bz], tip, [bx + 0.025, y, bz + 0.025], pick(leaves));
-      if (flowers && j < 3) {
+      const w = h * 0.09;
+      const left: Point = [bx - Math.sin(a) * w, y, bz + Math.cos(a) * w];
+      const right: Point = [bx + Math.sin(a) * w, y, bz - Math.cos(a) * w];
+      const mid: Point = [bx + Math.cos(a) * h * 0.12, y + h * 0.65, bz + Math.sin(a) * h * 0.12];
+      const shade = pick(leaves);
+      meadow.triangle(
+        left,
+        [mid[0] - Math.sin(a) * w * 0.6, mid[1], mid[2] + Math.cos(a) * w * 0.6],
+        right,
+        shade,
+      );
+      meadow.triangle(
+        right,
+        [mid[0] - Math.sin(a) * w * 0.6, mid[1], mid[2] + Math.cos(a) * w * 0.6],
+        tip,
+        shade,
+      );
+      if (flowers && j < 1) {
         meadow.add(leaf, "#d5b65c", tip, [0.028, 0.023, 0.028]);
         for (let k = 0; k < 5; k++) {
           const angle = k * Math.PI * 0.4;
@@ -99,6 +128,7 @@ export function botanicalModels(random: () => number) {
     }
   }
   function fern(x: number, y: number, z: number, size: number) {
+    const autumn = random() > 0.8;
     for (let i = 0; i < 8; i++) {
       const angle = (i * Math.PI) / 4;
       for (let j = 1; j <= 9; j++) {
@@ -123,9 +153,39 @@ export function botanicalModels(random: () => number) {
               center[1] + 0.02,
               center[2] + Math.sin(angle) * size * 0.12,
             ],
-            i % 3 ? "#8d9b46" : "#b2af65",
+            autumn ? (i % 3 ? "#a68b4f" : "#bd9a5b") : i % 3 ? "#79913b" : "#a4b151",
           );
         }
+      }
+    }
+  }
+  function parsley(x: number, y: number, z: number) {
+    const h = 0.5 + random() * 0.35;
+    for (let i = 0; i < 5; i++) {
+      const a = i * 2.399,
+        r = i === 0 ? 0 : 0.22 + random() * 0.1;
+      const bx = x + Math.cos(a) * r,
+        bz = z + Math.sin(a) * r,
+        by = y + h - r * 0.4;
+      meadow.triangle([x - 0.008, y, z], [bx, by, bz], [x + 0.008, y, z], "#718142");
+      for (let k = 0; k < 8; k++) {
+        const t = k * 2.399,
+          d = k === 0 ? 0 : 0.09 + random() * 0.04;
+        const fx = bx + Math.cos(t) * d,
+          fz = bz + Math.sin(t) * d;
+        // Millimetre-thin florets retain their silhouette without hidden solid faces.
+        meadow.triangle(
+          [fx - 0.05, by + 0.02, fz],
+          [fx, by + 0.024, fz + 0.05],
+          [fx + 0.05, by + 0.02, fz],
+          "#f4f1d9",
+        );
+        meadow.triangle(
+          [fx - 0.05, by + 0.02, fz],
+          [fx + 0.05, by + 0.02, fz],
+          [fx, by + 0.024, fz - 0.05],
+          "#f4f1d9",
+        );
       }
     }
   }
@@ -149,6 +209,7 @@ export function botanicalModels(random: () => number) {
     }
   }
   return {
+    parsley,
     foxglove,
     oak,
     shrub,
@@ -162,6 +223,7 @@ export function botanicalModels(random: () => number) {
       twig.dispose();
       lobe.dispose();
       leaf.dispose();
+      oakLeaf.dispose();
     },
   };
 }

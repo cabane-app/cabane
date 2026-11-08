@@ -47,7 +47,10 @@ export const CountrysideDiorama = memo(function CountrysideDiorama({
           receiveShadow
           raycast={() => {}}
         >
-          <ToonMaterial vertexColors side={name === "meadow" ? DoubleSide : FrontSide} />
+          <ToonMaterial
+            vertexColors
+            side={name === "meadow" || name === "foliage" ? DoubleSide : FrontSide}
+          />
         </mesh>
       ))}
     </group>

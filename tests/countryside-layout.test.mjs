@@ -26,8 +26,11 @@ await withModules(async (load) => {
         assert.ok(
           Math.abs(layout.height(x, z) - (-0.047 + terrain.offsetAt(x + 100, z - 50))) < 1e-6,
         );
-        const t = layout.pathFraction(angle);
-        assert.ok(t > 0.1 && t < 0.65, "the path stays inside the landscape band");
+      }
+      for (const [x, z] of layout.trail) {
+        assert.ok(layout.fraction(x, z) > 0, "the open path clears the authored home");
+        assert.ok(layout.fraction(x, z) < 1, "the open path stays on the island");
+        assert.ok(layout.pathDistance(x, z) < 1e-6);
       }
     }
   });
@@ -42,7 +45,17 @@ await withModules(async (load) => {
         triangles += part.getAttribute("position").count / 3;
       }
       assert.ok(triangles < 800_000, `bounded merged geometry: ${triangles}`);
-      assert.ok(geometry.ground.getAttribute("normal").getY(0) > 0.9);
+      const positions = geometry.ground.getAttribute("position"),
+        normals = geometry.ground.getAttribute("normal");
+      assert.ok(normals.getY(0) > 0.9);
+      for (let i = 0; i < normals.count; i++) {
+        if (Math.abs(normals.getY(i)) < 0.5) {
+          assert.ok(
+            positions.getX(i) * normals.getX(i) + positions.getZ(i) * normals.getZ(i) > 0,
+            "the exposed plinth faces outward instead of disappearing through backface culling",
+          );
+        }
+      }
     } finally {
       Object.values(geometry).forEach((part) => part.dispose());
     }
