@@ -356,7 +356,11 @@ a gun ID or import the optional gun package.
 Orbit controls retain their pointer listeners across dashboard updates, including
 updates during a gesture. One-finger panning, two-finger rotation/pinch zoom, and
 desktop drags must continue through re-renders and release cleanly for the next
-gesture. Manual input still interrupts a room-camera transition.
+gesture. Touch pan and rotation follow finger movement directly, with faster
+rotation on narrow portrait views. Releasing while moving gives pan and rotation
+a short glide that stops on new input. Reduced motion, cancelled gestures, and
+lifting after a pause skip the glide. Manual input still interrupts a
+room-camera transition.
 
 Room overlay preferences are available from More options in overview, room view,
 Walk, and draft Explore. Temperature, humidity, air quality (AQI), CO₂, Noise,

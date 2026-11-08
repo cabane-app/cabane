@@ -438,19 +438,20 @@ await withModules(async (load) => {
     }
   });
 
-  test("orbit touch rotation and pan survive a parent render during the gesture", async () => {
+  test("orbit touch follows the gesture across renders and glides only after a moving release", async () => {
     const elementListeners = new Map();
     const documentListeners = new Map();
     const target = (listeners) => ({
-      addEventListener(type, listener) {
+      addEventListener(type, listener, capture) {
         if (!listeners.has(type)) listeners.set(type, new Set());
-        listeners.get(type).add(listener);
+        listeners.get(type).add({ listener, capture: capture === true });
       },
       removeEventListener(type, listener) {
-        listeners.get(type)?.delete(listener);
+        for (const entry of listeners.get(type) ?? [])
+          if (entry.listener === listener) listeners.get(type).delete(entry);
       },
     });
-    const dispatch = (listeners, type, pointerId, x, y) => {
+    const dispatch = (listeners, type, pointerId, x, y, timeStamp = 1000) => {
       const event = {
         pointerId,
         pointerType: "touch",
@@ -459,9 +460,11 @@ await withModules(async (load) => {
         pageX: x,
         pageY: y,
         preventDefault() {},
-        timeStamp: 1000,
+        timeStamp,
       };
-      for (const listener of listeners.get(type) ?? []) listener(event);
+      const entries = [...(listeners.get(type) ?? [])];
+      for (const capture of [true, false])
+        for (const entry of entries) if (entry.capture === capture) entry.listener(event);
     };
     const props = { floor, resetKey: 0 };
     const renderer = await create(createElement(OrbitCamera, props), {
@@ -478,42 +481,103 @@ await withModules(async (load) => {
     });
     try {
       const controls = controlsFor(renderer);
-      controls.enableDamping = false;
       controls.object.zoom = 240;
       controls.object.updateProjectionMatrix();
       await act(async () => {
         dispatch(elementListeners, "pointerdown", 1, 400, 400);
         dispatch(elementListeners, "pointerdown", 2, 600, 400);
-        dispatch(documentListeners, "pointermove", 1, 370, 400);
+        dispatch(documentListeners, "pointermove", 1, 370, 400, 1020);
       });
       assert.ok(controls.object.zoom > 240, "native touch pinch can zoom beyond the old ceiling");
       const before = controls.getAzimuthalAngle();
       await renderer.update(createElement(OrbitCamera, { ...props }));
       await act(async () => {
-        dispatch(documentListeners, "pointermove", 1, 480, 400);
-        dispatch(documentListeners, "pointermove", 2, 680, 400);
+        dispatch(documentListeners, "pointermove", 1, 480, 400, 1040);
+        dispatch(documentListeners, "pointermove", 2, 680, 400, 1040);
       });
       assert.notEqual(
         controls.getAzimuthalAngle(),
         before,
         "two-finger rotation must continue after a parent render",
       );
-      await act(async () => {
-        dispatch(documentListeners, "pointerup", 1, 480, 400);
-        dispatch(documentListeners, "pointerup", 2, 680, 400);
-      });
+      const angleAtLift = controls.getAzimuthalAngle();
+      await act(async () => dispatch(documentListeners, "pointerup", 1, 480, 400, 1050));
+      await renderer.advanceFrames(2, 1 / 60);
+      assert.equal(
+        controls.getAzimuthalAngle(),
+        angleAtLift,
+        "glide waits for both fingers to lift",
+      );
+      await act(async () => dispatch(documentListeners, "pointerup", 2, 680, 400, 1085));
+      await renderer.advanceFrames(2, 1 / 60);
+      assert.ok(controls.getAzimuthalAngle() < angleAtLift, "rotation continues after release");
       const beforePan = controls.target.toArray();
-      await act(async () => dispatch(elementListeners, "pointerdown", 3, 400, 400));
+      await act(async () => dispatch(elementListeners, "pointerdown", 3, 400, 400, 2000));
       await renderer.update(createElement(OrbitCamera, { ...props }));
-      await act(async () => dispatch(documentListeners, "pointermove", 3, 500, 430));
+      await act(async () => dispatch(documentListeners, "pointermove", 3, 500, 430, 2020));
       assert.notDeepEqual(
         controls.target.toArray(),
         beforePan,
         "one-finger pan must still work after the rotation ends",
       );
       const panDistance = controls.target.distanceTo(new Vector3(...beforePan));
-      assert.ok(panDistance < 0.15, "close-up pan remains proportional to screen distance");
-      await act(async () => dispatch(documentListeners, "pointerup", 3, 500, 430));
+      const zoom = controls.object.zoom;
+      assert.ok(
+        Math.abs(panDistance - (Math.hypot(100, 30) * controls.panSpeed) / zoom) < 1e-6,
+        "close-up pan remains proportional to screen distance",
+      );
+      await act(async () => dispatch(documentListeners, "pointerup", 3, 500, 430, 2200));
+      const initial = controls.target.clone();
+      await act(async () => {
+        dispatch(elementListeners, "pointerdown", 4, 400, 400, 3000);
+        dispatch(documentListeners, "pointermove", 4, 440, 400, 3020);
+      });
+      const dragged = controls.target.clone();
+      const camera = controls.object;
+      const expected =
+        (40 * controls.panSpeed * (camera.right - camera.left)) / (1000 * camera.zoom);
+      assert.ok(
+        Math.abs(dragged.distanceTo(initial) - expected) < 1e-6,
+        "touch pan follows the first move immediately",
+      );
+      await act(async () => dispatch(documentListeners, "pointerup", 4, 440, 400, 3022));
+      await renderer.advanceFrames(5, 1 / 60);
+      assert.ok(
+        controls.target.distanceTo(initial) > expected * 1.3,
+        "a moving release glides beyond the finger's travel",
+      );
+      await act(async () => dispatch(elementListeners, "pointerdown", 5, 440, 400, 3150));
+      const stopped = controls.target.clone();
+      await renderer.advanceFrames(5, 1 / 60);
+      assert.ok(controls.target.distanceTo(stopped) < 1e-6, "new touch stops an active glide");
+      await act(async () => {
+        dispatch(documentListeners, "pointermove", 5, 480, 400, 3170);
+        dispatch(documentListeners, "pointerup", 5, 480, 400, 3300);
+      });
+      const held = controls.target.clone();
+      await renderer.advanceFrames(5, 1 / 60);
+      assert.ok(controls.target.distanceTo(held) < 1e-6, "a stationary lift does not coast");
+
+      await act(async () => {
+        dispatch(elementListeners, "pointerdown", 6, 400, 400, 3500);
+        dispatch(documentListeners, "pointermove", 6, 440, 400, 3520);
+        dispatch(documentListeners, "pointercancel", 6, 440, 400, 3522);
+        dispatch(elementListeners, "pointercancel", 6, 440, 400, 3522);
+      });
+      const cancelled = controls.target.clone();
+      await renderer.advanceFrames(5, 1 / 60);
+      assert.ok(controls.target.distanceTo(cancelled) < 1e-6, "cancelled touches do not coast");
+
+      await renderer.update(createElement(OrbitCamera, { ...props, reducedMotion: true }));
+      await act(async () => {
+        dispatch(elementListeners, "pointerdown", 7, 400, 400, 4000);
+        dispatch(documentListeners, "pointermove", 7, 440, 400, 4020);
+        dispatch(documentListeners, "pointerup", 7, 440, 400, 4022);
+      });
+      const reduced = controls.target.clone();
+      assert.ok(Math.abs(reduced.distanceTo(cancelled) - expected) < 1e-6);
+      await renderer.advanceFrames(5, 1 / 60);
+      assert.ok(controls.target.distanceTo(reduced) < 1e-6, "reduced motion skips the glide");
     } finally {
       await renderer.unmount();
     }
