@@ -158,6 +158,8 @@ export function SolarLighting({
         color={initial.current.sunColor}
         intensity={initial.current.sunIntensity}
         shadow-autoUpdate={initial.current.sunIntensity > 0}
+        // PCF shaders need a valid depth texture even when the sun starts dark.
+        shadow-needsUpdate={true}
         shadow-intensity={0.62}
         shadow-radius={2}
         shadow-mapSize-width={shadowMapSize}

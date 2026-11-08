@@ -1,7 +1,7 @@
 import { SceneStyleContext, useSceneStyle } from "./scene-style";
 import { ImportedContourMask } from "./imported-models/contour-mask";
 import { contourFragmentShader } from "./scene-contour-shader";
-import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
   Color,
@@ -149,18 +149,31 @@ export function StylizedScene({
   const style = useSceneStyle();
   const pointShadows = useMemo(() => new ScenePointShadows(), []);
   const gl = useThree((state) => state.gl);
+  const invalidate = useThree((state) => state.invalidate);
+  const contextLost = useRef(false);
   useEffect(() => {
-    gl.domElement.addEventListener("webglcontextrestored", pointShadows.reset);
+    const onLost = () => {
+      contextLost.current = true;
+      // Dispose the old atlas before Three replaces its WebGL resource tables.
+      pointShadows.reset();
+    };
+    const onRestored = () => {
+      contextLost.current = false;
+      invalidate();
+    };
+    gl.domElement.addEventListener("webglcontextlost", onLost);
+    gl.domElement.addEventListener("webglcontextrestored", onRestored);
     return () => {
-      gl.domElement.removeEventListener("webglcontextrestored", pointShadows.reset);
+      gl.domElement.removeEventListener("webglcontextlost", onLost);
+      gl.domElement.removeEventListener("webglcontextrestored", onRestored);
       pointShadows.dispose();
     };
-  }, [gl, pointShadows]);
+  }, [gl, invalidate, pointShadows]);
   // Before the portal capture and beauty pass. Camera orientation is irrelevant
   // to the shadow maps, and both cameras can sample the same atlas.
   useFrame(
     ({ gl, scene, camera, invalidate }) => {
-      if (active && pointShadows.update(gl, scene, camera)) invalidate();
+      if (active && !contextLost.current && pointShadows.update(gl, scene, camera)) invalidate();
     },
     enabled ? 0.25 : 0,
   );
