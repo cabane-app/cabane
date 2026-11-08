@@ -1175,3 +1175,13 @@ Internal profiles and hardware proportions are inferred; the loose cord is omitt
 The surface-contact origin is Y=0, with centered X/Z bounds. Uniform resizing
 preserves proportions. Each copy supports a manual `light` binding, existing
 on/off and brightness controls, and engine-owned warm illumination.
+
+## Tied linen curtains
+
+The `single-window-curtain` preset in Arrange → Living room → Decor offers
+**Linen pair with tiebacks** (`linen-tiebacks`), inspired by a supplied photo:
+two warm beige pleated panels, round pale tiebacks, and a slim pale rod.
+The shared 120 × 240 × 12 cm envelope (width × height × depth) is inferred,
+not measured from the photo. Adjust all three dimensions to suit the opening;
+variants retain the placed size. Color changes both fabric panels. The bottom
+is Y=0 and wall support is Z=0. This is static decor with no device binding.

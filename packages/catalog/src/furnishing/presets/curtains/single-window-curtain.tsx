@@ -1,8 +1,17 @@
 import { Outlines, ToonMaterial } from "@cabane/engine";
 import type { SceneModelProps } from "@cabane/engine";
 
+import { TiedLinenPair } from "./tied-linen-pair";
+
 /** One window's track and a single panel, gathered toward the selected side. */
 export function SingleWindowCurtain({ size, variant, color }: SceneModelProps) {
+  if (variant === "linen-tiebacks") {
+    return (
+      <group scale={[size[0] / 1.2, size[1] / 2.4, size[2] / 0.12]}>
+        <TiedLinenPair color={color} />
+      </group>
+    );
+  }
   const side = variant === "right" ? 1 : -1;
   return (
     <group name="single-window-curtain" scale={[size[0] / 1.2, size[1] / 2.4, size[2] / 0.12]}>

@@ -319,7 +319,7 @@ await withModules(async (load) => {
     assert.deepEqual(second.size, first.size);
     assert.deepEqual(
       entry.definition.variants.map(({ id }) => id),
-      ["left", "right"],
+      ["left", "right", "linen-tiebacks"],
     );
   });
 

@@ -10,6 +10,7 @@ export const singleWindowCurtainDefinition = defineFurnishingModel({
   variants: [
     { id: "left", label: "Gathered left" },
     { id: "right", label: "Gathered right" },
+    { id: "linen-tiebacks", label: "Linen pair with tiebacks" },
   ],
   defaultSize: [1.2, 2.4, 0.12],
   bounds: { min: [-0.6, 0, 0], max: [0.6, 2.4, 0.12] },
@@ -22,5 +23,5 @@ export const singleWindowCurtainDefinition = defineFurnishingModel({
     openingTypes: ["window", "sliding-glass-door"],
   },
   outlineContact: true,
-  complexity: { visibleMeshes: 6, triangles: 72 },
+  complexity: { visibleMeshes: 9, triangles: 6000 },
 });
