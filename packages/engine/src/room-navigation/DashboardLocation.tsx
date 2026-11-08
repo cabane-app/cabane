@@ -39,7 +39,7 @@ export function DashboardLocation({
     demoSession,
   } = dashboard;
   const restoreOutsideFocus = useRef(false);
-  const outsideButtonRef = useCallback((button: HTMLButtonElement | null) => {
+  const restoreOutsideButtonFocus = useCallback((button: HTMLButtonElement | null) => {
     if (!button || !restoreOutsideFocus.current) return;
     restoreOutsideFocus.current = false;
     button.focus();
@@ -97,7 +97,7 @@ export function DashboardLocation({
         outsideRoom
           ? {
               label: outsideRoom.name,
-              buttonRef: outsideButtonRef,
+              restoreFocus: restoreOutsideButtonFocus,
               onOpen: () => {
                 restoreOutsideFocus.current = true;
                 openDevicePanel(outsideRoom.id, null);

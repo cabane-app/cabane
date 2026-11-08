@@ -23,6 +23,8 @@ export interface RoomStatusSummary {
   readonly temperature?: RoomStatusReading;
   readonly humidity?: RoomStatusReading;
   readonly aqi?: RoomStatusReading;
+  readonly co2?: RoomStatusReading;
+  readonly noise?: RoomStatusReading;
   readonly heating: boolean;
   readonly cooling: boolean;
   readonly lighting?: "on" | "off";
@@ -31,6 +33,8 @@ export interface RoomStatusSummary {
 }
 
 export type RoomStatusMap = Readonly<Record<string, RoomStatusSummary>>;
+
+type AreaReadingDeviceClass = "aqi" | "carbon_dioxide" | "sound_pressure";
 
 const reliableState = (state: EntityStateSnapshot | undefined) =>
   state?.available === true &&
@@ -116,21 +120,27 @@ export const deriveRoomStatusMap = (
       )
       .map((descriptor) => [descriptor.openingId!, descriptor.roomIds] as const),
   );
-  const uniqueAqiEntityByArea = new Map<string, EntityId | null>();
+  const uniqueAreaSensorIds = new Map<
+    string,
+    Partial<Record<AreaReadingDeviceClass, EntityId | null>>
+  >();
   for (const entry of runtime.entityRegistry) {
     const { entity_id: entityId } = entry;
+    if (entry.disabled_by || entry.hidden_by || !entityId.startsWith("sensor.")) continue;
+    const deviceClass = runtime.entityStates[entityId]?.attributes.device_class;
     if (
-      entry.disabled_by ||
-      entry.hidden_by ||
-      !entityId.startsWith("sensor.") ||
-      runtime.entityStates[entityId]?.attributes.device_class !== "aqi"
+      deviceClass !== "aqi" &&
+      deviceClass !== "carbon_dioxide" &&
+      deviceClass !== "sound_pressure"
     ) {
       continue;
     }
     const areaId = entityAreaId(entry, runtime);
     if (!areaId) continue;
+    const sensorIds = uniqueAreaSensorIds.get(areaId) ?? {};
     // Count matches before checking availability so the source stays stable during outages.
-    uniqueAqiEntityByArea.set(areaId, uniqueAqiEntityByArea.has(areaId) ? null : entityId);
+    sensorIds[deviceClass] = sensorIds[deviceClass] === undefined ? entityId : null;
+    uniqueAreaSensorIds.set(areaId, sensorIds);
   }
 
   return Object.fromEntries(
@@ -140,6 +150,7 @@ export const deriveRoomStatusMap = (
         const area = runtime.areas.find(
           (candidate) => candidate.area_id === profile.roomAreaIds[room.id],
         );
+        const areaSensorIds = area && uniqueAreaSensorIds.get(area.area_id);
         const entities = roomEntities(resolved.rooms[room.id]);
         const reliableEntities = entities.filter(
           (binding) => !auxiliarySlotIds.has(binding.slotId) && reliableState(binding.state),
@@ -178,7 +189,9 @@ export const deriveRoomStatusMap = (
             runtime,
           ),
           humidity: roomReading(area?.humidity_entity_id, "humidity", reliableEntities, runtime),
-          aqi: area && areaReading(uniqueAqiEntityByArea.get(area.area_id), runtime),
+          aqi: areaReading(areaSensorIds?.aqi, runtime),
+          co2: areaReading(areaSensorIds?.carbon_dioxide, runtime),
+          noise: areaReading(areaSensorIds?.sound_pressure, runtime),
           heating: climateModes.includes("heating"),
           cooling: climateModes.includes("cooling"),
           lighting:

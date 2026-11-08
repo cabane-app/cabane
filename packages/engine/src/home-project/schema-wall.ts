@@ -1,4 +1,5 @@
 import { WALL_SURFACE_PATTERNS } from "../types";
+import { validateWallGable, WALL_GABLE_GLASS_FIELDS } from "../validation/wall-gable-rules";
 import { wallSurfaceImageError } from "../wall-image";
 import { record, keys, string, finite, point } from "./schema-json-values";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
@@ -23,6 +24,7 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
       "faceColors",
       "faceFinishes",
       "niches",
+      "gable",
     ],
     path,
     issues,
@@ -124,6 +126,15 @@ export const wallSchema = (value: unknown, path: string, issues: HomeProjectIssu
       keys(colors, ["left", "right"], `${path}.faceColors`, issues);
       if (colors.left !== undefined) string(colors.left, `${path}.faceColors.left`, issues);
       if (colors.right !== undefined) string(colors.right, `${path}.faceColors.right`, issues);
+    }
+  }
+  if (candidate.gable !== undefined) {
+    const gablePath = `${path}.gable`;
+    const gable = record(candidate.gable, gablePath, issues);
+    if (gable) {
+      keys(gable, ["fill", ...WALL_GABLE_GLASS_FIELDS], gablePath, issues);
+      for (const { code, path, message } of validateWallGable(gable, gablePath))
+        addProjectIssue(issues, code, path, message);
     }
   }
 };

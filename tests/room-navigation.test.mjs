@@ -331,7 +331,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("room pills use resolved names, support selection and overview, and update with the active floor", async () => {
+  test("room choices use resolved names and update with the active floor", async () => {
     await withStorageDom(async ({ document, window, click }) => {
       const originalObserver = globalThis.ResizeObserver;
       globalThis.ResizeObserver = class {
@@ -357,6 +357,10 @@ await withModules(async (load) => {
             setSelectedId(null);
           },
           rooms: level === "ground" ? rooms : [second],
+          outsideControls:
+            level === "ground" && rooms.length
+              ? { label: "Outside rooms", onOpen() {}, restoreFocus() {} }
+              : undefined,
           names: { [room.id]: "Living room" },
           selectedId,
           onSelect: setSelectedId,
@@ -368,16 +372,21 @@ await withModules(async (load) => {
         await act(async () => root.render(createElement(Harness, { rooms: [room, second] })));
         assert.equal(
           document.querySelector("nav").getAttribute("aria-label"),
-          "Rooms on this floor",
+          "Rooms and devices on this floor",
         );
+        const choices = document.querySelector('[aria-label="Choose a room"]');
+        assert.equal(choices.querySelector(".room-navigation__floor"), null);
+        const labels = () =>
+          [...choices.querySelectorAll("button")].map((button) => button.textContent);
+        assert.deepEqual(labels(), ["Living room", "Study", "Outside rooms"]);
+        await click("Rooms");
+        assert.equal(choices.dataset.expanded, "true");
         assert.equal(
-          document.querySelector('[aria-label="Ground floor"]').parentElement,
-          [...document.querySelectorAll("button")].find(
-            (button) => button.textContent === "Living room",
-          ).parentElement,
-          "floor summary belongs to the same scrolling row as the rooms",
+          document.querySelector(".room-navigation__trigger").getAttribute("aria-controls"),
+          choices.id,
         );
         await click("Living room");
+        assert.equal(choices.dataset.expanded, "false");
         assert.equal(document.querySelector('[aria-pressed="true"]').textContent, "Living room");
         await click("Study");
         assert.equal(document.querySelector('[aria-pressed="true"]').textContent, "Study");
@@ -385,7 +394,7 @@ await withModules(async (load) => {
         assert.equal(document.querySelector('[aria-expanded="true"]').textContent, "Ground floor");
         await click("First floor");
         assert.equal(document.querySelector('[aria-expanded="false"]').textContent, "First floor");
-        assert.equal(document.body.textContent.includes("Living room"), false);
+        assert.deepEqual(labels(), ["Study"]);
         assert.equal(document.querySelector('[aria-label="Choose a floor"]'), null);
         await click("First floor");
         await act(async () =>
@@ -400,6 +409,7 @@ await withModules(async (load) => {
         await act(async () => root.render(createElement(Harness, { rooms: [second] })));
         assert.equal(document.body.textContent.includes("Living room"), false);
         await act(async () => root.render(createElement(Harness, { rooms: [] })));
+        assert.equal(document.querySelector(".room-navigation__trigger"), null);
         assert.ok(
           document.querySelector('[aria-label="Ground floor"]'),
           "empty floors remain navigable",

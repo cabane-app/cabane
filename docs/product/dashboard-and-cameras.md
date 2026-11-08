@@ -23,9 +23,9 @@ browser storage leaves floor navigation available without remembering the choice
 
 The Orbit header combines the floor summary and room navigation in one top row.
 The leading button uses the current floor name, connection indicator, session
-information and home-presence summary. It replaces the separate heading and the
-Overview label, scrolls in the same row as the rooms, and returns to the
-remembered floor view when clicked. It also toggles a second row of floor pills.
+information and home-presence summary. It stays visible beside the room choices
+and returns to the remembered floor view when clicked. It also toggles a second
+row of floor pills.
 Choosing a floor closes that row, clears the room selection, restores the new floor view
 and updates the room list. Escape, an outside pointer press or selecting a room
 closes the floor choices; Escape restores focus to the floor button. Empty floors
@@ -33,9 +33,9 @@ remain navigable. Scroll gutters leave room for pill shadows and focus outlines.
 
 Room pills list only the active floor's rooms with their resolved HA names.
 Pills, room surfaces, status labels and room shortcuts share selection behavior.
-When the active floor has devices outside its rooms, **Outside rooms** opens
-their controls from the same strip on desktop and mobile. The panel uses the
-devices' existing bindings and leaves the camera and room selection in place.
+When the active floor has devices outside its rooms, **Outside rooms** appears
+after the regular rooms and opens their controls. The panel uses the devices'
+existing bindings and leaves the camera and room selection in place.
 It shows device controls without a room photo, area status, or Walk inside action.
 The selected pill is exposed to assistive technology and stays visible after
 selection or resize. The strip is absent in Walk, roof view and device overlays,
@@ -137,8 +137,12 @@ Room names use the mapped HA area name, falling back to the local modeled name w
 the area is unmapped or unavailable. Those rooms show a broken-chain Connect icon
 in overview labels and the room/walk heading, and a “Not connected” status pill
 alongside temperature and humidity in room heroes.
-On mobile, hide the room selection pills and keep the current floor pill, its
-expandable floor choices, and **Outside rooms** when present. Rooms remain
+Below 900 px of dashboard width, a **Rooms** button beside the current floor
+opens a popover with that floor's room choices in the same order. The button
+appears when the floor has a room or an **Outside rooms** action. Choosing a
+room, pressing Escape, or pressing outside the navigation dismisses the
+popover. Closing **Outside rooms** restores focus to the **Rooms** button at
+narrow widths and to the **Outside rooms** pill at wider widths. Rooms remain
 selectable in the scene.
 
 Room and device controls use content-sized cards with wrapping titles and compact
@@ -352,21 +356,23 @@ desktop drags must continue through re-renders and release cleanly for the next
 gesture. Manual input still interrupts a room-camera transition.
 
 Room overlay preferences are available from More options in overview, room view,
-Walk, and draft Explore. Temperature, humidity, air quality (AQI), heating, cooling,
-lights, presence, and open-door indicators each default to enabled. Choices persist
-in browser-local preferences and affect overview labels, accessibility text, and
-decluttering, while room detail sheets retain all available information. The dialog
-scrolls on short screens.
+Walk, and draft Explore. Temperature, humidity, air quality (AQI), CO₂, Noise,
+heating, cooling, lights, presence, and open-door indicators each default to
+enabled. Choices persist in browser-local preferences and affect overview labels,
+accessibility text, and decluttering, while room detail sheets retain all
+available information. The dialog scrolls on short screens.
 Temperature and humidity prefer a usable sensor explicitly selected on the mapped
 HA area, then fall back to the first usable mapped room sensor of that device class
 in resolved order (primary, secondary, diagnostic, then modeled devices).
 Unknown, unavailable, and stale readings are skipped; unbound area sensors are not
 fallback candidates. This does not create bindings or change HA configuration.
 
-The room bubble picks up AQI directly from the mapped HA area when it has exactly
-one enabled, visible sensor of device class `aqi` and that sensor has a usable
-reading. Sensors inherit their device's area unless they have an area of their own.
-Multiple AQI sensors keep the badge hidden even when one goes offline.
+Room status picks up AQI (`aqi`), CO₂ (`carbon_dioxide`), and Noise (`sound_pressure`)
+directly from the mapped HA area. Each reading needs exactly one enabled, visible
+sensor of its class in the area and uses the unit reported by HA. Sensors inherit
+their device's area unless they have an area of their own. Unknown, unavailable,
+and stale readings are skipped. Multiple sensors of the same class keep that
+badge hidden even when one goes offline.
 
 Room panels offer Reorder devices beside Walk inside when at least two modules are visible. Reorder mode displays a compact list with pointer/touch drag handles and keyboard-accessible up/down buttons. Done or Escape returns to controls. Each move saves browser-local order per home and room using local module IDs; new modules append in default order and missing modules are ignored. Ordering does not change bindings or call Home Assistant services. The normal grid follows the saved sequence without dense gap filling.
 

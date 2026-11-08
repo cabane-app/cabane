@@ -127,6 +127,7 @@ export const deriveStairApertures = (building: BuildingGeometry) =>
             floorId: stair.lowerFloorId,
             surface: "ceiling" as const,
             polygon: flight.footprint,
+            riseMeters: flight.riseMeters,
           },
           {
             stairId: stair.id,

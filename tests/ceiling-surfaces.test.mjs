@@ -161,6 +161,63 @@ await withModules(async (load) => {
     }
   });
 
+  test("a lower floor's sloped planes that rise into the floor in view are left out", async () => {
+    const room = [
+      [0, 0],
+      [8, 0],
+      [8, 6],
+      [0, 6],
+    ];
+    const plane = (id, high) => ({
+      id,
+      boundary: room,
+      lowEdge: [room[0], room[1]],
+      highEdge: [room[3], room[2]],
+      lowHeightMeters: 2.4,
+      highHeightMeters: high,
+    });
+    const floor = {
+      id: "ground-floor",
+      coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },
+      footprint: room,
+      rooms: [{ id: "room", polygon: room }],
+      ceilings: [
+        {
+          id: "slopes",
+          kind: "sloped",
+          roomIds: ["room"],
+          planes: [plane("low", 2.9), plane("open-above", 6)],
+        },
+      ],
+    };
+    const separated = room.map(([x, z]) => [x + 10, z]);
+    const shallow = [
+      [0, 0],
+      [8, 0],
+      [8, 0.5],
+      [0, 0.5],
+    ];
+    for (const [cutawayFootprint, expected] of [
+      [undefined, 2],
+      [[[separated]], 2],
+      [[[shallow]], 2],
+      [[[room]], 1],
+    ]) {
+      const renderer = await create(
+        createElement(CeilingSurfaces, {
+          floor,
+          cutawayHeightMeters: 3,
+          cutawayFootprint,
+        }),
+      );
+      try {
+        assert.equal(renderer.scene.findAllByType("Mesh").length, expected);
+      } finally {
+        await renderer.unmount();
+      }
+    }
+  });
+
   test("an upper outdoor platform retains the lower room ceiling underside", async () => {
     const polygon = [
       [0, 0],

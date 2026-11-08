@@ -12,6 +12,9 @@ await withModules(async (load) => {
     roomId: "demo-room",
     temperature: { value: "21.4", unit: "°C" },
     humidity: { value: "48", unit: "%" },
+    aqi: { value: "42", unit: null },
+    co2: { value: "820", unit: "ppm" },
+    noise: { value: "41.5", unit: "dBA" },
     heating: true,
     cooling: false,
     lighting: "on",
@@ -26,14 +29,24 @@ await withModules(async (load) => {
         variant: "detailed",
       }),
     );
-    const order = ["21.4 °C", "48 %", "Heating", "Lights on", "No presence", "Door open"];
+    const order = [
+      "21.4 °C",
+      "48 %",
+      "AQI 42",
+      'room-status-badge__label">820 ppm<',
+      'room-status-badge__label">41.5 dBA<',
+      "Heating",
+      "Lights on",
+      "No presence",
+      "Door open",
+    ];
     order.reduce((previous, text) => {
       const index = html.indexOf(text);
       assert.ok(index > previous, `${text} should follow the previous status`);
       return index;
     }, -1);
     assert.equal(html.includes("Cooling"), false);
-    assert.equal((html.match(/<svg/g) ?? []).length, 6);
+    assert.equal((html.match(/<svg/g) ?? []).length, 9);
   });
 
   test("keeps only readings visible in compact mode while preserving accessible labels", () => {
@@ -69,7 +82,7 @@ await withModules(async (load) => {
     );
     assert.equal(
       roomStatusAccessibleText(summary),
-      "Temperature 21.4 °C, Humidity 48 %, Heating, Lights on, No presence, Door open",
+      "Temperature 21.4 °C, Humidity 48 %, Air quality index 42, Carbon dioxide 820 ppm, Noise 41.5 dBA, Heating, Lights on, No presence, Door open",
     );
   });
 });

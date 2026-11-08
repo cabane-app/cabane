@@ -44,12 +44,8 @@ const layoutFloors = new WeakMap<FloorSpec, DraftLayoutFloorSpec>();
 export const layoutFloorFromEditorFloor = (floor: FloorSpec): DraftLayoutFloorSpec => {
   const cached = layoutFloors.get(floor);
   if (cached) return cached;
-  const { ceilings: _ceilings, ...architecture } = floor;
   const layout: DraftLayoutFloorSpec = {
-    ...architecture,
-    ...(floor.ceilings
-      ? { ceilings: floor.ceilings.filter((ceiling) => ceiling.kind === "flat") }
-      : {}),
+    ...floor,
     rooms: indoorRoomsForFloor(floor).map((room) => {
       const {
         furnishings: _furnishings,
@@ -72,14 +68,28 @@ export const layoutFloorFromEditorFloor = (floor: FloorSpec): DraftLayoutFloorSp
   return layout;
 };
 
+const keepCeilingOrder = (
+  candidate: DraftLayoutFloorSpec,
+  previous: DraftLayoutFloorSpec,
+): DraftLayoutFloorSpec => {
+  if (!candidate.ceilings?.some((ceiling) => ceiling.kind === "sloped")) return candidate;
+  const order = new Map((previous.ceilings ?? []).map((ceiling, index) => [ceiling.id, index]));
+  return {
+    ...candidate,
+    ceilings: [...candidate.ceilings].sort(
+      (a, b) => (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity),
+    ),
+  };
+};
+
 export const projectFromEditorState = (
   base: HomeProject,
   floor: FloorSpec,
   sceneItems: readonly SceneItemSpec[],
 ): HomeProject => {
-  const candidate = layoutFloorFromEditorFloor(floor);
   const previous = base.floors.find((entry) => entry.id === floor.id);
   if (!previous) return base; // A top-floor removal can precede the editor replacement render.
+  const candidate = keepCeilingOrder(layoutFloorFromEditorFloor(floor), previous);
   const layoutFloor = sameJson(candidate, previous) ? previous : candidate;
   const floors =
     layoutFloor === previous

@@ -25,6 +25,8 @@ await withModules(async (load) => {
     temperature: { value: "21", unit: "°C" },
     humidity: { value: "48", unit: "%" },
     aqi: { value: "42", unit: null },
+    co2: { value: "820", unit: "ppm" },
+    noise: { value: "41.5", unit: "dBA" },
     heating: false,
     cooling: true,
     lighting: "on",
@@ -32,7 +34,7 @@ await withModules(async (load) => {
     doorOpen: false,
   };
 
-  test("persists overlay choices, defaults AQI on for existing preferences, and leaves room details intact", () => {
+  test("persists independent overlay choices across rooms and leaves the original statuses intact", () => {
     const previousWindow = globalThis.window;
     const dom = new JSDOM("", { url: "https://cabane.test" });
     globalThis.window = dom.window;
@@ -44,15 +46,23 @@ await withModules(async (load) => {
       );
       const existing = loadOverlayPreferences();
       assert.equal(existing.aqi, true);
-      saveOverlayPreferences({ ...existing, aqi: false });
+      assert.equal(existing.co2, true);
+      assert.equal(existing.noise, true);
+      saveOverlayPreferences({ ...existing, aqi: false, co2: false });
       const preferences = loadOverlayPreferences();
       assert.equal(preferences.humidity, false);
       assert.equal(preferences.aqi, false);
-      const filtered = filterOverlayStatuses({ "demo-room": summary }, preferences)["demo-room"];
+      assert.equal(preferences.co2, false);
+      assert.equal(preferences.noise, true);
+      const statuses = {
+        "demo-room": summary,
+        "second-room": { ...summary, roomId: "second-room" },
+      };
+      const filtered = filterOverlayStatuses(statuses, preferences);
       const html = renderToStaticMarkup(
         React.createElement(RoomStatusOverlayButton, {
           roomName: "Demo room",
-          summary: filtered,
+          summary: filtered["demo-room"],
           onSelect: () => undefined,
         }),
       );
@@ -61,8 +71,21 @@ await withModules(async (load) => {
       assert.equal(html.includes("AQI"), false);
       assert.equal(html.includes("Air quality index"), false);
       assert.match(html, /Temperature 21/);
+      assert.doesNotMatch(html, /820 ppm|Carbon dioxide/);
+      assert.match(html, /Noise 41.5 dBA/);
+      assert.equal(filtered["second-room"].co2, undefined);
+      assert.deepEqual(filtered["second-room"].noise, summary.noise);
+
+      saveOverlayPreferences({ ...preferences, co2: true, noise: false });
+      const noiseOff = filterOverlayStatuses(statuses, loadOverlayPreferences());
+      for (const visible of Object.values(noiseOff)) {
+        assert.equal(visible.noise, undefined);
+        assert.deepEqual(visible.co2, summary.co2);
+      }
       assert.equal(summary.humidity.value, "48");
       assert.equal(summary.aqi.value, "42");
+      assert.equal(summary.co2.value, "820");
+      assert.equal(summary.noise.value, "41.5");
       dom.window.localStorage.setItem("cabane.room-overlays.preferences.v1", "broken");
       assert.equal(loadOverlayPreferences().humidity, true);
     } finally {
@@ -95,39 +118,34 @@ await withModules(async (load) => {
     assert.match(html, /<button/);
     assert.match(
       html,
-      /aria-label="Open Demo room\. Temperature 21 °C, Humidity 48 %, Air quality index 42, Cooling, Lights on, Presence"/,
+      /aria-label="Open Demo room\. Temperature 21 °C, Humidity 48 %, Air quality index 42, Carbon dioxide 820 ppm, Noise 41\.5 dBA, Cooling, Lights on, Presence"/,
     );
     assert.match(html, /data-visible="true"/);
     assert.match(html, /Demo room/);
     assert.equal(html.includes("Humidity"), true);
     assert.equal(html.includes("48 %"), true);
     assert.match(html, /room-status-badge__label">AQI 42</);
+    assert.match(html, /room-status-badge__label">820 ppm</);
+    assert.match(html, /room-status-badge__label">41\.5 dBA</);
   });
 
   test("uses a compact cap and prioritizes useful status before center distance", () => {
     assert.equal(sceneOverlayLimitForWidth(759), 6);
     assert.equal(sceneOverlayLimitForWidth(760), 10);
     assert.equal(roomStatusOverlayPriority(summary), 3);
-    assert.equal(
-      roomStatusOverlayPriority({
-        roomId: "humidity-only",
-        humidity: { value: "48", unit: "%" },
-        heating: false,
-        cooling: false,
-        doorOpen: false,
-      }),
-      1,
-    );
-    assert.equal(
-      roomStatusOverlayPriority({
-        roomId: "aqi-only",
-        aqi: { value: "42", unit: null },
-        heating: false,
-        cooling: false,
-        doorOpen: false,
-      }),
-      1,
-    );
+    for (const key of ["humidity", "aqi", "co2", "noise"]) {
+      assert.equal(
+        roomStatusOverlayPriority({
+          roomId: `${key}-only`,
+          [key]: summary[key],
+          heating: false,
+          cooling: false,
+          doorOpen: false,
+        }),
+        1,
+        key,
+      );
+    }
 
     const candidates = Array.from({ length: 7 }, (_, index) => ({
       id: `room-${index}`,

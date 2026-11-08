@@ -104,7 +104,16 @@ terrace and lower-floor outlines meet. Numerical normalization affects derived
 geometry without rounding saved outlines. Wall bases extend to outdoor
 terrain, 5 cm below the indoor floor datum, without shifting openings or wall tops. Floor-level exterior doors and passages
 have solid thresholds bridging that terrain-to-floor difference. Ceilings support flat and
-sloped runtime surfaces. Project authoring has the narrower flat-ceiling schema.
+sloped surfaces in both the runtime manifest and layout projects. A wall with a
+`gable` rises above its height to the sloped ceiling planes over it, as at the
+end of an A-frame: solid gables continue the wall's faces, and glass gables are
+framed panes split by mullions and optional transoms, with the wall top acting as
+their header. Gabled walls keep their miter at corners where both walls continue.
+The exposed authored roof edge reaches the outer face of its supporting wall.
+The closure above the wall uses the adjacent face finish on each side, hiding the
+top cap from inside the room. Along a shared edge, matching slope heights leave the seam
+open, including where the same roof continues over a loft. Cutaway omits lower
+sloped planes that intersect the selected floor footprint above its level.
 The exterior roof is separate procedural geometry, visible in Home's roof view.
 Connected ceiling areas merge at equal height, with higher floor coverage removed
 from lower sections. Concave outlines, detached sections, and courtyard holes are

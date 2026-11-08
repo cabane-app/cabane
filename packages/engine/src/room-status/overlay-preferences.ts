@@ -4,6 +4,8 @@ export const overlayOptions = [
   ["temperature", "Temperature"],
   ["humidity", "Humidity"],
   ["aqi", "Air quality (AQI)"],
+  ["co2", "CO₂"],
+  ["noise", "Noise"],
   ["heating", "Heating"],
   ["cooling", "Cooling"],
   ["lighting", "Lights"],

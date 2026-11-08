@@ -11,6 +11,7 @@ import { RoomWallEmphasis } from "../room-navigation/RoomWallEmphasis";
 import {
   buildArchitecturalWallGeometries,
   buildContinuousWallGeometry,
+  buildWallGableGlass,
   wallExteriorNormal,
 } from "../architecture-geometry";
 
@@ -157,8 +158,23 @@ export function ArchitecturalWalls({
   );
   const textures = useWallSurfaceTextures(groups);
   useEffect(() => () => groups.forEach(({ geometry }) => geometry.dispose()), [groups]);
+  const gableGlass = useMemo(() => buildWallGableGlass(floor), [floor]);
+  useEffect(() => () => gableGlass.forEach(({ geometry }) => geometry.dispose()), [gableGlass]);
   return (
     <>
+      {gableGlass.map(({ geometry, outwardNormal }, index) => (
+        <CameraFacingFade
+          key={`gable-glass-${index}`}
+          enabled={fade && outwardNormal !== null}
+          normals={outwardNormal ? [outwardNormal] : []}
+          reducedMotion={reducedMotion}
+        >
+          {/* The same tint as window glass. */}
+          <mesh geometry={geometry} receiveShadow>
+            <ToonMaterial color="#9bcbd2" transparent opacity={0.48} depthWrite={false} />
+          </mesh>
+        </CameraFacingFade>
+      ))}
       {groups.map(({ geometry, outwardNormal, fadeNormals, finish }, index) => {
         const texture = finish ? textures.get(finish) : null;
         const wall = (

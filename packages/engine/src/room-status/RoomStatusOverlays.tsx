@@ -14,6 +14,8 @@ export const roomStatusOverlayPriority = (summary: RoomStatusSummary) => {
     summary.temperature ||
     summary.humidity ||
     summary.aqi ||
+    summary.co2 ||
+    summary.noise ||
     summary.lighting ||
     summary.presence
   )
@@ -33,6 +35,8 @@ const roomStatusOverlayLabelWidth = (roomName: string, summary: RoomStatusSummar
     (summary.temperature ? 58 : 0) +
     (summary.humidity ? 58 : 0) +
     (summary.aqi ? 58 : 0) +
+    (summary.co2 ? 58 : 0) +
+    (summary.noise ? 58 : 0) +
     iconCount * 21;
   const nameWidth = 58 + roomName.length * 5.4;
   return Math.min(246, Math.max(88, statusWidth, nameWidth));
