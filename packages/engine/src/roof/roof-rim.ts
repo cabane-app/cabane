@@ -9,7 +9,14 @@ export interface RoofRimSegment {
   seam: boolean;
   gabled: boolean;
   finish: string;
+  support?: RoofWallSupport | undefined;
   offset?: Point | undefined;
+}
+
+export function roofWallCenterlinePoint(point: Point, { frame }: RoofWallSupport): Point {
+  const across =
+    (point[0] - frame.from[0]) * frame.normal[0] + (point[1] - frame.from[1]) * frame.normal[1];
+  return [point[0] - across * frame.normal[0], point[1] - across * frame.normal[1]];
 }
 
 /** Fill the part of the exterior wall cap beyond an authored roof boundary. */
@@ -17,6 +24,7 @@ export function roofRimOffset(
   support: RoofWallSupport | undefined,
   from: Point,
   to: Point,
+  face: "inside" | "outside" = "outside",
 ): Point | undefined {
   if (support?.wall.classification !== "exterior") return;
   const { wall, frame } = support;
@@ -27,8 +35,10 @@ export function roofRimOffset(
   if (Math.abs((dx * frame.normal[0] + dz * frame.normal[1]) / length) > TOLERANCE_METERS) return;
   const outward: Point = [dz / length, -dx / length];
   const across = (from[0] - frame.from[0]) * outward[0] + (from[1] - frame.from[1]) * outward[1];
-  const shift = wall.thicknessMeters / 2 - across;
-  if (shift <= TOLERANCE_METERS || shift > wall.thicknessMeters + TOLERANCE_METERS) return;
+  const halfWidth = wall.thicknessMeters / 2;
+  if (Math.abs(across) > halfWidth + TOLERANCE_METERS) return;
+  const shift = (face === "inside" ? -halfWidth : halfWidth) - across;
+  if (face === "outside" && shift <= TOLERANCE_METERS) return;
   return [outward[0] * shift, outward[1] * shift];
 }
 
@@ -83,6 +93,6 @@ export function alignRoofRim(rim: RoofRimSegment[]): RoofRimSegment[] {
     const nextFrom = corners[nextIndex] ?? next.from;
     if (Math.hypot(to[0] - nextFrom[0], to[1] - nextFrom[1]) < TOLERANCE_METERS) return [aligned];
     const border = part.offset ? part : next;
-    return [aligned, { ...border, from: to, to: nextFrom, seam: false }];
+    return [aligned, { ...border, from: to, to: nextFrom, seam: false, support: undefined }];
   });
 }

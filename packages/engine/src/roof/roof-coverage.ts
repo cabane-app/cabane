@@ -6,7 +6,10 @@ import {
   unionClippingPolygons,
 } from "../architecture-geometry/architecture-clipping";
 import { physicalFloor } from "../architecture-geometry/physical-floor";
-import { slopedCeilingHeightSampler } from "../architecture-geometry/sloped-ceiling-plane";
+import {
+  slopedCeilingHeightSampler,
+  slopedCeilingProjection,
+} from "../architecture-geometry/sloped-ceiling-plane";
 import { wallSolidFootprintPolygons } from "../architecture-geometry/wall-solid-footprints";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { planPointToWorld, polygonSignedArea, worldPointToPlan } from "../geometry";
@@ -24,6 +27,7 @@ export interface RoofRegion {
   maxRise: number;
   /** Authored slopes already define their outer silhouette. */
   heightAt?: (point: [number, number]) => number;
+  slopeProgressAt?: (point: [number, number]) => number;
 }
 
 const worldPolygon = (points: readonly PlanPoint[], floor: FloorSpec): ClipPolygon => [
@@ -130,6 +134,7 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
       if (ceiling.kind === "sloped") {
         for (const plane of ceiling.planes) {
           const heightAt = slopedCeilingHeightSampler(plane);
+          const progressAt = slopedCeilingProjection(plane);
           const polygon = worldPolygon(plane.boundary, floor);
           // Keep the interior on the left even for authored clockwise outlines.
           if (polygonSignedArea(plane.boundary) < 0) polygon[0].reverse();
@@ -138,6 +143,12 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
             polygon,
             baseHeight: elevation + plane.lowHeightMeters + ROOF_CEILING_DEPTH_METERS,
             maxRise: 0,
+            ...(progressAt
+              ? {
+                  slopeProgressAt: ([x, z]: [number, number]) =>
+                    progressAt(worldPointToPlan({ x, z }, floor.coordinates)),
+                }
+              : {}),
             heightAt: ([x, z]) =>
               elevation +
               ROOF_CEILING_DEPTH_METERS +

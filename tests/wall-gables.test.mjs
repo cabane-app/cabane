@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Color } from "three";
+import { Color, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
@@ -215,8 +215,8 @@ await withModules(async (load) => {
         if ([0, 3, 6].every((o) => Math.abs(p[i + o] - 4) < 0.01)) ridgeTriangles.push(i);
       assert.deepEqual(ridgeTriangles, []);
       const ridgeWall = heights(geometry.infill).filter(
-        // The back gable (a plain wall) still closes the A with infill at z = 6.
-        ([x, y, z]) => Math.abs(x - 4) < 0.01 && z > 0.01 && z < 5.99 && y > knee + 0.5,
+        // The end walls still close the A within their half-width of 0.1 m.
+        ([x, y, z]) => Math.abs(x - 4) < 0.01 && z > 0.11 && z < 5.89 && y > knee + 0.5,
       );
       assert.deepEqual(ridgeWall, []);
     }
@@ -367,6 +367,49 @@ await withModules(async (load) => {
       assert.ok(heights(roof.top).some(([x, , z]) => x < -0.09 && z < 3));
     } finally {
       Object.values(roof).forEach((part) => part.dispose());
+    }
+  });
+
+  test("glass gables keep the corner miter and hide the exposed eave cap", () => {
+    const floor = aFrame({ fill: "glass" });
+    const [front, east, , west] = floor.walls;
+    front.heightMeters = 0.75;
+    front.faceColors = { right: "#b4ced0" };
+    east.faceColors = { right: "#e8dfcd" };
+    west.faceColors = { left: "#ded8d0", right: "#e8dfcd" };
+    for (const wall of [front, east, west]) wall.edgeColor = "#ac8263";
+    floor.wallJunctions = [
+      { id: "front-east", at: [8, 0], wallIds: [front.id, east.id] },
+      { id: "front-west", at: [0, 0], wallIds: [front.id, west.id] },
+    ];
+    const groups = buildArchitecturalWallGeometries(floor);
+    const roof = buildRoofGeometries([floor]);
+    const opaque = new MeshBasicMaterial();
+    const double = new MeshBasicMaterial({ side: DoubleSide });
+    const meshes = [
+      ...groups.map(({ geometry }) => new Mesh(geometry, opaque)),
+      ...Object.values(roof).map((geometry) => new Mesh(geometry, double)),
+    ];
+    const check = (from, to, axis, expected, color) => {
+      const start = new Vector3(...from);
+      const direction = new Vector3(...to).sub(start).normalize();
+      const [hit] = new Raycaster(start, direction).intersectObjects(meshes);
+      assert.ok(hit, "the corner or eave must be closed");
+      near(hit.point[axis], expected);
+      const colors = hit.object.geometry.getAttribute("color");
+      const i = hit.face.a;
+      assert.equal(new Color(colors.getX(i), colors.getY(i), colors.getZ(i)).getHexString(), color);
+    };
+    try {
+      check([8.05, 0.9, -1], [8.05, 0.9, 0], "z", -0.1, "b4ced0");
+      check([9, 0.9, -0.05], [8, 0.9, -0.05], "x", 8.1, "e8dfcd");
+      check([8.05, 1.025, -1], [8.05, 1.025, 0], "z", -0.1, "b4ced0");
+      check([2, 2.5, 2], [0.05, 1, 2], "x", 0.1, "ded8d0");
+      check([-1, 1.08, 2], [0, 1.08, 2], "x", -0.1, "e8dfcd");
+    } finally {
+      meshes.forEach(({ geometry }) => geometry.dispose());
+      opaque.dispose();
+      double.dispose();
     }
   });
 

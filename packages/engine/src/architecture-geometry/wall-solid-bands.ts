@@ -4,14 +4,19 @@ import { EPSILON } from "./architecture-geometry-contract";
 import { uniqueSorted } from "./architecture-mesh-buckets";
 import { openingCutPolygon, wallSolidFootprintPolygons } from "./wall-solid-footprints";
 import { physicalFloor } from "./physical-floor";
+import type { WallCornerBand } from "./wall-gable-corners";
 import type { FloorSpec } from "../types";
 
 /** Shared physical wall slices; door open/closed runtime state does not fill apertures. */
-export function wallSolidBands(requestedFloor: FloorSpec) {
+export function wallSolidBands(
+  requestedFloor: FloorSpec,
+  cornerBands: readonly WallCornerBand[] = [],
+) {
   const floor = physicalFloor(requestedFloor);
   const heights = uniqueSorted([
     0,
     ...floor.walls.map((wall) => wall.heightMeters ?? floor.defaultWallHeightMeters),
+    ...cornerBands.map(({ top }) => top),
     ...floor.walls.flatMap((wall) =>
       (wall.niches ?? []).flatMap((niche) => [
         niche.bottomMeters,
@@ -34,6 +39,8 @@ export function wallSolidBands(requestedFloor: FloorSpec) {
       (wall) => (wall.heightMeters ?? floor.defaultWallHeightMeters) > middle,
     );
     const solids = wallSolidFootprintPolygons(floor, activeWalls);
+    const corners = cornerBands.filter((band) => middle > band.bottom && middle < band.top);
+    solids.push(...corners.map(({ footprint }) => footprint));
     let footprint = unionClippingPolygons(solids);
     const cuts = floor.openings.flatMap((opening) => {
       const openingBottom = opening.sillHeightMeters;
@@ -59,6 +66,9 @@ export function wallSolidBands(requestedFloor: FloorSpec) {
       ),
     );
     if (footprint[0] && cuts.length) footprint = differenceClippingGeometry(footprint, ...cuts);
-    return { bottom, top, activeWalls, footprint };
+    const owners = corners.length
+      ? [...new Set([...activeWalls, ...corners.flatMap(({ walls }) => walls)])]
+      : activeWalls;
+    return { bottom, top, activeWalls: owners, footprint };
   });
 }

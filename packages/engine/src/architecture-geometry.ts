@@ -1,6 +1,7 @@
 import { DEFAULT_WALL_COLORS } from "./wall-colors";
 import { wallCapFinishRegions } from "./architecture-geometry/wall-cap-finishes";
 import { wallStructuralHeight } from "./architecture-geometry/wall-structural-height";
+import { wallGableCornerBands } from "./architecture-geometry/wall-gable-corners";
 import { wallSolidBands } from "./architecture-geometry/wall-solid-bands";
 import { wallFaceFinish, wallEdgeFinish } from "./architecture-geometry/wall-face-finish";
 import { wallLevelContact } from "./architecture-geometry/wall-level-contact";
@@ -81,7 +82,7 @@ export function buildArchitecturalWallGeometries(
     uvs: number[];
     finish?: WallSurfaceFinish;
   };
-  const bands = wallSolidBands(floor);
+  const bands = wallSolidBands(floor, wallGableCornerBands(floor, gables));
   // Image payloads can be large. Intern each finish once, outside the band/triangle loops.
   const finishIds = new Map<WallSurfaceFinish, number>();
   const finishDefinitions = new Map<string, number>();

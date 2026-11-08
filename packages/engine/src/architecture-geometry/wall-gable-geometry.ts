@@ -188,6 +188,7 @@ const edgeStrips = (geometry: MultiPolygon, width: number): ClipPolygon[] =>
 export interface WallGableShapes {
   /** The band renderer draws the wall up to here; the gable continues above. */
   bandTop: number;
+  wallHeightMeters: number;
   /** In wall-plane coordinates: [meters along the wall, height above the floor]. */
   solid: MultiPolygon;
   frame: MultiPolygon;
@@ -242,7 +243,14 @@ export function wallGableShapes(
     outline,
     rectangle(-1, height, length + 1, ceilingTop),
   );
-  const empty = { bandTop, profile: runs, solid: [], frame: [], glass: [] };
+  const empty = {
+    bandTop,
+    wallHeightMeters: height,
+    profile: runs,
+    solid: [],
+    frame: [],
+    glass: [],
+  };
   if (wall.gable.fill === "solid") {
     const solid = polygonClipping.difference(polygonClipping.union(below, above), ...cuts);
     return area(solid) > 1e-6 ? { ...empty, solid } : null;
@@ -277,6 +285,7 @@ export function wallGableShapes(
   );
   return {
     bandTop,
+    wallHeightMeters: height,
     profile: runs,
     solid: polygonClipping.difference(
       polygonClipping.union(below, polygonClipping.difference(above, pane)),

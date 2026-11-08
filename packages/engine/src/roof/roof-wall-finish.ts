@@ -1,6 +1,7 @@
 import { createWallAssemblyPointTest } from "../architecture-geometry/wall-solid-footprints";
 import { wallFaceFinish } from "../architecture-geometry/wall-face-finish";
 import { wallFrame } from "../architecture-geometry/wall-coordinate-frame";
+import { wallStructuralHeight } from "../architecture-geometry/wall-structural-height";
 import { physicalFloor } from "../architecture-geometry/physical-floor";
 import type { FloorSpec, WallSpec } from "../types";
 
@@ -12,23 +13,39 @@ export function roofWallFaceColor(
   from: Point,
   to: Point,
   fallback: string,
+  outside = true,
 ) {
   if (!support) return fallback;
   const { wall, frame } = support;
   // Rings keep solid material on the left, so their visible face points right.
   const facing = (to[1] - from[1]) * frame.normal[0] - (to[0] - from[0]) * frame.normal[1];
-  return wallFaceFinish(wall, facing >= 0 ? "left" : "right", true, fallback);
+  const side = facing >= 0 === outside ? "left" : "right";
+  return wallFaceFinish(wall, side, outside, fallback);
 }
 
 /** Keep roof infill aligned with the finish boundaries of the walls below it. */
-export function createRoofWallLookup(requestedFloor: FloorSpec) {
+export function createRoofWallLookup(
+  requestedFloor: FloorSpec,
+  level?: { elevationMeters: number; hasAbove: boolean },
+) {
   const floor = physicalFloor(requestedFloor);
   const walls = floor.walls.map((wall) => ({
     wall,
     frame: wallFrame(wall, floor),
     contains: createWallAssemblyPointTest(wall, floor),
   }));
+  const wallTops = new Map<WallSpec, number>();
   return {
+    top(wall: WallSpec): number {
+      const cached = wallTops.get(wall);
+      if (cached !== undefined) return cached;
+      const height = level?.hasAbove
+        ? wallStructuralHeight(wall, floor)
+        : (wall.heightMeters ?? floor.defaultWallHeightMeters);
+      const top = (level?.elevationMeters ?? 0) + height;
+      wallTops.set(wall, top);
+      return top;
+    },
     find(from: Point, to: Point): RoofWallSupport | undefined {
       const center: Point = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
       const length = Math.hypot(to[0] - from[0], to[1] - from[1]);

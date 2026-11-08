@@ -13,10 +13,16 @@ export function BuildingRoof({ manifest }: { manifest: HomeManifest }) {
         manifest.floors.filter((floor) => !floor.belowGround),
         settings,
         manifest.home.palette.exterior,
+        manifest.home.palette.interior,
       ),
     // Roof color is applied to materials separately; only direction affects its geometry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [manifest.floors, settings.direction, manifest.home.palette.exterior],
+    [
+      manifest.floors,
+      settings.direction,
+      manifest.home.palette.exterior,
+      manifest.home.palette.interior,
+    ],
   );
   useEffect(
     () => () => {
