@@ -29,9 +29,11 @@
 .room-status-badges[data-variant="detailed"] .room-status-badge {
   width: auto;
 }
-.room-status-badges[data-variant="detailed"] .room-status-badge__label {
+.room-status-badge__label {
   line-height: 1;
   text-align: left;
+  /* Center the visible glyphs of the dashboard font on the icon. */
+  transform: translateY(1px);
 }
 .room-status-badge__icon {
   display: grid;
@@ -63,7 +65,6 @@
   color: #efc3a9;
 }
 .room-status-badges[data-variant="compact"] {
-  flex-wrap: nowrap;
   gap: 1px;
   padding: 4px 6px;
   background: rgba(21, 33, 28, 0.78);

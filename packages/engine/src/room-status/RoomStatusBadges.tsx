@@ -8,6 +8,8 @@ type StatusKind =
   | "temperature"
   | "humidity"
   | "aqi"
+  | "co2"
+  | "noise"
   | "heating"
   | "cooling"
   | "light"
@@ -24,28 +26,25 @@ interface StatusItem {
 
 const readingText = (value: string, unit: string | null) => (unit ? `${value} ${unit}` : value);
 
+const readingLabels = [
+  ["temperature", "Temperature"],
+  ["humidity", "Humidity"],
+  ["aqi", "Air quality index"],
+  ["co2", "Carbon dioxide"],
+  ["noise", "Noise"],
+] as const;
+
 const statusItems = (summary: RoomStatusSummary, includeHumidity = true): readonly StatusItem[] => {
   const items: StatusItem[] = [];
-  if (summary.temperature) {
+  for (const [kind, label] of readingLabels) {
+    if (kind === "humidity" && !includeHumidity) continue;
+    const measurement = summary[kind];
+    if (!measurement) continue;
+    const reading = readingText(measurement.value, measurement.unit);
     items.push({
-      kind: "temperature",
-      label: `Temperature ${readingText(summary.temperature.value, summary.temperature.unit)}`,
-      visibleText: readingText(summary.temperature.value, summary.temperature.unit),
-    });
-  }
-  if (includeHumidity && summary.humidity) {
-    items.push({
-      kind: "humidity",
-      label: `Humidity ${readingText(summary.humidity.value, summary.humidity.unit)}`,
-      visibleText: readingText(summary.humidity.value, summary.humidity.unit),
-    });
-  }
-  if (summary.aqi) {
-    const reading = readingText(summary.aqi.value, summary.aqi.unit);
-    items.push({
-      kind: "aqi",
-      label: `Air quality index ${reading}`,
-      visibleText: `AQI ${reading}`,
+      kind,
+      label: `${label} ${reading}`,
+      visibleText: kind === "aqi" ? `AQI ${reading}` : reading,
     });
   }
   if (summary.heating) items.push({ kind: "heating", label: "Heating" });
@@ -92,6 +91,19 @@ function StatusGlyph({ kind }: { kind: StatusKind }) {
       content = (
         <path d="M3 8h11a2.5 2.5 0 1 0-2.5-2.5M3 12h16a2 2 0 1 0-2-2M3 16h10a2.5 2.5 0 1 1-2.5 2.5" />
       );
+      break;
+    case "co2":
+      content = (
+        <>
+          <circle cx="4.5" cy="12" r="2.5" />
+          <circle cx="12" cy="12" r="3" />
+          <circle cx="19.5" cy="12" r="2.5" />
+          <path d="M7 12h2m6 0h2" />
+        </>
+      );
+      break;
+    case "noise":
+      content = <path d="M3 9h4l5-4v14l-5-4H3zM16 9a4.2 4.2 0 0 1 0 6m3-9a8.5 8.5 0 0 1 0 12" />;
       break;
     case "heating":
       content = (
