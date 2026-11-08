@@ -152,9 +152,9 @@ Their connection beacons and controls continue to follow the primary entity.
 
 The complete preset categorization is maintained in [device activity](../device-activity.md).
 
-TV artwork is a procedural comic-book Superman flight with a gently moving cape
-and drifting clouds. The engine LayeredSurface primitive owns ordered polygon depth bias for the screen layers at
-overview and oblique camera angles while retaining scene occlusion. Wall TVs
+TV artwork is a slow teal, blue and violet aurora rendered on one two-triangle
+plane with an analytic shader, without textures, external assets or post-processing.
+The screen retains depth testing for scene occlusion and a small polygon depth bias. Wall TVs
 omit their glass reflection while active. Reduced motion freezes the composition;
 inactive and unavailable states retain their existing appearance.
 

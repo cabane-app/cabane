@@ -68,7 +68,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("TV artwork keeps distinct depth layers from room and overview cameras", async () => {
+  test("TV artwork uses one depth-tested surface", async () => {
     for (const id of ["television", "wall-television", "compact-wall-television"]) {
       const renderer = await create(
         createElement(catalog.stableDeviceRegistry[id].component, {
@@ -84,40 +84,16 @@ await withModules(async (load) => {
       picture.traverse((object) => {
         if (object.isMesh) layers.push(object);
       });
+      assert.equal(layers.length, 1, "artwork needs only one draw call");
       for (const mesh of layers) {
         assert.equal(mesh.material.depthTest, true, "room geometry must still occlude the TV");
       }
       assert.equal(renderer.scene.findAllByProps({ name: "wall-television-reflection" }).length, 0);
-      const target = picture.getWorldPosition(new Vector3());
-      for (const distance of [2, 10, 30]) {
-        for (const angle of [0, Math.PI / 3]) {
-          const camera = new PerspectiveCamera(68, 1, 0.04, 120);
-          camera.position
-            .copy(target)
-            .add(new Vector3(Math.sin(angle) * distance, 0, Math.cos(angle) * distance));
-          camera.lookAt(target);
-          camera.updateMatrixWorld();
-          // Compare coincident screen points: 24-bit depth must keep each paint layer distinct.
-          const depths = layers.map((mesh) => {
-            const point = target.clone();
-            point.z = mesh.getWorldPosition(new Vector3()).z;
-            const depth = (point.project(camera).z + 1) / 2;
-            const bias = mesh.material.polygonOffset ? mesh.material.polygonOffsetUnits : 0;
-            return Math.round(depth * (2 ** 24 - 1) + bias);
-          });
-          for (let i = 1; i < depths.length; i++) {
-            assert.ok(
-              depths[i - 1] - depths[i] >= 2,
-              `${id}: artwork depth collision at ${distance}m, angle ${angle}: ${depths}`,
-            );
-          }
-        }
-      }
       await renderer.unmount();
     }
   });
 
-  test("TV flight stays inside the screen and reuses geometry for a complete loop", async () => {
+  test("TV aurora stays inside the screen and reuses geometry while animating", async () => {
     const renderer = await create(
       createElement(catalog.stableDeviceRegistry["wall-television"].component, {
         visualState: "connected-active",
@@ -145,9 +121,9 @@ await withModules(async (load) => {
 
   test("device activity only animates active devices and freezes for reduced motion", async () => {
     for (const [id, effect, moving, axis] of [
-      ["television", "television-picture", "television-picture-motion", "position"],
-      ["wall-television", "television-picture", "television-picture-motion", "position"],
-      ["compact-wall-television", "television-picture", "television-picture-motion", "position"],
+      ["television", "television-picture", "television-picture-motion", "shader"],
+      ["wall-television", "television-picture", "television-picture-motion", "shader"],
+      ["compact-wall-television", "television-picture", "television-picture-motion", "shader"],
       ["washing-machine", "laundry-drum", "laundry-drum", "rotation"],
       ["tumble-dryer", "laundry-drum", "laundry-drum", "rotation"],
       ["electric-kettle", "appliance-steam", "appliance-steam", "steam"],
@@ -176,6 +152,7 @@ await withModules(async (load) => {
       const renderer = await create(render());
       const pose = () => {
         const object = renderer.scene.findByProps({ name: moving }).instance;
+        if (axis === "shader") return object.material.uniforms.time.value;
         return axis === "steam" ? object.children[0].position.toArray() : object[axis].toArray();
       };
       const initial = pose();

@@ -1,23 +1,42 @@
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
-import type { Group } from "three";
-import { TelevisionComicPatch as Patch } from "./television-comic-patch";
-import { TelevisionSuperman } from "./television-superman";
+import type { ShaderMaterial } from "three";
+import { useRef, useMemo } from "react";
 
-const CLOUD = [
-  [-0.15, -0.025],
-  [-0.14, 0.015],
-  [-0.1, 0.03],
-  [-0.075, 0.075],
-  [-0.02, 0.085],
-  [0.025, 0.055],
-  [0.06, 0.06],
-  [0.1, 0.025],
-  [0.14, 0.015],
-  [0.16, -0.025],
-] as const;
+const vertexShader = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
 
-/** A silent comic-book flight, entirely inside the physical screen. */
+// Three analytic light ribbons: no textures, ray marching or offscreen render passes.
+const fragmentShader = /* glsl */ `
+  uniform float time;
+  uniform float aspect;
+  varying vec2 vUv;
+  void main() {
+    vec2 p = vUv - 0.5;
+    p.x *= aspect;
+    vec3 color = vec3(0.004, 0.008, 0.025);
+    for (int i = 0; i < 3; i++) {
+      float band = float(i);
+      float wave = 0.16 * sin(p.x * 2.5 + time * 0.22 + band * 1.4)
+        + 0.06 * sin(p.x * 5.0 - time * 0.15 + band);
+      float d = p.y - wave + (band - 1.0) * 0.12;
+      float core = exp(-abs(d) * 48.0);
+      float halo = exp(-abs(d) * 11.0);
+      float curtain = 0.65 + 0.35 * sin(p.x * 9.0 + time * 0.18 + band);
+      vec3 tint = mix(vec3(0.025, 0.65, 0.46), vec3(0.32, 0.09, 0.72), band * 0.5);
+      color += tint * (core * 0.65 + halo * 0.25) * curtain;
+    }
+    float vignette = 1.0 - smoothstep(0.25, 0.72, length(vUv - 0.5));
+    gl_FragColor = vec4(color * (0.45 + 0.55 * vignette), 1.0);
+    #include <colorspace_fragment>
+  }
+`;
+
+/** A quiet aurora screensaver, confined to a single two-triangle screen. */
 export function TelevisionPicture({
   width,
   height,
@@ -27,56 +46,31 @@ export function TelevisionPicture({
   height: number;
   reducedMotion: boolean;
 }) {
-  const hero = useRef<Group>(null);
-  const clouds = useRef<Group>(null);
-  const time = useRef(0);
+  const material = useRef<ShaderMaterial>(null);
+  const uniforms = useMemo(
+    () => ({ time: { value: 0 }, aspect: { value: width / height } }),
+    [width, height],
+  );
   useFrame(({ invalidate }, delta) => {
-    if (reducedMotion || !hero.current || !clouds.current) return;
-    time.current += Math.min(delta, 0.05);
-    hero.current.position.y = Math.sin(time.current * 1.4) * 0.025;
-    hero.current.rotation.z = Math.sin(time.current * 0.7) * 0.025;
-    clouds.current.children.forEach((cloud, i) => {
-      // Fade at the edges before wrapping, without ever crossing the screen border.
-      const phase = (time.current * 0.045 + i * 0.37) % 1;
-      cloud.position.x = 0.31 - phase * 0.62;
-      cloud.scale.setScalar(Math.min(1, phase * 12, (1 - phase) * 12));
-    });
+    if (reducedMotion || !material.current) return;
+    material.current.uniforms.time.value += Math.min(delta, 0.05);
     invalidate();
   });
   return (
     <group name="television-picture" scale={[width, height, 1]}>
-      <Patch
-        layer={1}
-        color="#428fbd"
-        points={[
-          [-0.5, -0.5],
-          [0.5, -0.5],
-          [0.5, 0.5],
-          [-0.5, 0.5],
-        ]}
-      />
-      <Patch
-        layer={2}
-        color="#63b6d3"
-        points={[
-          [-0.5, -0.5],
-          [0.5, -0.5],
-          [0.5, 0.03],
-          [-0.5, -0.25],
-        ]}
-      />
-      <group ref={clouds}>
-        {[-0.33, 0.29, 0.36].map((y, i) => (
-          <group key={y} position={[(i - 1) * 0.27, y, 0]}>
-            <Patch layer={3 + i} color={i === 2 ? "#bce1e6" : "#fff5da"} points={CLOUD} />
-          </group>
-        ))}
-      </group>
-      <group ref={hero} name="television-picture-motion">
-        <group scale={[height / width, 1, 1]} position={[0.035, -0.025, 0]}>
-          <TelevisionSuperman reducedMotion={reducedMotion} />
-        </group>
-      </group>
+      <mesh name="television-picture-motion">
+        <planeGeometry args={[1, 1]} />
+        <shaderMaterial
+          ref={material}
+          uniforms={uniforms}
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShader}
+          toneMapped={false}
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-2}
+        />
+      </mesh>
     </group>
   );
 }
