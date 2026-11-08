@@ -15,7 +15,7 @@ Home renders published data; the editor reads the draft. Routes are:
 | Route                                                                      | Surface                                                                                                                                                              |
 | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/`                                                                        | Opens the last successfully opened workspace; the demo resolves to Welcome or Demo according to saved welcome dismissal; falls back to the sole workspace or library |
-| `/welcome`                                                                 | Introduction over the browser's existing demo, with Explore and Build choices                                                                                        |
+| `/welcome`                                                                 | Welcome preview of the browser's demo, with Walk, Orbit, Explore, and Build                                                                                          |
 | `/demo`                                                                    | Published demo with simulated controls and the introduction closed                                                                                                   |
 | `/build`                                                                   | Construct for the browser's Build destination; creates that destination on a first direct visit, or shows mobile editor guidance on phones                           |
 | `/workspaces`                                                              | Library: New, Import, Open, Rename, Duplicate, Export, Delete                                                                                                        |
@@ -72,7 +72,7 @@ the usual welcome screen; errors or a timed-out check offer retry instead of
 claiming there are no saved homes. Existing local homes and dismissed welcome
 flows retain their usual startup, and standalone startup does not query HA.
 
-Otherwise, a genuinely fresh installation opens `/welcome` over the default furnished villa
+Otherwise, a genuinely fresh installation opens `/welcome` with a preview of the default furnished villa
 with two immediate choices. Explore (or closing the introduction) navigates to
 `/demo`. Build creates a blank workspace and opens Construct at `/build` without
 authentication. These URLs render real surfaces, not tracking-only redirects.
@@ -80,7 +80,16 @@ Refresh resumes the same local Build destination; editor mode changes continue
 on its existing workspace-scoped URLs. Direct Welcome/Demo visits never recreate
 a deleted demo, and missing Build workspaces retain the usual recovery link.
 Browser Back to Welcome reopens the introduction even after it was dismissed.
-The scene remains visible; portrait layouts omit previews to keep actions clear.
+Welcome renders the demo beside the introduction on desktop and below the entry
+actions on narrow screens. Its Orbit and Walk previews have their own cameras.
+Playback starts with a first-person loop through the furnished living area when
+a safe route is available. It then orbits the ground floor, upper floor and roof
+before returning to Walk. The preview darkens during Walk, turns on its light fixtures
+at dusk, and returns to daylight during Orbit. The active view button shows progress.
+Visitors can pause playback, zoom in Orbit, or walk around the furnished living area with keyboard
+controls or a touch hold. With reduced motion enabled, previews start still.
+A click or tap on the preview offers to open the full demo. That action and Explore
+both open the regular demo dashboard with its own camera and lighting preferences.
 
 The demo is identified by installation metadata, not its editable name or a
 missing HA connection. Only it receives the isolated memory-only simulation.

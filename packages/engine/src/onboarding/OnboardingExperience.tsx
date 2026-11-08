@@ -24,9 +24,11 @@ import { useSetupRecord } from "../useSetupRecord";
 import type { ArchitectureModelRegistry, DeviceModelRegistry, HomeManifest } from "../types";
 import type { BrowserDataImportResult } from "../browser-data-transfer";
 import { createLaunchOnboardingState } from "./onboarding-state";
-import { OnboardingIntroduction, type OnboardingLinks } from "./OnboardingIntroduction";
+import type { OnboardingLinks } from "./OnboardingIntroduction";
 import { useFirstControlConfirmation } from "./useFirstControlConfirmation";
+import { WelcomeExperience } from "./preview/WelcomeExperience";
 import "./onboarding.css";
+import "./welcome.css";
 
 export interface OnboardingOptions {
   isDemo: boolean;
@@ -201,10 +203,10 @@ export function CabaneAppExperience({
     Boolean(targetState?.available && !targetState.stale) &&
     !setupState.record.activated &&
     !hintDismissed;
-  return (
+  const dashboardShell = (bindingManager: RuntimeBindingProfileManager) => (
     <div
       ref={shell}
-      className={`cabane-app setup-shell ${surface ? "setup-shell--open onboarding-shell--open" : "setup-shell--closed"}`}
+      className={`cabane-app setup-shell ${surface ? "setup-shell--open" : "setup-shell--closed"}`}
       style={
         {
           "--home-accent": manifest.home.palette.accent,
@@ -212,31 +214,7 @@ export function CabaneAppExperience({
         } as CSSProperties
       }
     >
-      <div className="setup-shell__scene">
-        {isDemo ? (
-          <DemoHomeAssistantSession
-            manifest={manifest}
-            night={demoNight}
-            onInteraction={() => setInteracted(true)}
-          >
-            {({ manager }) => dashboard(manager)}
-          </DemoHomeAssistantSession>
-        ) : (
-          <HomeAssistantRuntimeValueProvider value={observedRuntime}>
-            {dashboard(manager)}
-          </HomeAssistantRuntimeValueProvider>
-        )}
-      </div>
-      {surface === "intro" && (
-        <OnboardingIntroduction
-          links={onboarding?.links}
-          busy={onboarding?.busy ?? false}
-          error={setupState.warning}
-          onExplore={dismissWelcome}
-          onBuild={() => void onboarding?.start("build")}
-          onDismiss={dismissWelcome}
-        />
-      )}
+      <div className="setup-shell__scene">{dashboard(bindingManager)}</div>
       {surface === "connection" && (
         <HomeAssistantConnectionFlow
           homeAssistantUrl={homeAssistantUrl}
@@ -296,5 +274,34 @@ export function CabaneAppExperience({
         </aside>
       )}
     </div>
+  );
+  return isDemo ? (
+    <DemoHomeAssistantSession
+      manifest={manifest}
+      night={demoNight}
+      onInteraction={() => setInteracted(true)}
+    >
+      {({ manager }) =>
+        surface === "intro" ? (
+          <WelcomeExperience
+            manifest={dashboardManifest}
+            architectureModels={architectureModels}
+            deviceModels={deviceModels}
+            manager={manager}
+            links={onboarding?.links}
+            busy={onboarding?.busy ?? false}
+            error={setupState.warning}
+            onExplore={dismissWelcome}
+            onBuild={() => void onboarding?.start("build")}
+          />
+        ) : (
+          dashboardShell(manager)
+        )
+      }
+    </DemoHomeAssistantSession>
+  ) : (
+    <HomeAssistantRuntimeValueProvider value={observedRuntime}>
+      {dashboardShell(manager)}
+    </HomeAssistantRuntimeValueProvider>
   );
 }

@@ -157,9 +157,9 @@ await withModules(async (load) => {
         ),
       );
       const text = dom.window.document.body.textContent;
-      assert.match(text, /Your home. In 3D/);
-      assert.match(text, /Under your control/);
-      assert.equal(dom.window.document.querySelectorAll("figure img").length, 3);
+      assert.match(text, /Your home.In your hands/);
+      assert.match(text, /Build your rooms in 3D/);
+      assert.match(text, /Simulated devices/);
       for (const label of ["Explore the demo", "Build my home"]) {
         const button = [...dom.window.document.querySelectorAll("button")].find((node) =>
           node.textContent.includes(label),
