@@ -37,6 +37,7 @@ export function OnboardingIntroduction({
     title.current?.focus({ preventScroll: true });
   }, []);
   const stage = preview?.mode === "orbit" ? preview.orbitStage : undefined;
+  const showWalkHint = preview?.mode === "walk" && !preview.playing;
   return (
     <section className="onboarding-intro" aria-labelledby="onboarding-title" aria-busy={busy}>
       <header className="onboarding-intro__top">
@@ -88,7 +89,17 @@ export function OnboardingIntroduction({
       <div className="onboarding-demo-label">
         <span aria-hidden="true" />
         Live 3D demo{" "}
-        <span className="onboarding-demo-label__detail">· {stage ?? "Simulated devices"}</span>
+        <span className="onboarding-demo-label__detail">
+          ·{" "}
+          {showWalkHint ? (
+            <>
+              <span className="onboarding-walk-hint__keyboard">WASD to walk</span>
+              <span className="onboarding-walk-hint__touch">Hold to walk</span>
+            </>
+          ) : (
+            (stage ?? "Simulated devices")
+          )}
+        </span>
       </div>
       {preview && <PreviewControls preview={preview} />}
       <footer className="onboarding-intro__footer">

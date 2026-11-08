@@ -7,9 +7,13 @@ import {
   collectSceneWalkColliders,
   observeSceneWalkColliders,
 } from "../../navigation/scene-walk-colliders";
+import { clampPitch } from "../../navigation/walk-motion";
+import type { StickVector, WalkPoint } from "../../navigation/walk-navigation-contract";
 import type { HomeManifest, RenderableFloorSpec } from "../../types";
 import { usePreviewPlayback } from "./usePreviewPlayback";
+import { bindWelcomeWalkInput } from "./welcome-walk-input";
 import { createWelcomeWalkLoop, sampleWelcomeWalkLoop } from "./welcome-walk-loop";
+import { createWelcomeWalkNavigation } from "./welcome-walk-navigation";
 
 export function WelcomeWalkCamera({
   loop,
@@ -17,6 +21,7 @@ export function WelcomeWalkCamera({
   floor,
   playing,
   onUnavailable,
+  onManualInput,
   advance,
 }: {
   loop: NonNullable<ReturnType<typeof createWelcomeWalkLoop>>;
@@ -24,12 +29,17 @@ export function WelcomeWalkCamera({
   floor: RenderableFloorSpec;
   playing: boolean;
   onUnavailable: () => void;
+  onManualInput?: () => void;
   advance: (seconds: number) => number;
 }) {
   const camera = useRef<ThreePerspectiveCamera>(null);
   const elapsed = useRef(0);
   const look = useRef({ yaw: 0, pitch: 0 });
+  const movement = useRef<StickVector>({ x: 0, y: 0 });
+  const manualPosition = useRef<WalkPoint | null>(null);
+  const navigation = useRef<ReturnType<typeof createWelcomeWalkNavigation>>(null);
   const { scene, gl, invalidate } = useThree();
+
   useEffect(() => {
     const elevation = deriveFloorLevels(manifest.floors).find(
       (level) => level.floorId === floor.id,
@@ -37,61 +47,63 @@ export function WelcomeWalkCamera({
     if (!elevation) return;
     const validate = () => {
       const colliders = collectSceneWalkColliders(scene, elevation.elevationMeters);
+      navigation.current = createWelcomeWalkNavigation(manifest, floor, colliders);
       if (!createWelcomeWalkLoop(manifest, floor, colliders)) onUnavailable();
+      if (manualPosition.current && !navigation.current?.isClear(manualPosition.current)) {
+        manualPosition.current = null;
+        invalidate();
+      }
     };
     const removeObserver = observeSceneWalkColliders(scene, validate);
     validate();
     return removeObserver;
-  }, [floor, manifest, onUnavailable, scene]);
+  }, [floor, invalidate, manifest, onUnavailable, scene]);
 
-  useEffect(() => {
-    const canvas = gl.domElement;
-    let pointer: { id: number; x: number; y: number } | null = null;
-    const start = (event: PointerEvent) => {
-      if (!event.isPrimary || event.button !== 0) return;
-      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
-      canvas.setPointerCapture(event.pointerId);
-    };
-    const move = (event: PointerEvent) => {
-      if (pointer?.id !== event.pointerId) return;
-      look.current.yaw -= (event.clientX - pointer.x) * 0.004;
-      look.current.pitch = Math.max(
-        -1.1,
-        Math.min(1.1, look.current.pitch - (event.clientY - pointer.y) * 0.004),
-      );
-      pointer.x = event.clientX;
-      pointer.y = event.clientY;
-      invalidate();
-    };
-    const end = (event: PointerEvent) => {
-      if (pointer?.id === event.pointerId) pointer = null;
-    };
-    canvas.addEventListener("pointerdown", start);
-    canvas.addEventListener("pointermove", move);
-    canvas.addEventListener("lostpointercapture", end);
-    return () => {
-      canvas.removeEventListener("pointerdown", start);
-      canvas.removeEventListener("pointermove", move);
-      canvas.removeEventListener("lostpointercapture", end);
-    };
-  }, [gl, invalidate]);
+  useEffect(
+    () =>
+      bindWelcomeWalkInput(
+        gl.domElement,
+        (input) => {
+          movement.current = input;
+          if (input.x !== 0 || input.y !== 0) onManualInput?.();
+          invalidate();
+        },
+        (dx, dy) => {
+          look.current.yaw -= dx * 0.004;
+          look.current.pitch = clampPitch(look.current.pitch - dy * 0.004);
+          invalidate();
+        },
+      ),
+    [gl, invalidate, onManualInput],
+  );
 
   usePreviewPlayback(playing, (seconds) => {
+    if (movement.current.x !== 0 || movement.current.y !== 0) return;
+    manualPosition.current = null;
     elapsed.current = advance(seconds);
     const settle = Math.exp(-seconds * 4);
     look.current.yaw *= settle;
     look.current.pitch *= settle;
   });
-  useFrame(() => {
+
+  useFrame((_, delta) => {
     if (!camera.current) return;
     const pose = sampleWelcomeWalkLoop(loop, elapsed.current);
-    camera.current.position.set(...pose.position);
-    camera.current.rotation.set(
-      pose.pitch + look.current.pitch,
-      pose.yaw + look.current.yaw,
-      0,
-      "YXZ",
-    );
+    const yaw = pose.yaw + look.current.yaw;
+    const pitch = clampPitch(pose.pitch + look.current.pitch);
+    const [x, y, z] = pose.position;
+    const input = movement.current;
+    if (navigation.current && (input.x !== 0 || input.y !== 0)) {
+      manualPosition.current = navigation.current.move(
+        manualPosition.current ?? { x, z },
+        input,
+        yaw,
+        Math.min(0.05, delta),
+      );
+      invalidate();
+    }
+    camera.current.position.set(manualPosition.current?.x ?? x, y, manualPosition.current?.z ?? z);
+    camera.current.rotation.set(pitch, yaw, 0, "YXZ");
   });
   return <PerspectiveCamera ref={camera} makeDefault fov={62} near={0.055} far={250} />;
 }

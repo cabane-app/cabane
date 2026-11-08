@@ -85,8 +85,10 @@ actions on narrow screens. Its Orbit and Walk previews have their own cameras.
 Playback starts with a first-person loop through the furnished living area when
 a safe route is available. It then orbits the ground floor, upper floor and roof
 before returning to Walk. The active view button shows progress. Visitors can pause
-playback or drag to take over the view. With reduced motion enabled, previews start still. Explore opens the regular
-demo dashboard and restores its own camera and lighting preferences.
+playback, zoom in Orbit, or walk around the furnished living area with keyboard
+controls or a touch hold. With reduced motion enabled, previews start still.
+A click or tap on the preview offers to open the full demo. That action and Explore
+both open the regular demo dashboard with its own camera and lighting preferences.
 
 The demo is identified by installation metadata, not its editable name or a
 missing HA connection. Only it receives the isolated memory-only simulation.

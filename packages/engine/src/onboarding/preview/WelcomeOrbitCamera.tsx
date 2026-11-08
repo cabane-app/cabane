@@ -53,7 +53,8 @@ export function WelcomeOrbitCamera({
         ref={controls}
         enableDamping={false}
         enablePan={false}
-        enableZoom={false}
+        minZoom={zoom * 0.6}
+        maxZoom={zoom * 4}
         minPolarAngle={0.55}
         maxPolarAngle={1.25}
         onStart={onPause}
