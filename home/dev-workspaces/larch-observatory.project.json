@@ -3924,7 +3924,7 @@
       "modelId": "neutral-area-rug",
       "placement": {
         "at": [-11.75, 9.86],
-        "elevationMeters": 0.001,
+        "elevationMeters": 0.02,
         "kind": "absolute",
         "rotationYRadians": 0
       },
@@ -3938,7 +3938,7 @@
       "modelId": "neutral-area-rug",
       "placement": {
         "at": [-10.45, 9.86],
-        "elevationMeters": 0.001,
+        "elevationMeters": 0.02,
         "kind": "absolute",
         "rotationYRadians": 0
       },
