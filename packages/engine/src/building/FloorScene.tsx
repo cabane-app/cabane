@@ -156,7 +156,7 @@ export const FloorScene = memo(function FloorScene({
           color={manifest.home.palette.ground}
         />
       )}
-      <ArchitecturalOutdoorPlatforms floor={floor} below={platformBelow} />
+      <ArchitecturalOutdoorPlatforms floor={floor} below={platformBelow} showGround={showGround} />
       <SolidRooms floor={floor} color={manifest.home.palette.interior} />
       <ArchitecturalHedges floor={floor} />
       <ArchitecturalPools floor={floor} reducedMotion={reducedMotion} />

@@ -381,6 +381,39 @@ await withModules(async (load) => {
     }
   });
 
+  test("flat ground hides the grass slab rim without lowering the platform surface", async () => {
+    const project = fixture();
+    project.floors[0].outdoorPlatforms[0].finish = { kind: "grass" };
+    const renderer = await create(
+      createElement(e.ArchitectureScene, {
+        manifest: manifestFor(project),
+        floorView: "cutaway",
+        selectedRoomId: null,
+        walkMode: false,
+        wallFadeEnabled: false,
+        reducedMotion: true,
+        resolvedBindings: { rooms: {}, openings: {} },
+        architectureModels: {},
+        deviceModels: {},
+        openingPositions: {},
+        onInteract() {},
+      }),
+    );
+    try {
+      const topY = (name) => {
+        const mesh = renderer.scene.findByProps({ name }).instance;
+        mesh.geometry.computeBoundingBox();
+        return mesh.position.y + mesh.geometry.boundingBox.max.z;
+      };
+      assert.ok(topY("platform-slab-balcony-structure-0") < topY("diorama-ground"));
+      const structure = renderer.scene.findByProps({ name: "platform-slab-balcony-structure-0" });
+      assert.equal(structure.instance.castShadow, false);
+      assert.equal(topY("platform-finish-balcony"), 0.002);
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("removing an upper floor removes its platform room profile and private area mapping", () => {
     const project = fixture();
     const ground = project.floors[0];
