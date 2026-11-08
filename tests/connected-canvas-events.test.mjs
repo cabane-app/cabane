@@ -4,7 +4,9 @@ import { JSDOM } from "jsdom";
 import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
-  const { connectedCanvasEvents } = await load("/packages/engine/src/connected-canvas-events.ts");
+  const { connectedCanvasEvents, dashboardCanvasEvents } = await load(
+    "/packages/engine/src/connected-canvas-events.ts",
+  );
   test("late Canvas creation skips cleared and detached event targets and preserves live cleanup", () => {
     const browser = new JSDOM('<div id="target"></div>');
     let state = {
@@ -39,6 +41,36 @@ await withModules(async (load) => {
     state.events.disconnect();
     assert.equal(removed, added);
     assert.equal(state.events.connected, undefined);
+    browser.window.close();
+  });
+
+  test("dashboard overlay presses reach native listeners without picking scene geometry", () => {
+    const browser = new JSDOM("<div><canvas></canvas><button><span>Room</span></button></div>");
+    const canvas = browser.window.document.querySelector("canvas");
+    const overlay = browser.window.document.querySelector("span");
+    const target = canvas.parentElement;
+    let picks = 0;
+    let nativePresses = 0;
+    let state = {
+      gl: { domElement: canvas },
+      internal: { interaction: [], lastEvent: {}, capturedMap: new Map() },
+      set: (update) => {
+        state = { ...state, ...update(state) };
+      },
+    };
+    state.events = dashboardCanvasEvents({ getState: () => state });
+    state.events.compute = () => picks++;
+    state.events.connect(target);
+    for (const type of ["pointerdown", "pointerup"]) {
+      target.addEventListener(type, () => nativePresses++);
+      overlay.dispatchEvent(new browser.window.PointerEvent(type, { bubbles: true }));
+    }
+    assert.equal(nativePresses, 2);
+    assert.equal(picks, 0);
+    for (const type of ["pointerdown", "pointerup"])
+      canvas.dispatchEvent(new browser.window.PointerEvent(type, { bubbles: true }));
+    assert.equal(nativePresses, 4);
+    assert.equal(picks, 2);
     browser.window.close();
   });
 });
