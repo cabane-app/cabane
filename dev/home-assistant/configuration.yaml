@@ -29,3 +29,5 @@ http:
 
 # Import the local integration automatically, including after a volume reset.
 cabane:
+
+cabane_seed:

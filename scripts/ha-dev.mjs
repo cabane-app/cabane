@@ -109,5 +109,5 @@ run(
 );
 compose("up", "-d", "--wait", "--wait-timeout", "360");
 console.log(
-  "Local Cabane panel: http://127.0.0.1:8123/cabane — reload the browser after rebuilding.",
+  `Local Cabane panel: http://127.0.0.1:${process.env.CABANE_HA_DEV_PORT || "8123"}/cabane — reload the browser after rebuilding.`,
 );

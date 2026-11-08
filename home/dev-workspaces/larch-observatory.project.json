@@ -1,0 +1,881 @@
+{
+  "assumptions": [],
+  "coordinates": {
+    "metersPerPlanUnit": 1,
+    "origin": [0, 0],
+    "scaleBasis": "measured"
+  },
+  "floors": [
+    {
+      "ceilings": [
+        {
+          "id": "larch-cathedral",
+          "kind": "sloped",
+          "planes": [
+            {
+              "boundary": [
+                [0, 0],
+                [5, 0],
+                [5, 13],
+                [0, 13]
+              ],
+              "highEdge": [
+                [5, 0],
+                [5, 13]
+              ],
+              "highHeightMeters": 7.25,
+              "id": "larch-west-0",
+              "lowEdge": [
+                [0, 0],
+                [0, 13]
+              ],
+              "lowHeightMeters": 2.48
+            },
+            {
+              "boundary": [
+                [5, 0],
+                [10, 0],
+                [10, 13],
+                [5, 13]
+              ],
+              "highEdge": [
+                [5, 0],
+                [5, 13]
+              ],
+              "highHeightMeters": 7.25,
+              "id": "larch-east-0",
+              "lowEdge": [
+                [10, 0],
+                [10, 13]
+              ],
+              "lowHeightMeters": 3.25
+            }
+          ],
+          "roomIds": ["ground-floor:room-1", "ground-floor:room-4"]
+        },
+        {
+          "id": "larch-wing",
+          "kind": "sloped",
+          "planes": [
+            {
+              "boundary": [
+                [10, 4.5],
+                [16, 4.5],
+                [16, 13],
+                [10, 13]
+              ],
+              "highEdge": [
+                [10, 4.5],
+                [10, 13]
+              ],
+              "highHeightMeters": 3.25,
+              "id": "larch-wing-skillion",
+              "lowEdge": [
+                [16, 4.5],
+                [16, 13]
+              ],
+              "lowHeightMeters": 2.48
+            }
+          ],
+          "roomIds": ["ground-floor:room-2", "ground-floor:room-3"]
+        }
+      ],
+      "coordinates": {
+        "metersPerPlanUnit": 1,
+        "origin": [0, 0],
+        "scaleBasis": "measured"
+      },
+      "defaultCeilingHeightMeters": 2.48,
+      "defaultWallHeightMeters": 2.48,
+      "floorToFloorHeightMeters": 3.05,
+      "footprint": [
+        [0, 0],
+        [10, 0],
+        [10, 4.5],
+        [16, 4.5],
+        [16, 13],
+        [0, 13]
+      ],
+      "groundZones": [
+        {
+          "finish": {
+            "kind": "preset",
+            "preset": "gravel"
+          },
+          "id": "ground-floor:ground-zone-24",
+          "polygon": [
+            [3.4, -6.1],
+            [6.6, -6.1],
+            [6.6, -2.7],
+            [3.4, -2.7]
+          ]
+        }
+      ],
+      "id": "ground-floor",
+      "name": "Main level",
+      "openings": [
+        {
+          "color": "#384240",
+          "finish": "white",
+          "id": "ground-floor:door-11",
+          "kind": "door",
+          "leafCount": 2,
+          "offsetFromWallStartPlanUnits": 3.05,
+          "openingHeightMeters": 2.17,
+          "operation": "sliding",
+          "sillHeightMeters": 0,
+          "variant": "full-glass",
+          "wallId": "ground-floor:wall-1",
+          "widthPlanUnits": 3.9
+        },
+        {
+          "color": "#384240",
+          "glazing": "clear",
+          "id": "ground-floor:window-12",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.9,
+          "openingHeightMeters": 1.35,
+          "operation": "fixed",
+          "panelCount": 1,
+          "sillHeightMeters": 0.74,
+          "variant": "plain",
+          "wallId": "ground-floor:wall-1",
+          "widthPlanUnits": 1.46
+        },
+        {
+          "color": "#384240",
+          "glazing": "clear",
+          "id": "ground-floor:window-13",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 7.64,
+          "openingHeightMeters": 1.35,
+          "operation": "fixed",
+          "panelCount": 1,
+          "sillHeightMeters": 0.74,
+          "variant": "plain",
+          "wallId": "ground-floor:wall-1",
+          "widthPlanUnits": 1.46
+        },
+        {
+          "color": "#384240",
+          "glazing": "clear",
+          "id": "ground-floor:window-14",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 8.45,
+          "openingHeightMeters": 1.36,
+          "operation": "fixed",
+          "panelCount": 2,
+          "sillHeightMeters": 0.72,
+          "variant": "plain",
+          "wallId": "ground-floor:wall-7",
+          "widthPlanUnits": 2.55
+        },
+        {
+          "color": "#384240",
+          "glazing": "clear",
+          "id": "ground-floor:window-15",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 0.92,
+          "openingHeightMeters": 1.36,
+          "operation": "fixed",
+          "panelCount": 2,
+          "sillHeightMeters": 0.72,
+          "variant": "plain",
+          "wallId": "ground-floor:wall-7",
+          "widthPlanUnits": 2.16
+        },
+        {
+          "id": "ground-floor:passage-16",
+          "kind": "passage",
+          "offsetFromWallStartPlanUnits": 1.12,
+          "openingHeightMeters": 2.24,
+          "sillHeightMeters": 0,
+          "variant": "rectangular",
+          "wallId": "ground-floor:wall-8",
+          "widthPlanUnits": 2.24
+        },
+        {
+          "id": "ground-floor:passage-17",
+          "kind": "passage",
+          "offsetFromWallStartPlanUnits": 5.6,
+          "openingHeightMeters": 2.15,
+          "sillHeightMeters": 0,
+          "variant": "rectangular",
+          "wallId": "ground-floor:wall-8",
+          "widthPlanUnits": 1.72
+        },
+        {
+          "id": "ground-floor:passage-18",
+          "kind": "passage",
+          "offsetFromWallStartPlanUnits": 2.39,
+          "openingHeightMeters": 2.12,
+          "sillHeightMeters": 0,
+          "variant": "rectangular",
+          "wallId": "ground-floor:wall-10",
+          "widthPlanUnits": 1.22
+        },
+        {
+          "color": "#384240",
+          "glazing": "clear",
+          "id": "ground-floor:window-19",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 1.2,
+          "openingHeightMeters": 1.39,
+          "operation": "fixed",
+          "panelCount": 2,
+          "sillHeightMeters": 0.71,
+          "variant": "plain",
+          "wallId": "ground-floor:wall-3",
+          "widthPlanUnits": 3.6
+        },
+        {
+          "color": "#384240",
+          "glazing": "clear",
+          "id": "ground-floor:window-20",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 1.05,
+          "openingHeightMeters": 1.35,
+          "operation": "fixed",
+          "panelCount": 2,
+          "sillHeightMeters": 0.73,
+          "variant": "plain",
+          "wallId": "ground-floor:wall-4",
+          "widthPlanUnits": 2.4
+        },
+        {
+          "color": "#384240",
+          "finish": "white",
+          "id": "ground-floor:door-21",
+          "kind": "door",
+          "leafCount": 2,
+          "offsetFromWallStartPlanUnits": 5.35,
+          "openingHeightMeters": 2.1,
+          "operation": "sliding",
+          "sillHeightMeters": 0,
+          "variant": "full-glass",
+          "wallId": "ground-floor:wall-4",
+          "widthPlanUnits": 2.3
+        },
+        {
+          "color": "#384240",
+          "glazing": "clear",
+          "id": "ground-floor:window-22",
+          "kind": "window",
+          "offsetFromWallStartPlanUnits": 3.9,
+          "openingHeightMeters": 1.25,
+          "operation": "fixed",
+          "panelCount": 2,
+          "sillHeightMeters": 0.75,
+          "variant": "plain",
+          "wallId": "ground-floor:wall-6",
+          "widthPlanUnits": 2.2
+        }
+      ],
+      "outdoorPlatforms": [
+        {
+          "defaultEdge": {
+            "kind": "open"
+          },
+          "edges": [
+            {
+              "id": "ground-floor:platform-23:edge-1"
+            },
+            {
+              "id": "ground-floor:platform-23:edge-2"
+            },
+            {
+              "id": "ground-floor:platform-23:edge-3"
+            },
+            {
+              "id": "ground-floor:platform-23:edge-4"
+            }
+          ],
+          "finish": {
+            "kind": "preset",
+            "preset": "light-oak-horizontal"
+          },
+          "id": "ground-floor:platform-23",
+          "polygon": [
+            [-0.7, -2.7],
+            [10.8, -2.7],
+            [10.8, 0],
+            [-0.7, 0]
+          ]
+        }
+      ],
+      "rooms": [
+        {
+          "accent": "#b88262",
+          "dashboardSlots": [],
+          "devices": [],
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "id": "ground-floor:room-1",
+          "name": "Cathedral hall",
+          "polygon": [
+            [0, 0],
+            [10, 0],
+            [10, 4.5],
+            [10, 9],
+            [0, 9]
+          ]
+        },
+        {
+          "accent": "#788678",
+          "dashboardSlots": [],
+          "devices": [],
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "limestone"
+          },
+          "id": "ground-floor:room-2",
+          "name": "Kitchen & dining",
+          "polygon": [
+            [10, 4.5],
+            [16, 4.5],
+            [16, 9],
+            [10, 9]
+          ]
+        },
+        {
+          "accent": "#738e84",
+          "dashboardSlots": [],
+          "devices": [],
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "travertine"
+          },
+          "id": "ground-floor:room-3",
+          "name": "Garden studio",
+          "polygon": [
+            [16, 9],
+            [16, 13],
+            [10, 13],
+            [10, 9]
+          ]
+        },
+        {
+          "accent": "#845d4d",
+          "dashboardSlots": [],
+          "devices": [],
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "dark-walnut"
+          },
+          "id": "ground-floor:room-4",
+          "name": "Reading library",
+          "polygon": [
+            [10, 13],
+            [0, 13],
+            [0, 9],
+            [10, 9]
+          ]
+        }
+      ],
+      "wallJunctions": [
+        {
+          "at": [0, 0],
+          "id": "junction-ground-floor:wall-1-ground-floor:wall-7-0-0",
+          "wallIds": ["ground-floor:wall-1", "ground-floor:wall-7"]
+        },
+        {
+          "at": [10, 0],
+          "id": "junction-ground-floor:wall-1-ground-floor:wall-2-10-0",
+          "wallIds": ["ground-floor:wall-1", "ground-floor:wall-2"]
+        },
+        {
+          "at": [10, 4.5],
+          "id": "junction-ground-floor:wall-2-ground-floor:wall-3-ground-floor:wall-8-10-4_5",
+          "wallIds": ["ground-floor:wall-2", "ground-floor:wall-3", "ground-floor:wall-8"]
+        },
+        {
+          "at": [16, 4.5],
+          "id": "junction-ground-floor:wall-3-ground-floor:wall-4-16-4_5",
+          "wallIds": ["ground-floor:wall-3", "ground-floor:wall-4"]
+        },
+        {
+          "at": [16, 9],
+          "id": "junction-ground-floor:wall-10-ground-floor:wall-4-16-9",
+          "wallIds": ["ground-floor:wall-10", "ground-floor:wall-4"]
+        },
+        {
+          "at": [16, 13],
+          "id": "junction-ground-floor:wall-4-ground-floor:wall-5-16-13",
+          "wallIds": ["ground-floor:wall-4", "ground-floor:wall-5"]
+        },
+        {
+          "at": [10, 13],
+          "id": "junction-ground-floor:wall-5-ground-floor:wall-6-ground-floor:wall-8-10-13",
+          "wallIds": ["ground-floor:wall-5", "ground-floor:wall-6", "ground-floor:wall-8"]
+        },
+        {
+          "at": [0, 13],
+          "id": "junction-ground-floor:wall-6-ground-floor:wall-7-0-13",
+          "wallIds": ["ground-floor:wall-6", "ground-floor:wall-7"]
+        },
+        {
+          "at": [0, 9],
+          "id": "junction-ground-floor:wall-7-ground-floor:wall-9-0-9",
+          "wallIds": ["ground-floor:wall-7", "ground-floor:wall-9"]
+        },
+        {
+          "at": [10, 9],
+          "id": "junction-ground-floor:wall-10-ground-floor:wall-8-ground-floor:wall-9-10-9",
+          "wallIds": ["ground-floor:wall-10", "ground-floor:wall-8", "ground-floor:wall-9"]
+        }
+      ],
+      "walls": [
+        {
+          "classification": "exterior",
+          "edgeColor": "#ac8263",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [0, 0],
+          "gable": {
+            "columns": 5,
+            "fill": "glass",
+            "frameColor": "#384240",
+            "transomHeightsMeters": [3.55, 4.8, 6.05]
+          },
+          "heightMeters": 2.43,
+          "id": "ground-floor:wall-1",
+          "thicknessMeters": 0.2,
+          "to": [10, 0]
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#ac8263",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [10, 0],
+          "heightMeters": 3.25,
+          "id": "ground-floor:wall-2",
+          "thicknessMeters": 0.2,
+          "to": [10, 4.5]
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#65776b",
+          "exteriorColor": "#637467",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [10, 4.5],
+          "gable": {
+            "fill": "solid"
+          },
+          "id": "ground-floor:wall-3",
+          "thicknessMeters": 0.2,
+          "to": [16, 4.5]
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#65776b",
+          "exteriorColor": "#637467",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [16, 4.5],
+          "id": "ground-floor:wall-4",
+          "thicknessMeters": 0.2,
+          "to": [16, 13]
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#65776b",
+          "exteriorColor": "#637467",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [16, 13],
+          "gable": {
+            "fill": "solid"
+          },
+          "id": "ground-floor:wall-5",
+          "thicknessMeters": 0.2,
+          "to": [10, 13]
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#ac8263",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [10, 13],
+          "gable": {
+            "fill": "solid"
+          },
+          "id": "ground-floor:wall-6",
+          "thicknessMeters": 0.2,
+          "to": [0, 13]
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#ac8263",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [0, 13],
+          "id": "ground-floor:wall-7",
+          "thicknessMeters": 0.2,
+          "to": [0, 0]
+        },
+        {
+          "classification": "interior",
+          "edgeColor": "#ac8263",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [10, 4.5],
+          "heightMeters": 3.25,
+          "id": "ground-floor:wall-8",
+          "thicknessMeters": 0.15,
+          "to": [10, 13]
+        },
+        {
+          "classification": "interior",
+          "exteriorColor": "#b68968",
+          "from": [0, 9],
+          "id": "ground-floor:wall-9",
+          "thicknessMeters": 0.12,
+          "to": [10, 9],
+          "virtual": true
+        },
+        {
+          "classification": "interior",
+          "edgeColor": "#65776b",
+          "exteriorColor": "#637467",
+          "faceColors": {
+            "left": "#e8dfcd",
+            "right": "#e8dfcd"
+          },
+          "from": [10, 9],
+          "id": "ground-floor:wall-10",
+          "thicknessMeters": 0.15,
+          "to": [16, 9]
+        }
+      ]
+    },
+    {
+      "ceilings": [
+        {
+          "id": "larch-loft-ceiling",
+          "kind": "sloped",
+          "planes": [
+            {
+              "boundary": [
+                [2.4, 9.1],
+                [5, 9.1],
+                [5, 13],
+                [2.4, 13]
+              ],
+              "highEdge": [
+                [5, 0],
+                [5, 13]
+              ],
+              "highHeightMeters": 4.2,
+              "id": "larch-west-3.05",
+              "lowEdge": [
+                [0, 0],
+                [0, 13]
+              ],
+              "lowHeightMeters": -0.5699999999999998
+            },
+            {
+              "boundary": [
+                [5, 9.1],
+                [7.6, 9.1],
+                [7.6, 13],
+                [5, 13]
+              ],
+              "highEdge": [
+                [5, 0],
+                [5, 13]
+              ],
+              "highHeightMeters": 4.2,
+              "id": "larch-east-3.05",
+              "lowEdge": [
+                [10, 0],
+                [10, 13]
+              ],
+              "lowHeightMeters": 0.20000000000000018
+            }
+          ],
+          "roomIds": ["larch-loft:room-1", "larch-loft:room-2"]
+        }
+      ],
+      "coordinates": {
+        "metersPerPlanUnit": 1,
+        "origin": [0, 0],
+        "scaleBasis": "measured"
+      },
+      "defaultCeilingHeightMeters": 2.4,
+      "defaultWallHeightMeters": 1.05,
+      "floorToFloorHeightMeters": 3.05,
+      "footprint": [
+        [2.4, 9.1],
+        [7.6, 9.1],
+        [7.6, 13],
+        [2.4, 13]
+      ],
+      "id": "larch-loft",
+      "name": "Observatory loft",
+      "openings": [],
+      "rooms": [
+        {
+          "accent": "#ab785a",
+          "dashboardSlots": [],
+          "devices": [],
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "id": "larch-loft:room-1",
+          "name": "Loft gallery",
+          "polygon": [
+            [2.4, 9.1],
+            [4.68, 9.1],
+            [6.32, 9.1],
+            [7.6, 9.1],
+            [7.6, 11.6],
+            [2.4, 11.6]
+          ]
+        },
+        {
+          "accent": "#617780",
+          "dashboardSlots": [],
+          "devices": [],
+          "floorFinish": {
+            "kind": "preset",
+            "preset": "light-oak"
+          },
+          "id": "larch-loft:room-2",
+          "name": "Observatory",
+          "polygon": [
+            [7.6, 11.6],
+            [7.6, 13],
+            [2.4, 13],
+            [2.4, 11.6]
+          ]
+        }
+      ],
+      "wallJunctions": [
+        {
+          "at": [2.4, 9.1],
+          "id": "junction-larch-loft:wall-1-larch-loft:wall-6-2_4-9_1",
+          "wallIds": ["larch-loft:wall-1", "larch-loft:wall-6"]
+        },
+        {
+          "at": [4.68, 9.1],
+          "id": "junction-larch-loft:wall-1-larch-loft:wall-2-4_68-9_1",
+          "wallIds": ["larch-loft:wall-1", "larch-loft:wall-2"]
+        },
+        {
+          "at": [6.32, 9.1],
+          "id": "junction-larch-loft:wall-2-larch-loft:wall-3-6_32-9_1",
+          "wallIds": ["larch-loft:wall-2", "larch-loft:wall-3"]
+        },
+        {
+          "at": [7.6, 9.1],
+          "id": "junction-larch-loft:wall-3-larch-loft:wall-4-7_6-9_1",
+          "wallIds": ["larch-loft:wall-3", "larch-loft:wall-4"]
+        },
+        {
+          "at": [7.6, 11.6],
+          "id": "junction-larch-loft:wall-4-larch-loft:wall-7-7_6-11_6",
+          "wallIds": ["larch-loft:wall-4", "larch-loft:wall-7"]
+        },
+        {
+          "at": [7.6, 13],
+          "id": "junction-larch-loft:wall-4-larch-loft:wall-5-7_6-13",
+          "wallIds": ["larch-loft:wall-4", "larch-loft:wall-5"]
+        },
+        {
+          "at": [2.4, 13],
+          "id": "junction-larch-loft:wall-5-larch-loft:wall-6-2_4-13",
+          "wallIds": ["larch-loft:wall-5", "larch-loft:wall-6"]
+        },
+        {
+          "at": [2.4, 11.6],
+          "id": "junction-larch-loft:wall-6-larch-loft:wall-7-2_4-11_6",
+          "wallIds": ["larch-loft:wall-6", "larch-loft:wall-7"]
+        }
+      ],
+      "walls": [
+        {
+          "classification": "exterior",
+          "edgeColor": "#a37758",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#b68968",
+            "right": "#b68968"
+          },
+          "from": [2.4, 9.1],
+          "heightMeters": 1.06,
+          "id": "larch-loft:wall-1",
+          "thicknessMeters": 0.14,
+          "to": [4.68, 9.1]
+        },
+        {
+          "classification": "exterior",
+          "exteriorColor": "#b68968",
+          "from": [4.68, 9.1],
+          "id": "larch-loft:wall-2",
+          "thicknessMeters": 0.2,
+          "to": [6.32, 9.1],
+          "virtual": true
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#a37758",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#b68968",
+            "right": "#b68968"
+          },
+          "from": [6.32, 9.1],
+          "heightMeters": 1.06,
+          "id": "larch-loft:wall-3",
+          "thicknessMeters": 0.14,
+          "to": [7.6, 9.1]
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#a37758",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#b68968",
+            "right": "#b68968"
+          },
+          "from": [7.6, 9.1],
+          "heightMeters": 1.06,
+          "id": "larch-loft:wall-4",
+          "thicknessMeters": 0.14,
+          "to": [7.6, 13]
+        },
+        {
+          "classification": "exterior",
+          "exteriorColor": "#b68968",
+          "from": [7.6, 13],
+          "id": "larch-loft:wall-5",
+          "thicknessMeters": 0.2,
+          "to": [2.4, 13],
+          "virtual": true
+        },
+        {
+          "classification": "exterior",
+          "edgeColor": "#a37758",
+          "exteriorColor": "#b68968",
+          "faceColors": {
+            "left": "#b68968",
+            "right": "#b68968"
+          },
+          "from": [2.4, 13],
+          "heightMeters": 1.06,
+          "id": "larch-loft:wall-6",
+          "thicknessMeters": 0.14,
+          "to": [2.4, 9.1]
+        },
+        {
+          "classification": "interior",
+          "exteriorColor": "#b68968",
+          "from": [2.4, 11.6],
+          "id": "larch-loft:wall-7",
+          "thicknessMeters": 0.12,
+          "to": [7.6, 11.6],
+          "virtual": true
+        }
+      ]
+    }
+  ],
+  "home": {
+    "id": "dev-larch-observatory",
+    "locale": "en",
+    "name": "Larch Observatory",
+    "palette": {
+      "accent": "#d48a54",
+      "exterior": "#c97370",
+      "ground": "#91a06a",
+      "interior": "#e4e0d8",
+      "secondary": "#758f83"
+    },
+    "roof": {
+      "color": "#3d4a46",
+      "direction": "flat",
+      "edgeColor": "#caba9e"
+    },
+    "walkStart": {
+      "at": [4.4, 3],
+      "floorId": "ground-floor"
+    }
+  },
+  "openingProfiles": {
+    "ground-floor:door-11": {},
+    "ground-floor:door-21": {},
+    "ground-floor:passage-16": {},
+    "ground-floor:passage-17": {},
+    "ground-floor:passage-18": {},
+    "ground-floor:window-12": {},
+    "ground-floor:window-13": {},
+    "ground-floor:window-14": {},
+    "ground-floor:window-15": {},
+    "ground-floor:window-19": {},
+    "ground-floor:window-20": {},
+    "ground-floor:window-22": {}
+  },
+  "roomProfiles": {
+    "ground-floor:room-1": {
+      "dashboardSlots": []
+    },
+    "ground-floor:room-2": {
+      "dashboardSlots": []
+    },
+    "ground-floor:room-3": {
+      "dashboardSlots": []
+    },
+    "ground-floor:room-4": {
+      "dashboardSlots": []
+    },
+    "larch-loft:room-1": {
+      "dashboardSlots": []
+    },
+    "larch-loft:room-2": {
+      "dashboardSlots": []
+    }
+  },
+  "sceneItems": [],
+  "schemaVersion": 2,
+  "seedRevision": "blank-v1",
+  "shortcuts": [],
+  "stairs": [
+    {
+      "at": [5.5, 4.9],
+      "id": "larch-gallery-stair",
+      "lowerFloorId": "ground-floor",
+      "railings": "both",
+      "rotationYRadians": 0,
+      "runMeters": 5.5,
+      "shape": "straight",
+      "style": "open",
+      "upperFloorId": "larch-loft",
+      "widthMeters": 1.2
+    }
+  ]
+}
