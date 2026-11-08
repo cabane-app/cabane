@@ -10,3 +10,17 @@ export function connectedCanvasEvents(store: RootStore) {
   };
   return manager;
 }
+
+/** HTML overlays share the controls' event host, but own their own presses. */
+export function dashboardCanvasEvents(store: RootStore) {
+  const manager = connectedCanvasEvents(store);
+  const handlers = manager.handlers;
+  if (!handlers) return manager;
+  for (const type of ["onPointerDown", "onPointerUp"] as const) {
+    const handle = handlers[type];
+    handlers[type] = (event) => {
+      if (event.target === store.getState().gl.domElement) handle(event);
+    };
+  }
+  return manager;
+}

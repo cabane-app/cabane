@@ -67,7 +67,8 @@ on their visible side, so the two sides of a shared wall can differ. Room change
 reset the panel's scroll position while retaining the panel itself.
 
 Clicking a room floor or an inward-facing wall surface opens that room in orbit mode;
-dragging to orbit does not select a room. Shared walls select the room on the clicked side. Room floors, interior wall faces,
+dragging to orbit does not select a room, including when the drag starts on a
+room status overlay. Shared walls select the room on the clicked side. Room floors, interior wall faces,
 and status overlays share a pointer cursor, floor highlight, and overlay hover effect. Room selection,
 status overlays, device interaction targets, and application-owned controls
 connect the scene to room/device control sheets. Scene session preferences retain

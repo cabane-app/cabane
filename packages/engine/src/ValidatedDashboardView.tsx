@@ -8,7 +8,7 @@ import { filterOverlayStatuses, loadOverlayPreferences } from "./room-status/ove
 import { resolveDashboardActionTargets } from "./action-bar/dashboard-action-targets";
 import type { WalkToolNavigation } from "./walk-tools";
 import { activateWalkTarget, canActivateWalkTarget } from "./walk-tools/activate-walk-target";
-import { connectedCanvasEvents } from "./connected-canvas-events";
+import { dashboardCanvasEvents } from "./connected-canvas-events";
 import { ScenePreview } from "./ScenePreview";
 import { RoomHoverProvider } from "./room-status/RoomHover";
 import { OrbitNavigation } from "./OrbitNavigation";
@@ -262,7 +262,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
           >
             <Suspense fallback={<div className="scene-loading">Preparing the house…</div>}>
               <Canvas
-                events={connectedCanvasEvents}
+                events={dashboardCanvasEvents}
                 shadows="percentage"
                 dpr={canvasDpr}
                 frameloop={!documentVisible ? "never" : walkMode ? "always" : "demand"}

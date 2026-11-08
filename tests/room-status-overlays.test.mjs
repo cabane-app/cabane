@@ -305,7 +305,7 @@ await withModules(async (load) => {
     assert.equal(selectSceneOverlayIds(candidates.slice(0, 8), 10).size, 8);
   });
 
-  test("selects the exact room on click", async () => {
+  test("room status buttons pass gestures through and activate only for taps or keyboard clicks", async () => {
     const dom = new JSDOM("<!doctype html><div id='root'></div>", {
       url: "http://dashboard.local/",
     });
@@ -315,6 +315,7 @@ await withModules(async (load) => {
       navigator: globalThis.navigator,
       HTMLElement: globalThis.HTMLElement,
       Event: globalThis.Event,
+      AbortController: globalThis.AbortController,
       actEnvironment: globalThis.IS_REACT_ACT_ENVIRONMENT,
     };
     Object.assign(globalThis, {
@@ -323,6 +324,7 @@ await withModules(async (load) => {
       navigator: dom.window.navigator,
       HTMLElement: dom.window.HTMLElement,
       Event: dom.window.Event,
+      AbortController: dom.window.AbortController,
       IS_REACT_ACT_ENVIRONMENT: true,
     });
     const selected = [];
@@ -337,8 +339,47 @@ await withModules(async (load) => {
           }),
         ),
       );
-      await act(async () => dom.window.document.querySelector("button").click());
+      const button = dom.window.document.querySelector("button");
+      const pointer = (type, x, pointerId = 1, target = button) =>
+        target.dispatchEvent(
+          new dom.window.PointerEvent(type, {
+            bubbles: true,
+            pointerType: "touch",
+            isPrimary: pointerId === 1,
+            pointerId,
+            clientX: x,
+          }),
+        );
+      const click = () =>
+        button.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true, detail: 1 }));
+      const bubbled = [];
+      dom.window.document.addEventListener("pointerdown", () => bubbled.push("down"));
+      dom.window.document.addEventListener("pointerup", () => bubbled.push("up"));
+      await act(async () => {
+        pointer("pointerdown", 10);
+        pointer("pointermove", 50);
+        pointer("pointerup", 10);
+        click();
+      });
+      assert.deepEqual(bubbled, ["down", "up"], "camera controls receive both ends of the drag");
+      assert.deepEqual(selected, [], "dragging back to the start still cancels the tap");
+
+      await act(async () => {
+        pointer("pointerdown", 10);
+        pointer("pointerdown", 30, 2, dom.window.document.body);
+        pointer("pointerup", 10);
+        click();
+      });
+      assert.deepEqual(selected, [], "a second touch anywhere cancels the tap");
+
+      await act(async () => {
+        pointer("pointerdown", 10);
+        pointer("pointerup", 12);
+        click();
+      });
       assert.deepEqual(selected, ["demo-room"]);
+      await act(async () => button.click());
+      assert.deepEqual(selected, ["demo-room", "demo-room"]);
 
       await act(async () =>
         root.render(
@@ -354,7 +395,7 @@ await withModules(async (load) => {
       assert.equal(hidden.getAttribute("aria-hidden"), "true");
       assert.equal(hidden.tabIndex, -1);
       await act(async () => hidden.click());
-      assert.deepEqual(selected, ["demo-room"]);
+      assert.deepEqual(selected, ["demo-room", "demo-room"]);
     } finally {
       await act(async () => root.unmount());
       dom.window.close();
@@ -364,6 +405,7 @@ await withModules(async (load) => {
         navigator: previous.navigator,
         HTMLElement: previous.HTMLElement,
         Event: previous.Event,
+        AbortController: previous.AbortController,
         IS_REACT_ACT_ENVIRONMENT: previous.actEnvironment,
       });
     }

@@ -6,7 +6,7 @@
 }
 
 .room-status-overlay-anchor {
-  pointer-events: auto !important;
+  pointer-events: none;
 }
 .room-status-overlay {
   display: grid;

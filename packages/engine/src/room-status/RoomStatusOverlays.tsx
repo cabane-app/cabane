@@ -1,4 +1,5 @@
 import { useSceneOverlay } from "./SceneOverlayLayout";
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 import { RoomDisconnectedIcon } from "../RoomDisconnectedIcon";
 import { useHoveredRoom, useRoomHoverTarget } from "./RoomHover";
 import { Html } from "@react-three/drei";
@@ -6,6 +7,8 @@ import { planPointToWorld, polygonCentroid } from "../geometry";
 import type { FloorSpec, RoomSpec } from "../types";
 import { RoomStatusBadges, roomStatusAccessibleText } from "./RoomStatusBadges";
 import type { RoomStatusMap, RoomStatusSummary } from "./model";
+
+const ROOM_TAP_TOLERANCE_PX = 10;
 
 export const roomStatusOverlayPriority = (summary: RoomStatusSummary) => {
   if (summary.doorOpen || summary.heating || summary.cooling) return 3;
@@ -71,6 +74,40 @@ export function RoomStatusOverlayButton({
   visible?: boolean;
 }) {
   const statusText = roomStatusAccessibleText(summary);
+  const press = useRef<AbortController | null>(null);
+  const pointerTap = useRef(false);
+  useEffect(() => () => press.current?.abort(), [visible]);
+  const beginPress = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    press.current?.abort();
+    pointerTap.current = false;
+    if (event.button !== 0 || !event.isPrimary) return;
+    const owner = event.currentTarget.ownerDocument;
+    const { pointerId, clientX, clientY } = event;
+    const controller = new AbortController();
+    press.current = controller;
+    const options = { capture: true, signal: controller.signal };
+    const cancel = () => controller.abort();
+    const withinTapDistance = (pointer: PointerEvent) =>
+      Math.hypot(pointer.clientX - clientX, pointer.clientY - clientY) <= ROOM_TAP_TOLERANCE_PX;
+    owner.addEventListener("pointerdown", cancel, options);
+    owner.addEventListener("pointercancel", cancel, options);
+    owner.addEventListener(
+      "pointermove",
+      (pointer) => {
+        if (pointer.pointerId === pointerId && !withinTapDistance(pointer)) cancel();
+      },
+      options,
+    );
+    owner.addEventListener(
+      "pointerup",
+      (pointer) => {
+        if (pointer.pointerId !== pointerId) return;
+        pointerTap.current = withinTapDistance(pointer);
+        cancel();
+      },
+      options,
+    );
+  };
   return (
     <button
       ref={labelRef}
@@ -83,9 +120,13 @@ export function RoomStatusOverlayButton({
       aria-hidden={!visible || undefined}
       aria-label={`Open ${roomName}${summary.connected === false ? ". Room not connected to Home Assistant" : ""}${statusText ? `. ${statusText}` : ""}`}
       tabIndex={visible ? undefined : -1}
-      onPointerDown={(event) => event.stopPropagation()}
-      onPointerUp={(event) => event.stopPropagation()}
-      onClick={visible ? onSelect : undefined}
+      onPointerDown={visible ? beginPress : undefined}
+      onClick={(event) => {
+        event.stopPropagation();
+        const activate = visible && (event.detail === 0 || pointerTap.current);
+        pointerTap.current = false;
+        if (activate) onSelect();
+      }}
     >
       <span className="room-status-overlay__name">
         {roomName}
