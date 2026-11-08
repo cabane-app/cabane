@@ -1,0 +1,8 @@
+{
+  "domain": "cabane_seed",
+  "name": "Cabane development workspaces",
+  "version": "1.0.0",
+  "dependencies": ["cabane"],
+  "codeowners": [],
+  "iot_class": "local_push"
+}

@@ -28,15 +28,29 @@ Both URLs must use loopback HTTP on the same machine. If Vite selects a differen
 port, free port 4173 and restart it, or add that exact origin to
 `dev/home-assistant/configuration.yaml` and restart HA.
 
+## Workspaces available on the dev server
+
+Home Assistant starts with [Larch Observatory](../home/dev-workspaces/larch-observatory.project.json),
+the two-level house with sloped ceilings and a glazed gable from PR #125. Open
+it from **Import a workspace** on first launch of the native Cabane panel, or
+from its **Saved in Home Assistant** card in Workspaces. In standalone Cabane,
+use **Workspaces → Import workspace → From Home Assistant** and sign in to
+`http://127.0.0.1:8123`. Opening the workspace enables sync for that browser.
+
+To add another development workspace, put a portable `*.project.json` export
+with a unique, stable `home.id` in `home/dev-workspaces/` and restart dev HA.
+Keep the export free of Home Assistant mappings and credentials. Each ID is
+seeded once per Docker volume. Edits and deletions persist across restarts.
+
 ## Recommended seed: Casa Solstice
 
 Use the checked-in [furnished Casa Solstice project](../home/showcase/furnished.project.json)
 as the default starting point for contributor testing. Import it through
 **Workspaces → Import workspace → From file**, review it, and **Save**.
-This is an explicit import, not automatic startup seeding: existing homes and
-accounts remain intact. The same file works in standalone Vite and the native
-HA panel. It contains two levels, four bedrooms, two bathrooms, a garden, pool,
-209 scene items and 62 device slots, including electric-car telemetry.
+Casa Solstice uses an explicit import. The same file works in standalone Vite
+and the native HA panel. It contains two levels, four bedrooms, two bathrooms,
+a garden, pool, 209 scene items and 62 device slots, including electric-car
+telemetry.
 
 The single seed includes the complete architecture and furnishings, with no HA
 entity identifiers or credentials.
@@ -154,6 +168,8 @@ docker compose -f dev/home-assistant/compose.yaml down --volumes
 ```
 
 This does not erase Cabane's browser workspaces. If port 8123 is occupied, stop
-the conflicting local service or change the host port in Compose and use that
-port in Cabane. Update the pinned image in `compose.yaml` deliberately and repeat
-the connection/control smoke test when upgrading HA.
+the conflicting local service or set `CABANE_HA_DEV_PORT` for `ha:up` and
+`ha:refresh` and use that port in Cabane. Keep using the same loopback address
+and port for a given volume, as saved workspaces are tied to their HA origin.
+Update the pinned image in `compose.yaml` deliberately and repeat the
+connection/control smoke test when upgrading HA.

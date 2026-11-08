@@ -4,14 +4,17 @@ services:
   homeassistant:
     image: ghcr.io/home-assistant/home-assistant:2026.10.0
     ports:
-      - "127.0.0.1:8123:8123"
+      - "127.0.0.1:${CABANE_HA_DEV_PORT:-8123}:8123"
     volumes:
       - config:/config
       - ./configuration.yaml:/config/configuration.yaml:ro
       - ../../test-results/ha-dev/custom_components/cabane:/config/custom_components/cabane:ro
+      - ./cabane_seed:/config/custom_components/cabane_seed:ro
+      - ../../home/dev-workspaces:/config/cabane-dev-workspaces:ro
     environment:
       TZ: Europe/Paris
       CABANE_LOCAL_DEVELOPMENT: "1"
+      CABANE_HA_DEV_URL: "http://127.0.0.1:${CABANE_HA_DEV_PORT:-8123}"
     healthcheck:
       test:
         - CMD
