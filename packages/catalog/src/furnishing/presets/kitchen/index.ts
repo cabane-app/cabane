@@ -16,3 +16,5 @@ export {
   CornerCountertop,
   CORNER_COUNTERTOP_SIZE,
 } from "./countertop";
+
+export * from "./oak-stone";

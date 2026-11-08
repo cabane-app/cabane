@@ -500,6 +500,7 @@ await withModules(async (load) => {
       [
         "bicycle",
         "carport",
+        "carved-stone-planter",
         "compact-car",
         "deciduous-tree",
         "electric-sedan",
@@ -538,6 +539,7 @@ await withModules(async (load) => {
         "teak-lounge-chair",
         "teak-lounge-sofa",
         "terracotta-planter",
+        "travertine-garden-bench",
         "us-mailbox",
         "wallbox",
         "watering-can",
@@ -693,6 +695,7 @@ await withModules(async (load) => {
       [
         "printer-3d",
         "adjustable-desk-lamp",
+        "bronze-armillary",
         "desktop-keyboard",
         "desktop-mouse",
         "desktop-pc-tower",

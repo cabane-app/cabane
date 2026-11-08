@@ -29,3 +29,6 @@ export * from "./shower-curtain";
 export * from "./pet-bed";
 export * from "./cat-litter-tray";
 export * from "./robot-lawn-mower";
+
+export * from "./atelier-library";
+export * from "./observatory-accents";
