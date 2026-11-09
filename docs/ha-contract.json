@@ -1,9 +1,9 @@
 {
-  "revision": 41,
+  "revision": 42,
   "fingerprint": "d5840600472d45e10872748d1957ba1f438a480a4f92b71c523ec104000ce63b",
-  "summary": "Support bounded elevation areas, local ceiling overrides, surface-relative items and same-storey stairs.",
+  "summary": "Allow walking up surface changes of up to 40 cm.",
   "breakingChanges": [
-    "Older clients must update before opening projects containing elevation settings, surface-relative placements or between-surfaces stairs. Existing projects keep their original elevations."
+    "No stored fields change. Walk stepping and accessibility diagnostics now share a 40 cm threshold instead of 30 cm; older panels retain the smaller threshold."
   ],
   "history": [
     {
@@ -284,6 +284,13 @@
       "summary": "Allow walls to lean (leanMeters)",
       "breakingChanges": [
         "No saved fields or IDs change for existing projects. Walls may now store leanMeters; older frontends and Home Assistant panels reject projects that use it."
+      ]
+    },
+    {
+      "revision": 41,
+      "summary": "Support bounded elevation areas, local ceiling overrides, surface-relative items and same-storey stairs.",
+      "breakingChanges": [
+        "Older clients must update before opening projects containing elevation settings, surface-relative placements or between-surfaces stairs. Existing projects keep their original elevations."
       ]
     }
   ],

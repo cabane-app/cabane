@@ -92,7 +92,7 @@ These home-wide edits use ordinary history, autosave, import/export and Save.
 Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
 to edit terrain. Localized elevation areas are edited with Floor → Elevation area; terrain settings continue to control the surrounding grade.
 When custom terrain leaves an exterior doorway, passage or open platform edge
-without a crossing within Walk's 30 cm step limit, Issues shows a non-blocking
+without a crossing within Walk's 40 cm step limit, Issues shows a non-blocking
 warning and Locate selects the affected opening or platform. Supporting platforms
 and connected stair landings count as access. Railed edges, windows and interior
 openings are excluded. A downward slope does not require a basement; adding a
@@ -517,4 +517,4 @@ placement; legacy absolute placements retain their existing interpretation.
 
 Walking over a local sharp drop starts gravity without requiring a jump. The walker
 keeps the current storey and lands on the actual lower surface. Upward steps retain
-the existing step-height limit; walkable slopes and stairs remain continuous.
+a 40 cm step-height limit; walkable slopes and stairs remain continuous.

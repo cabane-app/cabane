@@ -139,11 +139,22 @@ await withModules(async (load) => {
     const next = resolveTerrainWalking(project, pose, { ...pose, x: 2.1 }, () => null);
     assert.equal(next.elevation, -0.34);
     assert.equal(next.floorId, floor.id);
-    assert.deepEqual(
-      resolveTerrainWalking(project, pose, { ...pose, x: 3.1 }, () => null),
-      pose,
-      "a sharp 34 cm rise requires stairs",
-    );
+    const exit = resolveTerrainWalking(project, pose, { ...pose, x: 3.1 }, () => null);
+    assert.equal(exit.x, 3.1);
+    assert.equal(exit.elevation, 0);
+    assert.equal(exit.floorId, floor.id);
+  });
+  test("walking steps up 40 cm but blocks a 41 cm ledge", () => {
+    for (const height of [0.4, 0.41]) {
+      const project = fixture(-height),
+        floor = project.floors[0];
+      const pose = { x: 2, z: 2.95, yaw: 0, pitch: 0, floorId: floor.id, elevation: -height };
+      const next = resolveTerrainWalking(project, pose, { ...pose, z: 3.05 }, () => null);
+      assert.equal(next.z, height === 0.4 ? 3.05 : pose.z);
+      assert.equal(next.elevation, height === 0.4 ? 0 : -height);
+      const fall = resolveWalkFall(project, next, pose.elevation, () => false);
+      assert.notEqual(fall.kind, "blocked", "the fall resolver agrees with the step limit");
+    }
   });
   test("walking off a sharp edge starts a fall without a jump and cannot climb back up", () => {
     const project = fixture(-2),

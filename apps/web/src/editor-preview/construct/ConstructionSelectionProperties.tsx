@@ -181,6 +181,13 @@ export function ConstructionSelectionProperties({
         {selectedPool && <PoolProperties pool={selectedPool} editor={editor} />}
         {selectedFloorZone && (
           <div className="construction-inspector__selection">
+            <details className="elevation-controls__ceiling" open={!selectedFloorZone.elevation}>
+              <summary>Floor finish</summary>
+              <FloorFinishPalette
+                value={selectedFloorZone.finish}
+                onChange={(finish) => editor.updateFloorZone(selectedFloorZone.id, { finish })}
+              />
+            </details>
             {!editor.draft.groundZones?.some((zone) => zone.id === selectedFloorZone.id) && (
               <ElevationFields
                 id={selectedFloorZone.id}
@@ -198,13 +205,6 @@ export function ConstructionSelectionProperties({
                 }
               />
             )}
-            <details className="elevation-controls__ceiling" open={!selectedFloorZone.elevation}>
-              <summary>Floor finish</summary>
-              <FloorFinishPalette
-                value={selectedFloorZone.finish}
-                onChange={(finish) => editor.updateFloorZone(selectedFloorZone.id, { finish })}
-              />
-            </details>
             <EditorButton variant="text" type="button" onClick={editor.deleteSelected}>
               Delete floor area
             </EditorButton>
