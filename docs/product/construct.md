@@ -514,3 +514,7 @@ a local headroom override. Painting a whole room does not delete elevation areas
 Same floor stairs connect actual local heights on the same storey, with
 automatic risers and landing checks. Floor-standing items use surface-relative
 placement; legacy absolute placements retain their existing interpretation.
+
+Walking over a local sharp drop starts gravity without requiring a jump. The walker
+keeps the current storey and lands on the actual lower surface. Upward steps retain
+the existing step-height limit; walkable slopes and stairs remain continuous.

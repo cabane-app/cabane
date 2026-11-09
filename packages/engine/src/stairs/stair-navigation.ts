@@ -375,9 +375,10 @@ export const moveBuildingWalker = (
     !options.allowUnsupported
   )
     return pose;
-  if (!elevationWalkable(floor, plan)) return pose;
   const support = localSurfaceAt(floor, plan);
   const height = floorElevation + support.elevation;
+  if (height < pose.elevation - WALK_MAX_STEP_METERS) return candidate;
+  if (!elevationWalkable(floor, plan)) return pose;
   return Math.abs(height - pose.elevation) <= WALK_MAX_STEP_METERS
     ? { ...candidate, elevation: height }
     : pose;

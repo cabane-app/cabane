@@ -145,6 +145,23 @@ await withModules(async (load) => {
       "a sharp 34 cm rise requires stairs",
     );
   });
+  test("walking off a sharp edge starts a fall without a jump and cannot climb back up", () => {
+    const project = fixture(-2),
+      floor = project.floors[0];
+    const pose = { x: 2, z: 0.95, yaw: 0, pitch: 0, floorId: floor.id, elevation: 0 };
+    const next = resolveTerrainWalking(project, pose, { ...pose, z: 1.05 }, () => null);
+    assert.equal(next.z, 1.05);
+    assert.equal(next.elevation, 0, "retain feet height until gravity takes over");
+    const fall = resolveWalkFall(project, next, pose.elevation, () => false);
+    assert.equal(fall.kind, "fall");
+    assert.equal(fall.jumpHeight, 2);
+    assert.equal(fall.point.elevation, -2);
+    assert.equal(fall.point.floorId, floor.id);
+    assert.deepEqual(
+      resolveTerrainWalking(project, fall.point, { ...fall.point, z: 0.95 }, () => null),
+      fall.point,
+    );
+  });
   test("stairs reverse their physical ascent when endpoint elevations swap", () => {
     const project = fixture(0.5),
       floor = project.floors[0];

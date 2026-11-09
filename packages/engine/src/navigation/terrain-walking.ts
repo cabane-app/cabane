@@ -31,6 +31,13 @@ export function resolveTerrainWalking(
     );
     const elevation =
       levels.find((level) => level.floorId === floor.id)!.elevationMeters + support.elevation;
+    // Keep the feet at the edge height; the shared fall resolver starts gravity.
+    if (
+      floor.id === previous.floorId &&
+      elevation < previous.elevation - WALK_MAX_STEP_METERS &&
+      (pointOnFloorSupport(plan, floor) || support.id !== floor.id)
+    )
+      return { ...next, floorId: previous.floorId, elevation: previous.elevation };
     if (
       Math.abs(elevation - previous.elevation) <= WALK_MAX_STEP_METERS &&
       (pointOnFloorSupport(plan, floor) || support.id !== floor.id) &&
@@ -49,7 +56,9 @@ export function resolveTerrainWalking(
     (building.floors.some((floor) => elevationAreas(floor).length > 0)
       ? 0
       : GROUND_ELEVATION_METERS);
-  if (Math.abs(elevation - previous.elevation) > WALK_MAX_STEP_METERS) return previous;
+  if (elevation < previous.elevation - WALK_MAX_STEP_METERS)
+    return { ...next, floorId: previous.floorId, elevation: previous.elevation };
+  if (elevation - previous.elevation > WALK_MAX_STEP_METERS) return previous;
   // Door proximity must follow the grade before entering the next footprint.
   const level = levels.reduce(
     (nearest, candidate) =>

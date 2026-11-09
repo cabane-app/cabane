@@ -322,7 +322,7 @@ export function WalkCameraController({
           floorId: floor.id,
           elevation,
         };
-    if (building && airborne) {
+    if (building) {
       const fall = resolveWalkFall(
         building,
         next,
