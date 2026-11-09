@@ -169,8 +169,8 @@ export function ElevationFields({
         )}
       </section>
       {indoor && (
-        <details className="elevation-controls__ceiling">
-          <summary>Ceiling</summary>
+        <section className="elevation-controls__section" aria-label="Area ceiling">
+          <h4>Ceiling</h4>
           <p className="elevation-controls__hint">
             Keep the existing ceiling, or set a height above this area.
           </p>
@@ -197,7 +197,7 @@ export function ElevationFields({
               />
             </label>
           )}
-        </details>
+        </section>
       )}
     </div>
   );

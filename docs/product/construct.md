@@ -512,7 +512,8 @@ the flat footprint; its Width handle and numeric input control that transition.
 Platform railings and low walls remain separate from transition settings.
 Areas can share boundaries but cannot overlap, nest, or have conflicting slopes.
 
-Indoor ceilings retain their position by default. The Ceiling disclosure offers
+Indoor and outdoor area properties use open Floor finish, Elevation and Transition
+sections. Indoor ceilings retain their position by default. The open Ceiling section offers
 a local headroom override. Painting a whole room does not delete elevation areas.
 Same floor stairs connect actual local heights on the same storey, with
 automatic risers and landing checks. Floor-standing items use surface-relative

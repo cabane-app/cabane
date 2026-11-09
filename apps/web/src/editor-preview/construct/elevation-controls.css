@@ -109,19 +109,6 @@
   font-size: var(--editor-text-caption, 0.75rem);
   cursor: pointer;
 }
-.elevation-controls__ceiling {
-  border-top: 1px solid var(--editor-line);
-  padding-top: 16px;
-}
-.elevation-controls__ceiling summary {
-  cursor: pointer;
-  font-size: var(--editor-text-control, 0.875rem);
-  font-weight: 500;
-}
-.elevation-controls__ceiling[open] {
-  display: grid;
-  gap: 12px;
-}
 .construction-inspector .elevation-controls__check {
   display: flex;
   gap: 8px;
