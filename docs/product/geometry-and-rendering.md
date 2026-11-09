@@ -114,6 +114,14 @@ The closure above the wall uses the adjacent face finish on each side, hiding th
 top cap from inside the room. Along a shared edge, matching slope heights leave the seam
 open, including where the same roof continues over a loft. Cutaway omits lower
 sloped planes that intersect the selected floor footprint above its level.
+A wall with `leanMeters` is drawn sheared about its base, outward along its
+exterior normal: its openings, wall-mounted items and gable glass shear with it,
+corners where two leaning walls meet move along both, flat ceilings it meets
+follow its top, and the flat roof reaches out over that top. Sloped ceilings and
+roof slopes keep their authored edges, so a lean suits walls under a flat ceiling
+or a flat roof. Walking collision uses the wall shear over the walker’s current
+vertical range, including opening jambs and headers. Flat roof coverage follows
+each ceiling tier’s height; upper-floor coverage remains at the floor footprint.
 The exterior roof is separate procedural geometry, visible in Home's roof view.
 Connected ceiling areas merge at equal height, with higher floor coverage removed
 from lower sections. Concave outlines, detached sections, and courtyard holes are

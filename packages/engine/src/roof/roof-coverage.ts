@@ -12,6 +12,7 @@ import {
 } from "../architecture-geometry/sloped-ceiling-plane";
 import { wallSolidFootprintPolygons } from "../architecture-geometry/wall-solid-footprints";
 import { deriveFloorLevels } from "../building/floor-levels";
+import { leanWorldRings } from "../architecture-geometry/wall-lean";
 import { planPointToWorld, polygonSignedArea, worldPointToPlan } from "../geometry";
 import type { FloorSpec, PlanPoint } from "../types";
 import {
@@ -51,14 +52,17 @@ const coveredFloor = (floor: FloorSpec): MultiPolygon => {
   // are not roof openings. Only bridge enclosed voids narrower than a wall;
   // retain courtyard rings and every concavity of the exterior outline.
   const seamWidth = Math.max(0.005, ...floor.walls.map((wall) => wall.thicknessMeters)) + 0.01;
-  return domain.map(([outer, ...holes]) => [
-    outer,
-    ...holes.filter((ring) => {
-      const width = Math.max(...ring.map((p) => p[0])) - Math.min(...ring.map((p) => p[0]));
-      const depth = Math.max(...ring.map((p) => p[1])) - Math.min(...ring.map((p) => p[1]));
-      return Math.min(width, depth) > seamWidth;
-    }),
-  ]);
+  return domain.map((polygon) => {
+    const [outer, ...holes] = polygon;
+    return [
+      outer,
+      ...holes.filter((ring) => {
+        const width = Math.max(...ring.map((p) => p[0])) - Math.min(...ring.map((p) => p[0]));
+        const depth = Math.max(...ring.map((p) => p[1])) - Math.min(...ring.map((p) => p[1]));
+        return Math.min(width, depth) > seamWidth;
+      }),
+    ];
+  });
 };
 
 /** Extend a ceiling into its supporting walls; the building domain clips the result. */
@@ -157,11 +161,20 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
         }
       } else {
         const height = elevation + ceiling.heightMeters + ROOF_CEILING_DEPTH_METERS;
+        const ceilingDomain = domain.map((polygon) =>
+          leanWorldRings(polygon, floor, ceiling.heightMeters),
+        );
         const polygons = flat.get(height) ?? [];
         const coveredRooms = rooms.filter((room) => ceiling.roomIds.includes(room.id));
         for (const room of coveredRooms)
-          polygons.push(...ceilingWithWalls(worldPolygon(room.polygon, floor), margin, domain));
-        if (!rooms.length) polygons.push(...domain);
+          polygons.push(
+            ...ceilingWithWalls(
+              leanWorldRings(worldPolygon(room.polygon, floor), floor, ceiling.heightMeters),
+              margin,
+              ceilingDomain,
+            ),
+          );
+        if (!rooms.length) polygons.push(...ceilingDomain);
         flat.set(height, polygons);
       }
     }
@@ -179,7 +192,9 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
     ) {
       // A continuous ceiling also covers wall tops and enclosed construction
       // seams, rather than reproducing room-level gaps in the finished roof.
-      tiers[0].polygons = domain;
+      tiers[0].polygons = domain.map((polygon) =>
+        leanWorldRings(polygon, floor, tiers[0].baseHeight - elevation - ROOF_CEILING_DEPTH_METERS),
+      );
     }
     const regions = tiers.flatMap((tier) => {
       const higher = tiers.filter((other) => other.baseHeight > tier.baseHeight + 0.001);
@@ -216,9 +231,11 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
       }));
     });
     const aboveAuthoredSlope = slopes.length
-      ? above.flatMap((coverage, offset) => {
+      ? upperCoverage.flatMap((coverage, offset) => {
           const upperIndex = index + 1 + offset;
           const upperRoof = roofsByFloor[upperIndex];
+          // A slope stops at the floor above itself, not at the wall tops a flat
+          // roof reaches over: a wall under the slope near that floor would punch through it.
           if (!upperRoof.some((region) => region.heightAt)) return [coverage];
           // The upper wall assembly extends past its authored ceiling. Cutting
           // to the wall edge would leave a gap where the two slopes should meet.

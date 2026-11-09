@@ -49,6 +49,7 @@ import { LegacyDeviceItemRenderer, SceneItemRenderer } from "../SceneItemRendere
 import { ArchitecturalWall, ArchitecturalWalls } from "../architecture-scene/ArchitecturalWalls";
 import { PolygonSurface } from "../architecture-scene/ArchitecturePolygonSurface";
 import { CeilingSurfaces } from "../architecture-scene/CeilingSurfaces";
+import { WallLeanGroup } from "../architecture-scene/WallLeanGroup";
 import { DioramaGround } from "../architecture-scene/DioramaGround";
 import {
   EMPTY_MEDIA,
@@ -205,25 +206,20 @@ export const FloorScene = memo(function FloorScene({
             ? manifest.extensions.openingModels[opening.visualModel]
             : undefined
           : undefined;
-        if (CustomModel) {
-          return (
-            <SceneOpeningRenderer
-              model={CustomModel}
-              key={opening.id}
-              wall={wall}
-              opening={opening}
-              floor={sourceFloor}
-              position={openingPositions[opening.id] ?? 0}
-              reducedMotion={reducedMotion}
-            />
-          );
-        }
-        return opening.kind === "door" ? (
+        const rendered = CustomModel ? (
+          <SceneOpeningRenderer
+            model={CustomModel}
+            wall={wall}
+            opening={opening}
+            floor={sourceFloor}
+            position={openingPositions[opening.id] ?? 0}
+            reducedMotion={reducedMotion}
+          />
+        ) : opening.kind === "door" ? (
           <SceneOpeningRenderer
             model={DoorModel}
             walkMode={walkMode}
             onInteract={interactionMode === "runtime" ? onInteract : undefined}
-            key={opening.id}
             wall={wall}
             opening={opening}
             floor={floor}
@@ -233,7 +229,6 @@ export const FloorScene = memo(function FloorScene({
         ) : opening.kind === "window" ? (
           <SceneOpeningRenderer
             model={WindowModel}
-            key={opening.id}
             wall={wall}
             opening={opening}
             floor={floor}
@@ -243,13 +238,18 @@ export const FloorScene = memo(function FloorScene({
         ) : (
           <SceneOpeningRenderer
             model={PassageModel}
-            key={opening.id}
             wall={wall}
             opening={opening}
             floor={floor}
             position={1}
             reducedMotion={reducedMotion}
           />
+        );
+        // Windows and doors shear with a leaning wall.
+        return (
+          <WallLeanGroup key={opening.id} wall={wall} floor={floor}>
+            {rendered}
+          </WallLeanGroup>
         );
       })}
       {showCeiling && (
@@ -270,21 +270,38 @@ export const FloorScene = memo(function FloorScene({
             )[item.modelId];
             const states =
               roomStates[roomIdForItem(item, floor, definition) ?? outsideRoomId] ?? EMPTY_STATES;
+            // A wall-mounted item tilts with its wall when the wall leans.
+            const wall =
+              item.placement.kind === "wall"
+                ? floor.walls.find(
+                    (candidate) =>
+                      item.placement.kind === "wall" && candidate.id === item.placement.wallId,
+                  )
+                : undefined;
+            const rendered = (
+              <SceneItemRenderer
+                item={item}
+                floor={floor}
+                furnishingModels={manifest.extensions.furnishingModels}
+                deviceModels={declarativeDeviceModels}
+                resolvedDevice={resolvedDeviceById[item.id]}
+                entityStatesBySlotId={states}
+                reducedMotion={reducedMotion}
+                walkMode={walkMode}
+                onInteract={onInteract}
+                liveMediaByEntityId={liveMediaByEntityId}
+                outlineColor={manifest.home.palette.accent}
+              />
+            );
             return (
               <Fragment key={item.id}>
-                <SceneItemRenderer
-                  item={item}
-                  floor={floor}
-                  furnishingModels={manifest.extensions.furnishingModels}
-                  deviceModels={declarativeDeviceModels}
-                  resolvedDevice={resolvedDeviceById[item.id]}
-                  entityStatesBySlotId={states}
-                  reducedMotion={reducedMotion}
-                  walkMode={walkMode}
-                  onInteract={onInteract}
-                  liveMediaByEntityId={liveMediaByEntityId}
-                  outlineColor={manifest.home.palette.accent}
-                />
+                {wall?.leanMeters ? (
+                  <WallLeanGroup wall={wall} floor={floor}>
+                    {rendered}
+                  </WallLeanGroup>
+                ) : (
+                  rendered
+                )}
                 {!walkMode && interactionMode !== "editor" && (
                   <ItemEntityReadings item={item} floor={floor} states={states} />
                 )}

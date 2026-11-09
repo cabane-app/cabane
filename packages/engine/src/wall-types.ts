@@ -86,6 +86,8 @@ export interface WallSpec {
   virtual?: boolean;
   niches?: readonly WallNicheSpec[];
   heightMeters?: number;
+  /** How far the wall's top sits outward of its base (negative leans in). */
+  leanMeters?: number;
   exteriorColor?: string;
   edgeColor?: string;
   faceFinishes?: { left?: WallSurfaceFinish; right?: WallSurfaceFinish };

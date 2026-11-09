@@ -116,8 +116,9 @@ from the editable wall graph while retaining room identities where possible.
 Incomplete shells and ambiguous room merges produce actionable diagnostics.
 Construct derives flat ceilings for newly drawn rooms. Imported sloped ceilings
 retain their authored coordinates for rooms that keep their identities after an
-edit. Imported wall gables follow the walls that own them through moves, edits,
-history and Save. Drawing slopes and gables is a separate authoring step.
+edit. Imported wall gables and `leanMeters` follow the walls that own them through
+moves, edits, history and Save. Drawing slopes, gables and leans is a separate
+authoring step.
 Room identity anchors stay strictly inside valid room polygons, including concave
 rooms. Renaming or editing room finishes preserves identities and metadata through
 history, Save and reopening without introducing a false merge.

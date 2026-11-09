@@ -1,3 +1,4 @@
+import { polygonContact } from "./walk-polygon-collision";
 import {
   BoxWalkCollider,
   SegmentWalkCollider,
@@ -139,6 +140,12 @@ export const resolveCircleMovement = (
       for (const collider of colliders) {
         if (collider.kind === "segment") {
           resolveSegmentCollision(result, collider, radius);
+        } else if (collider.kind === "polygon") {
+          const contact = polygonContact(result, collider.points);
+          if (contact.distance < radius) {
+            result.x += contact.normal.x * (radius - contact.distance);
+            result.z += contact.normal.z * (radius - contact.distance);
+          }
         } else {
           resolveBoxCollision(result, collider, radius);
         }

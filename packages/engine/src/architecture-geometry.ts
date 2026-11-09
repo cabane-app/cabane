@@ -33,6 +33,7 @@ import {
   ArchitecturalWallGeometryGroup,
   createWallAssemblyPointTest,
 } from "./architecture-geometry/wall-solid-footprints";
+import { leanPositions } from "./architecture-geometry/wall-lean";
 import type { FloorSpec, WallSpec, WallSurfaceFinish } from "./types";
 import { wallSurfaceRepeatHeight } from "./wall-types";
 
@@ -371,6 +372,7 @@ export function buildArchitecturalWallGeometries(
   }
 
   return [...buffersByDirection.values()].map((buffers) => {
+    leanPositions(buffers.positions, sourceFloor);
     const geometry = new BufferGeometry();
     geometry.userData.preservePlanarFaces = true;
     geometry.setAttribute("position", new Float32BufferAttribute(buffers.positions, 3));
@@ -412,6 +414,7 @@ export function buildWallGableGlass(floor: FloorSpec) {
     });
   }
   return [...groups.values()].map(({ outwardNormal, positions }) => {
+    leanPositions(positions, floor);
     const geometry = new BufferGeometry();
     geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
     geometry.computeVertexNormals();
