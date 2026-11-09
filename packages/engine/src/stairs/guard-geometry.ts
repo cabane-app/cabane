@@ -188,7 +188,14 @@ export function deriveStairGuardSegments(
               p,
               q,
               offset,
-              flight.upperSupportWorld,
+              flight.upperSurfaceSupport?.boundariesWorld ?? flight.upperSupportWorld,
+              flight.upperSurfaceSupport
+                ? ([x, z]) =>
+                    Math.abs(
+                      flight.upperSurfaceSupport!.heightAt({ x, z }) -
+                        (flight.baseElevationMeters + flight.riseMeters),
+                    ) < 0.001
+                : undefined,
             )) {
               const at = (t: number) =>
                 [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t] as const;

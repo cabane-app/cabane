@@ -3,7 +3,7 @@ import { planPointToWorld, worldPointToPlan } from "../geometry";
 import type { Polygon } from "../types";
 import type { BuildingGeometry, StairSpec } from "./types";
 import { SPIRAL_CORE_RADIUS_METERS } from "./spiral-geometry";
-import { resolveStairConnection, reverseStairRoute } from "./stair-connection";
+import { resolveStairConnection, reverseStairRoute, stairSurfaceSupport } from "./stair-connection";
 import { stairShapeGeometry } from "./stair-shape-geometry";
 
 export const STAIR_LANDING_METERS = 0.6;
@@ -107,6 +107,12 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
     path,
     entranceForward,
     exitForward,
+    upperSurfaceSupport: stair.terrain?.surfaces
+      ? stairSurfaceSupport(
+          building,
+          building.floors.find((floor) => floor.id === stair.terrain?.floorId)!,
+        )
+      : undefined,
     upperSupportWorld: building.floors
       .filter((floor) => floor.id === connection.upperFloorId)
       .flatMap((floor) =>

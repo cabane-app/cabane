@@ -7,6 +7,7 @@ export function supportedGuardIntervals(
   b: Point,
   offset: Point,
   polygons: readonly (readonly Point[])[],
+  supports?: (point: Point) => boolean,
 ) {
   const dx = b[0] - a[0],
     dz = b[1] - a[1];
@@ -29,9 +30,12 @@ export function supportedGuardIntervals(
   return breaks.slice(1).flatMap((end, i): [number, number][] => {
     const begin = breaks[i],
       mid = (begin + end) / 2;
-    return end - begin > 1e-8 &&
-      polygons.some((p) => pointInsidePolygon([start[0] + dx * mid, start[1] + dz * mid], p))
-      ? [[begin, end]]
-      : [];
+    const at = (t: number): Point => [start[0] + dx * t, start[1] + dz * t];
+    // Probe inside each boundary interval: a slope cannot support a horizontal guard.
+    const inset = Math.min(1e-6, (end - begin) / 4);
+    const supported = supports
+      ? [begin + inset, mid, end - inset].every((t) => supports(at(t)))
+      : polygons.some((p) => pointInsidePolygon(at(mid), p));
+    return end - begin > 1e-8 && supported ? [[begin, end]] : [];
   });
 }

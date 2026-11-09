@@ -1,14 +1,38 @@
-import { localSurfaceAt, terrainLocalHeight } from "../elevation/surfaces";
-import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
+import { elevationCutouts, localSurfaceAt, terrainLocalHeight } from "../elevation/surfaces";
+import { floorSupportPolygons, pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { planPointToWorld, worldPointToPlan } from "../geometry";
 import { createTerrainSurface } from "../terrain/terrain-surface";
-import type { FloorCoordinates } from "../types";
+import type { FloorCoordinates, FloorSpec } from "../types";
 import { stairShapeGeometry } from "./stair-shape-geometry";
 import type { BuildingGeometry, StairSpec } from "./types";
 
 export const stairFloorIds = (stair: StairSpec): readonly string[] =>
   stair.terrain ? [stair.terrain.floorId] : [stair.lowerFloorId, stair.upperFloorId];
+
+/** Physical surfaces beside a flight, before its own clearance is cut away. */
+export function stairSurfaceSupport(building: BuildingGeometry, floor: FloorSpec) {
+  const elevation = deriveFloorLevels(building.floors).find(
+    (level) => level.floorId === floor.id,
+  )!.elevationMeters;
+  const terrain = createTerrainSurface(building.home?.terrain, building.floors);
+  const groundAt = terrainLocalHeight(
+    floor,
+    terrain ? (x, z) => terrain.offsetAt(x, z) : undefined,
+  );
+  return {
+    boundariesWorld: [...floorSupportPolygons(floor), ...elevationCutouts(floor)].map((polygon) =>
+      polygon.map((p) => planPointToWorld(p, floor.coordinates)),
+    ),
+    heightAt(point: { x: number; z: number }) {
+      const p = worldPointToPlan(point, floor.coordinates);
+      const surface = localSurfaceAt(floor, p, groundAt);
+      return pointOnFloorSupport(p, floor) || surface.id !== floor.id
+        ? elevation + surface.elevation
+        : groundAt(p);
+    },
+  };
+}
 
 /** Route endpoints depend only on the plan, before its vertical connection is resolved. */
 export function stairRouteEnd(stair: StairSpec, coordinates: FloorCoordinates, upper: boolean) {
@@ -30,20 +54,9 @@ export function resolveStairConnection(building: BuildingGeometry, stair: StairS
     const terrainElevation = terrain?.offsetAt(point.x, point.z) ?? 0;
     const elevation = levels.find((level) => level.floorId === floor.id)!.elevationMeters;
     if (stair.terrain.surfaces) {
-      const height = (upper: boolean) => {
-        const p = worldPointToPlan(
-          stairRouteEnd(stair, building.coordinates, upper),
-          building.coordinates,
-        );
-        const surface = localSurfaceAt(
-          floor,
-          p,
-          terrainLocalHeight(floor, terrain ? (x, z) => terrain.offsetAt(x, z) : undefined),
-        );
-        return pointOnFloorSupport(p, floor) || surface.id !== floor.id
-          ? elevation + surface.elevation
-          : terrainLocalHeight(floor, terrain ? (x, z) => terrain.offsetAt(x, z) : undefined)(p);
-      };
+      const support = stairSurfaceSupport(building, floor);
+      const height = (upper: boolean) =>
+        support.heightAt(stairRouteEnd(stair, building.coordinates, upper));
       return {
         lowerFloorId: floor.id,
         upperFloorId: floor.id,

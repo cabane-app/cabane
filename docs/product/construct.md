@@ -234,20 +234,22 @@ either endpoint to change length/direction, or either side handle to resize widt
 symmetrically. Measurements update throughout the gesture. Escape and interrupted
 gestures cancel; each completed gesture is one undoable edit.
 
-Stairs offers **Between floors** and **To ground** connections. Between floors
-links adjacent storeys. To ground links the selected floor or its outdoor platform
-to terrain without requiring another floor. It remains available on the top floor;
-apartment shells must be set to zero first. For a straight flight, draw from the
-floor landing to the ground endpoint. For a turning flight, click the floor landing,
-the turn, then the ground endpoint. Height and step count follow the terrain at
-that endpoint, including after later terrain edits. Landing warnings identify
-unsupported floor connections, pools and terrain that cannot meet the final step.
-Connected terrain stairs resolve the corresponding terrain exit warning and are
-walkable in both directions. They use ordinary undo, autosave, Save and export.
+Stairs offers **Between floors** and **Same floor** connections. Between floors
+links adjacent storeys. Same floor connects the actual surfaces at both endpoints:
+room floors, elevation areas, outdoor platforms, or terrain. It is the default
+when there is no floor above, and remains available inside apartment shells.
+There is no separate terrain/platform choice. For a straight flight, click or drag
+between the two surfaces in either direction. For a turning flight, click the
+starting surface, the turn, then the destination. Height, direction and step count
+follow both surfaces after edits. Landing warnings identify unsupported, sloping
+or obstructed landings. Existing saved terrain connections retain their legacy
+height semantics. Connections use ordinary undo, autosave, Save and export.
+Upper guards are clipped to surrounding surfaces at the upper landing's actual
+height; they never float above a lowered area or rest on a sloped transition.
 
 Both connections offer **Open treads**, **Concrete**, and **Stone** styles,
 independent of the four stair shapes. Concrete uses a solid base and closed risers;
-Stone adds contrasting stone tread caps. To ground starts with Concrete, while
+Stone adds contrasting stone tread caps. Same floor starts with Concrete, while
 Between floors and existing stairs retain Open treads. Railings remain optional.
 The placement thumbnails show the selected style; selected stair properties can
 change it without altering the route or landings.
@@ -509,6 +511,6 @@ Areas can share boundaries but cannot overlap, nest, or have conflicting slopes.
 
 Indoor ceilings retain their position by default. The Ceiling disclosure offers
 a local headroom override. Painting a whole room does not delete elevation areas.
-Between surfaces stairs connect actual local heights on the same storey, with
+Same floor stairs connect actual local heights on the same storey, with
 automatic risers and landing checks. Floor-standing items use surface-relative
 placement; legacy absolute placements retain their existing interpretation.

@@ -112,15 +112,14 @@ export function useEditorConstructionTools(
     [constructEditorPaintRoomFloor, floorFinish, pendingRoomPaintId],
   );
 
-  const startStairs = (connection?: "floors" | "terrain" | "surfaces") => {
+  const startStairs = (connection?: "floors" | "surfaces") => {
     constructEditorSetTool("select");
     constructEditorClearSelection();
     const index = project.floors.findIndex((f) => f.id === activeFloorId);
     const floor = project.floors[index];
     const upperFloor = project.floors[index + 1];
     if (!floor) return;
-    const terrain =
-      connection === "terrain" || connection === "surfaces" || (!connection && !upperFloor);
+    const terrain = connection === "surfaces" || (!connection && !upperFloor);
     if (!terrain && !upperFloor) return;
     setStairDialog(null);
     setStairPlacement({
@@ -130,7 +129,7 @@ export function useEditorConstructionTools(
             terrain: {
               floorId: activeFloorId,
               end: "lower" as const,
-              ...(connection === "surfaces" ? { surfaces: true } : {}),
+              surfaces: true,
             },
           }
         : { lowerFloorId: activeFloorId, upperFloorId: upperFloor!.id }),
