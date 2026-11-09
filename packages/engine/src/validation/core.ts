@@ -117,6 +117,7 @@ export const STABLE_MODELS = new Set([
   "rattan-bell-pendant",
   "round-globe-wall-lamp",
   "smoked-globe-wall-light",
+  "outdoor-wall-lantern",
   "wall-reading-spot",
   "oak-wall-uplight",
   "six-globe-ceiling-lamp",

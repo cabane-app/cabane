@@ -523,6 +523,7 @@ await withModules(async (load) => {
         "outdoor-fire-pit",
         "outdoor-side-table",
         "outdoor-storage-box",
+        "outdoor-wall-lantern",
         "patio-parasol",
         "pergola-string-lights",
         "pickup-truck",

@@ -217,6 +217,7 @@ await withModules(async (load) => {
     "rattan-bell-pendant",
     "round-globe-wall-lamp",
     "smoked-globe-wall-light",
+    "outdoor-wall-lantern",
     "wall-reading-spot",
     "oak-wall-uplight",
     "six-globe-ceiling-lamp",
@@ -438,6 +439,7 @@ await withModules(async (load) => {
       "rattan-bell-pendant",
       "round-globe-wall-lamp",
       "smoked-globe-wall-light",
+      "outdoor-wall-lantern",
       "wall-reading-spot",
       "oak-wall-uplight",
       "six-globe-ceiling-lamp",
@@ -540,7 +542,7 @@ await withModules(async (load) => {
                     ? 35
                     : id === "pergola-string-lights"
                       ? 17
-                      : id === "computer-fan"
+                      : ["computer-fan", "outdoor-wall-lantern"].includes(id)
                         ? 20
                         : 16),
       );
@@ -1307,7 +1309,7 @@ await withModules(async (load) => {
         assert.ok(triangles <= definition.complexity.triangles, `${id}: ${triangles} triangles`);
         assert.equal(
           renderer.scene.findAll((node) => node.props.name?.includes("fan-blade-")).length,
-          id === "ceiling-fan" ? 4 : id === "computer-fan" ? 5 : 3,
+          id === "ceiling-fan" ? 4 : ["computer-fan", "outdoor-wall-lantern"].includes(id) ? 5 : 3,
         );
         assert.equal(renderer.scene.findAll((node) => node.instance.isLight).length, 0);
         assert.equal(

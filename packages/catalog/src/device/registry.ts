@@ -1,3 +1,4 @@
+import { outdoorWallLanternDefinition } from "./definitions/outdoor-wall-lantern";
 import { clothesIronDefinition } from "./clothes-iron";
 import { tripodTelevisionDefinition } from "./presets/media/tripod-television";
 import { wallboxDefinition } from "./wallbox";
@@ -311,6 +312,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
   "rattan-bell-pendant": rattanBellPendantDeviceDefinition,
   "round-globe-wall-lamp": roundGlobeWallLampDeviceDefinition,
   "smoked-globe-wall-light": smokedGlobeWallLightDeviceDefinition,
+  "outdoor-wall-lantern": outdoorWallLanternDefinition,
   "wall-reading-spot": wallReadingSpotDeviceDefinition,
   "oak-wall-uplight": oakWallUplightDeviceDefinition,
   "six-globe-ceiling-lamp": sixGlobeCeilingLampDeviceDefinition,

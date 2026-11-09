@@ -23,3 +23,5 @@ export { UnderCabinetLedStripModel, UNDER_CABINET_LED_STRIP_SIZE } from "./under
 export { WhiteDomePendantModel } from "./white-dome-pendant";
 
 export { HearthTableLampModel, HEARTH_TABLE_LAMP_SIZE } from "./hearth-table-lamp";
+
+export { OutdoorWallLanternModel, OUTDOOR_WALL_LANTERN_SIZE } from "./outdoor-wall-lantern";

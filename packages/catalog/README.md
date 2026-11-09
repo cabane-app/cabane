@@ -1235,3 +1235,15 @@ planter is a hollow vessel with recessed soil, ready for a separately placed pla
 | `travertine-garden-bench`   | 180 × 45 × 50  | Outdoor / Seating       |
 | `carved-stone-planter`      | 64 × 72 × 64   | Outdoor / Garden        |
 | `travertine-pedestal-table` | 50 × 52 × 50   | Living room / Tables    |
+
+## Outdoor wall lantern
+
+**Outdoor wall lantern** (`outdoor-wall-lantern`, `OutdoorWallLanternModel`) appears
+in Arrange → Outdoor → Lighting and All items. The supplied photo informs its
+black iron scroll bracket, shaped backplate, flared square roof, tapered clear
+glass body and hanging warm bulb. The **30 × 65 × 46 cm** envelope (width × height
+× depth) is inferred, not a manufacturer measurement. Proportional resizing
+preserves the silhouette. The bottom is Y=0 and wall contact is Z=0. Each copy
+accepts a manual `light` binding with existing on/off and brightness controls,
+state-aware bulb emission and engine-owned warm lighting. The component and
+`OUTDOOR_WALL_LANTERN_SIZE` are exported from `@cabane/catalog/device`.
