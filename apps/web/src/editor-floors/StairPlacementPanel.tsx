@@ -96,6 +96,13 @@ export function StairPlacementPanel({
               ? "Click the bottom, landing center, then the upper endpoint. Escape cancels."
               : "Drag from bottom to top, or click each endpoint. Escape cancels."}
       </p>
+      {issues
+        .filter((issue) => issue.severity !== "warning")
+        .map((issue) => (
+          <p role="alert" key={issue.code}>
+            {issue.message}
+          </p>
+        ))}
       <StairWarnings issues={issues} compact />
       <EditorButton variant="text" onClick={onCancel}>
         Cancel stairs

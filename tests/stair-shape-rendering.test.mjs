@@ -9,6 +9,68 @@ await withModules(async (load) => {
   const { StairPlan } = await load("/packages/engine/src/stairs/models/StairPlan.tsx");
   const { deriveStairFlight } = await load("/packages/engine/src/stairs/flight-geometry.ts");
   const { makeStairProject } = await load("/tests/fixtures/multiple-floors.ts");
+  const { CabaneDomProvider } = await load("/packages/engine/src/CabaneDom.tsx");
+  const { EditableStair } = await load("/apps/web/src/editor-floors/EditableStair.tsx");
+
+  test("a stair whose landings become level stays selectable and can be moved to a valid height", async () => {
+    const building = makeStairProject();
+    const stair = {
+      id: "terrace-stair",
+      at: [4, -1],
+      rotationYRadians: 0,
+      runMeters: 0.5,
+      widthMeters: 1,
+      terrain: { floorId: "ground", end: "upper", surfaces: true },
+    };
+    building.stairs = [stair];
+    assert.equal(deriveStairFlight(building, stair), null);
+    let selections = 0;
+    const commits = [];
+    const renderer = await create(
+      createElement(
+        CabaneDomProvider,
+        { environment: { eventTarget: new EventTarget() } },
+        createElement(EditableStair, {
+          building,
+          stair,
+          activeFloorId: "ground",
+          enabled: true,
+          selected: false,
+          onSelect: () => selections++,
+          onCommit: (value) => commits.push(value),
+          onDraggingChange() {},
+          onGoToFloor() {},
+          onDelete() {},
+        }),
+      ),
+    );
+    const pointer = (z, clientY) => ({
+      button: 0,
+      pointerId: 1,
+      stopPropagation() {},
+      nativeEvent: { clientX: 10, clientY },
+      ray: new Raycaster(new Vector3(4, 10, z), new Vector3(0, -1, 0)).ray,
+      target: { setPointerCapture() {}, releasePointerCapture() {}, hasPointerCapture: () => true },
+    });
+    try {
+      const target = renderer.scene.findByProps({ name: "stair-plan-hit-terrace-stair" });
+      const canvas = renderer.scene.instance.__r3f.root.getState().gl.domElement;
+      canvas.getBoundingClientRect = () => ({ left: 0, top: 0, right: 100, bottom: 100 });
+      await renderer.fireEvent(target, "pointerDown", pointer(-1, 10));
+      assert.equal(selections, 1);
+      await renderer.fireEvent(target, "pointerMove", pointer(-2, 20));
+      await renderer.fireEvent(target, "pointerUp", pointer(-2, 20));
+      assert.deepEqual(commits, []);
+      await renderer.fireEvent(target, "pointerDown", pointer(-1, 10));
+      await renderer.fireEvent(target, "pointerMove", pointer(-0.25, 20));
+      await renderer.fireEvent(target, "pointerUp", pointer(-0.25, 20));
+      assert.equal(commits.length, 1);
+      assert.ok(deriveStairFlight(building, commits[0]));
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("plan hit geometry follows a spiral circle and an L footprint rather than a straight rectangle", async () => {
     const project = makeStairProject(),
       base = {

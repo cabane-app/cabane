@@ -6,7 +6,7 @@ import { Plane, Raycaster, Vector2, Vector3 } from "three";
 import {
   planPointToWorld,
   worldPointToPlan,
-  deriveStairFlight,
+  deriveStairPlanFlight,
   stairFloorIds,
   connectStairToTerrain,
   StairPlan,
@@ -79,7 +79,7 @@ export function StairPlacement({
     onDraggingChange,
     validation,
   };
-  const flight = candidate ? deriveStairFlight(building, candidate) : null;
+  const flight = candidate ? deriveStairPlanFlight(building, candidate) : null;
   const dom = useCabaneDom();
   useEffect(() => {
     const canvas = gl.domElement;
@@ -206,8 +206,8 @@ export function StairPlacement({
         setSnap(null);
         return;
       }
-      latest.current.validation.flush(next);
-      latest.current.onComplete(next);
+      const issues = latest.current.validation.flush(next);
+      if (issues.every((issue) => issue.severity === "warning")) latest.current.onComplete(next);
     };
     const interrupted = (event: PointerEvent) => {
       if (pointer === event.pointerId) cancel();
@@ -244,7 +244,10 @@ export function StairPlacement({
         <>
           <StairPlan
             flight={flight}
-            invalid={validation.issues.some((issue) => issue.severity !== "warning")}
+            invalid={
+              flight.riseMeters === 0 ||
+              validation.issues.some((issue) => issue.severity !== "warning")
+            }
           />
           <StairFeedback flight={flight} />
         </>

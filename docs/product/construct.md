@@ -283,7 +283,9 @@ runs of 0.75 times the floor height, and a right turn.
 During stair drawing, movement, and resizing, a labeled, noninteractive guide shows the
 other connected floor’s footprint, walls, openings, and pools. The active floor and saved
 Show floor below preference remain unchanged. Diagnostics update during gestures at most
-every 100 ms, with immediate validation of the release point. Nondegenerate stairs remain editable in the autosaved draft. Width and slope are
+every 100 ms, with immediate validation of the release point. Placing or moving stairs
+requires different landing heights. If a surface edit levels both landings, the stair
+stays selectable in red in plan so it can be moved or deleted. Width and slope are
 not modeling restrictions. Physical intersections and unsupported landings produce
 nonblocking warnings; malformed dimensions and invalid floor connections still block
 Apply. Spiral diameter must exceed its 0.2 m core diameter and turn remains in (0, 360].

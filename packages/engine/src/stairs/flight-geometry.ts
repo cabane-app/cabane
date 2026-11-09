@@ -7,7 +7,7 @@ import { resolveStairConnection, reverseStairRoute, stairSurfaceSupport } from "
 import { stairShapeGeometry } from "./stair-shape-geometry";
 
 export const STAIR_LANDING_METERS = 0.6;
-export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) => {
+function deriveStairGeometry(building: BuildingGeometry, stair: StairSpec, allowLevel: boolean) {
   if (![...stair.at, stair.rotationYRadians].every(Number.isFinite)) return null;
   const dimensions =
     stair.shape === "spiral"
@@ -36,7 +36,12 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
     if (!connection) return null;
   }
   const { baseElevationMeters, riseMeters } = connection;
-  if (!Number.isFinite(riseMeters) || riseMeters <= 0) return null;
+  if (
+    !Number.isFinite(riseMeters) ||
+    riseMeters < 0 ||
+    (riseMeters === 0 && !(allowLevel && stair.terrain?.surfaces))
+  )
+    return null;
   const stepCount = Math.max(2, Math.min(512, Math.ceil(riseMeters / 0.2)));
   const [x, z] = planPointToWorld(stair.at, building.coordinates);
   const forward = [Math.sin(stair.rotationYRadians), Math.cos(stair.rotationYRadians)] as const;
@@ -126,7 +131,14 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
     lowerLanding: landing(false),
     upperLanding: landing(true),
   };
-};
+}
+export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) =>
+  deriveStairGeometry(building, stair, false);
+
+/** Keep a level same-floor stair editable in plan, without producing a physical flight. */
+export const deriveStairPlanFlight = (building: BuildingGeometry, stair: StairSpec) =>
+  deriveStairGeometry(building, stair, true);
+
 export type StairFlight = NonNullable<ReturnType<typeof deriveStairFlight>>;
 export const deriveStairApertures = (building: BuildingGeometry) =>
   building.stairs.flatMap((stair) => {
