@@ -371,8 +371,9 @@ the L-shaped stair controls: lower/upper flight lengths, width, and left/right t
 Place the bottom, lower-flight landing center, then the returning upper endpoint.
 The landing depth equals the flight width; curved half-turn stairs remain unsupported.
 
-Floor → Area uses the first point to choose its owner: inside a room it creates a
-custom floor area; outside it creates an outdoor platform. Close an independent
+Floor → Area creates a custom floor area inside a room or an outdoor platform
+outside. Starting on a wall keeps both sides available until a later point selects
+a side; undoing that point reopens the choice. Close an independent
 polygon using ordinary snapping, measurements, local drawing undo/redo and cancel
 gestures. Areas use the selected finish and outdoor boundaries start Open.
 Elevation is a property of either area, not a separate creation tool. Floor → Finish
