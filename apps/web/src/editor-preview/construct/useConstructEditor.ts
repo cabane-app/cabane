@@ -1,3 +1,4 @@
+import { useElevationSelection } from "./useElevationSelection";
 import { DEFAULT_WALL_COLORS } from "@cabane/engine";
 import { useWallOpeningPlacement } from "./useWallOpeningPlacement";
 import { openingEdits } from "./opening-edits";
@@ -90,7 +91,6 @@ export const useConstructEditor = (
     finish: GRASS_FLOOR_FINISH,
     defaultEdge: { kind: "railing", heightMeters: 1 },
   });
-  const [selectedPlatformEdgeId, setSelectedPlatformEdgeId] = useState<string | null>(null);
   const [floorPaintTarget, rememberFloorPaintTarget] = useState<
     ConstructEditorController["floorPaintTarget"]
   >(initialTool === "platform" ? "outdoor-platform" : "room");
@@ -221,6 +221,7 @@ export const useConstructEditor = (
     setOpeningError(null);
     dispatch({ type: "select", selection });
   }, []);
+  const elevationSelection = useElevationSelection(draft, select);
   const { addOpening, placeOpening } = useWallOpeningPlacement(
     draft,
     doorConfiguration,
@@ -267,7 +268,9 @@ export const useConstructEditor = (
         anchor: roomAnchorForPolygon(room.polygon),
         changes: {
           floorFinish: finish,
-          ...(clearZones ? { floorZones: [] } : {}),
+          ...(clearZones
+            ? { floorZones: (room.floorZones ?? []).filter((zone) => zone.elevation) }
+            : {}),
         },
       });
     },
@@ -287,9 +290,17 @@ export const useConstructEditor = (
         },
         polygon,
         finish,
+        ...(floorPaintTarget === "elevation-area"
+          ? {
+              elevation: {
+                offsetMeters: 0,
+                edges: polygon.map((_, i) => ({ id: `edge-${i + 1}` })),
+              },
+            }
+          : {}),
       });
     },
-    [topologyPreview.previewFloor.rooms],
+    [topologyPreview.previewFloor.rooms, floorPaintTarget],
   );
   const resolveRoomMerge = useCallback(
     (survivorId: string, roomId?: string) => {
@@ -350,15 +361,7 @@ export const useConstructEditor = (
     setHedgeSettings,
     platformSettings,
     setPlatformSettings,
-    selectedPlatformEdgeId,
-    selectPlatform: (id) => {
-      setSelectedPlatformEdgeId(null);
-      select({ kind: "outdoor-platform", id });
-    },
-    selectPlatformEdge: (id, edgeId) => {
-      setSelectedPlatformEdgeId(edgeId);
-      select({ kind: "outdoor-platform", id });
-    },
+    ...elevationSelection,
     updatePlatform: (id, changes) => dispatch({ type: "update-outdoor-platform", id, changes }),
     addPlatform: (polygon, finish, defaultEdge) =>
       dispatch({ type: "add-outdoor-platform", polygon, finish, defaultEdge }),

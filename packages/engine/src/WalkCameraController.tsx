@@ -1,3 +1,4 @@
+import { elevationAreas } from "./elevation/surfaces";
 import { omitUndefinedProperties } from "./defined-properties";
 import { useWalkToolNavigation } from "./walk-tools/useWalkToolNavigation";
 import type { WalkToolNavigation } from "./walk-tools";
@@ -135,13 +136,22 @@ export function WalkCameraController({
   // colliders. Sample the center so terrain cutouts meet indoor door thresholds.
   const sampleTerrain = useMemo(() => createTerrainHeightQuery(scene, 0), [scene]);
   const terrainHeight =
-    hasCustomTerrain(building?.home?.terrain) && !building?.home?.apartmentFloor
+    (hasCustomTerrain(building?.home?.terrain) ||
+      building?.floors.some((floor) => elevationAreas(floor).length > 0)) &&
+    !building?.home?.apartmentFloor
       ? sampleTerrain
       : undefined;
 
   useEffect(() => {
+    const offsets = elevationAreas(floor).map((area) => area.elevation.offsetMeters);
+    const low = Math.min(0, ...offsets),
+      high = Math.max(0, ...offsets);
     const refresh = () => {
-      furniture.current = collectSceneWalkColliders(scene, elevation);
+      furniture.current = collectSceneWalkColliders(
+        scene,
+        elevation + low,
+        WALK_EYE_HEIGHT + 1 + high - low,
+      );
     };
     refresh();
     return observeSceneWalkColliders(scene, refresh);

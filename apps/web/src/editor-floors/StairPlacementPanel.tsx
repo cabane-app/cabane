@@ -17,6 +17,7 @@ export function StairPlacementPanel({
   style,
   onStyleChange,
   terrain = false,
+  surfaces = false,
   canConnectFloors = true,
   canConnectTerrain = true,
   onConnectionChange,
@@ -28,9 +29,10 @@ export function StairPlacementPanel({
   style: StairStyle;
   onStyleChange: (style: StairStyle) => void;
   terrain?: boolean;
+  surfaces?: boolean;
   canConnectFloors?: boolean;
   canConnectTerrain?: boolean;
-  onConnectionChange?: (connection: "floors" | "terrain") => void;
+  onConnectionChange?: (connection: "floors" | "terrain" | "surfaces") => void;
   issues?: readonly ManifestIssue[];
   onChange: (shape: StairShape) => void;
   onCancel: () => void;
@@ -54,7 +56,7 @@ export function StairPlacementPanel({
           </button>
           <button
             type="button"
-            aria-pressed={terrain}
+            aria-pressed={terrain && !surfaces}
             disabled={!canConnectTerrain}
             title={
               !canConnectTerrain ? "Set apartment floor to 0 to connect to the ground." : undefined
@@ -62,6 +64,13 @@ export function StairPlacementPanel({
             onClick={() => onConnectionChange("terrain")}
           >
             To ground
+          </button>
+          <button
+            type="button"
+            aria-pressed={surfaces}
+            onClick={() => onConnectionChange("surfaces")}
+          >
+            Between surfaces
           </button>
         </div>
       )}

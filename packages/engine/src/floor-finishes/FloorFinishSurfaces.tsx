@@ -1,3 +1,4 @@
+import { elevationCutouts } from "../elevation/surfaces";
 import { isOutdoorPlatformRoom, outdoorPlatformRoomId } from "../outdoor-platforms/platform-rooms";
 import { useTerrainSurface } from "../terrain/TerrainSurface";
 import { conformToTerrain } from "../terrain/terrain-geometry";
@@ -37,6 +38,7 @@ interface FinishSurfaceProps {
   onSelect?: (() => void) | undefined;
   elevation?: number;
   cutPools?: boolean;
+  surfaceId?: string;
   emphasis?: number;
 }
 
@@ -56,6 +58,7 @@ function FinishSurface({
   elevation: requestedElevation,
   cutPools = false,
   emphasis = 1,
+  surfaceId,
 }: FinishSurfaceProps) {
   const dom = useCabaneDom();
   const repeatMeters = finish.kind === "preset" ? floorFinishPreset(finish.preset).repeatMeters : 1;
@@ -71,12 +74,27 @@ function FinishSurface({
           polygon,
           floor.coordinates,
           repeatMeters,
-          [...apertures, ...(cutPools ? terrainApertures : []), ...(groundTerrain?.cutouts ?? [])],
+          [
+            ...apertures,
+            ...(cutPools ? terrainApertures : []),
+            ...(groundTerrain?.cutouts ?? []),
+            ...(variant === "scene" ? elevationCutouts(floor, surfaceId) : []),
+          ],
           cutPools ? floor : undefined,
         ),
         groundTerrain,
       ),
-    [cutPools, floor, polygon, repeatMeters, apertures, terrainApertures, groundTerrain],
+    [
+      cutPools,
+      floor,
+      polygon,
+      repeatMeters,
+      apertures,
+      terrainApertures,
+      groundTerrain,
+      variant,
+      surfaceId,
+    ],
   );
   useEffect(() => () => geometry.dispose(), [geometry]);
   const texture = finish.kind === "preset" ? textureSet.get(finish.preset, finish.color) : null;
@@ -315,7 +333,10 @@ export const FloorFinishSurfaces = memo(function FloorFinishSurfaces({
             variant={variant}
             textureSet={textureSet}
             layer={0}
-            elevation={variant === "scene" ? 0.002 : 0.001}
+            surfaceId={platform.id}
+            elevation={
+              variant === "scene" ? (platform.elevation?.offsetMeters ?? 0) + 0.002 : 0.001
+            }
             name={`platform-finish-${platform.id}`}
           />
         ))}
@@ -358,6 +379,10 @@ export const FloorFinishSurfaces = memo(function FloorFinishSurfaces({
                     polygon={zone.polygon}
                     finish={zone.finish}
                     layer={index + 1}
+                    surfaceId={zone.id}
+                    elevation={
+                      variant === "scene" ? (zone.elevation?.offsetMeters ?? 0) + 0.012 : 0.001
+                    }
                     name={`floor-zone-${zone.id}`}
                   />,
                 ]

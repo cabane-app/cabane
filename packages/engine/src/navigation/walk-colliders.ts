@@ -148,8 +148,15 @@ const deriveBuiltWalkColliders = (
     from: { x: barrier.from[0], z: barrier.from[1] },
     to: { x: barrier.to[0], z: barrier.to[1] },
     halfThickness: barrier.configuration.kind === "low-wall" ? 0.075 : 0.035,
-    minY: elevation,
-    maxY: elevation + barrier.configuration.heightMeters,
+    minY:
+      elevation +
+      (floor.outdoorPlatforms?.find((p) => p.id === barrier.platformId)?.elevation?.offsetMeters ??
+        0),
+    maxY:
+      elevation +
+      (floor.outdoorPlatforms?.find((p) => p.id === barrier.platformId)?.elevation?.offsetMeters ??
+        0) +
+      barrier.configuration.heightMeters,
   })),
   ...(floor.hedges ?? [])
     .filter((hedge) => validHedge(hedge, floor.coordinates.metersPerPlanUnit))

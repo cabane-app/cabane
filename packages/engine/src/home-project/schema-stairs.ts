@@ -74,7 +74,14 @@ export const stairSchema = (entry: unknown, path: string, issues: HomeProjectIss
   if (stair.terrain !== undefined) {
     const terrain = record(stair.terrain, `${path}.terrain`, issues);
     if (terrain) {
-      keys(terrain, ["floorId", "end"], `${path}.terrain`, issues);
+      keys(terrain, ["floorId", "end", "surfaces"], `${path}.terrain`, issues);
+      if (terrain.surfaces !== undefined && typeof terrain.surfaces !== "boolean")
+        addProjectIssue(
+          issues,
+          "project.stair-surfaces",
+          `${path}.terrain.surfaces`,
+          "Surface connection must be a boolean.",
+        );
       string(terrain.floorId, `${path}.terrain.floorId`, issues);
       if (terrain.end !== "lower" && terrain.end !== "upper")
         addProjectIssue(

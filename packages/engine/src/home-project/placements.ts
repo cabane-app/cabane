@@ -1,3 +1,5 @@
+import { localSurfaceAt } from "../elevation/surfaces";
+import { ceilingHeightAt } from "../elevation/ceilings";
 import { planPointToWorld } from "../geometry";
 import type { FloorSpec } from "../types";
 import type { ItemPlacement } from "./types";
@@ -9,12 +11,23 @@ export interface ResolvedItemTransform {
 
 export const resolveItemTransform = (
   placement: ItemPlacement,
-  floor: Pick<FloorSpec, "coordinates" | "walls" | "ceilings" | "defaultCeilingHeightMeters">,
+  floor: Pick<FloorSpec, "coordinates" | "walls" | "ceilings" | "defaultCeilingHeightMeters"> &
+    Partial<Pick<FloorSpec, "id" | "rooms" | "outdoorPlatforms">>,
 ): ResolvedItemTransform => {
   if (placement.kind === "absolute") {
     const [x, z] = planPointToWorld(placement.at, floor.coordinates);
     return {
-      position: [x, placement.elevationMeters, z],
+      position: [
+        x,
+        placement.elevationMeters +
+          (placement.surfaceRelative
+            ? localSurfaceAt(
+                { ...floor, id: floor.id ?? "", rooms: floor.rooms ?? [] },
+                placement.at,
+              ).elevation
+            : 0),
+        z,
+      ],
       rotationYRadians: placement.rotationYRadians,
     };
   }
@@ -23,8 +36,11 @@ export const resolveItemTransform = (
     const ceiling = floor.ceilings?.find(
       (candidate) => candidate.kind === "flat" && candidate.roomIds.includes(placement.roomId),
     );
-    const height =
-      ceiling?.kind === "flat" ? ceiling.heightMeters : floor.defaultCeilingHeightMeters;
+    const height = floor.rooms
+      ? ceilingHeightAt({ ...floor, rooms: floor.rooms }, placement.roomId, placement.at)
+      : ceiling?.kind === "flat"
+        ? ceiling.heightMeters
+        : floor.defaultCeilingHeightMeters;
     const [x, z] = planPointToWorld(placement.at, floor.coordinates);
     return {
       position: [x, height - placement.dropMeters, z],

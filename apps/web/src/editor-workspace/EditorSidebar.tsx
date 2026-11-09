@@ -234,6 +234,7 @@ export function EditorSidebar({
               style={stairPlacement.style ?? "open"}
               onStyleChange={(style) => setStairPlacement({ ...stairPlacement, style })}
               terrain={Boolean(stairPlacement.terrain)}
+              surfaces={Boolean(stairPlacement.terrain?.surfaces)}
               canConnectFloors={snapshot.project.floors.at(-1)?.id !== activeFloorId}
               canConnectTerrain={!snapshot.project.home.apartmentFloor}
               onConnectionChange={startStairs}

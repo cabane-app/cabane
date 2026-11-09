@@ -1,3 +1,4 @@
+import { elevationCutouts } from "../elevation/surfaces";
 import { omitUndefinedProperties } from "../defined-properties";
 import { useCabaneDom } from "./../CabaneDom";
 import { cutSurfaceShapes, useStairSurfaceApertures } from "../stairs/surface-apertures";
@@ -39,7 +40,10 @@ export const PolygonSurface = memo(function PolygonSurface({
   const dom = useCabaneDom();
   const apertures = useStairSurfaceApertures("floor");
   const geometry = useMemo(
-    () => new ShapeGeometry(cutSurfaceShapes(polygon, floor.coordinates, apertures)),
+    () =>
+      new ShapeGeometry(
+        cutSurfaceShapes(polygon, floor.coordinates, [...apertures, ...elevationCutouts(floor)]),
+      ),
     [floor, polygon, apertures],
   );
   const press = useRef<{ pointerId: number; x: number; y: number } | null>(null);

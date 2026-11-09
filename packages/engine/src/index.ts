@@ -190,3 +190,4 @@ export {
   ModelLightingStateContext,
   useModelLightingState,
 } from "./model-lighting/ModelLightingSurface";
+export { localSurfaceAt, transitionOutline } from "./elevation/surfaces";

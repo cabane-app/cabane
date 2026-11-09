@@ -1,0 +1,165 @@
+.elevation-controls {
+  display: grid;
+  gap: 24px;
+  padding-block: 8px;
+}
+.elevation-controls__section {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.elevation-controls h4 {
+  margin: 0;
+  color: var(--preview-ink);
+  font-size: var(--editor-text-control, 0.875rem);
+  font-weight: 600;
+}
+.elevation-controls .elevation-controls__hint {
+  margin: 0;
+  color: var(--preview-muted);
+  font-size: var(--editor-text-caption, 0.75rem);
+  line-height: 1.5;
+}
+.construction-inspector .elevation-controls__value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+}
+.elevation-controls__value input {
+  font-variant-numeric: tabular-nums;
+}
+.elevation-controls__boundary {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+.elevation-controls__boundary strong {
+  font-size: var(--editor-text-control, 0.875rem);
+  font-weight: 500;
+}
+.elevation-controls__footprint {
+  width: 88px;
+  height: 88px;
+  overflow: visible;
+  color: var(--preview-muted);
+}
+.elevation-controls__footprint line {
+  stroke: var(--preview-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.elevation-controls__footprint line.is-selected {
+  stroke: var(--preview-accent);
+  stroke-width: 3;
+}
+.elevation-controls__footprint .elevation-controls__edge-hit {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+}
+.elevation-controls__edge-hit:focus {
+  outline: none;
+  fill: var(--preview-accent);
+  fill-opacity: 0.35;
+}
+.elevation-controls__choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.direction-preview .elevation-controls__choices button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--editor-line);
+  border-radius: 8px;
+  background: var(--editor-button-surface, #faf6ef);
+  color: var(--preview-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.elevation-controls__choices svg {
+  width: 40px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.direction-preview .elevation-controls__choices button[aria-pressed="true"] {
+  color: #884522;
+  border-color: var(--preview-accent);
+  background: #f1e3d5;
+}
+.direction-preview .elevation-controls__choices button:hover {
+  border-color: var(--preview-accent);
+}
+.direction-preview .elevation-controls__text-button {
+  padding: 8px 0;
+  background: none;
+  border: 0;
+  color: #884522;
+  font: inherit;
+  font-size: var(--editor-text-caption, 0.75rem);
+  cursor: pointer;
+}
+.elevation-controls__ceiling {
+  border-top: 1px solid var(--editor-line);
+  padding-top: 16px;
+}
+.elevation-controls__ceiling summary {
+  cursor: pointer;
+  font-size: var(--editor-text-control, 0.875rem);
+  font-weight: 500;
+}
+.elevation-controls__ceiling[open] {
+  display: grid;
+  gap: 12px;
+}
+.construction-inspector .elevation-controls__check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.elevation-controls__check input {
+  width: 16px;
+  height: 16px;
+}
+.elevation-drag-handle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #bd724d;
+  border-radius: 8px;
+  background: #fff9ef;
+  color: #884522;
+  font:
+    500 13px Roboto,
+    sans-serif;
+  white-space: nowrap;
+  touch-action: none;
+  cursor: ns-resize;
+  box-shadow: 0 4px 12px rgb(46 56 53 / 15%);
+}
+.elevation-drag-handle svg {
+  width: 16px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+}
+.elevation-drag-handle[data-axis="width"] {
+  cursor: ew-resize;
+}
+.elevation-controls button:focus-visible,
+.elevation-drag-handle:focus-visible {
+  outline: 2px solid #884522;
+  outline-offset: 3px;
+}

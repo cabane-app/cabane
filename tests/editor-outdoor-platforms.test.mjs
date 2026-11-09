@@ -14,7 +14,7 @@ await withModules(async (load) => {
   );
   const floor = e.neutralDemoManifest.floors[0];
   test("Floor painting and outdoor space retain their controls in separate tools", () => {
-    const labels = ["Whole room", "Custom area"];
+    const labels = ["Elevation area", "Whole room", "Custom area"];
     for (const target of ["room", "custom-area", "outdoor-platform"]) {
       const editor = {
         tool: target === "outdoor-platform" ? "platform" : "floor",

@@ -1,3 +1,5 @@
+import { removeElevationCutWalls } from "../elevation/cut-wall-geometry";
+import { elevationCutouts } from "../elevation/surfaces";
 import { cutStairGroundOpenings } from "../stairs/ground-apertures";
 import { useStairSurfaceApertures } from "../stairs/surface-apertures";
 import { ExtrudeGeometry, Shape } from "three";
@@ -68,7 +70,12 @@ export const DioramaGround = memo(function DioramaGround({
       cutStairGroundOpenings(
         cutPoolOpenings(roundedDioramaShape(centerX, centerZ, width, depth, 0.42), floor),
         floor.coordinates,
-        [...apertures, ...terrainApertures, ...(terrain?.cutouts ?? [])],
+        [
+          ...apertures,
+          ...terrainApertures,
+          ...(terrain?.cutouts ?? []),
+          ...elevationCutouts(floor),
+        ],
       ),
     [centerX, centerZ, width, depth, floor, apertures, terrainApertures, terrain],
   );
@@ -80,7 +87,12 @@ export const DioramaGround = memo(function DioramaGround({
           floor,
         ),
         floor.coordinates,
-        [...apertures, ...terrainApertures, ...(terrain?.cutouts ?? [])],
+        [
+          ...apertures,
+          ...terrainApertures,
+          ...(terrain?.cutouts ?? []),
+          ...elevationCutouts(floor),
+        ],
       ),
     [centerX, centerZ, width, depth, floor, apertures, terrainApertures, terrain],
   );
@@ -88,6 +100,12 @@ export const DioramaGround = memo(function DioramaGround({
   const grassThickness = 0.1;
   const baseThickness = Math.max(
     terrain?.soilDepth ?? 0.28,
+    ...floor.rooms.flatMap((room) =>
+      (room.floorZones ?? []).map((zone) => -(zone.elevation?.offsetMeters ?? 0) + 0.28),
+    ),
+    ...(floor.outdoorPlatforms ?? []).map(
+      (platform) => -(platform.elevation?.offsetMeters ?? 0) + 0.28,
+    ),
     ...(floor.pools ?? [])
       .filter((pool) => pool.type !== "above-ground-wood")
       .map((pool) => poolVerticalLayout(pool).height + 0.06),
@@ -95,19 +113,27 @@ export const DioramaGround = memo(function DioramaGround({
   const baseGeometry = useMemo(
     () =>
       conformToTerrain(
-        new ExtrudeGeometry(baseShape, { depth: baseThickness, bevelEnabled: false }),
+        removeElevationCutWalls(
+          new ExtrudeGeometry(baseShape, { depth: baseThickness, bevelEnabled: false }),
+          floor.coordinates,
+          elevationCutouts(floor),
+        ),
         terrain,
         baseThickness,
       ),
-    [baseShape, baseThickness, terrain],
+    [baseShape, baseThickness, terrain, floor],
   );
   const grassGeometry = useMemo(
     () =>
       conformToTerrain(
-        new ExtrudeGeometry(grassShape, { depth: grassThickness, bevelEnabled: false }),
+        removeElevationCutWalls(
+          new ExtrudeGeometry(grassShape, { depth: grassThickness, bevelEnabled: false }),
+          floor.coordinates,
+          elevationCutouts(floor),
+        ),
         terrain,
       ),
-    [grassShape, terrain],
+    [grassShape, terrain, floor],
   );
   useEffect(
     () => () => {

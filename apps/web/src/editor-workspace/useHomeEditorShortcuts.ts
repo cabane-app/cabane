@@ -73,7 +73,9 @@ export function useHomeEditorShortcuts({
       const target = event.target;
       if (
         target instanceof HTMLElement &&
-        (target.closest("input, textarea, select, dialog[open]") || target.isContentEditable)
+        (target.closest("input, textarea, select, dialog[open]") ||
+          (dragging && target.closest(".elevation-drag-handle")) ||
+          target.isContentEditable)
       )
         return;
       // Labels and tutorial actions own typing/activation keys, while completed

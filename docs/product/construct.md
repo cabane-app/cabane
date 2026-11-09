@@ -90,7 +90,7 @@ or one inch in imperial, with Shift multiplying the step by ten. Reset to flat
 ground restores zero at every corner.
 These home-wide edits use ordinary history, autosave, import/export and Save.
 Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
-to edit terrain. Individual terrain zones and earthwork drawing are not exposed.
+to edit terrain. Localized elevation areas are edited with Floor → Elevation area; terrain settings continue to control the surrounding grade.
 When custom terrain leaves an exterior doorway, passage or open platform edge
 without a crossing within Walk's 30 cm step limit, Issues shows a non-blocking
 warning and Locate selects the affected opening or platform. Supporting platforms
@@ -488,3 +488,27 @@ to 1.5 m. Both types retain the drawn outline and support move, reshape, undo an
 redo. Above-ground pools leave the terrain intact beneath them. Their liner floor
 sits above the ground, the timber shell stays clear of the liner, and the coping
 projects beyond the shell and uprights.
+
+## Local elevation areas
+
+Floor → Elevation area draws a bounded flat surface. Inside a room it belongs to
+that room and preserves its name, area and Home Assistant identity. Outside it
+creates an outdoor platform. Floor level is a signed offset from the storey,
+including negative values; it does not create or select another storey.
+
+Draw and reshape footprints in plan view. In 3D, select a surface and drag its
+Level handle; the outline previews the new position and release commits one
+undoable edit. Escape cancels. Arrow keys adjust the focused handle by 1 cm.
+The inspector also accepts exact lengths in the selected measurement units.
+
+Select an edge in the scene or footprint diagram to choose Vertical or Slope.
+Whole boundary applies the choice to every edge. A slope extends outward from
+the flat footprint; its Width handle and numeric input control that transition.
+Platform railings and low walls remain separate from transition settings.
+Areas can share boundaries but cannot overlap, nest, or have conflicting slopes.
+
+Indoor ceilings retain their position by default. The Ceiling disclosure offers
+a local headroom override. Painting a whole room does not delete elevation areas.
+Between surfaces stairs connect actual local heights on the same storey, with
+automatic risers and landing checks. Floor-standing items use surface-relative
+placement; legacy absolute placements retain their existing interpretation.

@@ -1,3 +1,5 @@
+import { localSurfaceAt, terrainLocalHeight } from "../elevation/surfaces";
+import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { planPointToWorld, worldPointToPlan } from "../geometry";
 import { createTerrainSurface } from "../terrain/terrain-surface";
@@ -22,11 +24,33 @@ export function resolveStairConnection(building: BuildingGeometry, stair: StairS
   const levels = deriveFloorLevels(building.floors);
   if (stair.terrain) {
     const floor = building.floors.find((floor) => floor.id === stair.terrain?.floorId);
-    if (!floor || building.home?.apartmentFloor) return null;
+    if (!floor || (building.home?.apartmentFloor && !stair.terrain.surfaces)) return null;
     const point = stairRouteEnd(stair, building.coordinates, stair.terrain.end === "upper");
     const terrain = createTerrainSurface(building.home?.terrain, building.floors);
     const terrainElevation = terrain?.offsetAt(point.x, point.z) ?? 0;
     const elevation = levels.find((level) => level.floorId === floor.id)!.elevationMeters;
+    if (stair.terrain.surfaces) {
+      const height = (upper: boolean) => {
+        const p = worldPointToPlan(
+          stairRouteEnd(stair, building.coordinates, upper),
+          building.coordinates,
+        );
+        const surface = localSurfaceAt(
+          floor,
+          p,
+          terrainLocalHeight(floor, terrain ? (x, z) => terrain.offsetAt(x, z) : undefined),
+        );
+        return pointOnFloorSupport(p, floor) || surface.id !== floor.id
+          ? elevation + surface.elevation
+          : terrainLocalHeight(floor, terrain ? (x, z) => terrain.offsetAt(x, z) : undefined)(p);
+      };
+      return {
+        lowerFloorId: floor.id,
+        upperFloorId: floor.id,
+        baseElevationMeters: height(false),
+        riseMeters: height(true) - height(false),
+      };
+    }
     const lower = stair.terrain.end === "lower";
     return {
       lowerFloorId: lower ? undefined : floor.id,
@@ -81,10 +105,17 @@ export function connectStairToTerrain(building: BuildingGeometry, stair: StairSp
   if (!floor) return stair;
   const end = stairRouteEnd(stair, building.coordinates, true);
   const surface = createTerrainSurface(building.home?.terrain, building.floors);
-  const descending = floor.elevationMeters > (surface?.offsetAt(end.x, end.z) ?? 0);
+  const connection = stair.terrain.surfaces ? resolveStairConnection(building, stair) : null;
+  const descending = connection
+    ? connection.riseMeters < 0
+    : floor.elevationMeters > (surface?.offsetAt(end.x, end.z) ?? 0);
   const route = descending ? reverseStairRoute(stair, building.coordinates) : stair;
   return {
     ...route,
-    terrain: { floorId: stair.terrain.floorId, end: descending ? "lower" : "upper" },
+    terrain: {
+      ...stair.terrain,
+      floorId: stair.terrain.floorId,
+      end: descending ? "lower" : "upper",
+    },
   } as StairSpec;
 }

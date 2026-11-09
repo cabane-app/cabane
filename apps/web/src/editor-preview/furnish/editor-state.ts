@@ -81,8 +81,12 @@ export const placementForWorldDrag = ({
 
   return {
     kind: "absolute",
+    surfaceRelative: true,
     at,
-    elevationMeters: currentTransform.position[1],
+    elevationMeters:
+      item.placement.kind === "absolute"
+        ? item.placement.elevationMeters
+        : currentTransform.position[1],
     rotationYRadians: currentTransform.rotationYRadians,
   };
 };
@@ -238,6 +242,7 @@ const presetPlacement = (
   if (explicit) return explicit;
   return {
     kind: "absolute",
+    surfaceRelative: true,
     at: planCenter,
     elevationMeters: 0,
     rotationYRadians: 0,

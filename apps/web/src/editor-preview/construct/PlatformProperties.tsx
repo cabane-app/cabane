@@ -1,3 +1,4 @@
+import { ElevationFields } from "./ElevationFields";
 import { formatArea, useMeasurementUnits } from "@cabane/engine";
 import { LengthInput } from "../../editor-chrome/LengthInput";
 import { EditorIcon } from "../../editor-chrome/EditorIcon";
@@ -69,6 +70,18 @@ export function PlatformProperties({
       <p className="construction-inspector__tool-hint">
         Drag the platform to move it, or a corner to reshape it. Select an edge to change its style.
       </p>
+      <ElevationFields
+        id={platform.id}
+        polygon={platform.polygon}
+        value={platform.elevation}
+        selectedEdge={
+          editor.selectedElevationEdge?.areaId === platform.id
+            ? editor.selectedElevationEdge.index
+            : null
+        }
+        onSelectEdge={(index) => editor.selectElevationEdge(platform.id, index)}
+        onChange={(elevation) => editor.updatePlatform(platform.id, { elevation })}
+      />
       <PlatformRoomFields
         platform={platform}
         onChange={(changes) => editor.updatePlatform(platform.id, changes)}

@@ -333,3 +333,19 @@ retains the preference for the current session.
 Furniture may declare optional `entitySlots` containing manual, non-required secondary sensor or binary sensor attachments. Devices retain exactly one primary control; optional read-only attachments are validated independently of the model’s control domains. `presentation.showInScene` is opt-in map visibility. Older documents omit both fields and keep their prior behavior. Older panels reject documents containing the new fields; preserve that rejection and update the matching HACS panel before transfer.
 
 Leaving the editor for Home, Workspaces or another workspace saves the draft first. Home Assistant settings now stays within the editor session. A failed save cancels that navigation attempt so a later click can retry. Storage errors show their reason and an explicit retry. Revision conflicts keep both the newer saved record and the current in-memory draft intact, and offer a complete `.cabane` draft backup containing the current project, private mappings and verified imported GLBs, including staged imports, before the user reopens the saved workspace. Backup failures retain the draft and show a retryable error.
+
+### Elevation areas
+
+Optional `floorZones[].elevation` inside a room and
+`outdoorPlatforms[].elevation` share `{ offsetMeters, edges,
+ceilingHeightMeters? }`. Offsets are relative to the parent storey. Each polygon
+edge has a stable ID and an optional `transition`: `{ kind: "sharp" }` or
+`{ kind: "sloped", widthMeters }`. Omission preserves existing geometry.
+Indoor ceiling overrides measure headroom above the area's flat surface.
+
+Absolute item placements optionally set `surfaceRelative: true`, making
+`elevationMeters` a clearance above the local surface. Omission retains legacy
+storey-relative coordinates. Terrain stair connections can set `surfaces: true`
+to resolve both endpoints on local surfaces of the indicated floor. These
+optional V2 fields round-trip through drafts, Save, and export/import; older
+clients that reject unknown fields cannot edit projects containing them.

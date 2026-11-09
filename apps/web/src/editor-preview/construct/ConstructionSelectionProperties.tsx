@@ -1,3 +1,4 @@
+import { ElevationFields } from "./ElevationFields";
 import { formatLength, formatArea, useMeasurementUnits } from "@cabane/engine";
 import { CommittedTextInput } from "./CommittedTextInput";
 import { LengthInput } from "../../editor-chrome/LengthInput";
@@ -105,7 +106,7 @@ export function ConstructionSelectionProperties({
     room: selectedRoom?.name || "Unnamed room",
     hedge: "Boundary",
     pool: "Pool",
-    "floor-zone": "Floor area",
+    "floor-zone": selectedFloorZone?.elevation ? "Elevation area" : "Floor area",
     "outdoor-platform": "Platform",
     multiple: `${deletionCount} elements selected`,
     opening: "Opening",
@@ -180,10 +181,30 @@ export function ConstructionSelectionProperties({
         {selectedPool && <PoolProperties pool={selectedPool} editor={editor} />}
         {selectedFloorZone && (
           <div className="construction-inspector__selection">
-            <FloorFinishPalette
-              value={selectedFloorZone.finish}
-              onChange={(finish) => editor.updateFloorZone(selectedFloorZone.id, { finish })}
-            />
+            {!editor.draft.groundZones?.some((zone) => zone.id === selectedFloorZone.id) && (
+              <ElevationFields
+                id={selectedFloorZone.id}
+                polygon={selectedFloorZone.polygon}
+                value={selectedFloorZone.elevation}
+                selectedEdge={
+                  editor.selectedElevationEdge?.areaId === selectedFloorZone.id
+                    ? editor.selectedElevationEdge.index
+                    : null
+                }
+                onSelectEdge={(index) => editor.selectElevationEdge(selectedFloorZone.id, index)}
+                indoor
+                onChange={(elevation) =>
+                  editor.updateFloorZone(selectedFloorZone.id, { elevation })
+                }
+              />
+            )}
+            <details className="elevation-controls__ceiling" open={!selectedFloorZone.elevation}>
+              <summary>Floor finish</summary>
+              <FloorFinishPalette
+                value={selectedFloorZone.finish}
+                onChange={(finish) => editor.updateFloorZone(selectedFloorZone.id, { finish })}
+              />
+            </details>
             <EditorButton variant="text" type="button" onClick={editor.deleteSelected}>
               Delete floor area
             </EditorButton>

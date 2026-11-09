@@ -6,10 +6,12 @@ import type { ConstructEditorController } from "./useConstructEditor";
 import "./floor-tool-properties.css";
 
 const targets = [
+  { id: "elevation-area", label: "Elevation area", description: "Draw a raised or lowered area." },
   { id: "room", label: "Whole room", description: "Change an existing room’s finish." },
   { id: "custom-area", label: "Custom area", description: "Draw a finish area or a ground path." },
 ] as const;
 const instructions: Record<FloorPaintTarget, string> = {
+  "elevation-area": "Draw a flat area, then set its elevation and edge transitions in Properties.",
   room: "Choose a finish, then click a room.",
   "custom-area":
     "Click corners, then return to the first point to close the area. Start inside a room for an inset, or outside for a ground patch.",

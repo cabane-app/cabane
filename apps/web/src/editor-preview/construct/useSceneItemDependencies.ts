@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
-import type { DerivedWallRun, FloorSpec } from "@cabane/engine";
+import { localSurfaceAt, type DerivedWallRun, type FloorSpec } from "@cabane/engine";
 import type { FurnishingEditorController } from "../furnish/useFurnishingEditor";
 import {
   reconcileSceneItemCeilingDependencies,
@@ -19,7 +19,33 @@ export const useSceneItemDependencies = (
     replaceItems: editorReplaceItems,
   } = editor;
   const rememberedWalls = useRef(new Map(floor.walls.map((wall) => [wall.id, wall])));
-  const items = editorTransaction?.items ?? editorItems;
+  const rememberedFloor = useRef(floor);
+  const sourceItems = editorTransaction?.items ?? editorItems;
+  const items = useMemo(
+    () =>
+      sourceItems.map((item) => {
+        const p = item.placement;
+        if (p.kind !== "absolute" || p.surfaceRelative || floor === rememberedFloor.current)
+          return item;
+        const before = localSurfaceAt(rememberedFloor.current, p.at);
+        const after = localSurfaceAt(floor, p.at);
+        if (
+          before.id === after.id ||
+          after.id === floor.id ||
+          Math.abs(p.elevationMeters - before.elevation) > 0.05
+        )
+          return item;
+        return {
+          ...item,
+          placement: {
+            ...p,
+            surfaceRelative: true,
+            elevationMeters: p.elevationMeters - before.elevation,
+          },
+        };
+      }),
+    [sourceItems, floor],
+  );
   const wallItems = useMemo(
     () => reconcileSceneItemWallDependencies(items, floor, rememberedWalls.current, wallRuns),
     [items, floor, wallRuns],
@@ -31,6 +57,7 @@ export const useSceneItemDependencies = (
 
   useLayoutEffect(() => {
     if (editorTransaction) return;
+    rememberedFloor.current = floor;
     floor.walls.forEach((wall) => rememberedWalls.current.set(wall.id, wall));
     if (
       dependencies.items.length === editorItems.length &&

@@ -1,3 +1,4 @@
+import { ElevationEditLayer } from "../editor-preview/construct/ElevationEditLayer";
 import { EditorConnectionMap } from "./EditorConnectionMap";
 import { NorthOrientationOverlay } from "../editor-preview/construct/NorthOrientationOverlay";
 import { editorCanvasEvents } from "./editor-canvas-events";
@@ -508,6 +509,16 @@ export function HomeEditorScene({
                   onMarqueeChange={setMarqueeSelecting}
                 />
               )}
+              {(constructPlan || constructPreview) &&
+                !editingLocked &&
+                constructEditor.tool === "select" && (
+                  <ElevationEditLayer
+                    editor={constructEditor}
+                    plan={constructPlan}
+                    level={constructPreview ? activeLevel : 0}
+                    onDraggingChange={setDragging}
+                  />
+                )}
               {constructPlan && !editingLocked && (
                 <ConstructionHedgeLayer editor={constructEditor} onDraggingChange={setDragging} />
               )}
