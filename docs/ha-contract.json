@@ -1,9 +1,9 @@
 {
-  "revision": 40,
-  "fingerprint": "47924347b0d8d610f38554cff8046b8190545261e09db7e9fdb5e3627ea4fc60",
-  "summary": "Allow walls to lean (leanMeters)",
+  "revision": 42,
+  "fingerprint": "d5840600472d45e10872748d1957ba1f438a480a4f92b71c523ec104000ce63b",
+  "summary": "Allow walking up surface changes of up to 40 cm.",
   "breakingChanges": [
-    "No saved fields or IDs change for existing projects. Walls may now store leanMeters; older frontends and Home Assistant panels reject projects that use it."
+    "No stored fields change. Walk stepping and accessibility diagnostics now share a 40 cm threshold instead of 30 cm; older panels retain the smaller threshold."
   ],
   "history": [
     {
@@ -277,6 +277,20 @@
       "summary": "Add a Grass finish for outdoor spaces",
       "breakingChanges": [
         "Workspaces that use the Grass finish require an updated Cabane panel. Update the integration through HACS, restart Home Assistant, and reload before opening one on an older panel."
+      ]
+    },
+    {
+      "revision": 40,
+      "summary": "Allow walls to lean (leanMeters)",
+      "breakingChanges": [
+        "No saved fields or IDs change for existing projects. Walls may now store leanMeters; older frontends and Home Assistant panels reject projects that use it."
+      ]
+    },
+    {
+      "revision": 41,
+      "summary": "Support bounded elevation areas, local ceiling overrides, surface-relative items and same-storey stairs.",
+      "breakingChanges": [
+        "Older clients must update before opening projects containing elevation settings, surface-relative placements or between-surfaces stairs. Existing projects keep their original elevations."
       ]
     }
   ],

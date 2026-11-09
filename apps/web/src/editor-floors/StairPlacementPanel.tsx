@@ -16,9 +16,8 @@ export function StairPlacementPanel({
   shape,
   style,
   onStyleChange,
-  terrain = false,
+  sameFloor = false,
   canConnectFloors = true,
-  canConnectTerrain = true,
   onConnectionChange,
   issues = [],
   onChange,
@@ -27,10 +26,9 @@ export function StairPlacementPanel({
   shape: StairShape;
   style: StairStyle;
   onStyleChange: (style: StairStyle) => void;
-  terrain?: boolean;
+  sameFloor?: boolean;
   canConnectFloors?: boolean;
-  canConnectTerrain?: boolean;
-  onConnectionChange?: (connection: "floors" | "terrain") => void;
+  onConnectionChange?: (connection: "floors" | "surfaces") => void;
   issues?: readonly ManifestIssue[];
   onChange: (shape: StairShape) => void;
   onCancel: () => void;
@@ -45,7 +43,7 @@ export function StairPlacementPanel({
         <div className="stair-connection-picker" role="group" aria-label="Stair connection">
           <button
             type="button"
-            aria-pressed={!terrain}
+            aria-pressed={!sameFloor}
             disabled={!canConnectFloors}
             title={!canConnectFloors ? "Add a floor above to connect two floors." : undefined}
             onClick={() => onConnectionChange("floors")}
@@ -54,14 +52,10 @@ export function StairPlacementPanel({
           </button>
           <button
             type="button"
-            aria-pressed={terrain}
-            disabled={!canConnectTerrain}
-            title={
-              !canConnectTerrain ? "Set apartment floor to 0 to connect to the ground." : undefined
-            }
-            onClick={() => onConnectionChange("terrain")}
+            aria-pressed={sameFloor}
+            onClick={() => onConnectionChange("surfaces")}
           >
-            To ground
+            Same floor
           </button>
         </div>
       )}
@@ -92,10 +86,10 @@ export function StairPlacementPanel({
         </div>
       </ModelThumbnailRenderer>
       <p className="construction-inspector__tool-hint" role="status">
-        {terrain && shape !== "spiral"
+        {sameFloor && shape !== "spiral"
           ? shape === "l-shaped" || shape === "u-shaped"
-            ? "Click the floor landing, the turn, then the ground endpoint. Height follows the terrain. Escape cancels."
-            : "Draw from the floor landing to the ground endpoint. Height follows the terrain. Escape cancels."
+            ? "Click the starting surface, the turn, then the destination. Height follows both surfaces. Escape cancels."
+            : "Click or drag between two surfaces. Floors, terraces and terrain are detected automatically. Escape cancels."
           : shape === "spiral"
             ? "Click the center, then the outer edge to set diameter and rotation. Escape cancels."
             : shape === "l-shaped" || shape === "u-shaped"

@@ -1,12 +1,38 @@
+import { elevationCutouts, localSurfaceAt, terrainLocalHeight } from "../elevation/surfaces";
+import { floorSupportPolygons, pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { planPointToWorld, worldPointToPlan } from "../geometry";
 import { createTerrainSurface } from "../terrain/terrain-surface";
-import type { FloorCoordinates } from "../types";
+import type { FloorCoordinates, FloorSpec } from "../types";
 import { stairShapeGeometry } from "./stair-shape-geometry";
 import type { BuildingGeometry, StairSpec } from "./types";
 
 export const stairFloorIds = (stair: StairSpec): readonly string[] =>
   stair.terrain ? [stair.terrain.floorId] : [stair.lowerFloorId, stair.upperFloorId];
+
+/** Physical surfaces beside a flight, before its own clearance is cut away. */
+export function stairSurfaceSupport(building: BuildingGeometry, floor: FloorSpec) {
+  const elevation = deriveFloorLevels(building.floors).find(
+    (level) => level.floorId === floor.id,
+  )!.elevationMeters;
+  const terrain = createTerrainSurface(building.home?.terrain, building.floors);
+  const groundAt = terrainLocalHeight(
+    floor,
+    terrain ? (x, z) => terrain.offsetAt(x, z) : undefined,
+  );
+  return {
+    boundariesWorld: [...floorSupportPolygons(floor), ...elevationCutouts(floor)].map((polygon) =>
+      polygon.map((p) => planPointToWorld(p, floor.coordinates)),
+    ),
+    heightAt(point: { x: number; z: number }) {
+      const p = worldPointToPlan(point, floor.coordinates);
+      const surface = localSurfaceAt(floor, p, groundAt);
+      return pointOnFloorSupport(p, floor) || surface.id !== floor.id
+        ? elevation + surface.elevation
+        : groundAt(p);
+    },
+  };
+}
 
 /** Route endpoints depend only on the plan, before its vertical connection is resolved. */
 export function stairRouteEnd(stair: StairSpec, coordinates: FloorCoordinates, upper: boolean) {
@@ -22,11 +48,22 @@ export function resolveStairConnection(building: BuildingGeometry, stair: StairS
   const levels = deriveFloorLevels(building.floors);
   if (stair.terrain) {
     const floor = building.floors.find((floor) => floor.id === stair.terrain?.floorId);
-    if (!floor || building.home?.apartmentFloor) return null;
+    if (!floor || (building.home?.apartmentFloor && !stair.terrain.surfaces)) return null;
     const point = stairRouteEnd(stair, building.coordinates, stair.terrain.end === "upper");
     const terrain = createTerrainSurface(building.home?.terrain, building.floors);
     const terrainElevation = terrain?.offsetAt(point.x, point.z) ?? 0;
     const elevation = levels.find((level) => level.floorId === floor.id)!.elevationMeters;
+    if (stair.terrain.surfaces) {
+      const support = stairSurfaceSupport(building, floor);
+      const height = (upper: boolean) =>
+        support.heightAt(stairRouteEnd(stair, building.coordinates, upper));
+      return {
+        lowerFloorId: floor.id,
+        upperFloorId: floor.id,
+        baseElevationMeters: height(false),
+        riseMeters: height(true) - height(false),
+      };
+    }
     const lower = stair.terrain.end === "lower";
     return {
       lowerFloorId: lower ? undefined : floor.id,
@@ -81,10 +118,17 @@ export function connectStairToTerrain(building: BuildingGeometry, stair: StairSp
   if (!floor) return stair;
   const end = stairRouteEnd(stair, building.coordinates, true);
   const surface = createTerrainSurface(building.home?.terrain, building.floors);
-  const descending = floor.elevationMeters > (surface?.offsetAt(end.x, end.z) ?? 0);
+  const connection = stair.terrain.surfaces ? resolveStairConnection(building, stair) : null;
+  const descending = connection
+    ? connection.riseMeters < 0
+    : floor.elevationMeters > (surface?.offsetAt(end.x, end.z) ?? 0);
   const route = descending ? reverseStairRoute(stair, building.coordinates) : stair;
   return {
     ...route,
-    terrain: { floorId: stair.terrain.floorId, end: descending ? "lower" : "upper" },
+    terrain: {
+      ...stair.terrain,
+      floorId: stair.terrain.floorId,
+      end: descending ? "lower" : "upper",
+    },
   } as StairSpec;
 }

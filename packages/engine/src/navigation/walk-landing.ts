@@ -1,3 +1,4 @@
+import { localSurfaceAt } from "../elevation/surfaces";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { pointInsidePolygon, worldPointToPlan } from "../geometry";
 import type { BoxWalkCollider, WalkPoint } from "../navigation";
@@ -15,11 +16,22 @@ export function resolveWalkLanding(
   supportsTerrain?: (point: WalkPoint) => boolean,
 ): WalkToolLanding | null {
   if (![position.x, position.y, position.z].every(Number.isFinite)) return null;
-  const level = [...deriveFloorLevels(building.floors)].sort(
-    (a, b) => Math.abs(a.elevationMeters - position.y) - Math.abs(b.elevationMeters - position.y),
-  )[0];
-  if (!level || Math.abs(level.elevationMeters - position.y) > 1.05) return null;
   const plan = worldPointToPlan(position, building.coordinates);
+  const level = deriveFloorLevels(building.floors)
+    .map((level) => ({
+      ...level,
+      supportElevation:
+        level.elevationMeters +
+        localSurfaceAt(
+          building.floors.find((floor) => floor.id === level.floorId)!,
+          plan,
+        ).elevation,
+    }))
+    .sort(
+      (a, b) =>
+        Math.abs(a.supportElevation - position.y) - Math.abs(b.supportElevation - position.y),
+    )[0];
+  if (!level || Math.abs(level.supportElevation - position.y) > 1.05) return null;
   // Stair interiors require traversal state; never manufacture that state by relocation.
   if (
     building.stairs.some((stair) => {
@@ -34,8 +46,13 @@ export function resolveWalkLanding(
     level.floorId,
     plan,
     supportsTerrain,
-    furniture(level.elevationMeters),
+    furniture(level.supportElevation),
   );
   if (!spawn) return null;
-  return { x: position.x, z: position.z, floorId: level.floorId, elevation: level.elevationMeters };
+  return {
+    x: position.x,
+    z: position.z,
+    floorId: level.floorId,
+    elevation: level.supportElevation,
+  };
 }

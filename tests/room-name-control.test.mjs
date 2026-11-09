@@ -184,6 +184,42 @@ await withModules(async (load) => {
       assert.deepEqual(tools, []);
     }));
 
+  test("an active elevation handle owns Escape before the workspace deselection shortcut", async () =>
+    withDom(async ({ dom, root }) => {
+      let cleared = 0,
+        cancelled = 0;
+      function Harness() {
+        useHomeEditorShortcuts({
+          mode: "construct",
+          dragging: true,
+          constructEditor: {},
+          constructMeasure: {},
+          floorZoneDrawing: {},
+          furnishingEditor: {},
+          clearConstructionSelection: () => cleared++,
+          setDragging: () => {},
+        });
+        return React.createElement(
+          "button",
+          {
+            className: "elevation-drag-handle",
+            onKeyDown: (event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                event.stopPropagation();
+                cancelled++;
+              }
+            },
+          },
+          "Level",
+        );
+      }
+      await act(async () => root.render(React.createElement(Harness)));
+      await key(dom, document.querySelector("button"), "Escape");
+      assert.equal(cancelled, 1);
+      assert.equal(cleared, 0);
+    }));
+
   test("initial Wall selection does not override later tool choices or history", async () =>
     withDom(async ({ root }) => {
       const blank = createEmptyHomeProject("test", "Test").floors[0];

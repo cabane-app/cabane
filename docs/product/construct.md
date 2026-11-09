@@ -4,7 +4,8 @@ Construct is an implemented 2D plan editor. Two-finger trackpad scrolling pans
 the plan without clicking or changing tools, including during construction.
 Pinch (or Ctrl/Command-scroll) zooms around the cursor. After Select, the toolbar orders
 Wall, Openings, Floor and Stairs, followed by Measure and Decorations. Wall groups
-Wall, Invisible wall and Outdoor space; Openings groups Door, Passage and Window.
+Wall and Invisible wall; Openings groups Door, Passage and Window. Floor groups
+Finish (paint a whole room) and Area (draw a custom indoor or outdoor area).
 Hover, click/tap or keyboard activation reveals each group in a floating disclosure.
 Existing tool shortcuts and tutorial actions still select the individual tools directly. Users can edit wall endpoints and
 positions, choose wall finishes and thicknesses, identify rooms, place and resize
@@ -90,9 +91,9 @@ or one inch in imperial, with Shift multiplying the step by ten. Reset to flat
 ground restores zero at every corner.
 These home-wide edits use ordinary history, autosave, import/export and Save.
 Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
-to edit terrain. Individual terrain zones and earthwork drawing are not exposed.
+to edit terrain. Localized elevation areas are edited with Floor → Area; terrain settings continue to control the surrounding grade.
 When custom terrain leaves an exterior doorway, passage or open platform edge
-without a crossing within Walk's 30 cm step limit, Issues shows a non-blocking
+without a crossing within Walk's 40 cm step limit, Issues shows a non-blocking
 warning and Locate selects the affected opening or platform. Supporting platforms
 and connected stair landings count as access. Railed edges, windows and interior
 openings are excluded. A downward slope does not require a basement; adding a
@@ -234,20 +235,22 @@ either endpoint to change length/direction, or either side handle to resize widt
 symmetrically. Measurements update throughout the gesture. Escape and interrupted
 gestures cancel; each completed gesture is one undoable edit.
 
-Stairs offers **Between floors** and **To ground** connections. Between floors
-links adjacent storeys. To ground links the selected floor or its outdoor platform
-to terrain without requiring another floor. It remains available on the top floor;
-apartment shells must be set to zero first. For a straight flight, draw from the
-floor landing to the ground endpoint. For a turning flight, click the floor landing,
-the turn, then the ground endpoint. Height and step count follow the terrain at
-that endpoint, including after later terrain edits. Landing warnings identify
-unsupported floor connections, pools and terrain that cannot meet the final step.
-Connected terrain stairs resolve the corresponding terrain exit warning and are
-walkable in both directions. They use ordinary undo, autosave, Save and export.
+Stairs offers **Between floors** and **Same floor** connections. Between floors
+links adjacent storeys. Same floor connects the actual surfaces at both endpoints:
+room floors, elevation areas, outdoor platforms, or terrain. It is the default
+when there is no floor above, and remains available inside apartment shells.
+There is no separate terrain/platform choice. For a straight flight, click or drag
+between the two surfaces in either direction. For a turning flight, click the
+starting surface, the turn, then the destination. Height, direction and step count
+follow both surfaces after edits. Landing warnings identify unsupported, sloping
+or obstructed landings. Existing saved terrain connections retain their legacy
+height semantics. Connections use ordinary undo, autosave, Save and export.
+Upper guards are clipped to surrounding surfaces at the upper landing's actual
+height; they never float above a lowered area or rest on a sloped transition.
 
 Both connections offer **Open treads**, **Concrete**, and **Stone** styles,
 independent of the four stair shapes. Concrete uses a solid base and closed risers;
-Stone adds contrasting stone tread caps. To ground starts with Concrete, while
+Stone adds contrasting stone tread caps. Same floor starts with Concrete, while
 Between floors and existing stairs retain Open treads. Railings remain optional.
 The placement thumbnails show the selected style; selected stair properties can
 change it without altering the route or landings.
@@ -368,12 +371,14 @@ the L-shaped stair controls: lower/upper flight lengths, width, and left/right t
 Place the bottom, lower-flight landing center, then the returning upper endpoint.
 The landing depth equals the flight width; curved half-turn stairs remain unsupported.
 
-Wall → Outdoor space draws the existing outdoor platforms for same-level terraces and
-balconies. The Floor tool keeps whole-room and custom-area finish painting. Close an
-independent polygon using the ordinary snapping, measurements, local drawing
-undo/redo and cancel gestures. The initial finish is Grass, which uses the default
-terrain color. Choose Railing (1 m), Glass railing (1 m), Low wall (0.3 m), or Open
-from procedural thumbnail cards before drawing; exposed edges inherit that
+Floor → Area creates a custom floor area inside a room or an outdoor platform
+outside. Starting on a wall keeps both sides available until a later point selects
+a side; undoing that point reopens the choice. Close an independent
+polygon using ordinary snapping, measurements, local drawing undo/redo and cancel
+gestures. Areas use the selected finish and outdoor boundaries start Open.
+Elevation is a property of either area, not a separate creation tool. Floor → Finish
+paints an existing room. In platform Properties, choose Railing (1 m), Glass railing
+(1 m), Low wall (0.3 m), or Open; exposed edges inherit that
 configuration. Select the finished platform to move it, edit or insert/remove
 corners, repaint its finish, or delete it. Select an edge on the plan or in the
 inspector to override its style and height, or restore the platform default.
@@ -488,3 +493,32 @@ to 1.5 m. Both types retain the drawn outline and support move, reshape, undo an
 redo. Above-ground pools leave the terrain intact beneath them. Their liner floor
 sits above the ground, the timber shell stays clear of the liner, and the coping
 projects beyond the shell and uprights.
+
+## Local elevation areas
+
+Floor → Area draws a bounded flat surface. Inside a room it belongs to
+that room and preserves its name, area and Home Assistant identity. Outside it
+creates an outdoor platform. Floor level is a signed offset from the storey,
+including negative values; it does not create or select another storey.
+
+Draw and reshape footprints in plan view. In 3D, select a surface and drag its
+Level handle; the outline previews the new position and release commits one
+undoable edit. Escape cancels. Arrow keys adjust the focused handle by 1 cm.
+The inspector also accepts exact lengths in the selected measurement units.
+
+Select an edge in the scene or footprint diagram to choose Vertical or Slope.
+Whole boundary applies the choice to every edge. A slope extends outward from
+the flat footprint; its Width handle and numeric input control that transition.
+Platform railings and low walls remain separate from transition settings.
+Areas can share boundaries but cannot overlap, nest, or have conflicting slopes.
+
+Indoor and outdoor area properties use open Floor finish, Elevation and Transition
+sections. Indoor ceilings retain their position by default. The open Ceiling section offers
+a local headroom override. Painting a whole room does not delete elevation areas.
+Same floor stairs connect actual local heights on the same storey, with
+automatic risers and landing checks. Floor-standing items use surface-relative
+placement; legacy absolute placements retain their existing interpretation.
+
+Walking over a local sharp drop starts gravity without requiring a jump. The walker
+keeps the current storey and lands on the actual lower surface. Upward steps retain
+a 40 cm step-height limit; walkable slopes and stairs remain continuous.

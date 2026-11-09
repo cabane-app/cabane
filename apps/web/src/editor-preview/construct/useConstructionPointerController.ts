@@ -1,3 +1,4 @@
+import { isAreaPaintTarget, openingToolFor } from "./floor-painting-contract";
 import { DEFAULT_WALL_COLORS } from "@cabane/engine";
 import { previewWallAttachments } from "./wall-attachment-preview";
 import { openingPlacementPreview, openingToolDimensions } from "./opening-placement-preview";
@@ -200,10 +201,9 @@ export function useConstructionPointerController({
     },
     [],
   );
-  const openingTool: OpeningTool | null =
-    tool === "door" || tool === "window" || tool === "passage" || tool === "niche" ? tool : null;
+  const openingTool = openingToolFor(tool);
   useEffect(() => setOpeningPreview(null), [tool]);
-  const drawingFloorZone = tool === "floor" && floorPaintTarget === "custom-area";
+  const drawingFloorZone = isAreaPaintTarget(floorPaintTarget, tool);
   const drawing = isConstructionDrawingTool(tool) || drawingFloorZone;
   const outlinePoints =
     tool === "pool" || tool === "platform" ? poolPoints : drawingFloorZone ? floorZonePoints : [];

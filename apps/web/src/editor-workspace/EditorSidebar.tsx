@@ -233,9 +233,8 @@ export function EditorSidebar({
               shape={stairPlacement.shape ?? "straight"}
               style={stairPlacement.style ?? "open"}
               onStyleChange={(style) => setStairPlacement({ ...stairPlacement, style })}
-              terrain={Boolean(stairPlacement.terrain)}
+              sameFloor={Boolean(stairPlacement.terrain)}
               canConnectFloors={snapshot.project.floors.at(-1)?.id !== activeFloorId}
-              canConnectTerrain={!snapshot.project.home.apartmentFloor}
               onConnectionChange={startStairs}
               issues={stairLiveIssues ?? []}
               onChange={(shape) =>

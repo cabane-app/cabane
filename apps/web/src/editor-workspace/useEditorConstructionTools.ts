@@ -32,7 +32,6 @@ export function useEditorConstructionTools(
     clearSelection: constructEditorClearSelection,
     setTool: constructEditorSetTool,
     addFloorZone: constructEditorAddFloorZone,
-    addGroundZone: constructEditorAddGroundZone,
     paintRoomFloor: constructEditorPaintRoomFloor,
   } = constructEditor;
   const [stairPlacement, setStairPlacement] = useState<StairSpec | null>(null);
@@ -70,7 +69,7 @@ export function useEditorConstructionTools(
   const floorZoneDrawing = useFloorZoneDrawing(constructEditorPreviewFloor, (roomId, polygon) =>
     roomId
       ? constructEditorAddFloorZone(roomId, polygon, floorFinish)
-      : constructEditorAddGroundZone(polygon, floorFinish),
+      : constructEditor.addPlatform(polygon, floorFinish, { kind: "open" }),
   );
   const { cancel: floorZoneDrawingCancel } = floorZoneDrawing;
   useEffect(() => {
@@ -110,20 +109,26 @@ export function useEditorConstructionTools(
     [constructEditorPaintRoomFloor, floorFinish, pendingRoomPaintId],
   );
 
-  const startStairs = (connection?: "floors" | "terrain") => {
+  const startStairs = (connection?: "floors" | "surfaces") => {
     constructEditorSetTool("select");
     constructEditorClearSelection();
     const index = project.floors.findIndex((f) => f.id === activeFloorId);
     const floor = project.floors[index];
     const upperFloor = project.floors[index + 1];
     if (!floor) return;
-    const terrain = connection === "terrain" || (!connection && !upperFloor);
+    const terrain = connection === "surfaces" || (!connection && !upperFloor);
     if (!terrain && !upperFloor) return;
     setStairDialog(null);
     setStairPlacement({
       id: `stairs-${createBrowserUuid()}`,
       ...(terrain
-        ? { terrain: { floorId: activeFloorId, end: "lower" as const } }
+        ? {
+            terrain: {
+              floorId: activeFloorId,
+              end: "lower" as const,
+              surfaces: true,
+            },
+          }
         : { lowerFloorId: activeFloorId, upperFloorId: upperFloor!.id }),
       at: floor.footprint[0] ?? floor.coordinates.origin,
       widthMeters: 1,

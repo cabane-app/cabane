@@ -114,6 +114,7 @@ await withModules(async (load) => {
             EditorActionBar,
             props({
               onToolChange: (tool) => selected.push(tool),
+              onFloorTargetChange: (target) => selected.push(target),
             }),
           ),
         ),
@@ -130,14 +131,22 @@ await withModules(async (load) => {
       assert.equal(walls.parentElement, document.body);
       assert.deepEqual(
         [...walls.querySelectorAll("button")].map((b) => b.textContent),
-        ["Wall", "Invisible wall", "Outdoor space"],
+        ["Wall", "Invisible wall"],
       );
       await act(async () => walls.querySelector('[aria-label="Invisible wall"]').click());
       assert.equal(selected.at(-1), "virtual-wall");
       assert.equal(document.querySelector('[aria-label="Wall tools"]'), null);
-      await act(async () => wallGroup.click());
-      await act(async () => document.querySelector('[aria-label="Outdoor space"]').click());
-      assert.equal(selected.at(-1), "platform");
+      await act(async () => document.querySelector('[aria-label="Floor"]').click());
+      const floors = document.querySelector('[aria-label="Floor tools"]');
+      assert.deepEqual(
+        [...floors.querySelectorAll("button")].map((b) => b.textContent),
+        ["Finish", "Area"],
+      );
+      await act(async () => floors.querySelector('[aria-label="Area"]').click());
+      assert.equal(selected.at(-1), "custom-area");
+      await act(async () => document.querySelector('[aria-label="Floor"]').click());
+      await act(async () => document.querySelector('[aria-label="Finish"]').click());
+      assert.equal(selected.at(-1), "room");
       const openings = document.querySelector('[aria-label="Openings"]');
       for (const [label, tool] of [
         ["Door", "door"],
@@ -184,8 +193,9 @@ await withModules(async (load) => {
       });
       assert.equal(decorations.getAttribute("aria-expanded"), "false");
       assert.equal(document.activeElement, decorations);
+      await act(async () => document.querySelector('[aria-label="Floor"]').click());
       assert.equal(
-        document.querySelector('[aria-label="Floor"]').getAttribute("aria-keyshortcuts"),
+        document.querySelector('[aria-label="Finish"]').getAttribute("aria-keyshortcuts"),
         "F",
       );
     });
@@ -206,14 +216,15 @@ await withModules(async (load) => {
           buttons.map((b) => b.getAttribute("aria-label")),
           ["Select", "Wall", "Openings", "Floor", "Stairs", "Measure", "Decorations"],
         );
-        const group = ["door", "window"].includes(tool) ? "Openings" : "Wall";
+        const group =
+          tool === "platform" ? "Floor" : ["door", "window"].includes(tool) ? "Openings" : "Wall";
         assert.equal(
           document.querySelector(`[aria-label="${group}"]`).getAttribute("aria-pressed"),
           "true",
         );
         assert.equal(
           document.querySelector('[aria-label="Floor"]').getAttribute("aria-pressed"),
-          "false",
+          tool === "platform" ? "true" : "false",
         );
       }
       const wall = document.querySelector('[aria-label="Wall"]');

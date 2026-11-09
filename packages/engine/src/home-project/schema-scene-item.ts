@@ -6,7 +6,19 @@ const placement = (value: unknown, path: string, issues: HomeProjectIssue[]) => 
   const candidate = record(value, path, issues);
   if (!candidate) return;
   if (candidate.kind === "absolute") {
-    keys(candidate, ["kind", "at", "elevationMeters", "rotationYRadians"], path, issues);
+    keys(
+      candidate,
+      ["kind", "at", "elevationMeters", "rotationYRadians", "surfaceRelative"],
+      path,
+      issues,
+    );
+    if (candidate.surfaceRelative !== undefined && typeof candidate.surfaceRelative !== "boolean")
+      addProjectIssue(
+        issues,
+        "project.item-surface",
+        path,
+        "Surface-relative placement must be a boolean.",
+      );
     point(candidate.at, `${path}.at`, issues);
     finite(candidate.elevationMeters, `${path}.elevationMeters`, issues);
     finite(candidate.rotationYRadians, `${path}.rotationYRadians`, issues);

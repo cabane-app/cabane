@@ -1,3 +1,4 @@
+import { validateElevationAreas } from "../../elevation/validation";
 import { DEFAULT_TERRAIN_GRASS_COLOR } from "../../terrain/terrain-settings";
 import { DEFAULT_WALL_COLORS } from "../../wall-colors";
 import { omitUndefinedProperties } from "../../defined-properties";
@@ -107,6 +108,7 @@ export const validateLayoutFloorSpec = (input: unknown): LayoutFloorValidationRe
       .filter((issue) => issue.path.startsWith("floors") || issue.code === "id.duplicate")
       .map((issue) => ({ ...issue, path: floorPath(issue.path) })),
     ...layoutOnlyIssues(input),
+    ...(validation.canRender ? validateElevationAreas(input as LayoutFloorSpec) : []),
   ].sort(
     (left, right) => left.path.localeCompare(right.path) || left.code.localeCompare(right.code),
   );

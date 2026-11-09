@@ -3,6 +3,7 @@ import {
   GRASS_FLOOR_FINISH,
   OUTDOOR_PLATFORM_EDGE_PRESETS,
   type DoorConfiguration,
+  type ElevationSettings,
   type EditorWallAttachment,
   type FloorEditorFloorSettings,
   type FloorEditorSelectionTarget,
@@ -231,7 +232,9 @@ export function platformPatch(value: unknown): Partial<Omit<OutdoorPlatformSpec,
     "edges",
     "useAsRoom",
     "roomName",
+    "elevation",
   ]);
+  if (input.elevation !== undefined) elevation(input.elevation);
   if (input.polygon !== undefined) polygon(input.polygon, "changes.polygon");
   if (input.finish !== undefined) finish(input.finish);
   if (input.defaultEdge !== undefined) edge(input.defaultEdge);
@@ -446,4 +449,22 @@ export function targets(value: unknown): FloorEditorSelectionTarget[] {
       id: string(input.id, "target.id"),
     };
   });
+}
+
+export function elevation(value: unknown): ElevationSettings {
+  const input = object(value, "elevation", ["offsetMeters", "ceilingHeightMeters", "edges"]);
+  number(input.offsetMeters, "offsetMeters");
+  if (input.ceilingHeightMeters !== undefined)
+    number(input.ceilingHeightMeters, "ceilingHeightMeters", 0.1);
+  if (!Array.isArray(input.edges)) throw new Error("Elevation edges must be an array.");
+  for (const value of input.edges) {
+    const e = object(value, "elevation edge", ["id", "transition"]);
+    string(e.id, "edge.id");
+    if (e.transition !== undefined) {
+      const t = object(e.transition, "transition", ["kind", "widthMeters"]);
+      oneOf(t.kind, "transition.kind", ["sharp", "sloped"]);
+      if (t.kind === "sloped") number(t.widthMeters, "transition.widthMeters", Number.MIN_VALUE);
+    }
+  }
+  return input as unknown as ElevationSettings;
 }

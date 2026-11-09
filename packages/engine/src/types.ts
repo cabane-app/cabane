@@ -116,7 +116,18 @@ export interface DeviceSlotSpec {
   placement: DevicePlacement;
 }
 
+export interface ElevationSettings {
+  offsetMeters: number;
+  /** Local headroom override; omission preserves the existing ceiling. */
+  ceilingHeightMeters?: number;
+  edges: readonly {
+    id: string;
+    transition?: { kind: "sharp" } | { kind: "sloped"; widthMeters: number };
+  }[];
+}
+
 export interface FloorFinishZoneSpec {
+  elevation?: ElevationSettings;
   id: string;
   polygon: Polygon;
   finish: FloorFinishSpec;
@@ -328,6 +339,7 @@ export interface OutdoorPlatformEdgeSpec {
   configuration?: OutdoorPlatformEdgeConfiguration;
 }
 export interface OutdoorPlatformSpec {
+  elevation?: ElevationSettings;
   id: string;
   /** Opt-in room identity for Connect and dashboard use; never adds indoor geometry. */
   useAsRoom?: boolean;

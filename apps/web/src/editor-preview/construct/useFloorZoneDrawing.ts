@@ -36,6 +36,24 @@ export type FloorZoneDrawingAction =
 const same = (left: PlanPoint, right: PlanPoint) =>
   Math.hypot(left[0] - right[0], left[1] - right[1]) <= 1e-7;
 
+/** Boundary points retain every possible owner until the outline chooses a side. */
+export const floorAreaDrawingOwners = (
+  points: readonly PlanPoint[],
+  floor: Pick<FloorSpec, "footprint" | "footprintRegions" | "rooms">,
+) => ({
+  rooms: floor.rooms.filter((room) =>
+    points.every((point) => floorZonePointWithinRoom(point, room.polygon)),
+  ),
+  outdoor: points.every((point) => groundZonePointOutsideFootprint(point, floor)),
+});
+const drawingRoomId = (
+  points: readonly PlanPoint[],
+  floor: Pick<FloorSpec, "footprint" | "footprintRegions" | "rooms">,
+) => {
+  const owners = floorAreaDrawingOwners(points, floor);
+  return !owners.outdoor && owners.rooms.length === 1 ? owners.rooms[0].id : null;
+};
+
 export const advanceFloorZoneDrawing = (
   state: FloorZoneDrawingState,
   action: FloorZoneDrawingAction,
@@ -53,7 +71,7 @@ export const advanceFloorZoneDrawing = (
     const points = state.points.slice(0, -1);
     return {
       state: {
-        roomId: points.length ? state.roomId : null,
+        roomId: points.length ? drawingRoomId(points, floor) : null,
         points,
         future: [state.points.at(-1)!, ...state.future],
         preview: null,
@@ -66,6 +84,7 @@ export const advanceFloorZoneDrawing = (
     return {
       state: {
         ...state,
+        roomId: drawingRoomId([...state.points, state.future[0]], floor),
         points: [...state.points, state.future[0]],
         future: state.future.slice(1),
         preview: state.future[0],
@@ -76,37 +95,9 @@ export const advanceFloorZoneDrawing = (
   const point = action.point;
   const rooms = floor.rooms;
   if (!point.every(Number.isFinite)) return { state };
-  if (!state.points.length) {
-    const room = rooms.find((candidate) => floorZonePointWithinRoom(point, candidate.polygon));
-    return room
-      ? {
-          state: {
-            roomId: room.id,
-            points: [point],
-            future: [],
-            preview: point,
-            error: null,
-          },
-        }
-      : groundZonePointOutsideFootprint(point, floor)
-        ? {
-            state: {
-              roomId: null,
-              points: [point],
-              future: [],
-              preview: point,
-              error: null,
-            },
-          }
-        : {
-            state: {
-              ...state,
-              error: "Start inside a room or outside the building.",
-            },
-          };
-  }
-  if (same(point, state.points.at(-1)!)) return { state };
-  const room = rooms.find((candidate) => candidate.id === state.roomId);
+  if (state.points.length && same(point, state.points.at(-1)!)) return { state };
+  const owners = floorAreaDrawingOwners([...state.points, point], floor);
+  const room = owners.rooms[0];
   if (state.points.length >= 3 && same(point, state.points[0])) {
     const polygon = state.points as Polygon;
     if (!isFloorZoneOutline(polygon)) {
@@ -138,19 +129,16 @@ export const advanceFloorZoneDrawing = (
       completed: { roomId: room?.id ?? null, polygon },
     };
   }
-  if (room && !floorZonePointWithinRoom(point, room.polygon)) {
+  if (!room && !owners.outdoor) {
+    const previousRoom = rooms.find((candidate) => candidate.id === state.roomId);
     return {
       state: {
         ...state,
-        error: `Keep every corner inside ${room.name}.`,
-      },
-    };
-  }
-  if (!room && !groundZonePointOutsideFootprint(point, floor)) {
-    return {
-      state: {
-        ...state,
-        error: "Keep every outdoor corner outside the building.",
+        error: !state.points.length
+          ? "Start inside a room or outside the building."
+          : previousRoom
+            ? `Keep every corner inside ${previousRoom.name}.`
+            : "Keep every outdoor corner outside the building, or keep the area inside one room.",
       },
     };
   }
@@ -165,6 +153,7 @@ export const advanceFloorZoneDrawing = (
   return {
     state: {
       ...state,
+      roomId: drawingRoomId([...state.points, point], floor),
       points: [...state.points, point],
       future: [],
       preview: point,

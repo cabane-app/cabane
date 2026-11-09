@@ -1100,6 +1100,73 @@
                   "schema": {
                     "items": {
                       "properties": {
+                        "elevation": {
+                          "optional": true,
+                          "schema": {
+                            "properties": {
+                              "ceilingHeightMeters": {
+                                "optional": true,
+                                "schema": {
+                                  "type": "number"
+                                }
+                              },
+                              "edges": {
+                                "optional": false,
+                                "schema": {
+                                  "items": {
+                                    "properties": {
+                                      "id": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "transition": {
+                                        "optional": true,
+                                        "schema": {
+                                          "anyOf": [
+                                            {
+                                              "properties": {
+                                                "kind": {
+                                                  "optional": false,
+                                                  "schema": {
+                                                    "const": "sharp"
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "properties": {
+                                                "kind": {
+                                                  "optional": false,
+                                                  "schema": {
+                                                    "const": "sloped"
+                                                  }
+                                                },
+                                                "widthMeters": {
+                                                  "optional": false,
+                                                  "schema": {
+                                                    "type": "number"
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "offsetMeters": {
+                                "optional": false,
+                                "schema": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        },
                         "finish": {
                           "optional": false,
                           "schema": {
@@ -2272,6 +2339,73 @@
                             }
                           }
                         },
+                        "elevation": {
+                          "optional": true,
+                          "schema": {
+                            "properties": {
+                              "ceilingHeightMeters": {
+                                "optional": true,
+                                "schema": {
+                                  "type": "number"
+                                }
+                              },
+                              "edges": {
+                                "optional": false,
+                                "schema": {
+                                  "items": {
+                                    "properties": {
+                                      "id": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "transition": {
+                                        "optional": true,
+                                        "schema": {
+                                          "anyOf": [
+                                            {
+                                              "properties": {
+                                                "kind": {
+                                                  "optional": false,
+                                                  "schema": {
+                                                    "const": "sharp"
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "properties": {
+                                                "kind": {
+                                                  "optional": false,
+                                                  "schema": {
+                                                    "const": "sloped"
+                                                  }
+                                                },
+                                                "widthMeters": {
+                                                  "optional": false,
+                                                  "schema": {
+                                                    "type": "number"
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "offsetMeters": {
+                                "optional": false,
+                                "schema": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        },
                         "finish": {
                           "optional": false,
                           "schema": {
@@ -2713,6 +2847,73 @@
                           "schema": {
                             "items": {
                               "properties": {
+                                "elevation": {
+                                  "optional": true,
+                                  "schema": {
+                                    "properties": {
+                                      "ceilingHeightMeters": {
+                                        "optional": true,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "edges": {
+                                        "optional": false,
+                                        "schema": {
+                                          "items": {
+                                            "properties": {
+                                              "id": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "transition": {
+                                                "optional": true,
+                                                "schema": {
+                                                  "anyOf": [
+                                                    {
+                                                      "properties": {
+                                                        "kind": {
+                                                          "optional": false,
+                                                          "schema": {
+                                                            "const": "sharp"
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "properties": {
+                                                        "kind": {
+                                                          "optional": false,
+                                                          "schema": {
+                                                            "const": "sloped"
+                                                          }
+                                                        },
+                                                        "widthMeters": {
+                                                          "optional": false,
+                                                          "schema": {
+                                                            "type": "number"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "offsetMeters": {
+                                        "optional": false,
+                                        "schema": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
                                 "finish": {
                                   "optional": false,
                                   "schema": {
@@ -4580,6 +4781,19 @@
                                 "schema": {
                                   "type": "number"
                                 }
+                              },
+                              "surfaceRelative": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": false
+                                    },
+                                    {
+                                      "const": true
+                                    }
+                                  ]
+                                }
                               }
                             }
                           },
@@ -5046,6 +5260,19 @@
                                 "schema": {
                                   "type": "number"
                                 }
+                              },
+                              "surfaceRelative": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": false
+                                    },
+                                    {
+                                      "const": true
+                                    }
+                                  ]
+                                }
                               }
                             }
                           },
@@ -5440,6 +5667,19 @@
                             "schema": {
                               "type": "string"
                             }
+                          },
+                          "surfaces": {
+                            "optional": true,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": false
+                                },
+                                {
+                                  "const": true
+                                }
+                              ]
+                            }
                           }
                         }
                       }
@@ -5872,6 +6112,19 @@
                             "schema": {
                               "type": "string"
                             }
+                          },
+                          "surfaces": {
+                            "optional": true,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": false
+                                },
+                                {
+                                  "const": true
+                                }
+                              ]
+                            }
                           }
                         }
                       }
@@ -6000,6 +6253,19 @@
                             "schema": {
                               "type": "string"
                             }
+                          },
+                          "surfaces": {
+                            "optional": true,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": false
+                                },
+                                {
+                                  "const": true
+                                }
+                              ]
+                            }
                           }
                         }
                       }
@@ -6127,6 +6393,19 @@
                             "optional": false,
                             "schema": {
                               "type": "string"
+                            }
+                          },
+                          "surfaces": {
+                            "optional": true,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": false
+                                },
+                                {
+                                  "const": true
+                                }
+                              ]
                             }
                           }
                         }
@@ -6563,6 +6842,73 @@
                 "schema": {
                   "items": {
                     "properties": {
+                      "elevation": {
+                        "optional": true,
+                        "schema": {
+                          "properties": {
+                            "ceilingHeightMeters": {
+                              "optional": true,
+                              "schema": {
+                                "type": "number"
+                              }
+                            },
+                            "edges": {
+                              "optional": false,
+                              "schema": {
+                                "items": {
+                                  "properties": {
+                                    "id": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "transition": {
+                                      "optional": true,
+                                      "schema": {
+                                        "anyOf": [
+                                          {
+                                            "properties": {
+                                              "kind": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "const": "sharp"
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "properties": {
+                                              "kind": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "const": "sloped"
+                                                }
+                                              },
+                                              "widthMeters": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "offsetMeters": {
+                              "optional": false,
+                              "schema": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      },
                       "finish": {
                         "optional": false,
                         "schema": {
@@ -7735,6 +8081,73 @@
                           }
                         }
                       },
+                      "elevation": {
+                        "optional": true,
+                        "schema": {
+                          "properties": {
+                            "ceilingHeightMeters": {
+                              "optional": true,
+                              "schema": {
+                                "type": "number"
+                              }
+                            },
+                            "edges": {
+                              "optional": false,
+                              "schema": {
+                                "items": {
+                                  "properties": {
+                                    "id": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "transition": {
+                                      "optional": true,
+                                      "schema": {
+                                        "anyOf": [
+                                          {
+                                            "properties": {
+                                              "kind": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "const": "sharp"
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "properties": {
+                                              "kind": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "const": "sloped"
+                                                }
+                                              },
+                                              "widthMeters": {
+                                                "optional": false,
+                                                "schema": {
+                                                  "type": "number"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "offsetMeters": {
+                              "optional": false,
+                              "schema": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      },
                       "finish": {
                         "optional": false,
                         "schema": {
@@ -8176,6 +8589,73 @@
                         "schema": {
                           "items": {
                             "properties": {
+                              "elevation": {
+                                "optional": true,
+                                "schema": {
+                                  "properties": {
+                                    "ceilingHeightMeters": {
+                                      "optional": true,
+                                      "schema": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    "edges": {
+                                      "optional": false,
+                                      "schema": {
+                                        "items": {
+                                          "properties": {
+                                            "id": {
+                                              "optional": false,
+                                              "schema": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "transition": {
+                                              "optional": true,
+                                              "schema": {
+                                                "anyOf": [
+                                                  {
+                                                    "properties": {
+                                                      "kind": {
+                                                        "optional": false,
+                                                        "schema": {
+                                                          "const": "sharp"
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "properties": {
+                                                      "kind": {
+                                                        "optional": false,
+                                                        "schema": {
+                                                          "const": "sloped"
+                                                        }
+                                                      },
+                                                      "widthMeters": {
+                                                        "optional": false,
+                                                        "schema": {
+                                                          "type": "number"
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "offsetMeters": {
+                                      "optional": false,
+                                      "schema": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
                               "finish": {
                                 "optional": false,
                                 "schema": {
@@ -9341,6 +9821,19 @@
                                 "schema": {
                                   "type": "number"
                                 }
+                              },
+                              "surfaceRelative": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": false
+                                    },
+                                    {
+                                      "const": true
+                                    }
+                                  ]
+                                }
                               }
                             }
                           },
@@ -9806,6 +10299,19 @@
                                 "optional": false,
                                 "schema": {
                                   "type": "number"
+                                }
+                              },
+                              "surfaceRelative": {
+                                "optional": true,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": false
+                                    },
+                                    {
+                                      "const": true
+                                    }
+                                  ]
                                 }
                               }
                             }

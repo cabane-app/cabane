@@ -49,6 +49,8 @@ export type SceneItemSize = readonly [width: number, height: number, depth: numb
 export type ItemPlacement =
   | {
       kind: "absolute";
+      /** Elevation is an offset above the local supporting surface. */
+      surfaceRelative?: boolean;
       at: PlanPoint;
       elevationMeters: number;
       rotationYRadians: number;

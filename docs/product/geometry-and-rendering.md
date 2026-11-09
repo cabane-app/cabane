@@ -469,3 +469,16 @@ when changing room-focus layout. Global reduced-motion overrides remain in
 
 Stylesheet extraction preserves selectors, declarations, conditions and source
 order. Responsive and reduced-motion behavior changes are separate product work.
+
+## Local elevation geometry
+
+Elevation areas partition the original room floor or terrain rather than layering
+another surface over it. Flat finishes, mitered transition strips and retaining
+faces use shared surface heights. Terrain excavation omits its internal extrusion
+walls where elevation geometry owns the retaining face, preventing coplanar
+flickering. Slope ends receive triangular side closures. Stair apertures cut
+transition surfaces without creating same-storey ceiling openings.
+
+Lowered indoor areas extend adjacent wall solids downward. Local ceiling overrides
+replace the covered ceiling and close their vertical steps. Local offsets do not
+change the floor stack. Outdoor platform barriers follow their platform elevation.

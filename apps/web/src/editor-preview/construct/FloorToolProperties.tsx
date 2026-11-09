@@ -6,13 +6,13 @@ import type { ConstructEditorController } from "./useConstructEditor";
 import "./floor-tool-properties.css";
 
 const targets = [
-  { id: "room", label: "Whole room", description: "Change an existing room’s finish." },
-  { id: "custom-area", label: "Custom area", description: "Draw a finish area or a ground path." },
+  { id: "room", label: "Finish", description: "Change an existing room’s finish." },
+  { id: "custom-area", label: "Area", description: "Draw an indoor or outdoor area." },
 ] as const;
 const instructions: Record<FloorPaintTarget, string> = {
   room: "Choose a finish, then click a room.",
   "custom-area":
-    "Click corners, then return to the first point to close the area. Start inside a room for an inset, or outside for a ground patch.",
+    "Click corners, then return to the first point to close the area. Start inside a room for a custom area, or outside for an outdoor space. Set its elevation in Properties.",
   "outdoor-platform":
     "Click corners, then return to the first point to close the platform. House walls and doorways stay clear.",
 };
@@ -55,7 +55,7 @@ export function FloorToolProperties({
         <legend>Floor finish</legend>
         <FloorFinishPalette
           value={isPlatform ? settings.finish : painting.finish}
-          showGrass={isPlatform}
+          showGrass={isPlatform || target === "custom-area"}
           onChange={(finish) =>
             isPlatform
               ? editor.setPlatformSettings({ ...settings, finish })

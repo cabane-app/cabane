@@ -1,3 +1,4 @@
+import { ElevationEdges } from "../elevation/ElevationEdges";
 import { Fragment } from "react";
 import { ItemEntityReadings } from "../ItemEntityReadings";
 import { SolidRooms } from "../architecture-scene/SolidRooms";
@@ -161,6 +162,7 @@ export const FloorScene = memo(function FloorScene({
           color={manifest.home.palette.ground}
         />
       )}
+      <ElevationEdges floor={floor} />
       <ArchitecturalOutdoorPlatforms floor={floor} below={platformBelow} showGround={showGround} />
       <SolidRooms floor={floor} color={manifest.home.palette.interior} />
       <ArchitecturalHedges floor={floor} />

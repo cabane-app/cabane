@@ -1,3 +1,5 @@
+import { elevationAreas } from "../elevation/surfaces";
+import { lowerWallFootprint } from "../elevation/wall-support";
 import { wallNicheCutPolygon } from "./wall-niche-cut";
 import { differenceClippingGeometry, unionClippingPolygons } from "./architecture-clipping";
 import { EPSILON } from "./architecture-geometry-contract";
@@ -15,6 +17,9 @@ export function wallSolidBands(
   const floor = physicalFloor(requestedFloor);
   const heights = uniqueSorted([
     0,
+    ...elevationAreas(floor)
+      .filter((area) => area.roomId && area.elevation.offsetMeters < 0)
+      .map((area) => area.elevation.offsetMeters),
     ...floor.walls.map((wall) => wall.heightMeters ?? floor.defaultWallHeightMeters),
     ...cornerBands.map(({ top }) => top),
     ...floor.walls.flatMap((wall) =>
@@ -42,6 +47,7 @@ export function wallSolidBands(
     const corners = cornerBands.filter((band) => middle > band.bottom && middle < band.top);
     solids.push(...corners.map(({ footprint }) => footprint));
     let footprint = unionClippingPolygons(solids);
+    if (middle < 0) footprint = lowerWallFootprint(floor, footprint, middle);
     const cuts = floor.openings.flatMap((opening) => {
       const openingBottom = opening.sillHeightMeters;
       const openingTop = opening.sillHeightMeters + opening.openingHeightMeters;

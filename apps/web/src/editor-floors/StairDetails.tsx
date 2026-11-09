@@ -90,7 +90,7 @@ export function StairDetails({
       title="Stairs"
       subtitle={
         draft.terrain
-          ? "To ground"
+          ? "Same floor"
           : `To ${project.floors.find((f) => f.id === draft.upperFloorId)?.name}`
       }
       label="Stair properties"
@@ -108,7 +108,7 @@ export function StairDetails({
         <p className="sidebar-section-note">
           <MeasurementText>
             {flight
-              ? `Height: ${flight.riseMeters.toFixed(2)} m. Follows the terrain landing.`
+              ? `Height: ${flight.riseMeters.toFixed(2)} m. ${draft.terrain.surfaces ? "Follows both surfaces." : "Follows the terrain landing."}`
               : "Height follows the terrain landing."}
           </MeasurementText>
         </p>

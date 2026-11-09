@@ -5,15 +5,15 @@ import { EditorActionButton } from "./EditorActionButton";
 import type { EditorIconName } from "./EditorIcon";
 import "./editor-tool-group.css";
 
-export interface EditorToolOption {
-  tool: FloorEditorTool;
+export interface EditorToolOption<T extends string = FloorEditorTool> {
+  tool: T;
   label: string;
   icon: EditorIconName;
   shortcut?: string;
 }
 
 /** Portal keeps the disclosure outside the horizontally scrolling tool strip. */
-export function EditorToolGroup({
+export function EditorToolGroup<T extends string>({
   label,
   panelLabel,
   icon,
@@ -25,10 +25,10 @@ export function EditorToolGroup({
   label: string;
   panelLabel: string;
   icon: EditorIconName;
-  tools: readonly EditorToolOption[];
-  tool: FloorEditorTool | null;
+  tools: readonly EditorToolOption<T>[];
+  tool: T | null;
   disabled?: boolean | undefined;
-  onToolChange: (tool: FloorEditorTool) => void;
+  onToolChange: (tool: T) => void;
 }) {
   const dom = useCabaneDom();
   const id = useId();
