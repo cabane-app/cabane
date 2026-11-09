@@ -1,3 +1,5 @@
+import { leanWallCollider } from "./walk-wall-lean";
+import { polygonContact } from "./walk-polygon-collision";
 import { deriveOutdoorPlatformBarriers } from "../outdoor-platforms/platform-barriers";
 import { rollUpDoorGeometry } from "../roll-up-door-geometry";
 import { terrainForHedge, terrainHedgeRuns } from "../hedges/hedge-terrain";
@@ -45,13 +47,14 @@ const wallColliderRuns = (
   floor: FloorSpec,
   openOpeningIds: ReadonlySet<string>,
   elevation: number,
-): SegmentWalkCollider[] => {
+): WalkCollider[] => {
   const relevant = floor.openings
     .filter((opening) => opening.wallId === wall.id)
     .sort((left, right) => left.offsetFromWallStartPlanUnits - right.offsetFromWallStartPlanUnits);
   const scale = floor.coordinates.metersPerPlanUnit;
   const length = Math.hypot(wall.to[0] - wall.from[0], wall.to[1] - wall.from[1]) * scale;
-  const intervals: Array<readonly [number, number]> = [];
+  const height = wall.heightMeters ?? floor.defaultWallHeightMeters;
+  const intervals: Array<readonly [number, number, number?, number?]> = [];
   let cursor = 0;
   for (const opening of relevant) {
     const start = opening.offsetFromWallStartPlanUnits * scale;
@@ -74,18 +77,33 @@ const wallColliderRuns = (
       );
       intervals.push([start, start + jambWidth], [end - jambWidth, end]);
     }
+    // A leaning header can intersect the body at a raised walking elevation.
+    if (
+      wall.leanMeters &&
+      (opening.kind === "passage" || (opening.kind === "door" && openOpeningIds.has(opening.id)))
+    ) {
+      const openingTop = opening.sillHeightMeters + opening.openingHeightMeters;
+      if (openingTop < height) intervals.push([start, end, openingTop, height]);
+      if (opening.sillHeightMeters > 0) intervals.push([start, end, 0, opening.sillHeightMeters]);
+    }
     cursor = end;
   }
   if (cursor < length) intervals.push([cursor, length]);
-  return intervals.map(([start, end], index) => ({
-    kind: "segment",
-    id: `${wall.id}-walk-${index}`,
-    from: wallPointAtDistance(wall, start, floor),
-    to: wallPointAtDistance(wall, end, floor),
-    halfThickness: wall.thicknessMeters / 2,
-    minY: elevation,
-    maxY: elevation + (wall.heightMeters ?? floor.defaultWallHeightMeters),
-  }));
+  return intervals.map(([start, end, bottom = 0, top = height], index) =>
+    leanWallCollider(
+      {
+        kind: "segment",
+        id: `${wall.id}-walk-${index}`,
+        from: wallPointAtDistance(wall, start, floor),
+        to: wallPointAtDistance(wall, end, floor),
+        halfThickness: wall.thicknessMeters / 2,
+        minY: elevation + bottom,
+        maxY: elevation + top,
+      },
+      floor,
+      elevation,
+    ),
+  );
 };
 
 /** Virtual room dividers never block walking. */
@@ -183,18 +201,25 @@ const deriveBuiltWalkColliders = (
       const interval = junctionConnectorInterval(wall, junction, floor);
       if (!interval) return [];
       return [
-        {
-          kind: "segment" as const,
-          id: `${junction.id}-${wall.id}-walk-arm`,
-          from: {
-            x: from[0] + direction[0] * interval[0],
-            z: from[1] + direction[1] * interval[0],
+        leanWallCollider(
+          {
+            kind: "segment" as const,
+            id: `${junction.id}-${wall.id}-walk-arm`,
+            from: {
+              x: from[0] + direction[0] * interval[0],
+              z: from[1] + direction[1] * interval[0],
+            },
+            to: {
+              x: from[0] + direction[0] * interval[1],
+              z: from[1] + direction[1] * interval[1],
+            },
+            halfThickness: wall.thicknessMeters / 2,
+            minY: elevation,
+            maxY: elevation + (wall.heightMeters ?? floor.defaultWallHeightMeters),
           },
-          to: { x: from[0] + direction[0] * interval[1], z: from[1] + direction[1] * interval[1] },
-          halfThickness: wall.thicknessMeters / 2,
-          minY: elevation,
-          maxY: elevation + (wall.heightMeters ?? floor.defaultWallHeightMeters),
-        },
+          floor,
+          elevation,
+        ),
       ];
     });
   }),
@@ -206,15 +231,22 @@ export const walkCollidersForVerticalRange = (
   range?: WalkVerticalRange,
 ): readonly WalkCollider[] =>
   range
-    ? colliders.filter(
-        (collider) =>
-          collider.minY === undefined ||
-          collider.maxY === undefined ||
-          (collider.maxY > range.minY + 1e-7 && collider.minY < range.maxY - 1e-7),
-      )
+    ? colliders
+        .filter(
+          (collider) =>
+            collider.minY === undefined ||
+            collider.maxY === undefined ||
+            (collider.maxY > range.minY + 1e-7 && collider.minY < range.maxY - 1e-7),
+        )
+        .map((collider) =>
+          collider.kind === "polygon"
+            ? { ...collider, points: collider.footprintForRange(range) }
+            : collider,
+        )
     : colliders;
 
 const distanceToWalkCollider = (point: WalkPoint, collider: WalkCollider) => {
+  if (collider.kind === "polygon") return polygonContact(point, collider.points).distance;
   if (collider.kind === "segment") {
     const closest = closestPointOnSegment(point, collider.from, collider.to);
     return Math.hypot(point.x - closest.x, point.z - closest.z) - collider.halfThickness;

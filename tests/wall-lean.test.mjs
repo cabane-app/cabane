@@ -10,6 +10,15 @@ await withModules(async (load) => {
     "/packages/engine/src/architecture-geometry.ts",
   );
   const { buildRoofGeometries } = await load("/packages/engine/src/roof/roof-geometry.ts");
+  const { deriveRoofRegions } = await load("/packages/engine/src/roof/roof-coverage.ts");
+  const { walkCollidersForVerticalRange, isWalkPointClear } = await load(
+    "/packages/engine/src/navigation/walk-colliders.ts",
+  );
+  const { resolveCircleMovement } = await load("/packages/engine/src/navigation/walk-motion.ts");
+  const { walkJumpVerticalRange } = await load("/packages/engine/src/navigation/walk-jump.ts");
+  const { prepareWalkColliders } = await load(
+    "/packages/engine/src/navigation/prepared-walk-colliders.ts",
+  );
   const { validateWalls } = await load("/packages/engine/src/validation/wall-rules.ts");
   const { createFloorEditorDraft, deriveFloorTopology } = await load(
     "/packages/engine/src/index.ts",
@@ -129,6 +138,120 @@ await withModules(async (load) => {
   test("the roof reaches out over the top of a leaning wall", () => {
     const span = (f) => xSpan(vertices(buildRoofGeometries([f]).top));
     assert.ok(Math.abs(span(box(1)) - (span(box()) + 1)) < 0.01);
+  });
+
+  test("roof edges follow ceiling height independently of floor spacing", () => {
+    for (const lean of [-1, 1]) {
+      const f = { ...box(lean), defaultWallHeightMeters: 2.5, defaultCeilingHeightMeters: 2.5 };
+      const minX = (regions) =>
+        Math.min(...regions.flatMap((region) => region.polygon[0].map(([x]) => x)));
+      const upright = { ...f, walls: box().walls };
+      assert.ok(
+        Math.abs(minX(deriveRoofRegions([f])) - minX(deriveRoofRegions([upright])) + lean) < 1e-6,
+      );
+      assert.deepEqual(
+        deriveRoofRegions([{ ...f, floorToFloorHeightMeters: 4 }]),
+        deriveRoofRegions([f]),
+      );
+    }
+  });
+
+  test("each flat ceiling tier follows its own height", () => {
+    const f = box(-1);
+    f.rooms = [
+      {
+        id: "south",
+        polygon: [
+          [0, 0],
+          [6, 0],
+          [6, 2],
+          [0, 2],
+        ],
+      },
+      {
+        id: "north",
+        polygon: [
+          [0, 2],
+          [6, 2],
+          [6, 4],
+          [0, 4],
+        ],
+      },
+    ];
+    f.ceilings = [
+      { id: "low", kind: "flat", roomIds: ["south"], heightMeters: 2 },
+      { id: "high", kind: "flat", roomIds: ["north"], heightMeters: 3 },
+    ];
+    const regions = deriveRoofRegions([f]);
+    for (const height of [2, 3]) {
+      const region = regions.find(
+        (candidate) => Math.abs(candidate.baseHeight - height - 0.16) < 1e-6,
+      );
+      assert.ok(region, `missing tier ${height}`);
+      assert.ok(
+        Math.abs(Math.min(...region.polygon[0].map(([x]) => x)) - (height / 3 - 0.1)) < 1e-6,
+      );
+    }
+  });
+
+  test("upper-floor lean does not move the footprint cutting a lower roof", () => {
+    const lower = box();
+    lower.id = "lower";
+    lower.footprint = lower.footprint.map(([x, y]) => [x === 0 ? -3 : x, y]);
+    lower.walls = lower.walls.map((wall) => ({
+      ...wall,
+      from: [wall.from[0] === 0 ? -3 : wall.from[0], wall.from[1]],
+      to: [wall.to[0] === 0 ? -3 : wall.to[0], wall.to[1]],
+    }));
+    const lowerRoof = (lean) =>
+      deriveRoofRegions([lower, box(lean)]).filter((region) => region.floorId === "lower");
+    assert.deepEqual(lowerRoof(-1), lowerRoof(1));
+  });
+
+  test("walking stops at leaning walls from both sides and at raised elevations", () => {
+    for (const lean of [-1, 1]) {
+      const f = box(lean);
+      const prepared = prepareWalkColliders(f, 5);
+      for (const jump of [0, 0.7]) {
+        const range = walkJumpVerticalRange(5, jump);
+        const colliders = walkCollidersForVerticalRange(prepared(new Set(), []), range);
+        const wall = colliders.find((collider) => collider.id === "west-walk-0");
+        assert.equal(wall.kind, "polygon");
+        const shifts = [range.minY - 5, range.maxY - 5].map((height) => (-lean * height) / 3);
+        const inner = Math.max(...shifts) + 0.1;
+        const outer = Math.min(...shifts) - 0.1;
+        const fromInside = resolveCircleMovement({ x: 2, z: 2 }, { x: -4, z: 0 }, [wall]);
+        const fromOutside = resolveCircleMovement({ x: -2, z: 2 }, { x: 4, z: 0 }, [wall]);
+        assert.ok(Math.abs(fromInside.x - inner - 0.22) < 1e-6);
+        assert.ok(Math.abs(fromOutside.x - outer + 0.22) < 1e-6);
+        assert.equal(isWalkPointClear({ x: (inner + outer) / 2, z: 2 }, [wall]), false);
+        assert.ok(isWalkPointClear(fromInside, [wall]));
+      }
+    }
+  });
+
+  test("leaning door jambs stay passable when open and headers block raised walkers", () => {
+    const f = box(-1);
+    f.openings = [
+      {
+        id: "door",
+        wallId: "west",
+        kind: "door",
+        offsetFromWallStartPlanUnits: 1.5,
+        widthPlanUnits: 1,
+        openingHeightMeters: 2.1,
+        sillHeightMeters: 0,
+      },
+    ];
+    const prepared = prepareWalkColliders(f);
+    const open = prepared(new Set(["door"]), []);
+    const cross = (colliders, z = 2) =>
+      resolveCircleMovement({ x: 2, z }, { x: -3, z: 0 }, colliders);
+    assert.ok(cross(open).x < -0.9);
+    assert.ok(cross(open, 1.3).x > 0.5);
+    assert.ok(cross(prepared(new Set(), [])).x > 0.5);
+    const raised = walkCollidersForVerticalRange(open, walkJumpVerticalRange(0, 0.7));
+    assert.ok(cross(raised).x > 0.7);
   });
 
   test("lean is validated, and Construct keeps it through topology", () => {

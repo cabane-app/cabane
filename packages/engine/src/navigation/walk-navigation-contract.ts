@@ -56,7 +56,17 @@ export interface BoxWalkCollider {
   supportY?: number;
 }
 
-export type WalkCollider = SegmentWalkCollider | BoxWalkCollider;
+/** Convex horizontal footprint of a solid, optionally projected over the walker’s height. */
+interface PolygonWalkCollider {
+  kind: "polygon";
+  id: string;
+  points: readonly WalkPoint[];
+  minY: number;
+  maxY: number;
+  footprintForRange: (range: WalkVerticalRange) => readonly WalkPoint[];
+}
+
+export type WalkCollider = SegmentWalkCollider | BoxWalkCollider | PolygonWalkCollider;
 
 export interface WalkVerticalRange {
   minY: number;

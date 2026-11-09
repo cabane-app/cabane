@@ -52,9 +52,8 @@ const coveredFloor = (floor: FloorSpec): MultiPolygon => {
   // are not roof openings. Only bridge enclosed voids narrower than a wall;
   // retain courtyard rings and every concavity of the exterior outline.
   const seamWidth = Math.max(0.005, ...floor.walls.map((wall) => wall.thicknessMeters)) + 0.01;
-  // Leaning walls reach out at the top: the roof covers them there.
   return domain.map((polygon) => {
-    const [outer, ...holes] = leanWorldRings(polygon, floor, floor.floorToFloorHeightMeters);
+    const [outer, ...holes] = polygon;
     return [
       outer,
       ...holes.filter((ring) => {
@@ -162,6 +161,9 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
         }
       } else {
         const height = elevation + ceiling.heightMeters + ROOF_CEILING_DEPTH_METERS;
+        const ceilingDomain = domain.map((polygon) =>
+          leanWorldRings(polygon, floor, ceiling.heightMeters),
+        );
         const polygons = flat.get(height) ?? [];
         const coveredRooms = rooms.filter((room) => ceiling.roomIds.includes(room.id));
         for (const room of coveredRooms)
@@ -169,10 +171,10 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
             ...ceilingWithWalls(
               leanWorldRings(worldPolygon(room.polygon, floor), floor, ceiling.heightMeters),
               margin,
-              domain,
+              ceilingDomain,
             ),
           );
-        if (!rooms.length) polygons.push(...domain);
+        if (!rooms.length) polygons.push(...ceilingDomain);
         flat.set(height, polygons);
       }
     }
@@ -190,7 +192,9 @@ export function deriveRoofRegions(requestedFloors: readonly FloorSpec[]): RoofRe
     ) {
       // A continuous ceiling also covers wall tops and enclosed construction
       // seams, rather than reproducing room-level gaps in the finished roof.
-      tiers[0].polygons = domain;
+      tiers[0].polygons = domain.map((polygon) =>
+        leanWorldRings(polygon, floor, tiers[0].baseHeight - elevation - ROOF_CEILING_DEPTH_METERS),
+      );
     }
     const regions = tiers.flatMap((tier) => {
       const higher = tiers.filter((other) => other.baseHeight > tier.baseHeight + 0.001);

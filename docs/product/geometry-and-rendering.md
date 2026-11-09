@@ -119,7 +119,9 @@ exterior normal: its openings, wall-mounted items and gable glass shear with it,
 corners where two leaning walls meet move along both, flat ceilings it meets
 follow its top, and the flat roof reaches out over that top. Sloped ceilings and
 roof slopes keep their authored edges, so a lean suits walls under a flat ceiling
-or a flat roof.
+or a flat roof. Walking collision uses the wall shear over the walker’s current
+vertical range, including opening jambs and headers. Flat roof coverage follows
+each ceiling tier’s height; upper-floor coverage remains at the floor footprint.
 The exterior roof is separate procedural geometry, visible in Home's roof view.
 Connected ceiling areas merge at equal height, with higher floor coverage removed
 from lower sections. Concave outlines, detached sections, and courtyard holes are
