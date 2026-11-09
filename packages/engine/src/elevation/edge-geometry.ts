@@ -42,6 +42,7 @@ export function elevationEdgeGeometry(
   apertures: readonly Polygon[] = [],
 ) {
   const positions: number[] = [];
+  const slopeRanges: { start: number; count: number }[] = [];
   const add = (point: PlanPoint, height: number) => {
     const [x, z] = planPointToWorld(point, floor.coordinates);
     positions.push(x, height, z);
@@ -63,6 +64,7 @@ export function elevationEdgeGeometry(
         b = area.polygon[j],
         h = area.elevation.offsetMeters;
       if (area.elevation.edges[i]?.transition?.kind === "sloped") {
+        const start = positions.length / 3;
         for (const triangle of transitionTriangles(
           area,
           floor.coordinates.metersPerPlanUnit,
@@ -85,6 +87,7 @@ export function elevationEdgeGeometry(
           if (source !== geometry) source.dispose();
           geometry.dispose();
         }
+        slopeRanges.push({ start, count: positions.length / 3 - start });
         continue;
       }
       // Adjacent slopes extend past this edge's original endpoints. Close their
@@ -127,6 +130,13 @@ export function elevationEdgeGeometry(
   }
   const geometry = new BufferGeometry();
   geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+  let cursor = 0;
+  for (const { start, count } of slopeRanges) {
+    if (start > cursor) geometry.addGroup(cursor, start - cursor, 0);
+    if (count) geometry.addGroup(start, count, 1);
+    cursor = start + count;
+  }
+  if (cursor < positions.length / 3) geometry.addGroup(cursor, positions.length / 3 - cursor, 0);
   geometry.computeVertexNormals();
   return geometry;
 }

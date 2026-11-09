@@ -1,3 +1,4 @@
+import { DEFAULT_TERRAIN_GRASS_COLOR } from "../terrain/terrain-settings";
 import { useEffect, useMemo } from "react";
 import { DoubleSide } from "three";
 import { ToonMaterial } from "../rendering";
@@ -23,7 +24,8 @@ export function ElevationEdges({ floor }: { floor: FloorSpec }) {
   if (geometry.getAttribute("position").count === 0) return null;
   return (
     <mesh name="elevation-transitions" geometry={geometry} receiveShadow castShadow>
-      <ToonMaterial color="#d4c6ae" side={DoubleSide} />
+      <ToonMaterial attach="material-0" color="#d4c6ae" side={DoubleSide} />
+      <ToonMaterial attach="material-1" color={DEFAULT_TERRAIN_GRASS_COLOR} side={DoubleSide} />
     </mesh>
   );
 }
