@@ -10,7 +10,7 @@ const primary: readonly (EditorToolOption & { description: string })[] = [
   { tool: "floor", icon: "floor", label: "Floor", description: "Surfaces & finishes" },
   { tool: "measure", icon: "measure", label: "Measure", description: "Check a distance" },
 ];
-const more = [wallTools[1], wallTools[2], openingTools[1], ...decorationTools];
+const more = [wallTools[1], openingTools[1], ...decorationTools];
 export function ConstructionToolCards({
   tool,
   onToolChange,

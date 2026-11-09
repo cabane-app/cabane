@@ -106,7 +106,7 @@ export function ConstructionSelectionProperties({
     room: selectedRoom?.name || "Unnamed room",
     hedge: "Boundary",
     pool: "Pool",
-    "floor-zone": selectedFloorZone?.elevation ? "Elevation area" : "Floor area",
+    "floor-zone": "Floor area",
     "outdoor-platform": "Platform",
     multiple: `${deletionCount} elements selected`,
     opening: "Opening",

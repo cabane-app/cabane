@@ -290,17 +290,9 @@ export const useConstructEditor = (
         },
         polygon,
         finish,
-        ...(floorPaintTarget === "elevation-area"
-          ? {
-              elevation: {
-                offsetMeters: 0,
-                edges: polygon.map((_, i) => ({ id: `edge-${i + 1}` })),
-              },
-            }
-          : {}),
       });
     },
-    [topologyPreview.previewFloor.rooms, floorPaintTarget],
+    [topologyPreview.previewFloor.rooms],
   );
   const resolveRoomMerge = useCallback(
     (survivorId: string, roomId?: string) => {

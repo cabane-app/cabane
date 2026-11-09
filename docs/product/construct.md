@@ -4,7 +4,8 @@ Construct is an implemented 2D plan editor. Two-finger trackpad scrolling pans
 the plan without clicking or changing tools, including during construction.
 Pinch (or Ctrl/Command-scroll) zooms around the cursor. After Select, the toolbar orders
 Wall, Openings, Floor and Stairs, followed by Measure and Decorations. Wall groups
-Wall, Invisible wall and Outdoor space; Openings groups Door, Passage and Window.
+Wall and Invisible wall; Openings groups Door, Passage and Window. Floor groups
+Finish (paint a whole room) and Area (draw a custom indoor or outdoor area).
 Hover, click/tap or keyboard activation reveals each group in a floating disclosure.
 Existing tool shortcuts and tutorial actions still select the individual tools directly. Users can edit wall endpoints and
 positions, choose wall finishes and thicknesses, identify rooms, place and resize
@@ -90,7 +91,7 @@ or one inch in imperial, with Shift multiplying the step by ten. Reset to flat
 ground restores zero at every corner.
 These home-wide edits use ordinary history, autosave, import/export and Save.
 Inspect the result in 3D Arrange, Explore or Home. Apartment floor must be zero
-to edit terrain. Localized elevation areas are edited with Floor → Elevation area; terrain settings continue to control the surrounding grade.
+to edit terrain. Localized elevation areas are edited with Floor → Area; terrain settings continue to control the surrounding grade.
 When custom terrain leaves an exterior doorway, passage or open platform edge
 without a crossing within Walk's 40 cm step limit, Issues shows a non-blocking
 warning and Locate selects the affected opening or platform. Supporting platforms
@@ -370,12 +371,13 @@ the L-shaped stair controls: lower/upper flight lengths, width, and left/right t
 Place the bottom, lower-flight landing center, then the returning upper endpoint.
 The landing depth equals the flight width; curved half-turn stairs remain unsupported.
 
-Wall → Outdoor space draws the existing outdoor platforms for same-level terraces and
-balconies. The Floor tool keeps whole-room and custom-area finish painting. Close an
-independent polygon using the ordinary snapping, measurements, local drawing
-undo/redo and cancel gestures. The initial finish is Grass, which uses the default
-terrain color. Choose Railing (1 m), Glass railing (1 m), Low wall (0.3 m), or Open
-from procedural thumbnail cards before drawing; exposed edges inherit that
+Floor → Area uses the first point to choose its owner: inside a room it creates a
+custom floor area; outside it creates an outdoor platform. Close an independent
+polygon using ordinary snapping, measurements, local drawing undo/redo and cancel
+gestures. Areas use the selected finish and outdoor boundaries start Open.
+Elevation is a property of either area, not a separate creation tool. Floor → Finish
+paints an existing room. In platform Properties, choose Railing (1 m), Glass railing
+(1 m), Low wall (0.3 m), or Open; exposed edges inherit that
 configuration. Select the finished platform to move it, edit or insert/remove
 corners, repaint its finish, or delete it. Select an edge on the plan or in the
 inspector to override its style and height, or restore the platform default.
@@ -493,7 +495,7 @@ projects beyond the shell and uprights.
 
 ## Local elevation areas
 
-Floor → Elevation area draws a bounded flat surface. Inside a room it belongs to
+Floor → Area draws a bounded flat surface. Inside a room it belongs to
 that room and preserves its name, area and Home Assistant identity. Outside it
 creates an outdoor platform. Floor level is a signed offset from the storey,
 including negative values; it does not create or select another storey.

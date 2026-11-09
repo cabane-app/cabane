@@ -12,9 +12,12 @@ await withModules(async (load) => {
   const { FloorToolProperties } = await load(
     "/apps/web/src/editor-preview/construct/FloorToolProperties.tsx",
   );
+  const { useEditorConstructionTools } = await load(
+    "/apps/web/src/editor-workspace/useEditorConstructionTools.ts",
+  );
   const floor = e.neutralDemoManifest.floors[0];
   test("Floor painting and outdoor space retain their controls in separate tools", () => {
-    const labels = ["Elevation area", "Whole room", "Custom area"];
+    const labels = ["Finish", "Area"];
     for (const target of ["room", "custom-area", "outdoor-platform"]) {
       const editor = {
         tool: target === "outdoor-platform" ? "platform" : "floor",
@@ -46,8 +49,79 @@ await withModules(async (load) => {
       }
       assert.equal(hint.type, "p");
       assert.equal(finish.props.children[0].props.children, "Floor finish");
-      assert.equal(finish.props.children[1].props.showGrass, target === "outdoor-platform");
+      assert.equal(finish.props.children[1].props.showGrass, target !== "room");
       assert.equal(Boolean(edges), target === "outdoor-platform");
+    }
+  });
+  test("Area drawing routes indoors to room areas and outdoors to platforms", async () => {
+    const testFloor = {
+      ...floor,
+      footprint: [
+        [0, 0],
+        [6, 0],
+        [6, 4],
+        [0, 4],
+      ],
+      rooms: [
+        {
+          id: "room",
+          name: "Living",
+          polygon: [
+            [0, 0],
+            [6, 0],
+            [6, 4],
+            [0, 4],
+          ],
+        },
+      ],
+    };
+    const calls = [];
+    let construction;
+    const renderer = await create(
+      createElement(() => {
+        construction = useEditorConstructionTools(
+          { floors: [testFloor], stairs: [] },
+          testFloor.id,
+          "construct",
+          {
+            selection: null,
+            draft: { walls: [] },
+            previewFloor: testFloor,
+            tool: "floor",
+            floorPaintTarget: "custom-area",
+            setFloorPaintTarget() {},
+            addFloorZone: (...args) => calls.push(["indoor", ...args]),
+            addPlatform: (...args) => calls.push(["outdoor", ...args]),
+          },
+        );
+        return null;
+      }),
+    );
+    try {
+      for (const point of [
+        [1, 1],
+        [2, 1],
+        [2, 2],
+        [1, 2],
+        [1, 1],
+      ])
+        act(() => construction.floorZoneDrawing.place(point));
+      assert.equal(calls.length, 1);
+      assert.equal(calls[0][0], "indoor");
+      assert.equal(calls[0][1], "room");
+      for (const point of [
+        [10, 0],
+        [12, 0],
+        [12, 2],
+        [10, 2],
+        [10, 0],
+      ])
+        act(() => construction.floorZoneDrawing.place(point));
+      assert.equal(calls.length, 2);
+      assert.equal(calls[1][0], "outdoor");
+      assert.deepEqual(calls[1][3], { kind: "open" });
+    } finally {
+      await renderer.unmount();
     }
   });
   test("Outdoor space drawing commits Grass by default, selects the platform and retains it through wall edits", async () => {

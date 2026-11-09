@@ -236,7 +236,7 @@ export function ConstructionFloorLayer({
           </group>
         );
       })}
-      {tool === "floor" && (paintTarget === "custom-area" || paintTarget === "elevation-area") && (
+      {tool === "floor" && paintTarget === "custom-area" && (
         <group name="construction-floor-draft">
           {pending.slice(1).map((point, index) => (
             <PlanStroke

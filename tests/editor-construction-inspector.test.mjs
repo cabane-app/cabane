@@ -517,7 +517,7 @@ await withModules(async (load) => {
         document.querySelector('[aria-label="Travertine"]').getAttribute("aria-pressed"),
         "true",
       );
-      await act(async () => document.querySelector('[aria-label="Custom area"]').click());
+      await act(async () => document.querySelector('[aria-label="Area"]').click());
       assert.deepEqual(calls.at(-1), ["target", "custom-area"]);
     });
   });

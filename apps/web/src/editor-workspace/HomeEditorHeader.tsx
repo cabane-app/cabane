@@ -272,6 +272,11 @@ export function HomeEditorHeader({
             setStairPlacement(null);
             constructEditor.setTool(tool);
           }}
+          floorTarget={constructEditor.floorPaintTarget}
+          onFloorTargetChange={(target) => {
+            setStairPlacement(null);
+            constructEditor.setFloorPaintTarget(target);
+          }}
           onStairs={() => startStairs()}
           stairsActive={Boolean(stairPlacement)}
           stairsDisabledReason={

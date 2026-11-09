@@ -32,7 +32,6 @@ export function useEditorConstructionTools(
     clearSelection: constructEditorClearSelection,
     setTool: constructEditorSetTool,
     addFloorZone: constructEditorAddFloorZone,
-    addGroundZone: constructEditorAddGroundZone,
     paintRoomFloor: constructEditorPaintRoomFloor,
   } = constructEditor;
   const [stairPlacement, setStairPlacement] = useState<StairSpec | null>(null);
@@ -70,9 +69,7 @@ export function useEditorConstructionTools(
   const floorZoneDrawing = useFloorZoneDrawing(constructEditorPreviewFloor, (roomId, polygon) =>
     roomId
       ? constructEditorAddFloorZone(roomId, polygon, floorFinish)
-      : floorPaintTarget === "elevation-area"
-        ? constructEditor.addPlatform(polygon, floorFinish, { kind: "open" })
-        : constructEditorAddGroundZone(polygon, floorFinish),
+      : constructEditor.addPlatform(polygon, floorFinish, { kind: "open" }),
   );
   const { cancel: floorZoneDrawingCancel } = floorZoneDrawing;
   useEffect(() => {
