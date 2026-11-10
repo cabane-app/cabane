@@ -326,8 +326,10 @@ gestures. Unnamed rooms are valid saved drafts; they still require names to Appl
 
 The Spawn area disclosure in the Construct sidebar groups the Explore starting-point controls. The sidebar sections appear in this order: Reference plan, Roof, Spawn area, Scale & heights, and Tutorial. Each has an outline icon and a short description visible while collapsed. Scale & heights contains the former Floor settings controls. The Advanced structure-data section is no longer shown.
 
-Door offers six catalog presets: Panel wood, Panel white, French, Full glass,
-Sliding wood, and Garage door. Its sidebar follows the Floor palette hierarchy,
+Door offers catalog presets for interior doors, garage doors, and garden gates.
+The anthracite slatted, open metal, and wooden garden gates are hinged and start
+at 1 m wide by 1 m high. They leave the opening clear up to the top of the
+wall, with jambs on each side. The Door sidebar follows the Floor palette hierarchy,
 with cached procedural 3D thumbnails shared with Arrange and Connect. Presets
 set motion, style, finish, applicable leaves, and metre-based dimensions; manual
 edits remain available and unmatched configurations read Custom. Only attributes

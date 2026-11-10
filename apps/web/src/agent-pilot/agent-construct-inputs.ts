@@ -1,5 +1,6 @@
 import {
   FLOOR_PATTERN_PRESET_IDS,
+  GARDEN_GATE_VARIANTS,
   GRASS_FLOOR_FINISH,
   OUTDOOR_PLATFORM_EDGE_PRESETS,
   type DoorConfiguration,
@@ -273,6 +274,7 @@ function doorDesign(input: Record<string, unknown>) {
       "flush-knob",
       "flush",
       "plank",
+      ...(operation === "hinged" ? GARDEN_GATE_VARIANTS : []),
     ]);
     if (input.leafCount !== 1 && input.leafCount !== 2)
       throw new Error("leafCount must be 1 or 2.");

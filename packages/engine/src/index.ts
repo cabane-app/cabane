@@ -110,6 +110,7 @@ export { deviceMappingRooms, outsideRoomGroupId } from "./outside-room-devices";
 export { BUILD_TUTORIAL_STEPS, createBuildTutorialState } from "./onboarding/build-tutorial-state";
 export type { BuildTutorialState, BuildTutorialStep } from "./onboarding/build-tutorial-state";
 export { rollUpDoorGeometry } from "./roll-up-door-geometry";
+export { GARDEN_GATE_VARIANTS, isGardenGate, type GardenGateVariant } from "./garden-gate";
 export {
   DEFAULT_DOOR_CONFIGURATION,
   doorFromConfiguration,

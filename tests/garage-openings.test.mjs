@@ -75,6 +75,9 @@ await withModules(async (load) => {
         "Sliding wood",
         "Garage door",
         "Arched steel glass",
+        "Anthracite garden gate",
+        "Metal garden gate",
+        "Wood garden gate",
       ],
     );
     for (const { configuration } of DOOR_PRESETS) {

@@ -1,6 +1,6 @@
 import polygonClipping, { type MultiPolygon, type Polygon as ClipPolygon } from "polygon-clipping";
 import { ShapeUtils, Vector2 } from "three";
-import { pointInsidePolygon } from "../geometry";
+import { openingCutTop, pointInsidePolygon } from "../geometry";
 import type { FloorSpec, OpeningSpec, PlanPoint, SlopedCeilingSpec, WallSpec } from "../types";
 import { MAX_GABLE_COLUMNS, MAX_GABLE_TRANSOMS } from "../wall-types";
 import { EPSILON } from "./architecture-geometry-contract";
@@ -227,6 +227,7 @@ export function wallGableShapes(
     ) as [number, number][],
   ];
   const scale = floor.coordinates.metersPerPlanUnit;
+  const ceilingTop = Math.max(...top.map(([, y]) => y)) + 1;
   const cuts = openings
     .filter((opening) => opening.wallId === wall.id)
     .map((opening) =>
@@ -234,10 +235,9 @@ export function wallGableShapes(
         opening.offsetFromWallStartPlanUnits * scale,
         opening.sillHeightMeters,
         (opening.offsetFromWallStartPlanUnits + opening.widthPlanUnits) * scale,
-        opening.sillHeightMeters + opening.openingHeightMeters,
+        openingCutTop(opening, ceilingTop),
       ),
     );
-  const ceilingTop = Math.max(...top.map(([, y]) => y)) + 1;
   const below = polygonClipping.intersection(outline, rectangle(-1, bandTop, length + 1, height));
   const above = polygonClipping.intersection(
     outline,

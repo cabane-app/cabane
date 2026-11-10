@@ -1,6 +1,10 @@
-import { omitUndefinedProperties } from "@cabane/engine";
+import { DOOR_PRESETS } from "@cabane/catalog/architecture";
+import { isGardenGate, omitUndefinedProperties } from "@cabane/engine";
 import type { DoorConfiguration } from "@cabane/engine";
 import { LengthInput } from "../../editor-chrome/LengthInput";
+
+const gatePresets = DOOR_PRESETS.filter(({ id }) => isGardenGate(id));
+
 export function DoorDesignFields({
   value,
   onChange,
@@ -59,7 +63,10 @@ export function DoorDesignFields({
                   omitUndefinedProperties({
                     ...base,
                     operation: "sliding",
-                    variant: value.operation === "roll-up" ? "panel" : value.variant,
+                    variant:
+                      value.operation === "roll-up" || isGardenGate(value.variant)
+                        ? "panel"
+                        : value.variant,
                     leafCount: value.leafCount ?? 1,
                   }),
                 );
@@ -93,9 +100,20 @@ export function DoorDesignFields({
               <select
                 aria-label="Door style"
                 value={value.variant}
-                onChange={(event) =>
-                  onChange({ ...value, variant: event.target.value as typeof value.variant })
-                }
+                onChange={(event) => {
+                  const variant = event.target.value as typeof value.variant;
+                  if (isGardenGate(variant)) {
+                    if (value.operation !== "hinged") return;
+                    const {
+                      frontOverlayMeters: _overlay,
+                      frontSide: _frontSide,
+                      ...design
+                    } = value;
+                    onChange({ ...design, variant });
+                  } else {
+                    onChange({ ...value, variant });
+                  }
+                }}
               >
                 <option value="panel">Panel</option>
                 <option value="french">French</option>
@@ -105,6 +123,12 @@ export function DoorDesignFields({
                 <option value="flush">Flush</option>
                 <option value="steel-arched">Arched steel glass</option>
                 <option value="plank">Plank</option>
+                {value.operation === "hinged" &&
+                  gatePresets.map(({ id, label }) => (
+                    <option key={id} value={id}>
+                      {label}
+                    </option>
+                  ))}
               </select>
             </label>
             <label>
@@ -122,19 +146,21 @@ export function DoorDesignFields({
             </label>
           </>
         )}
-        <label>
-          Finish
-          <select
-            aria-label="Door finish"
-            value={value.finish}
-            onChange={(event) =>
-              onChange({ ...value, finish: event.target.value as "wood" | "white" })
-            }
-          >
-            <option value="wood">Wood</option>
-            <option value="white">White</option>
-          </select>
-        </label>
+        {value.variant !== "garden-anthracite" && value.variant !== "garden-metal" && (
+          <label>
+            Finish
+            <select
+              aria-label="Door finish"
+              value={value.finish}
+              onChange={(event) =>
+                onChange({ ...value, finish: event.target.value as "wood" | "white" })
+              }
+            >
+              <option value="wood">Wood</option>
+              <option value="white">White</option>
+            </select>
+          </label>
+        )}
       </fieldset>
     </>
   );

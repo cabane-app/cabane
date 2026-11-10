@@ -8,6 +8,7 @@ import type {
   WallSpec,
 } from "./types";
 import { slopedCeilingHeightSampler } from "./architecture-geometry/sloped-ceiling-plane";
+import { isGardenGate } from "./garden-gate";
 import type { SlopedCeilingSpec } from "./types";
 
 export interface WorldPoint {
@@ -182,6 +183,12 @@ export const openingsForWall = (wallId: string, openings: readonly OpeningSpec[]
     .filter((opening) => opening.wallId === wallId)
     .sort((left, right) => left.offsetFromWallStartPlanUnits - right.offsetFromWallStartPlanUnits);
 
+/** Garden gates cut through the full wall height, independent of the leaf height. */
+export const openingCutTop = (opening: OpeningSpec, wallTop: number) =>
+  opening.kind === "door" && isGardenGate(opening.variant)
+    ? wallTop
+    : opening.sillHeightMeters + opening.openingHeightMeters;
+
 export const splitWallIntoRuns = (
   wall: WallSpec,
   openings: readonly OpeningSpec[],
@@ -216,7 +223,7 @@ export const splitWallIntoRuns = (
         topMeters: opening.sillHeightMeters,
       });
     }
-    const openingTop = opening.sillHeightMeters + opening.openingHeightMeters;
+    const openingTop = openingCutTop(opening, wallHeight);
     if (openingTop < wallHeight) {
       runs.push({
         id: `${wall.id}-${opening.id}-lintel`,

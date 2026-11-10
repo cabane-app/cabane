@@ -1,4 +1,21 @@
-import { DEFAULT_DOOR_CONFIGURATION, type DoorConfiguration } from "@cabane/engine";
+import {
+  DEFAULT_DOOR_CONFIGURATION,
+  GARDEN_GATE_VARIANTS,
+  type DoorConfiguration,
+  type DoorFinish,
+  type GardenGateVariant,
+} from "@cabane/engine";
+
+const gateLabels: Record<GardenGateVariant, string> = {
+  "garden-anthracite": "Anthracite garden gate",
+  "garden-metal": "Metal garden gate",
+  "garden-wood": "Wood garden gate",
+};
+
+export function gardenGateColor(variant: GardenGateVariant, finish: DoorFinish) {
+  if (variant === "garden-wood") return finish === "wood" ? "#a7734b" : "#e6e0d5";
+  return variant === "garden-anthracite" ? "#3b424b" : "#343b35";
+}
 
 export const DOOR_PRESETS = [
   { id: "panel-wood", label: "Panel wood", configuration: DEFAULT_DOOR_CONFIGURATION },
@@ -92,4 +109,20 @@ export const DOOR_PRESETS = [
       heightMeters: 2.3,
     },
   },
+  ...GARDEN_GATE_VARIANTS.map(
+    (variant) =>
+      ({
+        id: variant,
+        label: gateLabels[variant],
+        configuration: {
+          kind: "door",
+          operation: "hinged",
+          variant,
+          finish: variant === "garden-wood" ? "wood" : "white",
+          leafCount: 1,
+          widthMeters: 1,
+          heightMeters: 1,
+        },
+      }) as const,
+  ),
 ] as const satisfies readonly { id: string; label: string; configuration: DoorConfiguration }[];
