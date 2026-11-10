@@ -24,7 +24,7 @@ export function FloorLampModel({ state, visualState }: HomeDeviceModelProps) {
         <ToonMaterial color="#596660" />
       </mesh>
       <mesh position={[0, 0.78, 0]} castShadow>
-        <cylinderGeometry args={[0.025, 0.03, 1.5, 10]} />
+        <cylinderGeometry args={[0.025, 0.03, 1.5, 20]} />
         <ToonMaterial color="#596660" />
       </mesh>
       <mesh
@@ -33,7 +33,7 @@ export function FloorLampModel({ state, visualState }: HomeDeviceModelProps) {
         castShadow
         userData={{ skipStaticBatch: true }}
       >
-        <coneGeometry args={[0.32, 0.48, 16, 1, true]} />
+        <coneGeometry args={[0.32, 0.48, 32, 1, true]} />
         <ToonMaterial
           color={shadeColor(visualState)}
           emissive="#e6a94d"

@@ -1,4 +1,5 @@
-import type { Color, Mesh, Material, Object3D, BufferGeometry } from "three";
+import { Material, type Color, type Mesh, type Object3D, type BufferGeometry } from "three";
+import { sceneLightMaterialHooks } from "../scene-point-shadows";
 import { lightBrightnessRatio, lightColorForSnapshot } from "../home-assistant-controls";
 import type { CustomModelLight } from "../imported-models/contracts";
 import type { EntityStateSnapshot } from "../types";
@@ -89,6 +90,8 @@ export function controlModelLightMaterials(
   const selectedNames = new Set(light.emissiveMaterials ?? []);
   const selectedSurfaces = new Set(light.emissiveSurfaces ?? []);
   const originals = new Map<Mesh, Material | Material[]>();
+  const shadowCasters = new Map<Mesh, boolean>();
+  const emittingMaterials = new Set<Material>();
   const clones = new Map<Material, EmissiveMaterial>();
   const highlightedClones = new Set<EmissiveMaterial>();
   visitSurfaces(root, (mesh, original, index, option) => {
@@ -104,16 +107,29 @@ export function controlModelLightMaterials(
     let instance = highlight ? undefined : clones.get(original);
     if (!instance) {
       instance = original.clone() as EmissiveMaterial;
-      instance.onBeforeCompile = (shader, renderer) => original.onBeforeCompile(shader, renderer);
-      instance.customProgramCacheKey = () => original.customProgramCacheKey();
+      const hooks = sceneLightMaterialHooks(original);
+      if (hooks.onBeforeCompile !== Material.prototype.onBeforeCompile)
+        instance.onBeforeCompile = (shader, renderer) =>
+          hooks.onBeforeCompile.call(original, shader, renderer);
+      if (hooks.customProgramCacheKey !== Material.prototype.customProgramCacheKey)
+        instance.customProgramCacheKey = () => hooks.customProgramCacheKey.call(original);
       if (highlight) highlightedClones.add(instance);
       else clones.set(original, instance);
     }
+    if (selectedNames.has(original.name) || (option.supported && selectedSurfaces.has(option.id)))
+      emittingMaterials.add(instance);
     if (Array.isArray(mesh.material)) {
       mesh.material = [...mesh.material];
       mesh.material[index] = instance;
     } else mesh.material = instance;
   });
+  for (const mesh of originals.keys()) {
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    if (materials.every((material) => emittingMaterials.has(material))) {
+      shadowCasters.set(mesh, mesh.castShadow);
+      mesh.castShadow = false;
+    }
+  }
   let disposed = false;
   return {
     update(state: EntityStateSnapshot | undefined, fallback: string) {
@@ -130,6 +146,7 @@ export function controlModelLightMaterials(
       if (disposed) return;
       disposed = true;
       for (const [mesh, original] of originals) mesh.material = original;
+      for (const [mesh, castShadow] of shadowCasters) mesh.castShadow = castShadow;
       for (const material of [...clones.values(), ...highlightedClones]) material.dispose();
     },
   };

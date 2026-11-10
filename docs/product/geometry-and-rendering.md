@@ -163,26 +163,22 @@ owned, shared, and disposed by the dedicated import module and use ordinary
 draws. Floor imports add a simple envelope collider. The exception does not
 permit asset loading in native models or generated home extensions. See
 [personal models](personal-models.md).
-Physical lights render only on the active floor. Room, dashboard and device
-emissions share the [bounded model-lighting execution policy](model-lighting.md#rendering),
-which preserves authored declarations and total brightness within 64 physical
-point lights. Only positive-intensity sources need active slots; native and
-dashboard declarations prewarm spare bounded slots for first-activation reuse. Allocated slots
-stay mounted at zero intensity while off or unavailable. Device and dashboard
-updates within the existing peak capacity change uniforms without changing shader
-light counts. First growth to a larger bounded peak can compile shaders. Device emitters, including
-fallbacks from resolved bindings, are scoped to their owning floor so stair
-transitions never recreate another storey’s light at the active floor’s elevation. Indoor sources close to an
-opaque wall retain their unshadowed point source at the bulb. The beauty pass
-masks that source's contribution beyond the nearest wall's inner face, preserving
-upward illumination and the space between the bulb and wall. Native toon batches
-and imported lit materials share the mask; camera and floor transforms move its
-plane with the wall. Toon materials prepare their shader hook before extension
-effect warmup so first use retains the precompiled programs. Sources at openings, above low walls, and farther from walls
-remain unrestricted. Moving across the near-wall threshold changes a uniform,
-without changing the light type or shader light count. This avoids lighting
-through the wall without allocating point-light shadow maps. The nearest-plane
-mask remains an approximation rather than full shadow or finite-wall ray tracing.
+Physical lights render only on their owning floor. Room, dashboard and device
+emissions share the [model-lighting sample policy](model-lighting.md#rendering).
+Within the emitter budget, each source keeps its position. Off lamps retain
+their slots so power, brightness and colour update uniforms without recompiling
+the scene.
+
+Household point lights use Three.js shadow depth with a shared GPU atlas. Walls,
+closed door leaves and other shadow casters block illumination. Open passages
+and the space above low partitions admit it. Orbit cutaways retain their physical
+shadows. Native toon and imported lit materials use the same atlas, including
+when toon geometry is batched. Camera movement leaves the cached maps intact.
+A lamp position or range change refreshes its map. Caster edits refresh the lamps
+that can reach the changed geometry. New maps are prepared incrementally, with
+powered lamps first. The renderer reuses a single native cube to capture depth
+and samples the atlas in the existing beauty pass.
+
 Explore and Arrange use four flat toon bands, warm key light and cool sky fill.
 The shared in-memory gradient repeats each band across 64 texels and linearly
 filters only the narrow boundaries. This keeps stationary surfaces from flashing
@@ -282,8 +278,8 @@ Preparing newly added or changed geometry retains previously prepared detail
 levels and batch families. Only completed new families are published together,
 so unrelated updates do not restore the whole scene to full detail or repack it.
 Shadow invalidation inspects authored geometry before LOD substitution, avoiding
-camera-only LOD redraws. The engine's fragment-only wall-light mask preserves
-shadow reuse; unknown authored shaders and render hooks remain conservative.
+camera-only LOD redraws. Toon batches sample the household shadow atlas with the
+same lighting as their source geometry.
 Devices without native multi-draw keep ordinary draws.
 The reusable performance script includes camera-motion timings and batch-buffer
 churn checks. Real-device verification remains necessary for mobile fluidity.
@@ -355,7 +351,8 @@ back to browser-local time (night from 18:00 to 06:00) if the state or angles ar
 unusable; preferences identify the active Auto source. Forced day/night remain
 exterior-lighting previews, independent of lamp state. Solar shadow framing encloses
 the building's floor scene bounds, walls, storey elevations and roof allowance,
-including translated and scaled plans. Luminaires remain unshadowed.
+including translated and scaled plans. Household point shadows are cached
+independently of the sun.
 
 Wall caps and opening reveals use the optional `WallSpec.edgeColor` override.
 When absent, matching authored left/right colors extend onto these surfaces;

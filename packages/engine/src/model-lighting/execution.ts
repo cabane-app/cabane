@@ -5,7 +5,7 @@ import type {
   ModelVector,
 } from "../imported-models/contracts";
 
-/** Measured shader/resource budget, shared by previews and each mounted floor. */
+/** Shared shader and atlas budget for each floor and preview. */
 export const SCENE_LIGHT_BUDGET = 64;
 
 /** Default physical spacing used by the lighting editor and adaptive catalog strips. */
@@ -19,8 +19,6 @@ export interface SceneLightEmission {
   color: string;
   intensity: number;
   distance: number;
-  /** Engine-owned native/dashboard sources prewarm spare slots before first activation. */
-  prewarm?: boolean;
 }
 
 type ModelScale = readonly [number, number, number];
@@ -135,17 +133,14 @@ function mergeEmissions(
   return groups.map((group, index) => {
     let intensity = 0,
       distance = 0;
-    const position = [0, 0, 0];
+    let anchor = group.sources[0];
     const color = new Color(0, 0, 0);
     for (const source of group.sources) {
+      if (source.intensity > anchor.intensity) anchor = source;
+      if (source.intensity === 0) continue;
       const next = intensity + source.intensity;
-      const weight = source.intensity / next;
-      const point = midpoint(source);
-      for (let axis = 0; axis < 3; axis++)
-        position[axis] += (point[axis] - position[axis]) * weight;
-      color.lerp(new Color(source.color), weight);
+      color.lerp(new Color(source.color), source.intensity / next);
       intensity = next;
-      // A zero distance is Three.js's unbounded range, not the smallest range.
       distance =
         source.distance === 0 || distance === Infinity
           ? Infinity
@@ -153,10 +148,12 @@ function mergeEmissions(
     }
     return {
       name: `lighting-cluster-${index}`,
-      position: position as [number, number, number],
-      color: `#${color.getHexString()}`,
+      // Use an actual source location so the cluster cannot create a light
+      // inside an intervening wall or a third room.
+      position: midpoint(anchor),
+      color: intensity > 0 ? `#${color.getHexString()}` : anchor.color,
       intensity,
-      distance: distance === Infinity ? 0 : distance,
+      distance: intensity === 0 ? anchor.distance : distance === Infinity ? 0 : distance,
     };
   });
 }
@@ -165,7 +162,7 @@ function expandEmissions(
   sources: readonly SceneLightEmission[],
   budget: number,
 ): ExecutedSceneLight[] {
-  if (budget === 0 || sources.length === 0) return [];
+  if (!sources.length) return [];
   if (sources.length > budget) return mergeEmissions(sources, budget);
   // Give every logical source a slot, then fairly share spare strip samples.
   const counts = sources.map(() => 1);
@@ -198,33 +195,21 @@ function expandEmissions(
 }
 
 /**
- * The sole expansion policy. Work follows authored declarations plus at most 64
- * physical emitters, never a requested sample count. No saved source is truncated.
+ * Work follows authored declarations and the physical emitter budget, even
+ * for very large requested strip sample counts.
  */
-export function planSceneLights(input: readonly SceneLightEmission[]) {
+export function planSceneLights(input: readonly SceneLightEmission[], stationary = false) {
   const sources = input.filter(
-    (source) => Number.isFinite(source.intensity) && source.intensity > 0,
+    (source) =>
+      Number.isFinite(source.intensity) &&
+      (stationary ? source.intensity >= 0 : source.intensity > 0),
   );
   const requested = sources.reduce(
     (sum, source) => Math.min(Number.MAX_SAFE_INTEGER, sum + requestedSamples(source)),
     0,
   );
   const lights = expandEmissions(sources, SCENE_LIGHT_BUDGET);
-  const approximated = requested > lights.length;
-  // Native first-use interaction already promises uniform-only state changes.
-  // Off declarations borrow only spare capacity; they never crowd out active sources.
-  if (lights.length < SCENE_LIGHT_BUDGET) {
-    const prewarm = input
-      .filter((source) => source.prewarm && source.intensity === 0)
-      .map((source) => ({ ...source, intensity: 1 }));
-    lights.push(
-      ...expandEmissions(prewarm, SCENE_LIGHT_BUDGET - lights.length).map((source) => ({
-        ...source,
-        intensity: 0,
-      })),
-    );
-  }
-  return { lights, requested, approximated };
+  return { lights, requested, approximated: requested > lights.length };
 }
 
 export const modelLightingExecution = (light: CustomModelLight, scale?: ModelScale) =>

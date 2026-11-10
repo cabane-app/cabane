@@ -23,7 +23,7 @@ function Scene(){
  return h(StylizedScene,{active:settings.active,antialias:settings.antialias},
   h(SolarLighting,{...settings,reducedMotion:true}),
   h('hemisphereLight',{args:['white','white',2]}),
-  h('pointLight',{position:[0,1,3],intensity:settings.lit?2:0}),
+  h('pointLight',{position:[0,1,3],intensity:settings.lit?2:0,distance:8,userData:{cabaneSceneLight:true}}),
   ...[0,2.5].map(x=>h('mesh',{key:x,position:[x,0,0],castShadow:true,receiveShadow:true},
    h('boxGeometry',{args:[2,2,1]}),
    h(settings.pbr?'meshStandardMaterial':'meshToonMaterial',{color:'#ff3333'}))));

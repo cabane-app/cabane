@@ -121,7 +121,6 @@ export function HomeAssistantSceneLighting({
         color: lightColorForSnapshot(entity.state, configured?.color ?? fallback.color),
         intensity: (configured?.maxIntensity ?? fallback.maxIntensity) * brightness,
         distance: configured?.distance ?? fallback.distance,
-        prewarm: true,
       });
     }
   }
@@ -167,7 +166,7 @@ export function HomeAssistantSceneLighting({
           ])
         : sceneItemScale!
       : deviceWorldTransform(resolved.slot, floor.coordinates).scale;
-    // Keep strips compact until all active copies can share the execution budget.
+    // Keep strips compact until all declarations can share the sample budget.
     const sources = definition.lighting
       ? modelLightEmissions(definition.lighting, "ha-device-light-" + id)
       : (definition.sceneLights ?? (definition.sceneLight ? [definition.sceneLight] : [])).map(
@@ -201,7 +200,6 @@ export function HomeAssistantSceneLighting({
           : {}),
         color: lightColorForSnapshot(state, source.color),
         intensity: source.intensity * brightness,
-        prewarm: !definition.lightingCustomized && !modelId.startsWith("custom:"),
         distance: source.distance * (typeof scale === "number" ? scale : Math.max(...scale)),
       };
       pooledSources.push(properties);
@@ -209,7 +207,7 @@ export function HomeAssistantSceneLighting({
   }
   return (
     <group name="home-assistant-scene-lighting">
-      <ActiveSceneLightPool key={floor.id} floor={floor} sources={pooledSources} />
+      <ActiveSceneLightPool key={floor.id} sources={pooledSources} stationary />
     </group>
   );
 }

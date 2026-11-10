@@ -23,7 +23,7 @@ export function SmokedGlobeWallLightModel({ state, visualState }: HomeDeviceMode
         <cylinderGeometry args={[0.013, 0.013, 0.08, 12]} />
         <ToonMaterial color="#c2a273" />
       </mesh>
-      <mesh name="smoked-globe-wall-light-globe" position={[0, 0.2, 0.16]} castShadow>
+      <mesh name="smoked-globe-wall-light-globe" position={[0, 0.2, 0.16]}>
         <sphereGeometry args={[0.1, 24, 16]} />
         <ToonMaterial
           color="#65645f"

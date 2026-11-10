@@ -26,9 +26,6 @@ createRoot(document.getElementById('root')).render(React.createElement(Canvas,{s
       await page.waitForFunction(() => window.nightState?.gl.info.render.frame > 0);
       const result = await page.evaluate(async (root) => {
         const T = await import(root + "/node_modules/three/build/three.module.js");
-        const { SceneLightWallMask } = await import(
-          root + "/packages/engine/src/scene-light-wall-mask.ts"
-        );
         const gl = window.nightState.gl;
         const scene = new T.Scene();
         const camera = new T.PerspectiveCamera(45, 1, 0.1, 100);
@@ -45,14 +42,12 @@ createRoot(document.getElementById('root')).render(React.createElement(Canvas,{s
         scene.add(sun);
         const target = new T.WebGLRenderTarget(32, 32);
         gl.setRenderTarget(target);
-        const mask = new SceneLightWallMask();
         try {
-          mask.render(gl, scene, camera);
+          gl.render(scene, camera);
           const pixel = new Uint8Array(4);
           gl.readRenderTargetPixels(target, 16, 16, 1, 1, pixel);
           return { pixel: Array.from(pixel), error: gl.getContext().getError() };
         } finally {
-          mask.dispose();
           target.dispose();
           gl.dispose();
         }
