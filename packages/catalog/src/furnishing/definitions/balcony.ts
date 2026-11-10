@@ -1,5 +1,7 @@
 import { defineFurnishingModel } from "@cabane/engine";
 import {
+  MetalBistroChair,
+  RoundBistroTable,
   SlattedFoldingTable,
   SlattedFoldingChair,
   RetractableAwning,
@@ -8,6 +10,34 @@ import {
   RETRACTABLE_AWNING_SIZE,
 } from "../presets/outdoor";
 export const balconyFurnishingDefinitions = {
+  "round-bistro-table": defineFurnishingModel({
+    component: RoundBistroTable,
+    label: "Round bistro table",
+    category: "Tables",
+    defaultRoomType: "outdoor",
+    defaultColor: "#b8c5ad",
+    defaultSize: [0.7, 0.72, 0.7],
+    bounds: { min: [-0.35, 0, -0.35], max: [0.35, 0.72, 0.35] },
+    resizePolicy: { kind: "uniform" },
+    preferredPlacement: "absolute",
+    placementEnvironment: "outdoor",
+    outlineContact: true,
+    complexity: { visibleMeshes: 15, triangles: 600 },
+  }),
+  "metal-bistro-chair": defineFurnishingModel({
+    component: MetalBistroChair,
+    label: "Metal bistro chair",
+    category: "Seating",
+    defaultRoomType: "outdoor",
+    defaultColor: "#b8c5ad",
+    defaultSize: [0.4, 0.82, 0.5],
+    bounds: { min: [-0.2, 0, -0.25], max: [0.2, 0.82, 0.25] },
+    resizePolicy: { kind: "uniform" },
+    preferredPlacement: "absolute",
+    placementEnvironment: "outdoor",
+    outlineContact: true,
+    complexity: { visibleMeshes: 21, triangles: 4200 },
+  }),
   "slatted-folding-table": defineFurnishingModel({
     component: SlattedFoldingTable,
     label: "Slatted folding table",

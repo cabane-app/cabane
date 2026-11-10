@@ -42,3 +42,6 @@ export {
 export { Carport, CARPORT_SIZE } from "./carport";
 
 export * from "./vegetation";
+
+export { MetalBistroChair, METAL_BISTRO_CHAIR_SIZE } from "./bistro/metal-bistro-chair";
+export { RoundBistroTable, ROUND_BISTRO_TABLE_SIZE } from "./bistro/round-bistro-table";

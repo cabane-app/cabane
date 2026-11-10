@@ -1275,3 +1275,16 @@ The oak has a broad lobed crown, birch a slim pale fork, maple an autumn crown,
 willow pendant foliage, pine open spreading tiers, and cypress a narrow spire.
 Date palm has feathered fronds; fan palm has radial fans. Ornamental grass has
 arching blades and pale seed heads. Foliage is batched without individual outlines.
+
+## Sage metal bistro furniture
+
+**Metal bistro chair** (`metal-bistro-chair`) and **Round bistro table**
+(`round-bistro-table`) appear in Arrange → Outdoor → Seating / Tables.
+Both use pale sage painted metal by default; Color changes the slats, top and
+frames. They are independently placeable and resize proportionally.
+The supplied photo informs the chair's five seat slats, two back slats and
+folding frame, and the table's thin solid circular top and crossed legs.
+Dimensions are inferred: chair 40 × 82 × 50 cm, table 70 × 72 × 70 cm
+(width × height × depth). Both start at floor Y=0 with centered footprints.
+The chair faces +Z. Public exports are `MetalBistroChair` /
+`METAL_BISTRO_CHAIR_SIZE` and `RoundBistroTable` / `ROUND_BISTRO_TABLE_SIZE`.
