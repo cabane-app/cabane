@@ -312,7 +312,7 @@
   overflow: hidden;
 }
 .direction-preview[data-mobile-editor="true"] .editor-sidebar-content {
-  overflow: auto;
+  margin-inline: 0;
   overscroll-behavior: contain;
 }
 .direction-preview[data-mobile-editor="true"] .direction-rail__brand,
