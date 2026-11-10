@@ -7,6 +7,7 @@ import {
   type MappingOptionGroup,
 } from "./auxiliary-mapping-choices";
 import { isAuxiliaryEntitySlot } from "../entity-slot-roles";
+import { entityDomain } from "../binding-profile-contract";
 import { useState, type ReactNode } from "react";
 import { DeviceMappingChoices } from "./DeviceMappingChoices";
 import {
@@ -213,12 +214,13 @@ export function DeviceMappingInspector({
       const currentCandidate = candidates.find((candidate) => candidate.entityId === current);
       const currentState = current ? runtime.entityStates[current] : undefined;
       const roomAreaId = profile.roomAreaIds[room.id];
-      const inRoomCandidates = candidates.filter(
-        (candidate) => candidate.matchRank === 0 && candidate.areaId === roomAreaId,
-      );
-      const otherCandidates = candidates.filter(
-        (candidate) => candidate.matchRank === 0 && candidate.areaId !== roomAreaId,
-      );
+      const isSwitchAlternative = ({ matchRank, entityId }: (typeof candidates)[number]) =>
+        matchRank > 0 && entityId.startsWith("switch.");
+      const directChoices = candidates.filter((candidate) => !isSwitchAlternative(candidate));
+      const inRoomCandidates = directChoices.filter((candidate) => candidate.areaId === roomAreaId);
+      const otherCandidates = directChoices.filter((candidate) => candidate.areaId !== roomAreaId);
+      const compatibleDomains = new Set<string>(descriptor.spec.compatibleDomains);
+      for (const { entityId } of directChoices) compatibleDomains.add(entityDomain(entityId));
       const optionForCandidate = (
         candidate: (typeof candidates)[number],
         showArea: boolean,
@@ -242,11 +244,12 @@ export function DeviceMappingInspector({
         optionForCandidate(candidate, false),
       );
       const otherOptions = otherCandidates.map((candidate) => optionForCandidate(candidate, true));
-      const alternativeOptions = candidates
-        .filter((candidate) => candidate.matchRank > 0)
-        .map((candidate) => optionForCandidate(candidate, true));
+      const switchAlternatives = candidates.filter(isSwitchAlternative);
+      const alternativeOptions = switchAlternatives.map((candidate) =>
+        optionForCandidate(candidate, true),
+      );
       const options = [...savedOptions, ...inRoomOptions, ...otherOptions, ...alternativeOptions];
-      const isLighting = descriptor.spec.compatibleDomains.includes("light");
+      const isLighting = descriptor.spec.compatibleDomains[0] === "light";
       const byArea = (entries: typeof candidates): MappingOptionGroup[] => {
         const areas = new Map<string, MappingOptionGroup>();
         for (const candidate of entries) {
@@ -302,7 +305,7 @@ export function DeviceMappingInspector({
                   label: "Other switches · on/off only",
                   options: [],
                   collapsed: true,
-                  groups: byArea(candidates.filter((candidate) => candidate.matchRank > 0)),
+                  groups: byArea(switchAlternatives),
                 },
               ]
             : []),
@@ -324,10 +327,8 @@ export function DeviceMappingInspector({
           )}
           {currentCandidate && <p>Home Assistant area: {currentCandidate.areaLabel}</p>}
           <p>
-            Compatible: {descriptor.spec.compatibleDomains.join(", ")}
-            {candidates.some((candidate) => candidate.matchRank > 0)
-              ? "; plugs and switches (on/off only)"
-              : ""}
+            Compatible: {[...compatibleDomains].join(", ")}
+            {switchAlternatives.length > 0 && "; plugs and switches (on/off only)"}
           </p>
           {descriptor.kind !== "opening-contact" &&
           descriptor.spec.compatibleDeviceClasses?.length ? (

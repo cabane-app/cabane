@@ -129,6 +129,7 @@ function DeviceSceneItem({
       : item.lightState,
     primary?.state,
     nightLighting,
+    item.modelId,
   );
   const lightingSlot = lightingSlotForItem(item);
   const lightingState = sceneLightState(
@@ -138,6 +139,7 @@ function DeviceSceneItem({
           (lightingSlot.id === primarySlot?.id ? primary?.state : undefined))
       : undefined,
     nightLighting,
+    item.modelId,
   );
   const visualState = deviceVisualStateForSnapshot(state);
   const runtime = useHomeAssistantRuntime();

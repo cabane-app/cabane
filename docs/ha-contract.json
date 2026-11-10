@@ -1,9 +1,9 @@
 {
-  "revision": 42,
-  "fingerprint": "d5840600472d45e10872748d1957ba1f438a480a4f92b71c523ec104000ce63b",
-  "summary": "Allow walking up surface changes of up to 40 cm.",
+  "revision": 43,
+  "fingerprint": "a3c0e147f75363f3344a0035ec6eb592e8533b5c482a720d9fc6f6a8eaf361f6",
+  "summary": "Allow fireplace connections to Home Assistant thermostats",
   "breakingChanges": [
-    "No stored fields change. Walk stepping and accessibility diagnostics now share a 40 cm threshold instead of 30 cm; older panels retain the smaller threshold."
+    "Workspaces with a newly placed fireplace or a fireplace connected to a climate entity require the updated frontend and Home Assistant panel. Existing fireplaces keep their slot IDs and mappings."
   ],
   "history": [
     {
@@ -291,6 +291,13 @@
       "summary": "Support bounded elevation areas, local ceiling overrides, surface-relative items and same-storey stairs.",
       "breakingChanges": [
         "Older clients must update before opening projects containing elevation settings, surface-relative placements or between-surfaces stairs. Existing projects keep their original elevations."
+      ]
+    },
+    {
+      "revision": 42,
+      "summary": "Allow walking up surface changes of up to 40 cm.",
+      "breakingChanges": [
+        "No stored fields change. Walk stepping and accessibility diagnostics now share a 40 cm threshold instead of 30 cm; older panels retain the smaller threshold."
       ]
     }
   ],

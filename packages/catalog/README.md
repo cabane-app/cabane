@@ -1094,7 +1094,7 @@ These eight independently placeable presets are available in Arrange and All ite
 Each receives a fresh manual primary slot. Printers, minivan, wallbox, fireplace
 and iron accept `switch`, `sensor` or `binary_sensor`: switches use existing on/off
 controls, while readings remain read-only. The fireplace also accepts `light` for
-its native illumination. The lamp uses the standard `light`
+its native illumination and `climate` for thermostat control. The lamp uses the standard `light`
 profile, brightness-responsive glow and engine-owned warm illumination. The tripod
 TV preserves the television camera, media-player and switch profiles, live camera
 surface, animated picture, and reduced-motion behavior. No vendor-specific
@@ -1127,7 +1127,8 @@ cable bottom at the desired elevation; the fireplace hearth belongs at floor lev
 The wallbox and minivan also allow indoor garage placement. The lamp articulation
 is a fixed working pose. The minivan's Color picker changes the painted body while preserving glass, trim
 and wheels. Reset color restores sage. The fireplace's stylized flames follow its
-connected on-state or Scene state → Always on, with warm engine-owned light.
+connected on-state, a thermostat's `heating` action, or Scene state → Always on,
+with warm engine-owned light.
 Always off hides the fire, and reduced motion keeps its flames static. Other new utility devices use status or display
 feedback without implying continuous mechanical activity.
 
