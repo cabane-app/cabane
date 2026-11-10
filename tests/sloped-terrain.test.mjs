@@ -23,6 +23,9 @@ await withModules(async (load) => {
   const { resolveTerrainWalking } = await load(
     "/packages/engine/src/navigation/terrain-walking.ts",
   );
+  const { WALK_MAX_STEP_METERS: maxStep } = await load(
+    "/packages/engine/src/navigation/walk-navigation-contract.ts",
+  );
   const { resolveWalkFall } = await load("/packages/engine/src/navigation/walk-fall.ts");
   const { editProject } = await load("/apps/web/src/editor-workspace/editor-project-actions.ts");
   const { TerrainSettingsEditor } = await load(
@@ -92,14 +95,16 @@ await withModules(async (load) => {
   });
 
   test("terrain exit warnings share Walk's step limit and do not require a basement", () => {
-    for (const height of [-1, -0.30001, 0.30001, 1]) {
+    const aboveMaxStep = maxStep + 0.00001;
+    for (const height of [-1, -aboveMaxStep, aboveMaxStep, 1]) {
       const project = exitProject(height);
       const result = api.validateHomeProject(project, emptyExtensions);
       assert.equal(result.valid, true, JSON.stringify(result.issues));
-      assert.equal(exitWarnings(project).length, 1);
+      assert.equal(exitWarnings(project).length, 1, `terrain height ${height} m`);
       assert.equal(exitWarnings(project)[0].severity, "warning");
     }
-    for (const height of [-0.3, 0.3, 0]) assert.equal(exitWarnings(exitProject(height)).length, 0);
+    for (const height of [-maxStep, maxStep, 0])
+      assert.equal(exitWarnings(exitProject(height)).length, 0, `terrain height ${height} m`);
     const project = exitProject();
     const basement = projectWithGarage().floors[0];
     project.floors.unshift(basement);
