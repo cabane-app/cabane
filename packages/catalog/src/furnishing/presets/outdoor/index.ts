@@ -40,3 +40,5 @@ export {
 } from "./teak-lounge";
 
 export { Carport, CARPORT_SIZE } from "./carport";
+
+export * from "./vegetation";

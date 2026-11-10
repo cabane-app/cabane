@@ -202,3 +202,7 @@ Properties separates **Connections** from optional **Readings**. Each row shows 
 Properties exposes **Lighting** for personal and built-in models. Shared settings
 apply to every copy in this home while each copy retains its own connection.
 The visual editor and persistence rules are defined by [model lighting](model-lighting.md).
+
+The **Vegetation** catalog category collects outdoor trees, shrubs, hedges, grasses,
+and planted pots. These entries remain discoverable in Outdoor and All items;
+indoor plants stay in their existing room categories. Search also filters Vegetation.

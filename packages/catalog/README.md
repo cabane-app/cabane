@@ -1247,3 +1247,31 @@ preserves the silhouette. The bottom is Y=0 and wall contact is Z=0. Each copy
 accepts a manual `light` binding with existing on/off and brightness controls,
 state-aware bulb emission and engine-owned warm lighting. The component and
 `OUTDOOR_WALL_LANTERN_SIZE` are exported from `@cabane/catalog/device`.
+
+## Outdoor vegetation collection
+
+Arrange → **Vegetation** collects the existing outdoor plants and ten new presets.
+They are also available in Outdoor and All items, with independent width, height,
+and depth controls. All origins sit at ground level with centered footprints.
+Dimensions below are inferred landscaping sizes, in metres (width × height × depth).
+These are stylized procedural models, not measured botanical specimens.
+
+| Model ID           | Public component  | Size            |
+| ------------------ | ----------------- | --------------- |
+| `eucalyptus-tree`  | `EucalyptusTree`  | 3.8 × 6 × 3.5   |
+| `english-oak`      | `EnglishOak`      | 5 × 5.5 × 4.8   |
+| `silver-birch`     | `SilverBirch`     | 2.8 × 6 × 2.6   |
+| `sugar-maple`      | `SugarMaple`      | 4.2 × 5 × 4     |
+| `weeping-willow`   | `WeepingWillow`   | 5 × 5 × 4.8     |
+| `scots-pine`       | `ScotsPine`       | 4 × 6 × 3.8     |
+| `italian-cypress`  | `ItalianCypress`  | 1.2 × 5 × 1.2   |
+| `date-palm`        | `DatePalm`        | 4.5 × 5 × 4.5   |
+| `fan-palm`         | `FanPalm`         | 3.5 × 3.8 × 3.5 |
+| `ornamental-grass` | `OrnamentalGrass` | 1.3 × 1.5 × 1.3 |
+
+The eucalyptus is inspired by the supplied garden photo: a pale forked trunk,
+open branching and hanging narrow leaves. Species identification is approximate.
+The oak has a broad lobed crown, birch a slim pale fork, maple an autumn crown,
+willow pendant foliage, pine open spreading tiers, and cypress a narrow spire.
+Date palm has feathered fronds; fan palm has radial fans. Ornamental grass has
+arching blades and pale seed heads. Foliage is batched without individual outlines.

@@ -1,3 +1,4 @@
+import { vegetationDefinitions } from "./definitions/vegetation";
 import { atelierLibraryDefinitions } from "./presets/atelier-library/definitions";
 import { observatoryAccentDefinitions } from "./presets/observatory-accents/definitions";
 import { oakStoneKitchenDefinitions } from "./presets/kitchen/oak-stone/definitions";
@@ -1231,6 +1232,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 5, triangles: 32_000 },
   }),
   ...outdoorShelterFurnishingDefinitions,
+  ...vegetationDefinitions,
   "garden-shrub": defineFurnishingModel({
     component: GardenShrub,
     label: "Garden shrub",

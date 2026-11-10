@@ -459,6 +459,10 @@ await withModules(async (load) => {
           document.querySelector(`.catalog-categories [aria-label="${name}"]`).click(),
         );
       };
+      await chooseRoom("Vegetation");
+      assert.ok(document.querySelector('[aria-label="Add Eucalyptus"]'));
+      assert.ok(document.querySelector('[aria-label="Add Garden hedge"]'));
+      assert.equal(document.querySelector('[aria-label="Add Garden bench"]'), null);
       await chooseRoom("All items");
       assert.ok(document.querySelector('[aria-label="Add Television"]'));
       assert.ok(document.querySelector('[aria-label="Add Motorized blind"]'));

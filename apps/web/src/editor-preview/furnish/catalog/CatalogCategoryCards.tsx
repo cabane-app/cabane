@@ -18,11 +18,13 @@ const icons: Record<CatalogRoom, EditorIconName> = {
   hallway: "hallway",
   laundry: "laundry",
   outdoor: "outdoor",
+  vegetation: "outdoor",
 };
 const catalogCategories = [
   { id: "devices" as const, label: "Devices" },
   { id: "lights" as const, label: "Lights" },
   ...ROOM_TYPES,
+  { id: "vegetation" as const, label: "Vegetation" },
 ];
 export const catalogFilters = [
   { id: "all" as const, label: "All items" },

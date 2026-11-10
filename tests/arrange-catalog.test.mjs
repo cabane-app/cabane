@@ -488,6 +488,36 @@ await withModules(async (load) => {
     assert.ok(engine.pointInsidePolygon(candidate.placement.at, concave.rooms[0].polygon));
   });
 
+  test("Vegetation collects outdoor plants and supports search", () => {
+    const plants = filterCatalog(entries, "vegetation", "");
+    assert.deepEqual(
+      plants.map((entry) => entry.modelId).sort(),
+      [
+        "deciduous-tree",
+        "olive-tree",
+        "garden-shrub",
+        "garden-hedge",
+        "terracotta-planter",
+        "flower-pot",
+        "eucalyptus-tree",
+        "english-oak",
+        "silver-birch",
+        "sugar-maple",
+        "weeping-willow",
+        "scots-pine",
+        "italian-cypress",
+        "date-palm",
+        "fan-palm",
+        "ornamental-grass",
+      ].sort(),
+    );
+    assert.deepEqual(
+      filterCatalog(entries, "vegetation", "palm").map((entry) => entry.modelId),
+      ["date-palm", "fan-palm"],
+    );
+    assert.equal(filterCatalog(entries, "vegetation", "sofa").length, 0);
+  });
+
   test("outdoor vegetation starts and remains outside without wall snapping", () => {
     const tree = get("deciduous-tree");
     const shrub = get("garden-shrub");
@@ -502,9 +532,13 @@ await withModules(async (load) => {
         "carport",
         "carved-stone-planter",
         "compact-car",
+        "date-palm",
         "deciduous-tree",
         "electric-sedan",
+        "english-oak",
+        "eucalyptus-tree",
         "external-ac-unit",
+        "fan-palm",
         "flower-pot",
         "garden-bench",
         "garden-birdbath",
@@ -514,9 +548,11 @@ await withModules(async (load) => {
         "garden-lantern-pole",
         "garden-shrub",
         "garden-trellis",
+        "italian-cypress",
         "low-garden-lantern",
         "mini-van",
         "olive-tree",
+        "ornamental-grass",
         "outdoor-bbq",
         "outdoor-dining-chair",
         "outdoor-dining-table",
@@ -533,10 +569,13 @@ await withModules(async (load) => {
         "retractable-awning",
         "robot-lawn-mower",
         "rotating-sprinkler",
+        "scots-pine",
+        "silver-birch",
         "slatted-folding-chair",
         "slatted-folding-table",
         "smart-hose-timer",
         "soil-moisture-sensor",
+        "sugar-maple",
         "teak-lounge-chair",
         "teak-lounge-sofa",
         "terracotta-planter",
@@ -544,6 +583,7 @@ await withModules(async (load) => {
         "us-mailbox",
         "wallbox",
         "watering-can",
+        "weeping-willow",
         "wheelie-bin",
         "wooden-garden-swing",
       ],
@@ -765,6 +805,7 @@ await withModules(async (load) => {
         "bathroom-extractor-fan",
         "ceiling-fan",
         "computer-fan",
+        "fan-palm",
         "pedestal-fan",
         "table-fan",
         "ventilation-fan",
