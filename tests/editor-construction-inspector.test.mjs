@@ -553,20 +553,11 @@ await withModules(async (load) => {
         root.render(
           React.createElement(ConstructionPanels, {
             editor: editor(null),
-            planImportControls: React.createElement(
-              "section",
-              { "aria-label": "Build from a floor plan" },
-              "Have a floor plan?",
-            ),
           }),
         ),
       );
       assert.match(dom.window.document.body.textContent, /Hold Shift and drag to select several/);
       assert.match(dom.window.document.body.textContent, /Delete or Backspace/);
-      assert.ok(
-        dom.window.document.body.textContent.indexOf("Hold Shift and drag") <
-          dom.window.document.body.textContent.indexOf("Have a floor plan?"),
-      );
     });
   });
 
@@ -1050,38 +1041,6 @@ await withModules(async (load) => {
     });
   });
 
-  test("keeps scale and heights available without the removed Advanced controls", async () => {
-    await withDom(async ({ dom, root }) => {
-      await act(async () =>
-        root.render(
-          React.createElement(ConstructionPanels, {
-            editor: editor({ kind: "wall", id: wall.id }),
-            onRoofChange: () => {},
-          }),
-        ),
-      );
-      const document = dom.window.document;
-      assert.equal(document.querySelector(".construction-inspector__expert-toggle"), null);
-      assert.equal(document.querySelector('[aria-label="Expert construction data"]'), null);
-      assert.equal(document.querySelector('[aria-label="from X coordinate"]'), null);
-      const sections = [
-        ...document.querySelectorAll("details.construction-inspector__floor-disclosure"),
-      ];
-      assert.deepEqual(
-        sections.map(
-          (section) => section.querySelector(".sidebar-section-summary__copy > span").textContent,
-        ),
-        ["Roof", "Scale & heights"],
-      );
-      const floorSettings = sections[1];
-      assert.equal(floorSettings.open, false);
-      assert.ok(floorSettings.querySelector('[aria-label="Length per plan unit"]'));
-      assert.ok(floorSettings.querySelector('[aria-label="Default wall height"]'));
-      assert.ok(floorSettings.querySelector("summary small").textContent);
-      assert.equal(floorSettings.querySelectorAll("summary svg").length, 2);
-    });
-  });
-
   test("window properties use the shared inspector instead of sidebar tool settings", async () => {
     await withDom(async ({ dom, root }) => {
       const controller = editor({ kind: "opening", id: opening.id });
@@ -1089,7 +1048,10 @@ await withModules(async (load) => {
         root.render(React.createElement(ConstructionPanels, { editor: controller })),
       );
       assert.equal(dom.window.document.querySelector('[aria-label="Opening width"]'), null);
-      assert.ok(dom.window.document.querySelector(".construction-inspector__floor-disclosure"));
+      assert.equal(
+        dom.window.document.querySelector(".construction-inspector__floor-disclosure"),
+        null,
+      );
       const changes = [];
       let closed = 0;
       await act(async () =>

@@ -19,7 +19,7 @@ export function EditorPanelControls({
   const active = !onDemand || panels.mobileOpen;
   return (
     <>
-      {presentation === "dock" && panels.hasSelection && !panels.propertiesOpen && (
+      {presentation === "dock" && panels.hasProperties && !panels.propertiesOpen && (
         <button
           className="editor-properties-toggle"
           type="button"
@@ -57,14 +57,14 @@ export function EditorPanelControls({
                   : "Tools"}
           </span>
         </button>
-        {(panels.hasSelection ||
+        {(panels.hasProperties ||
           presentation === "tabs" ||
           mode === "construct" ||
           mode === "furnish") && (
           <button
             type="button"
-            disabled={disabled || !panels.hasSelection}
-            title={!panels.hasSelection ? "Select an object to edit its properties" : undefined}
+            disabled={disabled || !panels.hasProperties}
+            title={!panels.hasProperties ? "Select an object to edit its properties" : undefined}
             aria-pressed={active && panels.mobileSurface === "properties"}
             aria-controls="editor-mobile-panel"
             onClick={panels.openProperties}
