@@ -291,7 +291,7 @@ await withModules(async (load) => {
 
   test("the bundled home has one continuous roof without room-to-wall seam holes", () => {
     const floor = JSON.parse(
-      readFileSync(new URL("../home/src/layout.json", import.meta.url), "utf8"),
+      readFileSync(new URL("./fixtures/previous-demo/layout.json", import.meta.url), "utf8"),
     ).floors[0];
     floor.floorToFloorHeightMeters ??= legacyFloorHeight(floor);
     const regions = deriveRoofRegions([floor]);

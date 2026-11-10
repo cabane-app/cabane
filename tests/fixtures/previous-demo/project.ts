@@ -1,4 +1,5 @@
-import { parseHomeProject } from "@cabane/engine";
+import { composeHomeManifest, parseHomeProject } from "@cabane/engine";
+import { homeExtensions } from "@cabane/home";
 import layout from "./layout.json";
 import sceneItems from "./items.json";
 import metadata from "./project.json";
@@ -7,3 +8,4 @@ import metadata from "./project.json";
 const result = parseHomeProject(JSON.stringify({ ...metadata, ...layout, sceneItems }));
 if (!result.valid) throw new Error(result.issues.map((issue) => issue.message).join("\n"));
 export const ownerHomeProject = result.project;
+export const homeManifest = composeHomeManifest(ownerHomeProject, homeExtensions);

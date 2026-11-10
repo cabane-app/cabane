@@ -1,6 +1,6 @@
 import { deviceActivityManifest } from "./fixtures/device-activity";
 import { createRoot } from "react-dom/client";
-import { homeManifest, homeExtensions } from "@cabane/home";
+import { homeManifest, homeExtensions } from "./fixtures/bundled-home";
 import { stableDeviceRegistry } from "@cabane/catalog/device";
 import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
 import { CabaneDashboard } from "@cabane/engine";

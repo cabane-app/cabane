@@ -16,3 +16,6 @@ export { TabletopCandle, TABLETOP_CANDLE_SIZE } from "./tabletop-candle";
 
 export { RoundJuteRug, ROUND_JUTE_RUG_SIZE } from "./round-jute-rug";
 export { LeafyPlanter, LEAFY_PLANTER_SIZE } from "./leafy-planter";
+
+export { AbstractLoopSculpture, ABSTRACT_LOOP_SCULPTURE_SIZE } from "./abstract-loop-sculpture";
+export { BarwareTray, BARWARE_TRAY_SIZE } from "./barware-tray";

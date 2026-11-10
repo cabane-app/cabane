@@ -15,7 +15,8 @@ const requestedRoomId = argument("--room-id");
 const fixtureMode = Boolean(fixture);
 const ownerHomeId = fixtureMode
   ? null
-  : JSON.parse(await readFile(resolve(process.cwd(), "home/src/project.json"), "utf8")).home.id;
+  : JSON.parse(await readFile(resolve(process.cwd(), "home/showcase/atelier.project.json"), "utf8"))
+      .home.id;
 if (!fixtureMode && !ownerHomeId) {
   throw new Error("Could not determine the owner home ID for visual evidence.");
 }

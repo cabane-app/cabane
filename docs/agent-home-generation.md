@@ -17,20 +17,13 @@ repository workflow below. Keep these outputs separate from browser drafts.
 
 ## Current repository baseline
 
-- The bundled home is the accepted two-floor South Garden Villa with eighteen
-  furnished interior rooms. `home/src/layout.json`, `items.json`, and `project.json`
-  assemble into the same `HomeProject` schema used by workspace import/export.
-- Keep architecture in `layout.json`, furniture/device instances in `items.json`,
-  and home metadata/profiles/assumptions in `project.json`. Do not recreate the
-  retired per-room TypeScript specs, React compositions, or placement factories.
+- [Casa Solstice · Atelier](../home/showcase/atelier.project.json) is the bundled
+  demo. Its architecture, items and local binding slots use the same portable
+  project schema as workspace import/export.
 - The fitted kitchen and its cabinet lighting are the two home-local extension
-  examples. Reuse catalog presets for all other supported model families. Inspect
-  the public registries before creating a new model.
-- A valid browser-edited floor may override the bundled floor for one browser
-  origin/device. That browser-local record does not update Git or become the
-  source of truth for repository generation. Durable architecture changes
-  still update the accepted floor in `home/src/layout.json` and pass the layout
-  review gate.
+  examples. Inspect the public catalog registries before creating a new model.
+- Browser edits are saved in that browser. Repository changes to the demo belong
+  in the portable project JSON and follow the same review gates as other homes.
 - Private deployment hardening and complete owner-runtime acceptance are not
   finished. Do not describe Docker/Compose support, a fully reviewed household
   binding profile, or final cross-browser/accessibility acceptance as complete
@@ -97,7 +90,7 @@ furnishing without a new user instruction.
   atmospheric effects may use suitable particle materials.
 - Use stable catalog models when they fit. Put bespoke reusable geometry or
   devices in `home/src/extensions/`; keep room-specific item records in
-  `home/src/items.json`.
+  the portable home project.
 - Keep the UI English-only and preserve the built-in UI style. Preserve the existing Construct, Arrange, and Connect editor modes. Do not add
   a debug studio, hosted service, telemetry, or an additional V1 mode without
   an explicit product-development request.

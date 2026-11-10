@@ -25,7 +25,7 @@ import {
   fixtureRawStates,
   rawEntity,
 } from "./fixtures/home-assistant.mjs";
-import { homeManifest } from "../home/src";
+import { homeManifest } from "./fixtures/previous-demo/project";
 import "../packages/engine/src/styles.css";
 
 const scenario = new URL(window.location.href).searchParams.get("scenario") ?? "connected";

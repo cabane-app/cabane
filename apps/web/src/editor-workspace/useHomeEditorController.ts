@@ -29,7 +29,7 @@ import {
   type HomeProjectRecord,
 } from "@cabane/engine";
 
-import { homeManifest as ownerProjectManifest } from "@cabane/home";
+import { homeManifest as demoManifest } from "@cabane/home";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -80,7 +80,7 @@ export function useHomeEditorController({
     initialRecord.draft.floors[0];
   const constructEditor = useConstructEditor(
     initialFloor,
-    ownerProjectManifest.floors.find((floor) => floor.id === initialFloor.id) ?? initialFloor,
+    demoManifest.floors.find((floor) => floor.id === initialFloor.id) ?? initialFloor,
     initialRecord.draft.home.palette.exterior,
     isEmptyPublishedHome(initialRecord.draft) &&
       initialRecord.draft.floors.every(isPristineConstructionFloor)

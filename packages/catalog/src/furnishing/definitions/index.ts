@@ -1,3 +1,4 @@
+import { leisureFurnishingDefinitions } from "./leisure-furnishings";
 import { catLitterTrayDefinition } from "./cat-litter-tray";
 import { robotLawnMowerDefinition } from "./robot-lawn-mower";
 import { petBedDefinition } from "./pet-bed";
@@ -99,6 +100,7 @@ import { roundWallDisplayDefinition } from "./round-wall-display";
 import { threeTierWallShelvesDefinition } from "./three-tier-wall-shelves";
 
 export const furnishingPresetDefinitions = {
+  ...leisureFurnishingDefinitions,
   "cat-litter-tray": catLitterTrayDefinition,
   "robot-lawn-mower": robotLawnMowerDefinition,
   "pet-bed": petBedDefinition,

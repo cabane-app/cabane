@@ -6,7 +6,7 @@ import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
   const engine = await load("/packages/engine/src/index.ts");
-  const { ownerHomeProject, homeExtensions } = await load("/home/src/index.ts");
+  const { ownerHomeProject, homeExtensions } = await load("/tests/fixtures/bundled-home.ts");
   const { EntitySlotMappingRow } = await load(
     "/packages/engine/src/home-assistant-mapping/EntitySlotMappingRow.tsx",
   );

@@ -9,36 +9,29 @@ import {
   createHomeProjectRepository,
   createIndexedDbProjectRecordStore,
   mergeDeviceModelRegistriesStableFirst,
-  migrateWorkspaceBindingProfile,
-  normalizeWorkspaceBindingOrigin,
-  runtimeBindingProfileStorageKey,
-  legacyRuntimeBindingProfileStorageKey,
-  validateRuntimeBindingProfile,
-  reconcileWorkspaceBindings,
-  type HomeProjectRecord,
   type HomeProject,
   type HomeManifest,
   type ResolvedHomeBindings,
   type ProjectModelRegistries,
 } from "@cabane/engine";
-import { homeManifest as ownerProjectManifest } from "@cabane/home";
+import { homeExtensions } from "@cabane/home";
 
 export const ownerDeviceModels = mergeDeviceModelRegistriesStableFirst(
   stableDeviceRegistry,
-  ownerProjectManifest.extensions.deviceModels,
+  homeExtensions.deviceModels,
 );
 
 export const ownerProjectRegistries: ProjectModelRegistries = {
   furnishingModels: Object.assign(
     Object.create(null) as Record<string, never>,
     stableFurnishingRegistry,
-    ownerProjectManifest.extensions.furnishingModels,
+    homeExtensions.furnishingModels,
   ),
   deviceModels: ownerDeviceModels,
 };
 
 export const ownerProjectExtensions = {
-  ...ownerProjectManifest.extensions,
+  ...homeExtensions,
   ...ownerProjectRegistries,
 };
 
@@ -124,65 +117,3 @@ export const createBrowserHomeProjectLifecycle = (factory: IDBFactory, homeId: s
     },
   };
 };
-
-export async function migrateOriginProfile(
-  record: HomeProjectRecord,
-  origin: string | null,
-  storage: Pick<Storage, "getItem">,
-  replace: (record: HomeProjectRecord, expectedRevision: number) => Promise<HomeProjectRecord>,
-): Promise<HomeProjectRecord> {
-  if (!origin) return record;
-  const key = normalizeWorkspaceBindingOrigin(origin);
-  if (record.bindings[key]) return record;
-  const raw =
-    storage.getItem(runtimeBindingProfileStorageKey(key, record.homeId)) ??
-    storage.getItem(legacyRuntimeBindingProfileStorageKey(key, record.homeId));
-  if (raw === null) return record;
-  const published = composeOwnerProjectManifest(record.published);
-  const input: unknown = JSON.parse(raw);
-  const parsed = validateRuntimeBindingProfile(input, published);
-  if (!parsed.valid || !parsed.profile)
-    throw new Error(
-      `Saved connections need recovery: ${parsed.issues[0]?.message ?? "Invalid profile"}`,
-    );
-  // Preserve the validated raw object so workspace validation also rejects unknown private fields.
-  const bindings = reconcileWorkspaceBindings(
-    migrateWorkspaceBindingProfile(
-      record.bindings,
-      key,
-      input as NonNullable<typeof parsed.profile>,
-      published,
-      published,
-    ),
-    composeOwnerProjectManifest(record.draft),
-  );
-  return replace({ ...record, bindings }, record.revision);
-}
-
-export async function migrateBrowserOriginProfile(
-  record: HomeProjectRecord,
-  origin: string | null,
-): Promise<HomeProjectRecord> {
-  const repository = createHomeProjectRepository(
-    createIndexedDbProjectRecordStore(window.indexedDB),
-    ownerProjectRegistries,
-  );
-  return migrateOriginProfile(record, origin, window.localStorage, (candidate, revision) =>
-    repository.replace(candidate, revision),
-  );
-}
-
-export function deleteOriginProfiles(
-  origin: string | null,
-  homeId: string,
-  storage: Pick<Storage, "removeItem">,
-): void {
-  if (!origin) return;
-  const key = normalizeWorkspaceBindingOrigin(origin);
-  storage.removeItem(runtimeBindingProfileStorageKey(key, homeId));
-  storage.removeItem(legacyRuntimeBindingProfileStorageKey(key, homeId));
-}
-
-export function deleteBrowserOriginProfiles(origin: string | null, homeId: string): void {
-  deleteOriginProfiles(origin, homeId, window.localStorage);
-}

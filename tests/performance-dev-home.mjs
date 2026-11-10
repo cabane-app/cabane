@@ -40,7 +40,6 @@ export async function prepareDevelopmentHome() {
     },
     entry.record.revision,
   );
-  await workspaces.finishMigration();
   saveStoredAuthData(
     window.localStorage,
     {
