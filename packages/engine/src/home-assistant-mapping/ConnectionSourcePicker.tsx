@@ -84,7 +84,7 @@ export function ConnectionSourcePicker({
         <span className="connection-source__identity">
           <strong>{source.label}</strong>
           <span>{[source.deviceName, source.areaLabel].filter(Boolean).join(" · ")}</span>
-          {source.matchRank > 0 && <small>On/off only</small>}
+          {source.matchRank > 0 && source.domain === "switch" && <small>On/off only</small>}
           {source.stateLabel !== "Available" && <small>{source.stateLabel}</small>}
           {source.claimed && <small>Also used by another connection</small>}
           {showIds && <code>{source.entityId}</code>}

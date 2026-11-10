@@ -11,6 +11,10 @@ await withModules(async (load) => {
   const { useConnectEditor } = await load("/apps/web/src/editor-connect/useConnectEditor.ts");
   const { ConnectInspector } = await load("/apps/web/src/editor-connect/ConnectInspector.tsx");
   const { ConnectSidebar } = await load("/apps/web/src/editor-connect/ConnectSidebar.tsx");
+  const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
+  const { createCatalogItem } = await load(
+    "/apps/web/src/editor-preview/furnish/placement/item-creation.ts",
+  );
   const {
     equippedFixtureManifest: manifest,
     connectedCatalogRuntime: snapshot,
@@ -178,6 +182,74 @@ await withModules(async (load) => {
       for (const device of resolved.rooms[room.id].devices) {
         assert.equal(device.entities[0].entityId, entityId);
         assert.deepEqual(device.entities[0].issues, []);
+      }
+    } finally {
+      await harness.close();
+    }
+  });
+
+  test("Connect binds a thermostat to new and previously placed fireplaces", async () => {
+    const floor = manifest.floors[0];
+    const source = floor.rooms[0].devices[0];
+    const item = createCatalogItem(
+      { kind: "device", modelId: "fireplace", definition: stableDeviceRegistry.fireplace },
+      { kind: "absolute", at: [2, 2], elevationMeters: 0, rotationYRadians: 0 },
+      [],
+      [],
+      floor.id,
+    );
+    const newSlot = item.entitySlots[0];
+    assert.ok(newSlot.compatibleDomains.includes("climate"));
+    const oldSlot = {
+      ...newSlot,
+      id: "existing-fireplace-control",
+      compatibleDomains: ["switch", "sensor", "binary_sensor", "light"],
+    };
+    const room = {
+      ...floor.rooms[0],
+      devices: [oldSlot, newSlot].map((slot) => ({
+        ...source,
+        id: `fireplace-${slot.id}`,
+        model: "fireplace",
+        entitySlots: [slot],
+      })),
+    };
+    const actualManifest = {
+      ...manifest,
+      floors: [{ ...floor, rooms: [room, ...floor.rooms.slice(1)] }, ...manifest.floors.slice(1)],
+    };
+    const entityId = "climate.fixture_ac";
+    const empty = engine.createEmptyRuntimeBindingProfile(manifest.home.id);
+    const harness = await mount(protectedBindings(empty), true);
+    try {
+      await harness.render({ actualManifest });
+      for (const { id } of [oldSlot, newSlot]) {
+        await act(async () => assert.equal(harness.editor.selectSlot(id), true));
+        const button = [...harness.dom.window.document.querySelectorAll(".connection-source")].find(
+          (element) => element.getAttribute("aria-label").includes(entityId),
+        );
+        assert.ok(button);
+        assert.doesNotMatch(button.textContent, /On\/off only/);
+        await act(async () => button.click());
+        assert.equal(harness.bindings[origin].draft.entityIdsBySlotId[id], entityId);
+      }
+      const imported = engine.importRuntimeBindingProfile(
+        engine.exportRuntimeBindingProfile(harness.bindings[origin].draft),
+        actualManifest,
+        runtime,
+      );
+      assert.equal(imported.valid, true, JSON.stringify(imported.issues));
+      const resolved = engine.resolveHomeAssistantBindings(
+        actualManifest,
+        imported.profile,
+        runtime,
+      );
+      for (const {
+        entities: [entity],
+      } of resolved.rooms[room.id].devices) {
+        assert.equal(entity.domain, "climate");
+        assert.equal(entity.entityId, entityId);
+        assert.deepEqual(entity.issues, []);
       }
     } finally {
       await harness.close();

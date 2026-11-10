@@ -147,14 +147,16 @@ export function HomeAssistantSceneLighting({
         ? resolved.entities.find(
             (candidate) =>
               (candidate.domain === "light" ||
-                (candidate.domain === "switch" && Boolean(primaryLightSlot))) &&
+                (Boolean(primaryLightSlot) &&
+                  (candidate.domain === "switch" ||
+                    (modelId === "fireplace" && candidate.domain === "climate")))) &&
               (!primaryLightSlot || candidate.slotId === primaryLightSlot.id),
           )
         : undefined;
     const transform = sceneItem
       ? resolveItemTransform(sceneItem.placement, floor)
       : deviceWorldTransform(resolved.slot, floor.coordinates);
-    const state = sceneLightState(sceneItem?.lightState, entity?.state, nightLighting);
+    const state = sceneLightState(sceneItem?.lightState, entity?.state, nightLighting, modelId);
     const brightness = lightBrightnessRatio(state);
     const sceneItemScale = sceneItem ? uniformDeviceScaleForSize(sceneItem.size, definition) : null;
     if (sceneItem && sceneItemScale === null && !definition.lighting) continue;

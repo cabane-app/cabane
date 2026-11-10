@@ -152,6 +152,11 @@ views with explicit returns. The House plan action remains available from the ro
 
 TV models offer a manual smart-plug switch alternative for on/off control, including TVs created before this feature. This is a model-specific compatibility rule, not an unrestricted entity-filter override. Commands follow the actual mapped switch domain; camera or media controls remain available for their corresponding entities.
 
+Fireplace models accept a `climate.*` entity for their primary connection, including
+fireplaces already placed in a workspace. The dashboard uses the thermostat's
+normal climate controls. In connected scene mode, flames and their light are on
+when the available thermostat reports `hvac_action` as `heating`.
+
 Room-device, device-connection and source headings share the same type, line height
 and top alignment. The sidebar inherits standard editor typography. Intermediate
 widths retain the room sidebar and device list while showing connections or sources

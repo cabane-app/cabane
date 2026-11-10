@@ -48,6 +48,8 @@ export const bindingDomainMatchRank = (
   modelId?: string,
 ): number => {
   if (spec.compatibleDomains.includes(domain as never)) return 0;
+  // Existing fireplaces keep their saved primary slot and can select a thermostat manually.
+  if (modelId === "fireplace" && domain === "climate" && spec.deviceRole === "primary") return 1;
   if (
     domain === "switch" &&
     modelId &&
