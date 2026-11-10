@@ -418,7 +418,6 @@ export function useConstructionPointerController({
     );
     return openingPlacementPreview(
       draft,
-      kind,
       rawPlanPointForEvent(event),
       openingPlacementFromEvent(event, dimensions.widthPlanUnits),
       dimensions,

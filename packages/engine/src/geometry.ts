@@ -184,7 +184,15 @@ export const openingsForWall = (wallId: string, openings: readonly OpeningSpec[]
     .sort((left, right) => left.offsetFromWallStartPlanUnits - right.offsetFromWallStartPlanUnits);
 
 /** Garden gates cut through the full wall height, independent of the leaf height. */
-export const openingCutTop = (opening: OpeningSpec, wallTop: number) =>
+export const openingCutTop = (
+  opening: {
+    kind: OpeningSpec["kind"] | "niche";
+    variant?: OpeningSpec["variant"];
+    sillHeightMeters: number;
+    openingHeightMeters: number;
+  },
+  wallTop: number,
+) =>
   opening.kind === "door" && isGardenGate(opening.variant)
     ? wallTop
     : opening.sillHeightMeters + opening.openingHeightMeters;

@@ -328,8 +328,9 @@ The Spawn area disclosure in the Construct sidebar groups the Explore starting-p
 
 Door offers catalog presets for interior doors, garage doors, and garden gates.
 The anthracite slatted, open metal, and wooden garden gates are hinged and start
-at 1 m wide by 1 m high. They leave the opening clear up to the top of the
-wall, with jambs on each side. The Door sidebar follows the Floor palette hierarchy,
+at 1 m wide by 1 m high. Gates can stand taller than their supporting wall,
+including on freestanding garden walls. They leave the opening clear up to the top
+of the wall, with jambs on each side. The Door sidebar follows the Floor palette hierarchy,
 with cached procedural 3D thumbnails shared with Arrange and Connect. Presets
 set motion, style, finish, applicable leaves, and metre-based dimensions; manual
 edits remain available and unmatched configurations read Custom. Only attributes
