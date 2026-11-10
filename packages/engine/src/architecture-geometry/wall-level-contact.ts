@@ -1,4 +1,5 @@
 import { wallStructuralHeight } from "./wall-structural-height";
+import { openingCutTop } from "../geometry";
 import type { FloorSpec } from "../types";
 import { differenceClippingGeometry, unionClippingPolygons } from "./architecture-clipping";
 import { openingCutPolygon, wallSolidFootprintPolygons } from "./wall-solid-footprints";
@@ -15,11 +16,7 @@ export function wallLevelContact(floor: FloorSpec | undefined, edge: "top" | "bo
   );
   const solids = unionClippingPolygons(wallSolidFootprintPolygons(floor, walls));
   const openings = floor.openings.flatMap((opening) => {
-    if (
-      opening.sillHeightMeters > height ||
-      opening.sillHeightMeters + opening.openingHeightMeters < height
-    )
-      return [];
+    if (opening.sillHeightMeters > height || openingCutTop(opening, height) < height) return [];
     const wall = walls.find((wall) => wall.id === opening.wallId);
     return wall ? [openingCutPolygon(wall, opening, floor)] : [];
   });

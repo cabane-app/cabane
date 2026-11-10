@@ -9,6 +9,7 @@ import {
 import { validPlatformEdgeConfiguration } from "../../outdoor-platforms/platform-barriers";
 import { DEFAULT_DOOR_CONFIGURATION, doorFromConfiguration } from "../../door-configuration";
 import { deleteWallSpans } from "./delete-wall-spans";
+import { openingCutTop } from "../../geometry";
 import { validHedge } from "../../hedges/hedge-validity";
 /* Interaction concepts were reviewed against ai_room_planner (MIT); this
  * reducer and metre-first state contract are original to Cabane. */
@@ -558,7 +559,7 @@ export const reduceDraft = (
     return (
       opening.offsetPlanUnits >= 0 &&
       opening.offsetPlanUnits + opening.widthPlanUnits <= length + 1e-7 &&
-      (opening.sillHeightMeters ?? 0) + opening.openingHeightMeters <= height + 1e-7
+      openingCutTop(opening, height) <= height + 1e-7
     );
   });
   return openings.length === next.openings.length ? next : { ...next, openings };

@@ -12,6 +12,7 @@ import type { ActionBarConfiguration } from "./action-bar/action-bar-config";
 import type { HomeDeviceModelProps } from "./device-model-props";
 export type { DeviceModelReading, HomeDeviceModelProps } from "./device-model-props";
 import type { FloorFinishSpec } from "./floor-finishes/types";
+import type { GardenGateVariant } from "./garden-gate";
 export {
   FLOOR_PATTERN_PRESET_IDS,
   type FloorFinishSpec,
@@ -176,7 +177,8 @@ export type DoorVariant =
   | "concealed"
   | "flush-knob"
   | "flush"
-  | "plank";
+  | "plank"
+  | GardenGateVariant;
 export type DoorFinish = "wood" | "white";
 
 /** Relative to the owning wall's from → to direction, never the camera. */
@@ -217,7 +219,7 @@ export type DoorSpec = DoorBaseSpec &
       }
     | {
         operation: "sliding";
-        variant: DoorVariant;
+        variant: Exclude<DoorVariant, GardenGateVariant>;
         leafCount: 1 | 2;
         hingeSide?: never;
         slideDirection?: "start" | "end";

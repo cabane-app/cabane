@@ -44,7 +44,13 @@ await withModules(async (load) => {
     }
   });
   test("framed leaves and handles clear every jamb throughout the actual animation on both swing sides and hinges", async () => {
-    for (const variant of ["panel", "panel-white-lever", "french", "plank"]) {
+    for (const variant of [
+      "panel",
+      "panel-white-lever",
+      "french",
+      "plank",
+      ...engine.GARDEN_GATE_VARIANTS,
+    ]) {
       for (const leafCount of [1, 2]) {
         for (const [openingWidth, wallThickness] of [
           [leafCount === 1 ? 0.69 : 1.4, 0.07],
@@ -56,7 +62,7 @@ await withModules(async (load) => {
                 ...base,
                 widthPlanUnits: openingWidth,
                 offsetFromWallStartPlanUnits: 0.2,
-                openingHeightMeters: 2.1,
+                openingHeightMeters: engine.isGardenGate(variant) ? 1 : 2.1,
                 variant,
                 leafCount,
                 openingSide,
@@ -80,7 +86,7 @@ await withModules(async (load) => {
                 if (o.name.startsWith("opening-door-frame-")) frames.push(o);
                 else moving.push(o);
               });
-              assert.equal(frames.length, 3);
+              assert.equal(frames.length, engine.isGardenGate(variant) ? 2 : 3);
               assert.ok(
                 moving.length > 0,
                 "door leaves and handles must participate in collision checks",

@@ -5,7 +5,8 @@ import { rollUpDoorGeometry } from "../roll-up-door-geometry";
 import { terrainForHedge, terrainHedgeRuns } from "../hedges/hedge-terrain";
 import type { TerrainSurface } from "../terrain/terrain-surface";
 import { validHedge } from "../hedges/hedge-validity";
-import { planPointToWorld } from "../geometry";
+import { openingCutTop, planPointToWorld } from "../geometry";
+import { isGardenGate } from "../garden-gate";
 
 import { junctionConnectorInterval } from "../architecture-geometry";
 import { physicalFloor } from "../architecture-geometry/physical-floor";
@@ -64,7 +65,14 @@ const wallColliderRuns = (
       opening.kind !== "passage" &&
       (opening.kind === "window" || !openOpeningIds.has(opening.id))
     )
-      intervals.push([start, end]);
+      intervals.push([
+        start,
+        end,
+        0,
+        opening.kind === "door" && isGardenGate(opening.variant)
+          ? opening.openingHeightMeters
+          : height,
+      ]);
     if (
       opening.kind === "door" &&
       opening.operation === "roll-up" &&
@@ -82,7 +90,7 @@ const wallColliderRuns = (
       wall.leanMeters &&
       (opening.kind === "passage" || (opening.kind === "door" && openOpeningIds.has(opening.id)))
     ) {
-      const openingTop = opening.sillHeightMeters + opening.openingHeightMeters;
+      const openingTop = openingCutTop(opening, height);
       if (openingTop < height) intervals.push([start, end, openingTop, height]);
       if (opening.sillHeightMeters > 0) intervals.push([start, end, 0, opening.sillHeightMeters]);
     }

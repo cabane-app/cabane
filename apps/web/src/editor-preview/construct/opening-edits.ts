@@ -2,6 +2,7 @@ import {
   editorWallAttachments,
   availableOpeningOffsetRanges,
   nearestAvailableOpeningOffset,
+  openingCutTop,
 } from "@cabane/engine";
 import type {
   ConstructEditorAction,
@@ -24,6 +25,9 @@ export function openingEdits(
   const updateOpening: ConstructEditorController["updateOpening"] = (opening) => {
     const existing = editorWallAttachments(draft).find((candidate) => candidate.id === opening.id);
     const wall = draft.walls.find((candidate) => candidate.id === opening.wallId);
+    const wallTop =
+      (wall?.heightMeters ?? draft.defaultWallHeightMeters) -
+      (opening.kind === "niche" ? 0.002 : 0);
     const fits = availableOpeningOffsetRanges({
       draft,
       wallId: opening.wallId,
@@ -36,9 +40,7 @@ export function openingEdits(
       existing.kind !== opening.kind ||
       !fits ||
       !wall ||
-      opening.openingHeightMeters + opening.sillHeightMeters >
-        (wall.heightMeters ?? draft.defaultWallHeightMeters) -
-          (opening.kind === "niche" ? 0.002 : 0)
+      openingCutTop(opening, wallTop) > wallTop
     ) {
       reportError(
         "This opening does not fit here. Choose a smaller size or another wall position.",

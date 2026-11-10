@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import { Box3, Vector3 } from "three";
+import { Box3, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
@@ -11,6 +11,54 @@ await withModules(async (load) => {
   );
   const engine = await load("/packages/engine/src/index.ts");
   const { ownerHomeProject } = await load("/tests/fixtures/bundled-home.ts");
+  test("garden gates cut the wall above the leaf in both wall renderers", () => {
+    const wall = {
+      id: "garden-wall",
+      from: [0, 0],
+      to: [4, 0],
+      classification: "interior",
+      thicknessMeters: 0.16,
+      heightMeters: 1.2,
+    };
+    const gate = engine.doorFromConfiguration(
+      { ...engine.DEFAULT_DOOR_CONFIGURATION, variant: "garden-anthracite", heightMeters: 1 },
+      1,
+      { id: "gate", wallId: wall.id, offsetFromWallStartPlanUnits: 1 },
+    );
+    const floor = {
+      ...engine.neutralDemoManifest.floors[0],
+      coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "inferred" },
+      walls: [wall],
+      wallJunctions: [],
+      rooms: [],
+      footprint: [],
+      openings: [gate],
+    };
+    const material = new MeshBasicMaterial({ side: DoubleSide });
+    try {
+      for (const variant of ["panel", "garden-anthracite"]) {
+        const openings = [{ ...gate, variant }];
+        const geometries = [
+          [engine.buildContinuousWallGeometry(wall, floor, openings)],
+          engine
+            .buildArchitecturalWallGeometries({ ...floor, openings })
+            .map(({ geometry }) => geometry),
+        ];
+        for (const group of geometries) {
+          const meshes = group.map((geometry) => new Mesh(geometry, material));
+          const crossesWall = (x) =>
+            new Raycaster(new Vector3(x, 1.1, -1), new Vector3(0, 0, 1)).intersectObjects(meshes)
+              .length > 0;
+          assert.ok(crossesWall(0.5), "the wall remains on either side");
+          assert.equal(crossesWall(1.45), variant === "panel");
+          for (const geometry of group) geometry.dispose();
+        }
+      }
+    } finally {
+      material.dispose();
+    }
+  });
+
   test("opening colors survive portable parsing and recolor every door/window family with exact reset", async () => {
     const project = structuredClone(ownerHomeProject);
     const floor = project.floors[0];

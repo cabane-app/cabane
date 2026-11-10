@@ -1,8 +1,10 @@
-import type { EditorOpening } from "@cabane/engine";
+import { gardenGateColor } from "@cabane/catalog/architecture";
+import { isGardenGate, type EditorOpening } from "@cabane/engine";
 
 function defaultColor(opening: Exclude<EditorOpening, { kind: "passage" }>) {
   if (opening.variant === "steel-arched") return "#292e2d";
   if (opening.kind === "window") return "#e7e2d8";
+  if (isGardenGate(opening.variant)) return gardenGateColor(opening.variant, opening.finish);
   const white = opening.finish === "white";
   if (opening.operation === "roll-up") return white ? "#dddcd6" : "#ad8559";
   if (opening.variant === "plank") return white ? "#e6e3dc" : "#85583b";

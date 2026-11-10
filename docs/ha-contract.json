@@ -1,9 +1,9 @@
 {
-  "revision": 43,
-  "fingerprint": "a3c0e147f75363f3344a0035ec6eb592e8533b5c482a720d9fc6f6a8eaf361f6",
-  "summary": "Allow fireplace connections to Home Assistant thermostats",
+  "revision": 44,
+  "fingerprint": "a4bc39df2d2ebc0a6cdbfe2923a015b38fff7068669267d22d3956c83f9b874d",
+  "summary": "Add hinged garden gates to the Door tool",
   "breakingChanges": [
-    "Workspaces with a newly placed fireplace or a fireplace connected to a climate entity require the updated frontend and Home Assistant panel. Existing fireplaces keep their slot IDs and mappings."
+    "Existing doors remain compatible. Workspaces using the new garden gate styles require an updated Cabane frontend and matching Home Assistant panel."
   ],
   "history": [
     {
@@ -298,6 +298,13 @@
       "summary": "Allow walking up surface changes of up to 40 cm.",
       "breakingChanges": [
         "No stored fields change. Walk stepping and accessibility diagnostics now share a 40 cm threshold instead of 30 cm; older panels retain the smaller threshold."
+      ]
+    },
+    {
+      "revision": 43,
+      "summary": "Allow fireplace connections to Home Assistant thermostats",
+      "breakingChanges": [
+        "Workspaces with a newly placed fireplace or a fireplace connected to a climate entity require the updated frontend and Home Assistant panel. Existing fireplaces keep their slot IDs and mappings."
       ]
     }
   ],

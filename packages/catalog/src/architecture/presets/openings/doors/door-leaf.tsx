@@ -1,4 +1,6 @@
-import { omitUndefinedProperties } from "@cabane/engine";
+import { isGardenGate, omitUndefinedProperties } from "@cabane/engine";
+import { gardenGateColor } from "../../../door-presets";
+import { GardenGateLeaf } from "./garden-gate-leaf";
 import { WhiteLeverDoorHandles } from "./white-lever-door-handles";
 import { ConcealedDoorLeaf } from "./concealed-door-leaf";
 import { FlushDoorLeaf } from "./flush-door-leaf";
@@ -26,6 +28,17 @@ export function DoorLeaf({
 }) {
   const white = opening.finish === "white";
   const frameColor = opening.color ?? (white ? "#d8d2c6" : "#9c6b49");
+
+  if (isGardenGate(opening.variant))
+    return (
+      <GardenGateLeaf
+        variant={opening.variant}
+        width={width}
+        height={height}
+        color={opening.color ?? gardenGateColor(opening.variant, opening.finish)}
+        handleSide={handleSide}
+      />
+    );
 
   if (opening.variant === "concealed")
     return (
