@@ -192,6 +192,7 @@ a dedicated drag controller and outline measurement presentation.
 Implementation: [construction controller](../../apps/web/src/editor-preview/construct/useConstructEditor.ts),
 [pointer interaction](../../apps/web/src/editor-preview/construct/ConstructionEditLayer.tsx),
 [tool settings](../../apps/web/src/editor-preview/construct/ConstructionInspector.tsx),
+[construction settings](../../apps/web/src/editor-workspace/EditorConstructionSettings.tsx),
 [selected-object properties](../../apps/web/src/editor-preview/construct/ConstructionSelectionProperties.tsx),
 [topology](../../packages/engine/src/home-editor/construct/topology.ts),
 [floor drawing](../../apps/web/src/editor-preview/construct/useFloorZoneDrawing.ts),
@@ -324,7 +325,13 @@ control for unnamed rooms. Enter or blur commits a nonempty trimmed name; Escape
 cancels. Naming uses ordinary undo/redo and autosave and is disabled during active
 gestures. Unnamed rooms are valid saved drafts; they still require names to Apply.
 
-The Spawn area disclosure in the Construct sidebar groups the Explore starting-point controls. The sidebar sections appear in this order: Reference plan, Roof, Spawn area, Scale & heights, and Tutorial. Each has an outline icon and a short description visible while collapsed. Scale & heights contains the former Floor settings controls. The Advanced structure-data section is no longer shown.
+The right sidebar shows the selected object's properties. With no selection, it
+shows Construction settings: Reference plan, Roof, North, Terrain, Spawn area
+(in plan view), Scale & heights, and Tutorial. On phones these settings are
+available from the Properties button. The left sidebar keeps the controls and
+instructions for the active tool. Spawn area sets the starting point in Explore,
+and Scale & heights holds the plan scale and default wall and ceiling heights.
+Reference plan starts collapsed. The tutorial can open the image picker directly.
 
 Door offers six catalog presets: Panel wood, Panel white, French, Full glass,
 Sliding wood, and Garage door. Its sidebar follows the Floor palette hierarchy,

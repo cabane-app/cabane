@@ -1,25 +1,15 @@
 import { PoolSettingsFields } from "./PoolSettingsFields";
 import { MeasurementText } from "@cabane/engine";
 import type { ConstructionInspectorProps } from "./construction-inspector-contract";
-export type { ConstructionInspectorProps } from "./construction-inspector-contract";
 import { EditorButton } from "../../editor-chrome/EditorButton";
 import { FloorToolProperties } from "./FloorToolProperties";
 import { DoorPresetPalette } from "./DoorPresetPalette";
 import { DoorDesignFields } from "./DoorDesignFields";
 import { HedgeProperties } from "./HedgeProperties";
-import { ConstructionBuildingSettings } from "./ConstructionBuildingSettings";
 import { DebouncedColorInput } from "./DebouncedColorInput";
 
 export function ConstructionInspector({
   inert,
-  referencePlanControls,
-  planImportControls,
-  tutorialControls,
-  walkStartControls,
-  northControls,
-  terrainControls,
-  roof,
-  onRoofChange,
   editor,
   floorPainting,
 }: ConstructionInspectorProps) {
@@ -141,20 +131,6 @@ export function ConstructionInspector({
           </div>
         )}
       </div>
-      {referencePlanControls}
-      <ConstructionBuildingSettings
-        {...{
-          planImportControls,
-          roof,
-          northControls,
-          terrainControls,
-          walkStartControls,
-          tutorialControls,
-          editor,
-        }}
-        {...(inert === undefined ? {} : { inert })}
-        {...(onRoofChange ? { onRoofChange } : {})}
-      />
     </section>
   );
 }

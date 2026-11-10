@@ -1,24 +1,14 @@
 import { useState, type ReactNode } from "react";
-import { TerrainSettingsEditor } from "../editor-preview/construct/TerrainSettingsEditor";
 import { ConstructionToolCards } from "../editor-chrome/ConstructionToolCards";
 import type { CustomModel } from "@cabane/engine";
 import { CustomModelLibrary } from "../custom-models/CustomModelLibrary";
 import { CustomModelCard } from "../custom-models/CustomModelCard";
 import type { ManifestIssue } from "@cabane/engine";
-import { EditorButton } from "../editor-chrome/EditorButton";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
 import { EditorModeIntroduction } from "../editor-chrome/EditorModeIntroduction";
-import { SidebarSectionSummary } from "../editor-chrome/SidebarSectionSummary";
 import { ConstructFloorControls, StairPlacementPanel } from "../editor-floors";
 import { convertStairShape } from "../editor-floors/stair-placement-geometry";
-import { BuildTutorial } from "../editor-onboarding/BuildTutorial";
-import { useBuildTutorial } from "../editor-onboarding/useBuildTutorial";
-import { PlanImportActions } from "../editor-plan-import/PlanImportActions";
 import { isPristineConstructionFloor } from "../editor-preview/construct/contextual-validation";
-import { ReferencePlanPanel } from "../editor-reference-plan/ReferencePlanPanel";
-
-import { NorthSettingsEditor } from "../editor-preview/construct/NorthSettingsEditor";
-
 import { ConstructionInspector } from "../editor-preview/construct";
 
 import { ConnectSidebar } from "../editor-connect/ConnectSidebar";
@@ -27,8 +17,6 @@ import { ArrangePlacedItems } from "../editor-preview/furnish/ArrangePlacedItems
 import { ArrangeCatalog } from "../editor-preview/furnish/catalog/ArrangeCatalog";
 
 import { useHomeEditorController } from "./useHomeEditorController";
-
-const PLAN_IMPORT_ENABLED = false;
 
 type Props = Pick<
   ReturnType<typeof useHomeEditorController>,
@@ -45,7 +33,6 @@ type Props = Pick<
   | "publishOpen"
   | "previewOpen"
   | "connect"
-  | "clearConstructionSelection"
   | "constructEditor"
   | "floorZoneDrawing"
   | "furnishingModels"
@@ -76,16 +63,11 @@ type Props = Pick<
   iconUrl: string;
   settingsMode: boolean;
   settingsNavigation: ReactNode;
+  tutorialPanel: ReactNode;
   floorControlsDisabled: boolean;
   addFloorAbove: () => void;
   addFloorBelow: () => void;
-  tutorial: ReturnType<typeof useBuildTutorial>;
-  tutorialBusy: boolean;
-  activateTutorial: () => void;
   stairLiveIssues: readonly ManifestIssue[] | null;
-  importWorkspace: (json: string) => void;
-  placingWalkStart: boolean;
-  setWalkStartFloor: React.Dispatch<React.SetStateAction<string | null>>;
   onHomeAssistantSettings: Parameters<typeof useHomeEditorController>[0]["onHomeAssistantSettings"];
 };
 export function EditorSidebar({
@@ -102,7 +84,6 @@ export function EditorSidebar({
   publishOpen,
   previewOpen,
   connect,
-  clearConstructionSelection,
   constructEditor,
   floorZoneDrawing,
   furnishingModels,
@@ -131,16 +112,11 @@ export function EditorSidebar({
   iconUrl,
   settingsMode,
   settingsNavigation,
+  tutorialPanel,
   floorControlsDisabled,
   addFloorAbove,
   addFloorBelow,
-  tutorial,
-  tutorialBusy,
-  activateTutorial,
   stairLiveIssues,
-  importWorkspace,
-  placingWalkStart,
-  setWalkStartFloor,
   onHomeAssistantSettings,
   onMobileToolChoose,
 }: Props) {
@@ -208,21 +184,11 @@ export function EditorSidebar({
             />
           )}
           {settingsMode && settingsNavigation}
-          {!settingsMode && tutorial.state?.status === "active" && (
-            <BuildTutorial
-              state={tutorial.state}
-              mode={mode}
-              disabled={tutorialBusy}
-              warning={tutorial.warning}
-              onAction={activateTutorial}
-              onSkip={tutorial.skip}
-              onDismiss={tutorial.dismiss}
-            />
-          )}
+          {!settingsMode && mode !== "construct" && tutorialPanel}
           {!settingsMode &&
             mode === "construct" &&
             !constructPreview &&
-            tutorial.state?.status !== "active" &&
+            !tutorialPanel &&
             isPristineConstructionFloor(constructEditor.previewFloor) && (
               <p className="construction-empty-hint">
                 Your plan starts here. Choose Wall, then click each corner to draw your first room.
@@ -246,103 +212,6 @@ export function EditorSidebar({
           {!settingsMode && mode === "construct" && !stairPlacement && (
             <ConstructionInspector
               inert={reference.adjusting}
-              referencePlanControls={
-                <ReferencePlanPanel
-                  reference={reference}
-                  floorName={constructEditor.previewFloor.name}
-                />
-              }
-              planImportControls={
-                PLAN_IMPORT_ENABLED && (
-                  <PlanImportActions
-                    homeId={snapshot.project.home.id}
-                    disabled={tutorialBusy}
-                    onImport={importWorkspace}
-                  />
-                )
-              }
-              tutorialControls={
-                tutorial.state?.status !== "active" && (
-                  <details className="construction-inspector__floor-disclosure">
-                    <SidebarSectionSummary
-                      icon="tutorial"
-                      title="Tutorial"
-                      description="Learn to draw and furnish your first room."
-                    />
-                    <div className="sidebar-section-content">
-                      <EditorButton disabled={tutorialBusy} onClick={tutorial.restart}>
-                        Restart tutorial
-                      </EditorButton>
-                    </div>
-                  </details>
-                )
-              }
-              walkStartControls={
-                <details className="construction-inspector__floor-disclosure">
-                  <SidebarSectionSummary
-                    icon="spawn"
-                    title="Spawn area"
-                    description="Choose where you start in Explore."
-                  />
-                  <div
-                    className="construction-walk-start sidebar-section-content"
-                    role="group"
-                    aria-label="Walk starting point"
-                  >
-                    <EditorButton
-                      aria-pressed={placingWalkStart}
-                      disabled={unsettled && !placingWalkStart}
-                      onClick={() => {
-                        clearConstructionSelection();
-                        constructEditor.setTool("select");
-                        setWalkStartFloor(placingWalkStart ? null : activeFloorId);
-                      }}
-                    >
-                      {placingWalkStart
-                        ? "Cancel"
-                        : snapshot.project.home.walkStart
-                          ? "Move starting point"
-                          : "Set starting point"}
-                    </EditorButton>
-                    {placingWalkStart && (
-                      <p role="status">
-                        Click inside the floor to set your starting point. Escape cancels.
-                      </p>
-                    )}
-                    {snapshot.project.home.walkStart && (
-                      <EditorButton
-                        variant="text"
-                        onClick={() => {
-                          executeProjectAction({ type: "set-walk-start", walkStart: null });
-                          setWalkStartFloor(null);
-                        }}
-                      >
-                        Use automatic start
-                      </EditorButton>
-                    )}
-                  </div>
-                </details>
-              }
-              northControls={
-                <NorthSettingsEditor
-                  value={snapshot.project.home.northAngleDegrees ?? 0}
-                  disabled={editingLocked || unsettled || reference.adjusting}
-                  onEdit={northOrientation.start}
-                />
-              }
-              roof={snapshot.project.home.roof}
-              terrainControls={
-                <TerrainSettingsEditor
-                  value={snapshot.project.home.terrain}
-                  disabled={(snapshot.project.home.apartmentFloor ?? 0) > 0}
-                  onChange={(terrain) =>
-                    executeProjectAction({ type: "update-home-settings", changes: { terrain } })
-                  }
-                />
-              }
-              onRoofChange={(roof) =>
-                executeProjectAction({ type: "update-home-settings", changes: { roof } })
-              }
               editor={constructEditor}
               floorPainting={{
                 finish: floorFinish,

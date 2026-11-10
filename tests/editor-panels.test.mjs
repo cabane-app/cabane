@@ -7,7 +7,7 @@ import { withModules } from "./test-server.mjs";
 import { connectedRuntimeFixture } from "./fixtures/home-assistant.mjs";
 
 await withModules(async (load) => {
-  const { useEditorPanels, editorPanelSelection, editorPanelsBusy } = await load(
+  const { useEditorPanels, editorPropertiesTarget, editorPanelsBusy } = await load(
     "/apps/web/src/editor-workspace/useEditorPanels.ts",
   );
   test("stair placement keeps mobile tools reachable between pointer gestures", () => {
@@ -36,6 +36,9 @@ await withModules(async (load) => {
   });
   const { EditorSelectionDetails } = await load(
     "/apps/web/src/editor-workspace/EditorSelectionDetails.tsx",
+  );
+  const { EditorConstructionSettings } = await load(
+    "/apps/web/src/editor-workspace/EditorConstructionSettings.tsx",
   );
   const { EditorValidationPanel } = await load(
     "/apps/web/src/editor-workspace/EditorValidationPanel.tsx",
@@ -102,7 +105,7 @@ await withModules(async (load) => {
   function Harness({ mode = "construct", busy = false, issues = [issue], shortcuts = false }) {
     editor = useConstructEditor(floor, floor);
     furnishing = useFurnishingEditor(items);
-    const selection = editorPanelSelection(
+    const target = editorPropertiesTarget(
       {
         mode,
         activeFloorId: floor.id,
@@ -112,7 +115,7 @@ await withModules(async (load) => {
       },
       shortcuts,
     );
-    panels = useEditorPanels(selection, busy, issues.length > 0, mode);
+    panels = useEditorPanels(target, busy, issues.length > 0, mode);
     return React.createElement(
       "main",
       { "data-open": panels.propertiesOpen, "data-mobile-panel": panels.mobileSurface },
@@ -162,6 +165,14 @@ await withModules(async (load) => {
         disabled: busy,
         open: panels.propertiesOpen && !shortcuts,
         onCollapse: panels.collapseProperties,
+        constructionSettings: React.createElement(EditorConstructionSettings, {
+          activeFloorId: floor.id,
+          cameraView: "top",
+          constructEditor: editor,
+          snapshot: { project },
+          northOrientation: { start() {} },
+          reference: { storage: {}, setExpanded() {} },
+        }),
       }),
       React.createElement(EditorValidationPanel, {
         issues,
@@ -219,10 +230,35 @@ await withModules(async (load) => {
   test("selection opens properties without stealing focus; collapse survives edits and a different selection reopens", async () => {
     await withDom(async (root, document) => {
       await act(async () => root.render(React.createElement(Harness)));
+      const tools = document.getElementById("tools");
+      const settings = () => document.querySelector('[aria-label="Construction settings"]');
+      const labels = [
+        "Reference plan",
+        "Roof",
+        "North",
+        "Terrain",
+        "Spawn area",
+        "Scale & heights",
+        "Tutorial",
+      ];
+      assert.deepEqual(
+        [...settings().querySelectorAll(".sidebar-section-summary__copy > span")].map(
+          ({ textContent }) => textContent,
+        ),
+        labels,
+      );
+      assert.ok(settings().querySelector('[aria-label="Length per plan unit"]'));
+      assert.ok(settings().querySelector('[aria-label="Default wall height"]'));
+      await act(async () => editor.setTool("door"));
+      assert.match(tools.textContent, /Place a door/);
+      assert.equal(tools.querySelector("details.construction-inspector__floor-disclosure"), null);
+      assert.ok(settings());
+      await act(async () => editor.setTool("select"));
       const anchor = document.getElementById("canvas-focus");
       anchor.focus();
       await act(async () => editor.selectWall(floor.walls[0].id));
       assert.equal(document.querySelector(".selection-details h2").textContent, "Wall");
+      assert.equal(settings(), null);
       assert.equal(document.activeElement, anchor);
       assert.equal(
         document.getElementById("tools").querySelector('[aria-label="Wall height"]'),
@@ -241,7 +277,7 @@ await withModules(async (load) => {
       assert.ok(document.querySelector('.selection-details [aria-label="Opening width"]'));
       assert.equal(document.activeElement, anchor);
       await act(async () => editor.clearSelection());
-      assert.equal(document.querySelector(".selection-details"), null);
+      assert.ok(settings(), "clearing selection restores Construction settings");
       assert.equal(document.querySelector(".editor-properties-toggle"), null);
     });
   });
@@ -249,6 +285,10 @@ await withModules(async (load) => {
     await withDom(async (root) => {
       await act(async () => root.render(React.createElement(Harness)));
       assert.equal(panels.mobileOpen, false);
+      await act(async () => panels.openProperties());
+      assert.equal(panels.mobileSurface, "properties");
+      assert.equal(panels.mobileOpen, true, "Construct settings are available without a selection");
+      await act(async () => panels.closeMobilePanel());
       await act(async () => editor.selectWall(floor.walls[0].id));
       assert.equal(panels.propertiesOpen, true, "desktop still opens Properties on selection");
       assert.equal(panels.mobileOpen, false, "canvas selection leaves the mobile panel closed");
@@ -271,11 +311,12 @@ await withModules(async (load) => {
       assert.equal(panels.mobileOpen, false, "resolved issues do not leave an empty dialog open");
     });
   });
-  test("panel changes wait for drag, drawing or marquee completion, including deselection", async () => {
+  test("the Construct sidebar waits for selection gestures and stays open on deselection", async () => {
     await withDom(async (root, document) => {
       await act(async () => root.render(React.createElement(Harness, { busy: true })));
+      await act(async () => panels.collapseProperties());
       await act(async () => editor.selectWall(floor.walls[0].id));
-      assert.equal(panels.propertiesOpen, false);
+      assert.equal(panels.propertiesOpen, false, "the sidebar waits for the gesture to settle");
       await act(async () => root.render(React.createElement(Harness, { busy: false })));
       assert.equal(panels.propertiesOpen, true);
       await act(async () => root.render(React.createElement(Harness, { busy: true })));
@@ -283,7 +324,8 @@ await withModules(async (load) => {
       assert.equal(panels.propertiesOpen, true);
       assert.equal(document.querySelector("main").getAttribute("data-open"), "true");
       await act(async () => root.render(React.createElement(Harness, { busy: false })));
-      assert.equal(panels.propertiesOpen, false);
+      assert.equal(panels.propertiesOpen, true);
+      assert.ok(document.querySelector('[aria-label="Construction settings"]'));
     });
   });
   test("furniture, devices and groups use the same inspector and retain numeric edits and undo", async () => {

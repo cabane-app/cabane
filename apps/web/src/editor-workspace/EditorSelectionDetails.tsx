@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { SelectionDetailsPanel } from "../editor-chrome/SelectionDetailsPanel";
+import { useState, type ReactNode } from "react";
 import { AddItemReadingDialog } from "../editor-preview/furnish/AddItemReadingDialog";
 import { saveModelLighting } from "../model-lighting/save-model-lighting";
 import { ownerProjectRegistries } from "../project-runtime";
@@ -39,6 +40,7 @@ type Props = Pick<
   | "replaceEditorsFromProject"
 > & {
   open: boolean;
+  constructionSettings?: ReactNode;
   onCollapse: () => void;
   onConnectSlot: (id: string) => void;
   onConnectLighting: (id: string) => void;
@@ -73,6 +75,7 @@ export function EditorSelectionDetails({
   onConnectLighting,
   replaceEditorsFromProject,
   open,
+  constructionSettings,
   onCollapse,
   liveStairIssues,
   disabled,
@@ -139,7 +142,17 @@ export function EditorSelectionDetails({
                 editor={constructEditor}
                 onClose={onCollapse}
               />
-            ) : null)}
+            ) : (
+              <SelectionDetailsPanel
+                mode="construct"
+                title="Construction settings"
+                subtitle={constructEditor.previewFloor.name}
+                label="Construction settings"
+                onClose={onCollapse}
+              >
+                {constructionSettings}
+              </SelectionDetailsPanel>
+            ))}
           {mode === "furnish" &&
             (furnishingEditor.selectedGroup || furnishingEditor.selectedIds.length > 1 ? (
               <SelectedItemsProperties

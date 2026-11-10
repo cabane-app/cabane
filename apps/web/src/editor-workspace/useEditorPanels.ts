@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer } from "react";
 import type { useHomeEditorController } from "./useHomeEditorController";
 
-type SelectionContext = Pick<
+type PropertiesContext = Pick<
   ReturnType<typeof useHomeEditorController>,
   "mode" | "activeFloorId" | "constructEditor" | "stairDialog" | "furnishingEditor"
 >;
@@ -26,12 +26,12 @@ export function editorPanelsBusy(
   );
 }
 
-/** Panel identity follows selection; property edits never reopen a collapsed panel. */
-export function editorPanelSelection(
-  { mode, activeFloorId, constructEditor, stairDialog, furnishingEditor }: SelectionContext,
-  shortcutsMode: boolean,
+/** Panel identity follows the selection or the current Construct floor. */
+export function editorPropertiesTarget(
+  { mode, activeFloorId, constructEditor, stairDialog, furnishingEditor }: PropertiesContext,
+  settingsMode: boolean,
 ): string | null {
-  if (shortcutsMode) return null;
+  if (settingsMode) return null;
   let target: string | null = null;
   if (mode === "construct") {
     const selection = constructEditor.selection;
@@ -44,7 +44,7 @@ export function editorPanelSelection(
             .join("|")
         : selection
           ? `${selection.kind}:${selection.id}`
-          : null;
+          : "settings";
   } else if (mode === "furnish" && furnishingEditor.selectedIds.length) {
     target = [...furnishingEditor.selectedIds].sort().join("|");
   }
@@ -53,7 +53,7 @@ export function editorPanelSelection(
 
 type Surface = "tools" | "properties" | "issues";
 interface PanelState {
-  selection: string | null;
+  target: string | null;
   hasIssues: boolean;
   collapsed: boolean;
   issuesExpanded: boolean;
@@ -62,10 +62,10 @@ interface PanelState {
   context: string;
 }
 type Action =
-  | { type: "selection"; selection: string | null; hasIssues: boolean; context: string }
+  | { type: "target"; target: string | null; hasIssues: boolean; context: string }
   | {
       type: "restore-properties";
-      selection: string | null;
+      target: string | null;
       hasIssues: boolean;
       context: string;
       open: boolean;
@@ -74,8 +74,8 @@ type Action =
   | { type: "properties" | "collapse" | "issues" | "tools" | "show-issues" | "close-mobile" };
 function reduce(state: PanelState, action: Action): PanelState {
   switch (action.type) {
-    case "selection":
-      if (action.selection === state.selection && action.context === state.context)
+    case "target":
+      if (action.target === state.target && action.context === state.context)
         return action.hasIssues === state.hasIssues
           ? state
           : {
@@ -86,15 +86,15 @@ function reduce(state: PanelState, action: Action): PanelState {
             };
       return {
         ...state,
-        selection: action.selection,
+        target: action.target,
         hasIssues: action.hasIssues,
         context: action.context,
         mobileOpen:
           action.context === state.context &&
-          (state.surface !== "properties" || !!action.selection) &&
+          (state.surface !== "properties" || !!action.target) &&
           state.mobileOpen,
         collapsed: false,
-        surface: action.selection
+        surface: action.target
           ? "properties"
           : state.surface === "properties"
             ? "tools"
@@ -103,7 +103,7 @@ function reduce(state: PanelState, action: Action): PanelState {
     case "restore-properties":
       return {
         ...state,
-        selection: action.selection,
+        target: action.target,
         hasIssues: action.hasIssues,
         context: action.context,
         collapsed: !action.open,
@@ -130,33 +130,33 @@ function reduce(state: PanelState, action: Action): PanelState {
 }
 
 export function useEditorPanels(
-  selection: string | null,
+  target: string | null,
   busy: boolean,
   hasIssues = true,
   context = "",
 ) {
   const [state, dispatch] = useReducer(reduce, {
-    selection,
+    target,
     hasIssues,
     collapsed: false,
     issuesExpanded: false,
-    surface: selection ? "properties" : "tools",
+    surface: target ? "properties" : "tools",
     mobileOpen: false,
     context,
   });
-  // Selection changes on pointer-down. Reflow only after the gesture settles.
+  // The target can change on pointer-down. Reflow only after the gesture settles.
   useEffect(() => {
-    if (!busy) dispatch({ type: "selection", selection, hasIssues, context });
-  }, [busy, selection, hasIssues, context]);
+    if (!busy) dispatch({ type: "target", target, hasIssues, context });
+  }, [busy, target, hasIssues, context]);
   const closeMobilePanel = useCallback(() => dispatch({ type: "close-mobile" }), []);
   const restoreProperties = useCallback(
     (open: boolean, mobileOpen: boolean) =>
-      dispatch({ type: "restore-properties", selection, hasIssues, context, open, mobileOpen }),
-    [selection, hasIssues, context],
+      dispatch({ type: "restore-properties", target, hasIssues, context, open, mobileOpen }),
+    [target, hasIssues, context],
   );
   return {
-    propertiesOpen: !!state.selection && !state.collapsed,
-    hasSelection: !!selection,
+    propertiesOpen: !!state.target && !state.collapsed,
+    hasProperties: !!target,
     issuesExpanded: state.issuesExpanded,
     issuesOpen: state.issuesExpanded && state.hasIssues,
     mobileSurface: state.surface,

@@ -36,7 +36,7 @@ export function useReferencePlan(
   const [points, setPoints] = useState<readonly ReferencePoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const viewport = useRef<ReferenceViewport>({ center: [0, 0], width: 15, height: 10 });
   const generation = useRef(0);
   const initialPreference = useRef<{ floorId: string; value: ReferencePreference } | null>(null);
