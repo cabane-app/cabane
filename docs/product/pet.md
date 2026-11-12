@@ -3,31 +3,32 @@
 The web host installs optional scene features through `SceneFeatureDefinition`.
 The engine supplies scene-local building, floor, opening pose, visibility and reduced
 motion inputs. It never imports the Pet package or an animal asset. Features are
-independent from equipped Walk tools and portable project data.
+independent from equipped Walk tools.
 
 `@cabane/pet` exposes `createPetFeature(model)`. Its injected model descriptor owns
 the self-contained GLB URL, walk/idle clip names, scale, collision clearance and
 speed and authored distance per walk cycle. Models must be grounded, use metres and face +Z. No animal name is part of
 the integration. Original GLB materials and animations are retained.
 
-## Host configuration
+## Activation and loading
 
-Set `VITE_PET_MODEL_URL` in the web host environment to install Pet. The current
-host profile uses clips `Walk_TailWag` and `Idle_TailWag`; other profiles can inject
-their clip names through the factory. Without an asset URL, the optional feature
-is not installed. Personal models stay outside Git. For local development:
+**Settings → Shortcuts → Add actions → Call pet** adds an optional shortcut.
+It is absent from defaults. The host exposes only its label, illustrated paw icon
+and lazy component loader. No Pet runtime code or model is loaded until the user
+invokes the configured shortcut. Removing the shortcut unmounts Pet and releases
+animation and GPU resources. Activation is local to the current home session.
+Pet can coexist with the gun and works in orbit and Walk views.
 
-```sh
-# Copy a validated self-contained animated GLB to the ignored folder:
-mkdir -p apps/web/public/personal-pets
-# apps/web/.env.local
-# VITE_PET_MODEL_URL=/personal-pets/pet.glb
-```
+The default animated model lives in `packages/pet/assets/` with its attribution.
+Original photographs and source reference images are not distributed. The model
+descriptor remains injected; custom model selection is not exposed yet.
+The portable shortcut stores only `{kind: "scene-feature", featureId: "pet"}`,
+never a model URL or implementation settings. Hosts without the installation
+show an unavailable action.
 
-In the dashboard scene menu, choose **Enable Pet**. Choose **Disable Pet** to
-unmount it and release its animation and GPU resources. Activation is local to
-the current home session, starts off in another home, and is not saved in portable
-projects. Pet can coexist with the gun and works in orbit and Walk views.
+In Walk, invoking Call pet attracts it toward the visitor for up to ten seconds,
+including across reachable rooms. Repeating the action renews that call without
+reloading the model. Normal same-room greeting and roaming then resume.
 
 ## Movement and limits
 
@@ -51,7 +52,7 @@ platforms and sloped transitions are excluded.
 
 Motion pauses while the document is hidden, scene controls are blocked or reduced
 motion is requested. Assets load only after activation. Load failure stays local
-to the feature and shows `Pet model unavailable`; disabling it still works.
+to the feature and shows `Pet model unavailable`; removing its shortcut still works.
 The model does not intercept house selection or laser hits.
 
 Verification: `tests/pet-roaming.test.mjs` exercises reachability and movement

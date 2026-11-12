@@ -19,6 +19,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorFloorDialog } from "./EditorFloorDialog";
 import { useBuildTutorial } from "../editor-onboarding/useBuildTutorial";
 import { installedWalkTools } from "../walk-tools";
+import { installedSceneFeatures } from "../scene-features";
 import { EditorCompletionDialogs } from "./EditorCompletionDialogs";
 import { EditorSelectionDetails } from "./EditorSelectionDetails";
 import { ConnectInspector } from "../editor-connect/ConnectInspector";
@@ -34,8 +35,7 @@ import { ownerProjectRegistries } from "../project-runtime";
 
 import { stageImportedWorkspace } from "../editor-connect/profile-transfer";
 
-import { ActionBarEditor } from "../editor-action-bar/ActionBarEditor";
-import { ShortcutThumbnailSurface } from "../editor-action-bar/ShortcutDeviceIcon";
+import { ShortcutSettings } from "../editor-action-bar/ShortcutSettings";
 import type { EditorMode } from "../editor-chrome/EditorModeNav";
 import { HomeEditorHeader } from "./HomeEditorHeader";
 import { HomeEditorScene } from "./HomeEditorScene";
@@ -382,25 +382,24 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             onCreatePersonal={props.onCreatePersonal ?? (() => undefined)}
             onBusyChange={setSettingsBusy}
             shortcuts={
-              <ShortcutThumbnailSurface>
-                <ActionBarEditor
-                  walkTools={installedWalkTools}
-                  project={editorProject}
-                  runtime={runtime}
-                  profile={connect.profile}
-                  actionMappingEnabled={!!bindingOrigin && runtime.origin === bindingOrigin}
-                  deviceModels={deviceModels}
-                  roomPictures={roomPictures}
-                  roomNames={roomNames}
-                  deviceNames={deviceNames}
-                  disabled={editingLocked || unsettled || publishOpen || previewOpen}
-                  canUndo={workspace.canUndo && !unsettled}
-                  canRedo={workspace.canRedo && !unsettled}
-                  onUndo={undoProject}
-                  onRedo={redoProject}
-                  onChange={setActionBarItems}
-                />
-              </ShortcutThumbnailSurface>
+              <ShortcutSettings
+                walkTools={installedWalkTools}
+                sceneFeatures={installedSceneFeatures}
+                project={editorProject}
+                runtime={runtime}
+                profile={connect.profile}
+                actionMappingEnabled={!!bindingOrigin && runtime.origin === bindingOrigin}
+                deviceModels={deviceModels}
+                roomPictures={roomPictures}
+                roomNames={roomNames}
+                deviceNames={deviceNames}
+                disabled={editingLocked || unsettled || publishOpen || previewOpen}
+                canUndo={workspace.canUndo && !unsettled}
+                canRedo={workspace.canRedo && !unsettled}
+                onUndo={undoProject}
+                onRedo={redoProject}
+                onChange={setActionBarItems}
+              />
             }
           />
         )}

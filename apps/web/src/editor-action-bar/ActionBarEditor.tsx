@@ -33,6 +33,7 @@ export function ActionBarEditor({
   actionMappingEnabled = false,
   deviceModels,
   walkTools = [],
+  sceneFeatures = [],
   roomPictures,
   roomNames = {},
   deviceNames = {},
@@ -47,6 +48,7 @@ export function ActionBarEditor({
   profile?: RuntimeBindingProfile;
   actionMappingEnabled?: boolean;
   walkTools?: readonly import("@cabane/engine").WalkToolDefinition[];
+  sceneFeatures?: readonly import("@cabane/engine").SceneFeatureDefinition[];
   project: HomeProject;
   deviceModels: DeviceModelRegistry;
   roomPictures: Readonly<Record<string, string | null>>;
@@ -136,6 +138,11 @@ export function ActionBarEditor({
     if (target.kind === "built-in") return actionBarBuiltInLabels[target.action];
     if (target.kind === "walk-tool")
       return walkTools.find((tool) => tool.id === target.toolId)?.label ?? "Unavailable tool";
+    if (target.kind === "scene-feature")
+      return (
+        sceneFeatures.find((feature) => feature.id === target.featureId)?.label ??
+        "Unavailable action"
+      );
     if (target.kind === "room")
       return (
         roomNames[target.roomId] ??
@@ -159,6 +166,10 @@ export function ActionBarEditor({
     if (target.kind === "walk-tool") {
       const tool = walkTools.find((tool) => tool.id === target.toolId);
       return tool ? <tool.Icon /> : <EditorIcon name="devices" />;
+    }
+    if (target.kind === "scene-feature") {
+      const feature = sceneFeatures.find((feature) => feature.id === target.featureId);
+      return feature ? <feature.Icon /> : <EditorIcon name="grid" />;
     }
     if (target.kind === "room")
       return <RoomShortcutIcon name={label(item)} pictureUrl={roomPictures[target.roomId]} />;
@@ -296,6 +307,7 @@ export function ActionBarEditor({
               actionMappingEnabled,
               deviceModels,
               walkTools,
+              sceneFeatures,
               roomPictures,
               roomNames,
               deviceNames,

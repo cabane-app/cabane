@@ -46,6 +46,11 @@ export default function PetScene(props: SceneFeatureProps & { model: PetModel })
   } | null>(null);
   const [failed, setFailed] = useState(false);
   const moving = useRef(false);
+  const callRemaining = useRef(0);
+  useEffect(() => {
+    callRemaining.current = props.invocation ? 10 : 0;
+    invalidate();
+  }, [props.invocation, invalidate]);
   const visitor = useRef(new Vector3());
   useEffect(() => {
     let disposed = false;
@@ -103,12 +108,15 @@ export default function PetScene(props: SceneFeatureProps & { model: PetModel })
   useFrame(({ camera }, delta) => {
     if (!group.current || !roaming || !asset) return;
     camera.getWorldPosition(visitor.current);
+    if (enabled && !reducedMotion)
+      callRemaining.current = Math.max(0, callRemaining.current - Math.min(delta, 0.05));
+    const visitorRoom = roomAtWorldPoint(visitor.current, floor)?.id;
     const attention = roaming.position
       ? petAttention(
           roaming.position,
           visitor.current,
-          roomAtWorldPoint(roaming.position, floor)?.id,
-          roomAtWorldPoint(visitor.current, floor)?.id,
+          callRemaining.current > 0 ? visitorRoom : roomAtWorldPoint(roaming.position, floor)?.id,
+          visitorRoom,
           props.view === "walk",
         )
       : null;

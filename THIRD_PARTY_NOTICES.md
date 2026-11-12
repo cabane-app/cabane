@@ -119,3 +119,14 @@ The workspace library and import dialog use the official Home Assistant SVG mark
 from [Home Assistant frontend](https://github.com/home-assistant/frontend/blob/dev/src/resources/home-assistant-logo-svg.ts)
 to identify Home Assistant connections. The logo is a trademark of the Open Home
 Foundation; see the [official logo guidelines](https://github.com/home-assistant/assets/tree/master/logo).
+
+## Default Pet model
+
+The stylized companion model was generated with Unbound Loop (Tripo Smart Mesh),
+[Unbound Loop](https://loop.unbound.io/), under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), as recorded for the
+free-tier output on November 12, 2026. Changes include fitted skin weights,
+grounding and forward-axis normalization, and custom walking and tail animations.
+The fitted quadruped skeleton derives from the CC0 rig assets in
+[Mesh2Motion](https://github.com/Mesh2Motion/mesh2motion-app).
+Source photos and reference images are not included.

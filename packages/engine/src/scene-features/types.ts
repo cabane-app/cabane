@@ -13,11 +13,14 @@ export interface SceneFeatureProps {
   /** Pause background work when the document is hidden or scene controls are blocked. */
   enabled: boolean;
   reducedMotion: boolean;
+  /** Incremented each time its configured shortcut is invoked. */
+  invocation?: number;
 }
 
 /** Optional host installation, independent from equipped walk tools and project data. */
 export interface SceneFeatureDefinition {
   id: string;
   label: string;
+  Icon: ComponentType;
   Scene: ComponentType<SceneFeatureProps>;
 }

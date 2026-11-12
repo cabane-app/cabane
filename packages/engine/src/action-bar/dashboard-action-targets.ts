@@ -27,7 +27,12 @@ export function resolveDashboardActionTargets(
 ): Readonly<Record<string, ResolvedActionBarTarget>> {
   return Object.fromEntries(
     actionBarItems.flatMap<[string, ResolvedActionBarTarget]>((item) => {
-      if (item.target.kind === "built-in" || item.target.kind === "walk-tool") return [];
+      if (
+        item.target.kind === "built-in" ||
+        item.target.kind === "walk-tool" ||
+        item.target.kind === "scene-feature"
+      )
+        return [];
       if (item.target.kind === "scene" || item.target.kind === "script") {
         const target = resolveHaActionShortcut(item, profile, runtime);
         const pending = pendingHaActions.has(item.id);

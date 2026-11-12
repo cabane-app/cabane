@@ -98,6 +98,22 @@
                             },
                             {
                               "properties": {
+                                "featureId": {
+                                  "optional": false,
+                                  "schema": {
+                                    "type": "string"
+                                  }
+                                },
+                                "kind": {
+                                  "optional": false,
+                                  "schema": {
+                                    "const": "scene-feature"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "properties": {
                                 "kind": {
                                   "optional": false,
                                   "schema": {

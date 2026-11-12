@@ -3,6 +3,7 @@ import test from "node:test";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { JSDOM } from "jsdom";
+import { withStorageDom } from "./dom-test-environment.mjs";
 import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
@@ -324,5 +325,78 @@ await withModules(async (load) => {
       Object.assign(globalThis, previous);
       dom.window.close();
     }
+  });
+  test("scene features are opt-in actions without mounting their scene in the editor", async () => {
+    await withStorageDom(async ({ document }) => {
+      const container = document.createElement("div");
+      document.body.append(container);
+      const root = createRoot(container);
+      let project = projectWithTargets();
+      const feature = {
+        id: "example.pet",
+        label: "Call pet",
+        Icon: () => React.createElement("span", null, "icon"),
+        Scene: () => {
+          throw new Error("Scene must stay lazy in shortcut settings");
+        },
+      };
+      const render = () =>
+        act(async () =>
+          root.render(
+            React.createElement(ActionBarEditor, {
+              ...editorProps,
+              project,
+              sceneFeatures: [feature],
+              disabled: false,
+              onChange: (items) => {
+                project = { ...project, actionBar: { items } };
+              },
+            }),
+          ),
+        );
+      const click = (label) =>
+        act(async () => {
+          const button = [...document.querySelectorAll("button")].find(
+            (node) => node.getAttribute("aria-label") === label || node.textContent === label,
+          );
+          assert.ok(button, label);
+          button.click();
+        });
+      try {
+        await render();
+        assert.equal(document.querySelector('[aria-label="Edit Call pet shortcut"]'), null);
+        await click("Add shortcut");
+        await click("Add action");
+        await click("Call pet");
+        assert.deepEqual(project.actionBar.items.at(-1).target, {
+          kind: "scene-feature",
+          featureId: "example.pet",
+        });
+        await render();
+        assert.ok(document.querySelector('[aria-label="Edit Call pet shortcut"]'));
+        await click("Add shortcut");
+        await click("Add action");
+        assert.equal(document.querySelector('[aria-label="Call pet"]').disabled, true);
+        const duplicate = edits.replaceActionBarItem(
+          project.actionBar.items,
+          null,
+          { kind: "scene-feature", featureId: "example.pet" },
+          () => "duplicate",
+        );
+        assert.equal(duplicate, project.actionBar.items);
+        await click("Close choices");
+        await click("Edit Call pet shortcut");
+        await click("Remove shortcut");
+        await render();
+        assert.equal(document.querySelector('[aria-label="Edit Call pet shortcut"]'), null);
+        await click("Restore defaults");
+        assert.equal(
+          project.actionBar.items.some((item) => item.target.kind === "scene-feature"),
+          false,
+        );
+      } finally {
+        await act(async () => root.unmount());
+      }
+    });
   });
 });

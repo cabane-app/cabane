@@ -1,3 +1,4 @@
+import { ExtensionActionSlot } from "./action-bar/ExtensionActionSlot";
 import { OrbitViewMenu } from "./action-bar/OrbitViewMenu";
 import { SceneActionButton } from "./action-bar/SceneActionButton";
 import { SceneActionGroup } from "./action-bar/SceneActionGroup";
@@ -207,6 +208,8 @@ export function clampActionTrayLeft(
 
 export function SceneActionBar({
   walkTools = [],
+  sceneFeatures = [],
+  activeSceneFeatureIds,
   items = resolveActionBarItems(undefined, walkTools),
   targets = {},
   activeWalkToolId,
@@ -235,6 +238,8 @@ export function SceneActionBar({
   items?: readonly ActionBarItem[];
   walkTools?: readonly import("./walk-tools").WalkToolDefinition[] | undefined;
   activeWalkToolId?: string | null;
+  sceneFeatures?: readonly import("./scene-features/types").SceneFeatureDefinition[] | undefined;
+  activeSceneFeatureIds?: ReadonlySet<string>;
   targets?: Readonly<Record<string, ResolvedActionBarTarget>>;
   renderDeviceIcon?: ((modelId: string) => ReactNode) | undefined;
   roofVisible?: boolean;
@@ -430,33 +435,17 @@ export function SceneActionBar({
     );
   };
   const renderItem = (item: ActionBarItem) => {
-    if (item.target.kind === "walk-tool") {
-      const toolId = item.target.toolId;
-      const tool = walkTools.find((tool) => tool.id === toolId);
-      const active = activeWalkToolId === toolId;
+    if (item.target.kind === "walk-tool" || item.target.kind === "scene-feature")
       return (
-        <button
+        <ExtensionActionSlot
           key={item.id}
-          type="button"
-          className={`scene-action-slot is-filled ${active ? "is-active" : ""}`}
-          aria-label={tool ? `${active ? "Unequip" : "Equip"} ${tool.label}` : "Unavailable tool"}
-          aria-pressed={active}
-          aria-keyshortcuts={tool?.shortcutKey}
-          title={mode === "walk" ? tool?.label : "Enter Walk mode to equip this tool"}
-          disabled={!tool || mode !== "walk"}
-          onClick={() => {
+          {...{ item, walkTools, sceneFeatures, mode, activeWalkToolId, activeSceneFeatureIds }}
+          onAction={(item) => {
             setOverflowOpen(false);
             onAction(item);
           }}
-        >
-          <SceneActionSlotFace
-            label={tool?.label ?? "Unavailable"}
-            shortcut={tool?.shortcutKey}
-            icon={tool ? <tool.Icon /> : null}
-          />
-        </button>
+        />
       );
-    }
     if (item.target.kind !== "built-in") {
       const target = targets[item.id] ?? {
         label: `Unavailable ${item.target.kind}`,

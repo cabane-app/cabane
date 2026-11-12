@@ -45,7 +45,7 @@ areas:
     code: [apps/web/src/walk-tools.ts, packages/walk-laser/src/, packages/engine/src/walk-tools/]
     docs: [docs/product/dashboard-and-cameras.md#walk-tool-extensions]
   scene_features:
-    code: [apps/web/src/scene-features.ts, packages/engine/src/scene-features/, packages/pet/src/]
+    code: [apps/web/src/scene-features.tsx, packages/engine/src/scene-features/, packages/pet/src/]
     docs: [docs/product/pet.md]
   agent_relay:
     code: [apps/agent-cli/src/, apps/web/src/agent-pilot/]

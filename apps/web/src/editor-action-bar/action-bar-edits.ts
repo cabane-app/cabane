@@ -6,9 +6,11 @@ const sameTarget = (a: ActionBarItem["target"], b: ActionBarItem["target"]): boo
     ? a.action === b.action
     : a.kind === "walk-tool" && b.kind === "walk-tool"
       ? a.toolId === b.toolId
-      : a.kind === "room" && b.kind === "room"
-        ? a.roomId === b.roomId
-        : a.kind === "device" && b.kind === "device" && a.deviceId === b.deviceId);
+      : a.kind === "scene-feature" && b.kind === "scene-feature"
+        ? a.featureId === b.featureId
+        : a.kind === "room" && b.kind === "room"
+          ? a.roomId === b.roomId
+          : a.kind === "device" && b.kind === "device" && a.deviceId === b.deviceId);
 
 export function replaceActionBarItem(
   items: readonly ActionBarItem[],

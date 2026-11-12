@@ -230,6 +230,7 @@
     "description": "Shared contracts and integration coverage required by every focused group.",
     "tests": [
       "action-bar-editor.test.mjs",
+      "action-bar-scene-features.test.mjs",
       "action-bar-navigation.test.mjs",
       "agent-action-contract.test.mjs",
       "agent-editor-actions.test.mjs",

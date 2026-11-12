@@ -160,6 +160,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
       : undefined;
   const sceneControlsBlocked = setupOpen || mappingOpen || deviceOverlay || Boolean(selectedCamera);
   const toolInputEnabled = documentVisible && !sceneControlsBlocked;
+  const actionBarItems = resolvePublishedActionBarItems(manifest.actionBar, props.walkTools);
   const sceneFeatures = useSceneFeatures(
     manifest.home.id,
     props.sceneFeatures,
@@ -173,8 +174,8 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
       reducedMotion,
     },
     !walkthrough,
+    actionBarItems,
   );
-  const actionBarItems = resolvePublishedActionBarItems(manifest.actionBar, props.walkTools);
   const overlayStatuses = useMemo(
     () => filterOverlayStatuses(roomStatuses, overlayPreferences),
     [roomStatuses, overlayPreferences],
@@ -521,7 +522,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                         <span>Retry connection</span>
                       </button>
                     )}
-                    {sceneFeatures.menuItems}
                     {settingsMenuItem}
                     <ProjectSupportMenuItems />
                     {!demoSession &&
@@ -676,6 +676,8 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
               }}
               items={actionBarItems}
               walkTools={props.walkTools}
+              sceneFeatures={props.sceneFeatures}
+              activeSceneFeatureIds={sceneFeatures.activeIds}
               activeWalkToolId={walkMode ? equippedToolId : null}
               targets={actionBarTargets}
               renderDeviceIcon={props.renderActionBarDeviceIcon}
@@ -697,7 +699,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
               wallFade={wallFadeEnabled}
               allLightsEnabled={runtime.canMutate && Boolean(allLightsCall) && !allLightsBusy}
               allLightsBusy={allLightsBusy}
-              onAction={runConfiguredAction}
+              onAction={sceneFeatures.actionHandler(runConfiguredAction)}
               onChildAction={runAction}
             />
           )}

@@ -1,9 +1,9 @@
 {
-  "revision": 44,
-  "fingerprint": "a4bc39df2d2ebc0a6cdbfe2923a015b38fff7068669267d22d3956c83f9b874d",
-  "summary": "Add hinged garden gates to the Door tool",
+  "revision": 45,
+  "fingerprint": "40c8254dc391e0a5d680dc4bb21e6bf6dce5d78d0c4373173d1f1a6df5a62b6b",
+  "summary": "Add opt-in scene-feature shortcuts identified by stable feature IDs",
   "breakingChanges": [
-    "Existing doors remain compatible. Workspaces using the new garden gate styles require an updated Cabane frontend and matching Home Assistant panel."
+    "Older clients reject projects containing scene-feature action-bar targets and must update before importing them. Existing projects without these shortcuts are unchanged."
   ],
   "history": [
     {
@@ -305,6 +305,13 @@
       "summary": "Allow fireplace connections to Home Assistant thermostats",
       "breakingChanges": [
         "Workspaces with a newly placed fireplace or a fireplace connected to a climate entity require the updated frontend and Home Assistant panel. Existing fireplaces keep their slot IDs and mappings."
+      ]
+    },
+    {
+      "revision": 44,
+      "summary": "Add hinged garden gates to the Door tool",
+      "breakingChanges": [
+        "Existing doors remain compatible. Workspaces using the new garden gate styles require an updated Cabane frontend and matching Home Assistant panel."
       ]
     }
   ],

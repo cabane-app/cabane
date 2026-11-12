@@ -34,6 +34,9 @@ export function validateActionBarSchema(
         } else if (target.kind === "walk-tool") {
           keys(target, ["kind", "toolId"], targetPath, issues);
           string(target.toolId, `${targetPath}.toolId`, issues);
+        } else if (target.kind === "scene-feature") {
+          keys(target, ["kind", "featureId"], targetPath, issues);
+          string(target.featureId, `${targetPath}.featureId`, issues);
         } else if (target.kind === "room") {
           keys(target, ["kind", "roomId"], targetPath, issues);
           string(target.roomId, `${targetPath}.roomId`, issues);

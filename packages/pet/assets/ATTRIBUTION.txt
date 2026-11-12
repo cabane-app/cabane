@@ -1,0 +1,10 @@
+Maika — stylized pet dog model
+
+Base model generated with Unbound Loop (Tripo Smart Mesh), from the user-provided stylized reference of Maika.
+Service: https://loop.unbound.io/
+Free-tier output attribution: Unbound Loop. CC BY 4.0, as stated on the service pricing page on November 12, 2026.
+License: https://creativecommons.org/licenses/by/4.0/
+
+Animated version modifications: fitted 53-joint quadruped skeleton, skin weights, grounding and forward-axis normalization, custom walk and tail-wag animations. Original shape, mesh topology, texture and material retained.
+Mesh2Motion rig assets are CC0; Mesh2Motion code is MIT licensed. https://github.com/Mesh2Motion/mesh2motion-app
+Custom animation and model-specific fitting created for this Maika model.

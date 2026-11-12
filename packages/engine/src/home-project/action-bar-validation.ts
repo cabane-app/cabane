@@ -10,11 +10,13 @@ const targetKey = (item: ActionBarItem): string => {
     ? `built-in:${target.action}`
     : target.kind === "walk-tool"
       ? `walk-tool:${target.toolId}`
-      : target.kind === "room"
-        ? `room:${target.roomId}`
-        : target.kind === "device"
-          ? `device:${target.deviceId}`
-          : `ha-action:${item.id}`;
+      : target.kind === "scene-feature"
+        ? `scene-feature:${target.featureId}`
+        : target.kind === "room"
+          ? `room:${target.roomId}`
+          : target.kind === "device"
+            ? `device:${target.deviceId}`
+            : `ha-action:${item.id}`;
 };
 
 export function isActionBarDeviceNavigable(

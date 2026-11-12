@@ -13,6 +13,7 @@ import {
   type DeviceModelRegistry,
   type EntityId,
   type WalkToolDefinition,
+  type SceneFeatureDefinition,
 } from "@cabane/engine";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
 import { ShortcutDeviceIcon } from "./ShortcutDeviceIcon";
@@ -25,6 +26,7 @@ type Props = {
   actionMappingEnabled: boolean;
   deviceModels: DeviceModelRegistry;
   walkTools: readonly WalkToolDefinition[];
+  sceneFeatures?: readonly SceneFeatureDefinition[];
   roomPictures: Readonly<Record<string, string | null>>;
   roomNames: Readonly<Record<string, string>>;
   deviceNames: Readonly<Record<string, string>>;
@@ -46,6 +48,7 @@ export function ShortcutPicker({
   actionMappingEnabled,
   deviceModels,
   walkTools,
+  sceneFeatures = [],
   roomPictures,
   roomNames,
   deviceNames,
@@ -195,6 +198,26 @@ export function ShortcutPicker({
                   </span>
                   <strong>{tool.label}</strong>
                   <small>Walk mode</small>
+                </button>
+              );
+            })}
+        {picker.kind === "built-in" &&
+          sceneFeatures
+            .filter((feature) => matching(feature.label))
+            .map((feature) => {
+              const target = { kind: "scene-feature" as const, featureId: feature.id };
+              return (
+                <button
+                  key={feature.id}
+                  type="button"
+                  aria-label={feature.label}
+                  disabled={disabled || duplicate(target)}
+                  onClick={() => choose(target)}
+                >
+                  <span className="shortcuts-picker__icon">
+                    <feature.Icon />
+                  </span>
+                  <strong>{feature.label}</strong>
                 </button>
               );
             })}
