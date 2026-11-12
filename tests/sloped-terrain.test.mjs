@@ -411,9 +411,18 @@ await withModules(async (load) => {
     }
   });
 
-  test("doorway thresholds clear the supporting basement facade on their top and outer face", async () => {
+  test("doorway thresholds clear adjacent deck finishes and the supporting basement facade", async () => {
     const project = exitProject();
     const floor = project.floors[0];
+    floor.outdoorPlatforms = [
+      {
+        id: "entrance-deck",
+        polygon: rectangle(0, -2, 8, 2),
+        defaultEdge: { kind: "open" },
+        edges: [0, 1, 2, 3].map((index) => ({ id: `deck-edge-${index}` })),
+        finish: { kind: "preset", preset: "light-oak" },
+      },
+    ];
     project.floors.unshift(projectWithGarage().floors[0]);
     for (const level of project.floors) {
       level.floorToFloorHeightMeters = 2.8;
@@ -460,7 +469,7 @@ await withModules(async (load) => {
             (hit) =>
               hit.object !== threshold && Math.abs(hit.distance - thresholdHit.distance) < 0.0001,
           ),
-          "no facade face may share the visible threshold surface and flicker",
+          "no deck or facade face may share the visible threshold surface and flicker",
         );
       }
     } finally {

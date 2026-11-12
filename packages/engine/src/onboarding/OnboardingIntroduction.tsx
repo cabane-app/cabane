@@ -135,6 +135,20 @@ function PreviewControls({ preview }: { preview: OnboardingPreviewControls }) {
     <div className="onboarding-preview-controls" role="group" aria-label="Demo camera">
       <button
         type="button"
+        aria-pressed={preview.mode === "orbit"}
+        onClick={() => preview.setMode("orbit")}
+      >
+        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+          <circle cx="10" cy="10" r="3" />
+          <ellipse cx="10" cy="10" rx="8" ry="4" transform="rotate(-26 10 10)" />
+        </svg>
+        Orbit
+        <span aria-hidden="true" className="onboarding-preview-progress">
+          {preview.mode === "orbit" && <span ref={preview.progressRef} />}
+        </span>
+      </button>
+      <button
+        type="button"
         aria-pressed={preview.mode === "walk"}
         onClick={() => preview.setMode("walk")}
         disabled={preview.walkAvailable === false}
@@ -146,20 +160,6 @@ function PreviewControls({ preview }: { preview: OnboardingPreviewControls }) {
         Walk
         <span aria-hidden="true" className="onboarding-preview-progress">
           {preview.mode === "walk" && <span ref={preview.progressRef} />}
-        </span>
-      </button>
-      <button
-        type="button"
-        aria-pressed={preview.mode === "orbit"}
-        onClick={() => preview.setMode("orbit")}
-      >
-        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-          <circle cx="10" cy="10" r="3" />
-          <ellipse cx="10" cy="10" rx="8" ry="4" transform="rotate(-26 10 10)" />
-        </svg>
-        Orbit
-        <span aria-hidden="true" className="onboarding-preview-progress">
-          {preview.mode === "orbit" && <span ref={preview.progressRef} />}
         </span>
       </button>
       <button
