@@ -12,8 +12,11 @@ import { useBottomSheetDrag } from "./useBottomSheetDrag";
 import { useRoomHeroParallax } from "./useRoomHeroParallax";
 
 import { RoomCleanAction } from "./RoomCleanAction";
+import { HaRoomDashboard } from "../room-dashboards/HaRoomDashboard";
+import type { RoomDashboardSettings } from "../room-dashboards/room-dashboard";
 
 export interface RoomControlSheetProps {
+  dashboardSettings?: RoomDashboardSettings | undefined;
   cleaningAreaId?: string | undefined;
   homeId?: string;
   resolved: ResolvedRoomBindings;
@@ -108,6 +111,7 @@ function ConnectionProblem({
 }
 
 export function RoomControlSheet({
+  dashboardSettings,
   homeId = "default",
   cleaningAreaId,
   resolved,
@@ -130,6 +134,10 @@ export function RoomControlSheet({
   const dom = useCabaneDom();
   const outsideRooms = roomStatus === undefined;
   const roomOverview = !deviceOverlay && !outsideRooms;
+  const [cabaneControlsRoom, setCabaneControlsRoom] = useState<string | null>(null);
+  const hasHaDashboard = roomOverview && dashboardSettings?.controls === "home-assistant";
+  const showHaDashboard =
+    hasHaDashboard && !selectedDeviceId && cabaneControlsRoom !== resolved.room.id;
   const modules = useMemo(() => buildRoomModules(resolved), [resolved]);
   const overviewModules = useMemo(() => roomOverviewModules(modules), [modules]);
   const { ordered, move } = useRoomModuleOrder(homeId, resolved.room.id, overviewModules);
@@ -267,6 +275,7 @@ export function RoomControlSheet({
         data-expanded={sheetDrag.expanded ? "true" : "false"}
         data-device-overlay={deviceOverlay ? "true" : "false"}
         data-outside-rooms={outsideRooms ? "true" : undefined}
+        data-ha-dashboard={showHaDashboard ? "true" : undefined}
         role={deviceOverlay ? "dialog" : undefined}
         style={sheetDrag.style}
       >
@@ -287,7 +296,7 @@ export function RoomControlSheet({
             </h1>
           )}
           <div className="room-control-sheet__actions">
-            {roomOverview && !focused && overviewModules.length > 1 && (
+            {roomOverview && !showHaDashboard && !focused && overviewModules.length > 1 && (
               <button
                 type="button"
                 className="room-control-sheet__walk"
@@ -389,54 +398,78 @@ export function RoomControlSheet({
           <div className="room-control-sheet__content">
             <ConnectionProblem status={status} onReconnect={onReconnect} onRetry={onRetry} />
 
-            {reordering ? (
-              <RoomModuleReorder modules={ordered} onMove={move} />
-            ) : selectedModule ? (
-              <div className="room-control-sheet__grid is-focused">
-                <RoomModule
-                  module={selectedModule}
-                  canMutate={canMutate}
-                  focused
-                  onCallService={onCallService}
-                  onOpenLiveFeed={
-                    selectedModule.deviceSlotId &&
-                    liveCameraDeviceIds.has(selectedModule.deviceSlotId)
-                      ? () => onOpenLiveFeed?.(selectedModule.deviceSlotId!)
-                      : undefined
-                  }
-                />
-              </div>
-            ) : overviewModules.length > 0 ? (
-              <div className="room-control-sheet__grid">
-                {ordered.map((module) => (
-                  <RoomModule
-                    key={module.id}
-                    module={module}
-                    canMutate={canMutate}
-                    focused={false}
-                    onCallService={onCallService}
-                    onOpenLiveFeed={
-                      module.deviceSlotId && liveCameraDeviceIds.has(module.deviceSlotId)
-                        ? () => onOpenLiveFeed?.(module.deviceSlotId!)
-                        : undefined
-                    }
-                  />
-                ))}
-              </div>
+            {showHaDashboard && dashboardSettings ? (
+              <HaRoomDashboard
+                key={resolved.room.id}
+                settings={dashboardSettings}
+                areaId={cleaningAreaId}
+                roomName={resolved.displayName}
+                onCabaneControls={() => setCabaneControlsRoom(resolved.room.id)}
+              />
             ) : (
-              <section className="room-control-sheet__empty">
-                <h2>No controls connected</h2>
-                <p>
-                  {outsideRooms
-                    ? "Connect devices placed outside rooms on this floor to use their controls."
-                    : "This room can stay empty, or you can choose controls for it."}
-                </p>
-                {onConnectDevices && (
-                  <button type="button" onClick={onConnectDevices}>
-                    Connect devices
+              <>
+                {hasHaDashboard && !focused && (
+                  <button
+                    type="button"
+                    className="room-dashboard-return"
+                    onClick={() => {
+                      setReorderingRoom(null);
+                      setCabaneControlsRoom(null);
+                    }}
+                  >
+                    Show Home Assistant dashboard
                   </button>
                 )}
-              </section>
+                {reordering ? (
+                  <RoomModuleReorder modules={ordered} onMove={move} />
+                ) : selectedModule ? (
+                  <div className="room-control-sheet__grid is-focused">
+                    <RoomModule
+                      module={selectedModule}
+                      canMutate={canMutate}
+                      focused
+                      onCallService={onCallService}
+                      onOpenLiveFeed={
+                        selectedModule.deviceSlotId &&
+                        liveCameraDeviceIds.has(selectedModule.deviceSlotId)
+                          ? () => onOpenLiveFeed?.(selectedModule.deviceSlotId!)
+                          : undefined
+                      }
+                    />
+                  </div>
+                ) : overviewModules.length > 0 ? (
+                  <div className="room-control-sheet__grid">
+                    {ordered.map((module) => (
+                      <RoomModule
+                        key={module.id}
+                        module={module}
+                        canMutate={canMutate}
+                        focused={false}
+                        onCallService={onCallService}
+                        onOpenLiveFeed={
+                          module.deviceSlotId && liveCameraDeviceIds.has(module.deviceSlotId)
+                            ? () => onOpenLiveFeed?.(module.deviceSlotId!)
+                            : undefined
+                        }
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <section className="room-control-sheet__empty">
+                    <h2>No controls connected</h2>
+                    <p>
+                      {outsideRooms
+                        ? "Connect devices placed outside rooms on this floor to use their controls."
+                        : "This room can stay empty, or you can choose controls for it."}
+                    </p>
+                    {onConnectDevices && (
+                      <button type="button" onClick={onConnectDevices}>
+                        Connect devices
+                      </button>
+                    )}
+                  </section>
+                )}
+              </>
             )}
           </div>
         </div>

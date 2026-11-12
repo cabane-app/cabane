@@ -1,0 +1,121 @@
+.room-dashboard-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.room-panel-choice legend {
+  margin: 0 0 8px;
+  padding: 0;
+  font:
+    600 18px/1.4 Roboto,
+    sans-serif;
+}
+.room-panel-choice {
+  min-width: 0;
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+}
+.room-panel-choice > p {
+  margin-bottom: 14px;
+}
+.room-dashboard-settings .room-panel-choice__option {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #d8d7cb;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.room-panel-choice__option:has(:checked) {
+  background: #dce8e8;
+  border-color: #365f6c;
+}
+.room-panel-choice__option input {
+  margin: 3px 0 0;
+  accent-color: #365f6c;
+}
+.room-panel-choice__option input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  padding: 0;
+}
+.room-panel-choice legend,
+.room-panel-choice__option strong {
+  color: #2e3835;
+}
+.room-panel-choice__option strong {
+  display: block;
+  font-weight: 600;
+}
+.room-panel-choice__option small {
+  display: block;
+  margin-top: 3px;
+  color: #58675e;
+  font:
+    400 13px/1.45 Roboto,
+    sans-serif;
+}
+.room-dashboard-settings__view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 18px;
+  margin-top: 4px;
+  border-top: 1px solid #d8d7cb;
+}
+.room-dashboard-settings__view > label:not(:first-child) {
+  margin-top: 8px;
+}
+.room-dashboard-settings label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font:
+    500 14px/1.5 Roboto,
+    sans-serif;
+}
+.room-dashboard-settings :is(select, input[type="text"]) {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 10px;
+  color: #2e3835;
+  background: #fffcf6;
+  border: 1px solid #bfc6b9;
+  border-radius: 8px;
+  font:
+    400 14px/1.4 Roboto,
+    sans-serif;
+}
+.room-dashboard-settings p {
+  margin: 0;
+  color: #58675e;
+  font:
+    400 14px/1.5 Roboto,
+    sans-serif;
+}
+.room-dashboard-settings p[role="alert"] {
+  color: #914c37;
+}
+.room-dashboard-settings :is(a, button) {
+  color: #365f6c;
+  font:
+    500 14px/1.5 Roboto,
+    sans-serif;
+}
+.room-dashboard-settings button {
+  padding: 8px 12px;
+  margin-top: 8px;
+  background: #e9ece2;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.room-dashboard-settings :is(select, input, button, a):focus-visible {
+  outline: 2px solid #365f6c;
+  outline-offset: 2px;
+}

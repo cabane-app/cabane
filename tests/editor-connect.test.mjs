@@ -129,6 +129,52 @@ await withModules(async (load) => {
     };
   }
 
+  test("room dashboard choices stage private draft changes without replacing areas, devices or publication", async () => {
+    const harness = await mount(undefined, true);
+    try {
+      const roomId = manifest.floors[0].rooms[0].id;
+      await act(async () => harness.editor.selectRoom(roomId));
+      const before = structuredClone(harness.bindings);
+      const settings = { controls: "home-assistant", view: "automatic", appearance: "cabane" };
+      const radio = harness.dom.window.document.querySelector(
+        'input[type="radio"][value="home-assistant"]',
+      );
+      assert.ok(radio);
+      await act(async () => radio.click());
+      assert.deepEqual(harness.bindings[origin].draft.roomDashboards[roomId], settings);
+      assert.deepEqual(
+        harness.bindings[origin].draft.roomAreaIds,
+        before[origin].draft.roomAreaIds,
+      );
+      assert.deepEqual(
+        harness.bindings[origin].draft.entityIdsBySlotId,
+        before[origin].draft.entityIdsBySlotId,
+      );
+      assert.deepEqual(harness.bindings[origin].published, before[origin].published);
+      assert.match(harness.dom.window.document.body.textContent, /Cabane room controls/);
+      const appearance = [...harness.dom.window.document.querySelectorAll("select")].find(
+        (select) => [...select.options].some((option) => option.text === "Cabane palette"),
+      );
+      assert.equal(appearance.value, "cabane");
+      await act(async () =>
+        harness.editor.setRoomDashboard({ ...settings, appearance: "original" }),
+      );
+      await act(async () =>
+        harness.editor.setRoomDashboard({
+          ...settings,
+          controls: "cabane",
+          appearance: "original",
+        }),
+      );
+      await act(async () => radio.click());
+      assert.equal(harness.editor.profile.roomDashboards[roomId].appearance, "original");
+      await harness.setBindings(before);
+      assert.equal(harness.editor.profile.roomDashboards, undefined);
+    } finally {
+      await harness.close();
+    }
+  });
+
   test("Arrange and Connect slot entry can choose classless smart outlets and retain their mappings", async () => {
     const floor = manifest.floors[0];
     const room = { ...floor.rooms[0] };

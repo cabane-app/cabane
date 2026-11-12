@@ -1,5 +1,24 @@
 # Home dashboard, controls, and cameras
 
+Rooms can opt into an existing HA dashboard view through Connect → Room controls.
+The native HA panel embeds the selected view at the host's exact origin and hides
+its duplicate navigation. Automatic chooses the room page for the mapped HA area;
+custom views require an explicit choice. The room header, Walk, cleaning and Close
+remain Cabane actions. Device shortcuts still open Cabane's focused device controls.
+**Show Cabane room controls** provides a temporary fallback, with a return action to the
+HA dashboard; it does not rewrite the saved preference. Standalone Cabane provides
+an **Open in HA** link and the same fallback, because it cannot style a different
+origin's dashboard. Draft previews never embed live HA controls. On compact portrait
+screens the HA dashboard uses a taller 74% sheet, a compact room header, and space
+above the action dock so its own scrollable controls remain reachable.
+
+HA owns its embedded cards, dialogs and device commands. Original styling or local
+Cabane theme overrides leave the saved dashboard and global HA theme unchanged.
+The frame and its observers are released when leaving the room or losing the
+connection. Loading failures offer Retry, Open in HA and Cabane controls. Theme and
+navigation overrides depend on HA frontend markup; unknown custom cards keep their
+own behavior and may keep their own appearance.
+
 Home presents an orbital overview, room details, and walk mode. Orbital and editor 3D
 wheel zoom responds immediately to normalized scroll distance, preserving the point
 under the cursor. Small trackpad deltas stay precise; mouse-wheel steps use a

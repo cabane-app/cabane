@@ -2,6 +2,7 @@ export { SceneActivityPulse } from "./SceneActivityPulse";
 export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";
 export * from "./types";
+export { RoomDashboardSettings } from "./room-dashboards/RoomDashboardSettings";
 export { isAuxiliaryEntitySlot } from "./entity-slot-roles";
 export * from "./walk-tools";
 export * from "./action-bar/action-bar-config";

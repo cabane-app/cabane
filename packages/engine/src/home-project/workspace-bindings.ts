@@ -6,6 +6,7 @@ import {
 import type { HomeBindingManifest, RuntimeBindingProfile } from "../types";
 import type { HomeProjectIssue } from "./validation";
 import { isPlainRecord } from "./validation-types";
+import { retainRoomDashboards } from "../room-dashboards/room-dashboard";
 
 export interface WorkspaceBindingState {
   draft: RuntimeBindingProfile;
@@ -18,6 +19,7 @@ export interface WorkspaceBindingState {
 export type WorkspaceBindings = Readonly<Record<string, WorkspaceBindingState>>;
 
 const PROFILE_KEYS = new Set([
+  "roomDashboards",
   "weatherSource",
   "schemaVersion",
   "homeId",
@@ -289,6 +291,7 @@ export const reconcileWorkspaceBindings = (
               : {}),
             schemaVersion: state.draft.schemaVersion,
             homeId: state.draft.homeId,
+            ...retainRoomDashboards(state.draft.roomDashboards, roomIds),
             roomAreaIds: retainedRooms,
             entityIdsBySlotId: retainedSlots,
             ...(state.draft.actionEntityIdsByShortcutId

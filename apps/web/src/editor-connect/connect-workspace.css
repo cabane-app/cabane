@@ -106,6 +106,69 @@
   min-width: 0;
   min-height: 0;
 }
+.connect-room-controls {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  max-width: 680px;
+  padding: 20px 24px;
+  background: var(--preview-paper);
+  border-radius: 16px;
+}
+.connect-room-area {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 16px 0;
+  font:
+    500 14px/1.5 Roboto,
+    sans-serif;
+}
+.connect-room-area select {
+  min-height: 42px;
+  width: 100%;
+  padding: 9px 10px;
+  background: #fffcf6;
+  color: #2e3835;
+  border: 1px solid #bfc6b9;
+  border-radius: 8px;
+  font: inherit;
+}
+.connect-room-controls .connect-room-area-copy {
+  margin: -6px 0 16px;
+  color: #58675e;
+  font:
+    400 13px/1.5 Roboto,
+    sans-serif;
+}
+.connect-room-controls-button {
+  min-height: 42px;
+  margin-bottom: 12px;
+  padding: 9px 10px;
+  color: #365f6c;
+  background: #fffcf6;
+  border: 0;
+  border-radius: 8px;
+  font:
+    500 14px/1.5 Roboto,
+    sans-serif;
+  cursor: pointer;
+  text-align: left;
+}
+.connect-room-controls-button[aria-pressed="true"] {
+  background: #dce8e8;
+}
+.connect-room-controls .connection-mobile-back {
+  display: none;
+}
+@media (max-width: 760px) {
+  .connect-room-controls .connection-mobile-back {
+    display: inline-flex;
+  }
+  .connect-room-view[data-device-open="true"] .connect-room-controls {
+    display: block;
+  }
+}
 .connect-device-rail {
   display: flex;
   flex-direction: column;

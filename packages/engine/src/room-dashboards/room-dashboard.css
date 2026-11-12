@@ -1,0 +1,90 @@
+.ha-room-dashboard {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 12px;
+}
+.ha-room-dashboard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.room-dashboard-return,
+.ha-room-dashboard__actions :is(button, a),
+.ha-room-dashboard__notice button {
+  padding: 8px 10px;
+  border: 1px solid #cbd2c7;
+  border-radius: 8px;
+  background: #fffcf6;
+  color: #365f6c;
+  font:
+    500 13px/1.4 Roboto,
+    sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+}
+.room-dashboard-return {
+  margin-bottom: 12px;
+}
+.ha-room-dashboard :is(button, a):focus-visible {
+  outline: 2px solid #365f6c;
+  outline-offset: 2px;
+}
+.ha-room-dashboard__notice {
+  color: #58675e;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ha-room-dashboard__frame {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #fbf9f2;
+}
+.ha-room-dashboard__frame[hidden] {
+  display: none;
+}
+.cabane-shell.mode-room
+  > .room-control-sheet[data-ha-dashboard="true"][data-device-overlay="false"]
+  .room-control-sheet__scroll {
+  display: flex;
+  flex-direction: column;
+}
+.cabane-shell.mode-room
+  > .room-control-sheet[data-ha-dashboard="true"][data-device-overlay="false"]
+  .room-control-sheet__hero {
+  position: relative;
+  height: auto;
+  min-height: 0;
+  flex-shrink: 0;
+}
+.cabane-shell.mode-room
+  > .room-control-sheet[data-ha-dashboard="true"][data-device-overlay="false"]
+  .room-control-sheet__title
+  h1 {
+  font-size: 1.6rem;
+}
+.cabane-shell.mode-room
+  > .room-control-sheet[data-ha-dashboard="true"][data-device-overlay="false"]
+  .room-control-sheet__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: 12px 12px 0 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+@container (max-width: 699px) {
+  .cabane-shell.mode-room
+    > .room-control-sheet[data-ha-dashboard="true"][data-device-overlay="false"] {
+    height: 74dvh;
+    top: auto;
+    bottom: 0;
+  }
+}
