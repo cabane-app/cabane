@@ -156,6 +156,15 @@ await withModules(async (load) => {
     }, "https://ha.fixture.test");
     assert.deepEqual(generated.views, [{ path: "/map/0", label: "Map → Default view" }]);
     assert.equal(generated.error, null);
+    const overview = await discoverDashboardViews(async (message) => {
+      if (message.type === "get_panels")
+        return { home: { component_name: "home" }, lovelace: { component_name: "lovelace" } };
+      if (message.type === "lovelace/dashboards/list") return [];
+      throw { code: "config_not_found" };
+    }, "https://ha.fixture.test");
+    assert.deepEqual(overview.views, [
+      { path: "/home/overview", label: "Overview → Default view" },
+    ]);
   });
 
   test("embedded appearance styles late shadow roots and fully restores the original document on teardown", async () => {

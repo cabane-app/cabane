@@ -25,13 +25,17 @@ export async function discoverDashboardViews(send: Sender, origin: string) {
   if (panels.status === "fulfilled")
     for (const [key, panel] of Object.entries(panels.value)) {
       if (panel.component_name === "lovelace" && key !== "home")
-        targets.set(key, panel.title || key);
+        targets.set(key, panel.title || (key === "lovelace" ? "Overview" : key));
     }
   if (dashboards.status === "fulfilled")
     for (const dashboard of dashboards.value) targets.set(dashboard.url_path, dashboard.title);
   let failed = panels.status === "rejected" || dashboards.status === "rejected";
   const defaultView = (key: string, title: string) => {
-    const path = normalizeDashboardViewPath(`/${key}/0`, origin);
+    const target =
+      key === "lovelace" && panels.status === "fulfilled" && panels.value.home
+        ? "/home/overview"
+        : `/${key}/0`;
+    const path = normalizeDashboardViewPath(target, origin);
     return path ? [{ path, label: `${title} → Default view` }] : [];
   };
   const groups = await Promise.all(
