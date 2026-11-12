@@ -22,7 +22,8 @@ while the mouse is captured. The key does nothing in a text field or overlay.
 The current blaster is split into receiver, barrel, grip, and muzzle-flash models
 under `src/laser-gun/`. Ivory armor, graphite/plum recesses, brass trim, and cyan
 reactors inform the simplified action icon in `src/assets/laser-icon.svg`. The
-authored vector uses the action bar’s Life-sim palette and broad shaded planes.
+authored vector keeps the action bar’s broad shaded planes, with the blaster’s
+cream shell, plum chassis and grip, gold trim and cyan side reactor.
 The icon is a UI-only vector. Scene models remain procedural; portal views use only in-memory captures of the existing toon scene.
 
 Shot visuals travel at 180 m/s with an at-most 0.8 m tapered luminous tail. They
