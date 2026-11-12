@@ -48,7 +48,8 @@ export async function discoverDashboardViews(send: Sender, origin: string) {
         if (!config.views && config.strategy) return defaultView(key, title);
         return (config.views ?? []).flatMap((view, index) => {
           const path = normalizeDashboardViewPath(`/${key}/${view.path ?? index}`, origin);
-          return path ? [{ path, label: `${title} → ${view.title || `View ${index + 1}`}` }] : [];
+          const pageName = view.title?.trim() || view.path?.trim() || `Page ${index + 1}`;
+          return path ? [{ path, label: `${title} → ${pageName}` }] : [];
         });
       } catch (error) {
         // HA generates the default view in its frontend until a dashboard is customized.
@@ -64,8 +65,18 @@ export async function discoverDashboardViews(send: Sender, origin: string) {
       }
     }),
   );
+  const unique = new Map<string, DashboardViewOption>();
+  for (const view of groups.flat()) if (!unique.has(view.path)) unique.set(view.path, view);
+  const labelCounts = new Map<string, number>();
+  for (const view of unique.values())
+    labelCounts.set(view.label, (labelCounts.get(view.label) ?? 0) + 1);
   return {
-    views: groups.flat().sort((a, b) => a.label.localeCompare(b.label)),
+    views: [...unique.values()]
+      .map((view) => ({
+        ...view,
+        label: labelCounts.get(view.label)! > 1 ? `${view.label} (${view.path})` : view.label,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
     automatic: panels.status === "fulfilled" && Boolean(panels.value.home),
     error: failed ? "Some dashboards could not be read. You can enter their view URL." : null,
   };
