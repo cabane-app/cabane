@@ -37,7 +37,9 @@ approaches the user only when both occupy the same room, stopping about one metr
 away and smoothly looking toward the user with bounded head rotation. When the
 user leaves that room it immediately returns to autonomous roaming. Orbit cameras
 do not attract the pet.
-It accelerates and brakes around turns. The walk clip playback rate follows actual
+It accelerates and brakes around turns, following small arcs rather than rotating
+its body at rest. In tight corners it takes turning steps without crossing an
+obstacle. Only the head tracks a visitor while stationary. The walk clip playback rate follows actual
 ground speed and the injected stride length, including model scale; an idle clip
 takes over when stopped. It does not teleport through disconnected rooms. Walls, closed doors,
 loaded furniture and upper-floor stair holes constrain routes. Changes to loaded

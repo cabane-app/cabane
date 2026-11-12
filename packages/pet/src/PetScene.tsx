@@ -117,16 +117,8 @@ export default function PetScene(props: SceneFeatureProps & { model: PetModel })
     group.current.visible = !!point;
     if (!point) return;
     group.current.position.set(point.x, elevation, point.z);
-    const facing =
-      attention && !roaming.moving
-        ? Math.atan2(visitor.current.x - point.x, visitor.current.z - point.z)
-        : roaming.yaw;
-    const turn = Math.atan2(
-      Math.sin(facing - group.current.rotation.y),
-      Math.cos(facing - group.current.rotation.y),
-    );
-    if (enabled && !reducedMotion)
-      group.current.rotation.y += turn * (1 - Math.exp(-6 * Math.min(delta, 0.05)));
+    // The planner owns body heading; only the head tracks a nearby visitor at rest.
+    group.current.rotation.y = roaming.yaw;
     const nextMoving = enabled && !reducedMotion && roaming.moving;
     if (nextMoving !== moving.current) {
       const next = nextMoving ? asset.walk : asset.idle;
@@ -139,7 +131,7 @@ export default function PetScene(props: SceneFeatureProps & { model: PetModel })
     if (enabled && !reducedMotion) {
       asset.walk?.setEffectiveTimeScale(
         walkPlaybackRate(
-          roaming.actualSpeed,
+          roaming.gaitSpeed,
           asset.walk.getClip().duration,
           model.strideLength,
           model.scale ?? 1,

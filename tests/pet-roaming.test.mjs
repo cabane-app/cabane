@@ -112,18 +112,35 @@ await withModules(async (load) => {
     assert.equal(pet.yaw, idleYaw, "stopped pet keeps looking in its travel direction");
   });
 
-  test("pet turns before translating and accelerates into the walk", () => {
+  test("pet takes small steps through a half-turn instead of pivoting in place", () => {
     const pet = createPetRoaming({ bounds, spawn: { x: 2, z: 2 }, isWalkable: () => true });
     pet.step(0.05, { x: 2, z: 0.5 });
-    assert.equal(pet.actualSpeed, 0);
-    assert.deepEqual(pet.position, { x: 2, z: 2 });
-    let previousSpeed = 0;
+    assert.ok(pet.actualSpeed > 0);
+    assert.ok(pet.position.z > 2, "first step follows the initial heading into an arc");
+    assert.ok(pet.gaitSpeed > 0);
+    let previousSpeed = pet.actualSpeed;
     for (let frame = 0; frame < 25; frame++) {
       pet.step(0.05, { x: 2, z: 0.5 });
       assert.ok(pet.actualSpeed - previousSpeed <= 0.65 * 0.05 + 1e-8);
       previousSpeed = pet.actualSpeed;
     }
     assert.ok(pet.actualSpeed > 0);
+  });
+
+  test("pet keeps stepping in a blocked turn without crossing the wall", () => {
+    const pet = createPetRoaming({
+      bounds,
+      spawn: { x: 2, z: 1.999 },
+      isWalkable: ({ z }) => z < 2,
+    });
+    pet.step(0.05, { x: 2, z: 0.5 });
+    assert.equal(pet.actualSpeed, 0);
+    assert.ok(pet.gaitSpeed > 0, "feet keep stepping while turning in limited space");
+    for (let i = 0; i < 1600; i++) {
+      pet.step(0.05, { x: 2, z: 0.5 });
+      assert.ok(pet.position.z < 2);
+    }
+    assert.ok(Math.hypot(pet.position.x - 2, pet.position.z - 0.5) < 0.05);
   });
 
   test("pet remains absent when no floor point is available", () => {

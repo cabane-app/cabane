@@ -19,6 +19,7 @@ export interface PetRoaming {
   readonly yaw: number;
   readonly moving: boolean;
   readonly actualSpeed: number;
+  readonly gaitSpeed: number;
   step: (deltaSeconds: number, target?: PetPoint | null) => void;
 }
 
@@ -122,6 +123,7 @@ export function createPetRoaming({
   let wait = 0.5;
   let yaw = Number.isFinite(initialYaw) ? initialYaw : 0;
   let actualSpeed = 0;
+  let turningSpeed = 0;
   let velocity = 0;
   let replanAfter = 0;
   let lastTarget: PetPoint | null = null;
@@ -192,13 +194,17 @@ export function createPetRoaming({
       return yaw;
     },
     get moving() {
-      return actualSpeed > 0.001;
+      return actualSpeed > 0.001 || turningSpeed > 0.001;
     },
     get actualSpeed() {
       return actualSpeed;
     },
+    get gaitSpeed() {
+      return Math.max(actualSpeed, turningSpeed);
+    },
     step(deltaSeconds, target) {
       actualSpeed = 0;
+      turningSpeed = 0;
       if (
         !position ||
         !Number.isFinite(deltaSeconds) ||
@@ -253,32 +259,36 @@ export function createPetRoaming({
       const distance = Math.hypot(dx, dz);
       const desiredYaw = Math.atan2(dx, dz);
       const difference = Math.atan2(Math.sin(desiredYaw - yaw), Math.cos(desiredYaw - yaw));
-      yaw += difference * (1 - Math.exp(-6 * dt));
-      const remainingAngle = Math.atan2(Math.sin(desiredYaw - yaw), Math.cos(desiredYaw - yaw));
-      // Turn the body before stepping. Translation always follows the facing direction.
-      if (Math.abs(remainingAngle) > 0.45) {
-        velocity = 0;
-        return;
-      }
-      const cornerSpeed = Math.pow(Math.max(0, Math.cos(remainingAngle)), 8);
-      const desiredSpeed = Math.min(speed, distance * 1.8) * cornerSpeed;
+      // Keep stepping through an arc; smaller steps make a tight half-turn.
+      const cornerSpeed = 0.45 + 0.55 * Math.max(0, Math.cos(difference));
+      const desiredSpeed = Math.min(speed * cornerSpeed, distance * 1.8);
       const acceleration = desiredSpeed > velocity ? 0.65 : 1.3;
       velocity += Math.max(
         -acceleration * dt,
         Math.min(acceleration * dt, desiredSpeed - velocity),
       );
       const travel = Math.min(distance, velocity * dt);
+      const turnRadius = 0.16;
+      const turn = Math.max(-travel / turnRadius, Math.min(travel / turnRadius, difference));
+      const nextYaw = yaw + turn;
       const next = {
-        x: position.x + Math.sin(yaw) * travel,
-        z: position.z + Math.cos(yaw) * travel,
+        x: position.x + Math.sin(nextYaw) * travel,
+        z: position.z + Math.cos(nextYaw) * travel,
       };
       if (!clearSegment(position, next)) {
+        // In a tight corner, step around without translating into the obstacle.
+        // The gait still advances in proportion to the feet's turning distance.
+        const tightTurn = Math.max(-dt, Math.min(dt, difference));
+        yaw += tightTurn;
+        turningSpeed = (Math.abs(tightTurn) * turnRadius) / dt;
         route = [];
         velocity = 0;
         blocked = true;
-        wait = 0.5;
+        wait = 0;
         return;
       }
+      yaw = nextYaw;
+      turningSpeed = (Math.abs(turn) * turnRadius) / dt;
       actualSpeed = Math.hypot(next.x - position.x, next.z - position.z) / dt;
       position.x = next.x;
       position.z = next.z;
