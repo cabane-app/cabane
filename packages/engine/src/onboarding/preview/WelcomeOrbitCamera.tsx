@@ -38,7 +38,7 @@ export function WelcomeOrbitCamera({
     const y = (top + 1.9) * 0.19;
     const span = Math.max(3, Math.hypot(maxX - minX, maxZ - minZ));
     return {
-      position: [x + span * 0.52, y + span * 0.58, z + span * 0.85] as [number, number, number],
+      position: [x + span * 0.52, y + span * 0.58, z - span * 0.85] as [number, number, number],
       target: [x, y, z] as [number, number, number],
       span,
       height: span * 0.69 + (top + 1.9) * 0.78,
