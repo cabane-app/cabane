@@ -6,6 +6,7 @@ const sourceRoots = ["apps", "packages", "home"];
 const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs"]);
 const documentedPackageExports = new Set([
   "@cabane/walk-laser",
+  "@cabane/pet",
   "@cabane/engine",
   "@cabane/engine/styles.css",
   "@cabane/catalog/architecture",

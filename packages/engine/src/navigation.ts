@@ -127,3 +127,8 @@ export type {
   WalkVerticalRange,
 } from "./navigation/walk-navigation-contract";
 export { safeSpawnPoseForRoom, spawnPoseForRoom } from "./navigation/walk-spawn";
+
+export {
+  collectSceneWalkColliders,
+  observeSceneWalkColliders,
+} from "./navigation/scene-walk-colliders";

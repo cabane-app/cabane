@@ -17,3 +17,6 @@ __pycache__/
 *.pyc
 
 dist-panel/
+
+# Host-configured personal scene assets
+apps/web/public/personal-pets/

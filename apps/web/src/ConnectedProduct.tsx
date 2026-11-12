@@ -1,4 +1,5 @@
 import { useWorkspaceToolStorage } from "./workspaces/useWorkspaceToolStorage";
+import { installedSceneFeatures } from "./scene-features";
 import { installedWalkTools } from "./walk-tools";
 import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router";
@@ -142,6 +143,7 @@ export function ConnectedProduct({
             architectureModels={stableArchitectureModelRegistry}
             onboarding={onboarding}
             walkTools={installedWalkTools}
+            sceneFeatures={installedSceneFeatures}
             deviceModels={publishedDeviceModels}
             homeAssistantUrl={homeAssistantUrl}
             onHomeAssistantUrlChange={(url) => {

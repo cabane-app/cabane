@@ -19,7 +19,8 @@
     "react-dom": "19.2.8",
     "react-router": "7.18.3",
     "three": "0.182.0",
-    "@cabane/walk-laser": "0.1.0"
+    "@cabane/walk-laser": "0.1.0",
+    "@cabane/pet": "0.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "6.0.5",

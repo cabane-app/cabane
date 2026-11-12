@@ -192,3 +192,5 @@ export {
   useModelLightingState,
 } from "./model-lighting/ModelLightingSurface";
 export { localSurfaceAt, transitionOutline } from "./elevation/surfaces";
+
+export type { SceneFeatureDefinition, SceneFeatureProps } from "./scene-features/types";

@@ -59,6 +59,7 @@ export default {
       entry: entriesFor("packages/walk-laser"),
       project: ["src/**/*.{ts,tsx}"],
     },
+    "packages/pet": { entry: entriesFor("packages/pet"), project: ["src/**/*.{ts,tsx}"] },
     home: { project: ["src/**/*.{ts,tsx}"] },
   },
 };

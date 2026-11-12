@@ -1,3 +1,4 @@
+import { useSceneFeatures } from "./scene-features/useSceneFeatures";
 import { useCabaneDom } from "./CabaneDom";
 import { SceneOverlayLayout } from "./room-status/SceneOverlayLayout";
 import { useDashboardOrbitView } from "./navigation/orbit-view";
@@ -159,6 +160,20 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
       : undefined;
   const sceneControlsBlocked = setupOpen || mappingOpen || deviceOverlay || Boolean(selectedCamera);
   const toolInputEnabled = documentVisible && !sceneControlsBlocked;
+  const sceneFeatures = useSceneFeatures(
+    manifest.home.id,
+    props.sceneFeatures,
+    {
+      building: manifest,
+      floor,
+      elevation,
+      openingPositions,
+      view: walkMode ? "walk" : "orbit",
+      enabled: toolInputEnabled,
+      reducedMotion,
+    },
+    !walkthrough,
+  );
   const actionBarItems = resolvePublishedActionBarItems(manifest.actionBar, props.walkTools);
   const overlayStatuses = useMemo(
     () => filterOverlayStatuses(roomStatuses, overlayPreferences),
@@ -352,6 +367,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                           liveMediaByEntityId={liveMediaByEntityId}
                         />
                       </SceneNightContext.Provider>
+                      {sceneFeatures.scene}
                       {equippedTool && (
                         <Suspense fallback={null}>
                           <equippedTool.Scene
@@ -505,6 +521,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                         <span>Retry connection</span>
                       </button>
                     )}
+                    {sceneFeatures.menuItems}
                     {settingsMenuItem}
                     <ProjectSupportMenuItems />
                     {!demoSession &&

@@ -21,7 +21,8 @@
       "@cabane/catalog/architecture": ["./packages/catalog/src/architecture/index.ts"],
       "@cabane/catalog/furnishing": ["./packages/catalog/src/furnishing/index.ts"],
       "@cabane/catalog/device": ["./packages/catalog/src/device/index.ts"],
-      "@cabane/home": ["./home/src/index.ts"]
+      "@cabane/home": ["./home/src/index.ts"],
+      "@cabane/pet": ["./packages/pet/src/index.tsx"]
     },
     "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,

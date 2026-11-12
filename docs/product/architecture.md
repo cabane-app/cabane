@@ -44,6 +44,9 @@ areas:
   walk_tools:
     code: [apps/web/src/walk-tools.ts, packages/walk-laser/src/, packages/engine/src/walk-tools/]
     docs: [docs/product/dashboard-and-cameras.md#walk-tool-extensions]
+  scene_features:
+    code: [apps/web/src/scene-features.ts, packages/engine/src/scene-features/, packages/pet/src/]
+    docs: [docs/product/pet.md]
   agent_relay:
     code: [apps/agent-cli/src/, apps/web/src/agent-pilot/]
     docs: [docs/product/agent-pilot.md]
@@ -70,6 +73,7 @@ Cabane is a client-side React/Three.js application in an npm workspace:
   rendering, dashboard controls, navigation and Home Assistant runtime integration.
 - `packages/catalog` supplies reusable architecture, furniture and device definitions.
 - `packages/walk-laser` supplies the optional walk tool installed by the web host.
+- `packages/pet` supplies optional floor-local roaming, installed by the web host.
 - `apps/agent-cli` sends guarded editor commands through the Home Assistant agent relay.
 - `home` supplies the bundled demo project and home-specific model extensions.
 

@@ -1,0 +1,17 @@
+{
+  "name": "@cabane/pet",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "dependencies": {
+    "@cabane/engine": "0.1.0",
+    "@react-three/drei": "10.7.8",
+    "@react-three/fiber": "9.7.0",
+    "react": "19.2.8",
+    "three": "0.182.0"
+  },
+  "license": "PolyForm-Noncommercial-1.0.0"
+}

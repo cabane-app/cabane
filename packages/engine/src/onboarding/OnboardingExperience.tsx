@@ -49,6 +49,7 @@ export function CabaneAppExperience({
   onHomeAssistantUrlChange,
   renderActionBarDeviceIcon,
   walkTools,
+  sceneFeatures,
   onEditHome,
   onOpenSettings,
   onCustomizeActionBar,
@@ -64,6 +65,7 @@ export function CabaneAppExperience({
   manifest: HomeManifest;
   architectureModels: ArchitectureModelRegistry;
   deviceModels: DeviceModelRegistry;
+  sceneFeatures?: readonly import("../scene-features/types").SceneFeatureDefinition[];
   walkTools?: readonly import("../walk-tools").WalkToolDefinition[];
   renderActionBarDeviceIcon?: (modelId: string) => ReactNode;
   homeAssistantUrl: string | null;
@@ -153,6 +155,7 @@ export function CabaneAppExperience({
       bindingManager={bindingManager}
       renderActionBarDeviceIcon={renderActionBarDeviceIcon}
       walkTools={walkTools}
+      sceneFeatures={sceneFeatures}
       sessionPresentation={
         isDemo
           ? {
