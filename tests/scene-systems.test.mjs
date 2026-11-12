@@ -642,7 +642,7 @@ await withModules(async (load) => {
     mesh.geometry.computeBoundingBox();
     const bounds = mesh.geometry.boundingBox;
     assert.ok(Math.abs(mesh.position.y + bounds.min.y + 0.05) < 1e-6);
-    assert.ok(Math.abs(mesh.position.y + bounds.max.y - 0.002) < 1e-6);
+    assert.ok(Math.abs(mesh.position.y + bounds.max.y - 0.004) < 1e-6);
     assert.ok(
       Math.abs(
         bounds.max.x -

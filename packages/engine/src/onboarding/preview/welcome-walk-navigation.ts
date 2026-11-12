@@ -10,8 +10,8 @@ import {
   type WalkPoint,
 } from "../../navigation/walk-navigation-contract";
 import type { HomeManifest, RenderableFloorSpec } from "../../types";
+import { welcomeWalkTour } from "./welcome-walk-tour";
 
-const LIVING_ROOM_ID = "open-plan-living";
 const MANUAL_WALK_SPEED = 1.5;
 
 function furnishingColliders(
@@ -48,7 +48,8 @@ export function createWelcomeWalkNavigation(
   floor: RenderableFloorSpec,
   furniture: readonly BoxWalkCollider[] = [],
 ) {
-  const livingRoom = floor.rooms.find((room) => room.id === LIVING_ROOM_ID && !room.isSolid);
+  const tour = welcomeWalkTour(floor);
+  const livingRoom = floor.rooms.find((room) => room.id === tour?.roomId && !room.isSolid);
   if (!livingRoom) return null;
   const elevation = deriveFloorLevels(manifest.floors).find(
     (level) => level.floorId === floor.id,
