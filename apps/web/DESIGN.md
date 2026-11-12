@@ -22,6 +22,14 @@ colors:
   editor-button-surface: "#faf6ef"
   editor-button-hover: "#eae5d9"
   editor-line: "rgba(70, 70, 58, 0.14)"
+  action-icon-gold: "#ffd166"
+  action-icon-gold-shade: "#dba33d"
+  action-icon-sage: "#92ae6c"
+  action-icon-sage-shade: "#66864b"
+  action-icon-powder-blue: "#91b7d0"
+  action-icon-powder-blue-shade: "#5d89a8"
+  action-icon-cream: "#edf0df"
+  action-icon-cream-shade: "#adc3c8"
 typography:
   heading:
     fontFamily: '"Roboto", sans-serif'
@@ -70,6 +78,12 @@ spacing:
   panel: "24px"
   spacious: "28px"
 components:
+  scene-action-desktop:
+    width: "64px"
+    height: "64px"
+  scene-action-compact:
+    width: "44px"
+    height: "44px"
   button-default:
     backgroundColor: "{colors.editor-button-surface}"
     textColor: "{colors.preview-ink}"
@@ -136,7 +150,7 @@ Connect extends this existing world with a sage device rail, blue connection sel
 - Warm paper surfaces and dark green-toned text.
 - Compact English controls with clear object and connection names.
 - Tonal grouping, restrained borders and soft corners.
-- Model thumbnails and the existing SVG icon family.
+- Model thumbnails, existing utility SVGs and Life-sim illustrations for scene actions.
 - Independent visual treatment for selection, connection availability and model display.
 
 ## Colors
@@ -153,6 +167,10 @@ The palette combines warm neutrals with restrained terracotta, sage and blue-gre
 - **Connection green** (`connection-green`): connected status text and reading confirmation actions.
 - **Pending amber** (`pending`): a connection still to be chosen.
 - **Unavailable clay** (`unavailable`): unavailable sources and destructive reading actions.
+
+### Tertiary
+
+- **Life-sim action colors** (`action-icon-gold`, `action-icon-sage`, `action-icon-powder-blue`, `action-icon-cream` and their `-shade` companions): the main light/dark pairs inside scene-action illustrations. Keep these colors scoped to the illustrated assets; existing editor and status colors retain their roles.
 
 ### Neutral
 
@@ -208,6 +226,14 @@ Controls, rows and working surfaces use softly curved corners with the extracted
 
 ## Components
 
+### Scene-action illustrations
+
+The approved Life-sim family uses chunky silhouettes, matte color and two or three broad flat-shaded planes. Light faces sit above and to the left, with darker faces below and to the right. Each action reads as one recognizable object on a transparent (64 × 64) SVG canvas, with breathing room around its silhouette. Avoid gradients, filters, embedded bitmaps, external resources, heavy outlines, scenery, miniature houses, platforms and decorative detail inside these assets. The existing button surface and its image drop shadow remain separate from the artwork.
+
+Build uses a hammer, Walk uses footprints and Night uses a crescent. The runtime Daylight action uses a sun. The dock, grouped menus and shortcut editor reuse the same authored assets in `packages/engine/src/assets/scene-actions/`; the Laser UI icon in `packages/walk-laser/src/assets/laser-icon.svg` follows this family too. Room photos, device previews, other optional Walk tools and utility icons keep their existing representations.
+
+Check silhouettes and plane contrast in both desktop (64px) and compact mobile (44px) action buttons. Grouped choices retain their larger existing slots. Keep the English action label, accessible name and existing active, hover, focus, busy and disabled treatments.
+
 ### Buttons
 
 Editor buttons use paper, a subtle line and green ink; the primary variant uses terracotta. Hover darkens the surface. Connect actions are blue text with a familiar SVG icon, and reading confirmation uses green for its submit action. Disabled actions reduce opacity and preserve their label. Focus is a visible outline with space around the control.
@@ -244,6 +270,7 @@ Add reading chooses a compatible sensor before presenting its name and display s
 - **Do** align Connect column headings with the shared connection-heading role.
 - **Do** keep mobile navigation sequential with clear return actions.
 - **Do** reveal reading configuration after the corresponding action.
+- **Do** reuse the authored Life-sim scene-action assets across the dock, grouped menus and shortcut editor, and check their silhouettes in mobile action buttons.
 
 ### Don't:
 
@@ -252,3 +279,4 @@ Add reading chooses a compatible sensor before presenting its name and display s
 - **Don't** turn every source row into an elevated card.
 - **Don't** compress all three Connect columns into the mobile viewport.
 - **Don't** replace the incumbent Cabane typography, palette or icon family when extending these surfaces.
+- **Don't** extend the scene-action illustration treatment to unrelated utility icons, room photos or device previews.

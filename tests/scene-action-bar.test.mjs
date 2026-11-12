@@ -357,16 +357,7 @@ await withModules(async (load) => {
     assert.match(html, /aria-label="View actions" hidden=""/);
     for (const key of ["B", "V", "R"]) assert.ok(html.includes(`aria-keyshortcuts="${key}"`));
     assert.equal((html.match(/<img /g) ?? []).length, 16);
-    for (const filename of [
-      "construct-mode.png",
-      "arrange-mode.png",
-      "connect-mode.png",
-      "walk-mode.png",
-      "day-night.png",
-      "wall-transparency.png",
-    ]) {
-      assert.match(html, new RegExp(filename.replace(".", "\\.")));
-    }
+    assert.equal((html.match(/src="data:image\/svg\+xml,/g) ?? []).length, 16);
     for (const label of ["Construct", "Arrange", "Connect", "Walk", "Night", "Fade walls"]) {
       assert.match(html, new RegExp(`scene-action-slot__label[^>]*>${label}<`));
     }
@@ -389,7 +380,7 @@ await withModules(async (load) => {
         items: [{ id: "lights", target: { kind: "built-in", action: "all-lights" } }],
       }),
     );
-    assert.match(withLights, /all-lights\.png/);
+    assert.match(withLights, /src="data:image\/svg\+xml,/);
     assert.match(withLights, /aria-keyshortcuts="L"/);
     assert.match(withLights, /Lights off/);
     assert.match(html, />⇧C<\/kbd>/);
@@ -408,6 +399,14 @@ await withModules(async (load) => {
     for (const label of ["Exit walk", "Daylight", "Solid walls"]) {
       assert.match(toggledHtml, new RegExp(`scene-action-slot__label[^>]*>${label}<`));
     }
+    const day = new JSDOM(html);
+    const night = new JSDOM(toggledHtml);
+    assert.notEqual(
+      day.window.document.querySelector('[aria-label="Use night lighting"] img').src,
+      night.window.document.querySelector('[aria-label="Use daylight"] img').src,
+    );
+    day.window.close();
+    night.window.close();
   });
 
   test("keeps the same product actions for legacy, empty, and customized homes in every scene mode", () => {

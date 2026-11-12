@@ -5,24 +5,25 @@ import { WeatherMenu, type WeatherMenuProps } from "./weather/WeatherMenu";
 import { SceneActionTargetSlot } from "./action-bar/SceneActionTargetSlot";
 import type { ResolvedActionBarTarget } from "./action-bar/dashboard-action-targets";
 import { useCabaneDom } from "./CabaneDom";
-import viewIcon from "./assets/scene-actions/view.png";
+import roofIcon from "./assets/scene-actions/roof.svg";
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
-import allLightsActionIcon from "./assets/scene-actions/all-lights.png";
+import allLightsActionIcon from "./assets/scene-actions/all-lights.svg";
 
-import arrangeModeActionIcon from "./assets/scene-actions/arrange-mode.png";
+import arrangeModeActionIcon from "./assets/scene-actions/arrange-mode.svg";
 
-import connectModeActionIcon from "./assets/scene-actions/connect-mode.png";
+import connectModeActionIcon from "./assets/scene-actions/connect-mode.svg";
 
-import constructModeActionIcon from "./assets/scene-actions/construct-mode.png";
+import constructModeActionIcon from "./assets/scene-actions/construct-mode.svg";
 
-import dayNightActionIcon from "./assets/scene-actions/day-night.png";
+import dayNightActionIcon from "./assets/scene-actions/day-night.svg";
+import daylightActionIcon from "./assets/scene-actions/weather-sunny.svg";
 
-import examineRoomActionIcon from "./assets/scene-actions/examine-room.png";
+import examineRoomActionIcon from "./assets/scene-actions/examine-room.svg";
 
-import walkModeActionIcon from "./assets/scene-actions/walk-mode.png";
+import walkModeActionIcon from "./assets/scene-actions/walk-mode.svg";
 
-import wallTransparencyActionIcon from "./assets/scene-actions/wall-transparency.png";
+import wallTransparencyActionIcon from "./assets/scene-actions/wall-transparency.svg";
 
 import { type SolarLightingMode } from "./lighting";
 
@@ -404,6 +405,10 @@ export function SceneActionBar({
       (shortcut.action === "wall-fade" && wallFade);
     const keyboardShortcut = actionKeyboardShortcut[shortcut.action];
     const label = actionLabel(shortcut, mode, lighting, wallFade);
+    const illustration =
+      shortcut.action === "lighting-mode" && lighting === "night"
+        ? daylightActionIcon
+        : actionIllustration[shortcut.action];
     return (
       <SceneActionButton
         key={item?.id ?? shortcut.id}
@@ -414,8 +419,8 @@ export function SceneActionBar({
         label={actionCaption(shortcut, mode, lighting, wallFade)}
         shortcut={keyboardShortcut}
         icon={
-          actionIllustration[shortcut.action] ? (
-            <img src={actionIllustration[shortcut.action]} alt="" draggable={false} />
+          illustration ? (
+            <img src={illustration} alt="" draggable={false} />
           ) : (
             <ActionIcon action={shortcut.action} />
           )
@@ -537,7 +542,7 @@ export function SceneActionBar({
                   }}
                 >
                   <SceneActionSlotFace
-                    icon={<img src={viewIcon} alt="" draggable={false} />}
+                    icon={<img src={roofIcon} alt="" draggable={false} />}
                     label={roofVisible ? "Hide roof" : "Show roof"}
                     shortcut="R"
                   />

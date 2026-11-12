@@ -1,11 +1,11 @@
 import { SceneActionButton } from "../action-bar/SceneActionButton";
 import type { WeatherPreview } from "./weather-state";
-import liveIcon from "../assets/scene-actions/weather-live.png";
-import sunnyIcon from "../assets/scene-actions/weather-sunny.png";
-import cloudyIcon from "../assets/scene-actions/weather-cloudy.png";
-import rainIcon from "../assets/scene-actions/weather-rain.png";
-import thunderstormIcon from "../assets/scene-actions/weather-thunderstorm.png";
-import snowyIcon from "../assets/scene-actions/weather-snowy.png";
+import liveIcon from "../assets/scene-actions/weather-live.svg";
+import sunnyIcon from "../assets/scene-actions/weather-sunny.svg";
+import cloudyIcon from "../assets/scene-actions/weather-cloudy.svg";
+import rainIcon from "../assets/scene-actions/weather-rain.svg";
+import thunderstormIcon from "../assets/scene-actions/weather-thunderstorm.svg";
+import snowyIcon from "../assets/scene-actions/weather-snowy.svg";
 
 const previewChoices = [
   ["live", "Live", liveIcon],
