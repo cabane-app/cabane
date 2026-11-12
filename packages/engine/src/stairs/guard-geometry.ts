@@ -17,6 +17,10 @@ export function deriveStairGuardSegments(
 ): StairGuardSegment[] {
   if (flight.spec.railings === "none") return [];
   const result: StairGuardSegment[] = [];
+  const starts = new Set<string>();
+  const ends = new Map<string, StairGuardSegment["to"]>();
+  const endpointKey = (point: StairGuardSegment["from"]) =>
+    point.map((value) => Math.round(value * 1e6)).join(",");
   const spec = flight.spec;
   const enabled = (
     a: readonly [number, number],
@@ -43,7 +47,11 @@ export function deriveStairGuardSegments(
     side?: "left" | "right",
   ) => {
     if (!enabled(a, b, side)) return;
-    result.push({ from: [a[0], h1 + 0.95, a[1]], to: [b[0], h2 + 0.95, b[1]], width: 0.05 });
+    const from = [a[0], h1 + 0.95, a[1]] as const;
+    const to = [b[0], h2 + 0.95, b[1]] as const;
+    result.push({ from, to, width: 0.05 });
+    starts.add(endpointKey(from));
+    ends.set(endpointKey(to), to);
     if (post) result.push({ from: [a[0], h1, a[1]], to: [a[0], h1 + 0.95, a[1]], width: 0.035 });
   };
   if (spec.shape === "spiral" && !upper) {
@@ -212,5 +220,9 @@ export function deriveStairGuardSegments(
     rail(points[0], points[3], flight.riseMeters, flight.riseMeters, true, "left");
     rail(points[1], points[2], flight.riseMeters, flight.riseMeters, true, "right");
   }
+  // Polygon edges can run downhill too: their final endpoint has no following
+  // segment to supply a post. Close only free ends, preserving sparse spiral posts.
+  for (const [key, to] of ends)
+    if (!starts.has(key)) result.push({ from: [to[0], to[1] - 0.95, to[2]], to, width: 0.035 });
   return result;
 }

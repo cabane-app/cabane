@@ -19,6 +19,7 @@ test("fresh demo uses Larch with a clear welcome tour and working simulated hall
     const { createWelcomeWalkNavigation } = await load(
       "/packages/engine/src/onboarding/preview/welcome-walk-navigation.ts",
     );
+    const { deriveStairFlight } = await load("/packages/engine/src/stairs/flight-geometry.ts");
     const { deriveDemoSessionDefinition, applyDemoServiceCall } = await load(
       "/packages/engine/src/DemoHomeAssistantSession.tsx",
     );
@@ -37,10 +38,18 @@ test("fresh demo uses Larch with a clear welcome tour and working simulated hall
     const loop = createWelcomeWalkLoop(manifest, floor);
     assert.ok(loop, "Larch offers the walking preview instead of falling back to orbit");
     const navigation = createWelcomeWalkNavigation(manifest, floor);
+    const stairs = manifest.stairs.map((stair) => deriveStairFlight(manifest, stair));
     for (let seconds = 0; seconds < loop.durationSeconds; seconds += 0.02) {
       const pose = sampleWelcomeWalkLoop(loop, seconds);
       const [x, y, z] = pose.position;
       assert.ok(navigation.isClear({ x, y, z }), `Tour is clear at ${seconds}s`);
+      for (const stair of stairs) {
+        const xs = stair.footprintWorld.map((point) => point[0]);
+        const zs = stair.footprintWorld.map((point) => point[1]);
+        const dx = Math.max(Math.min(...xs) - x, 0, x - Math.max(...xs));
+        const dz = Math.max(Math.min(...zs) - z, 0, z - Math.max(...zs));
+        assert.ok(Math.hypot(dx, dz) >= 0.8, `Tour stays away from ${stair.id} at ${seconds}s`);
+      }
       assert.ok(Number.isFinite(pose.yaw));
     }
     const light = firstOnboardingLight(manifest, onboardingDemoRoomId);

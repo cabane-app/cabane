@@ -5,6 +5,37 @@ await withModules(async (load) => {
   const { deriveStairFlight } = await load("/packages/engine/src/stairs/flight-geometry.ts");
   const { deriveStairGuardSegments } = await load("/packages/engine/src/stairs/guard-geometry.ts");
   const { makeStairProject } = await load("/tests/fixtures/multiple-floors.ts");
+  test("straight handrails have a supporting post at both ends on each enabled side", () => {
+    const project = makeStairProject();
+    for (const rotationYRadians of [0, 0.73])
+      for (const railings of ["both", "left", "right"]) {
+        const flight = deriveStairFlight(project, {
+          ...project.stairs[0],
+          rotationYRadians,
+          railings,
+        });
+        const guards = deriveStairGuardSegments(flight, project.coordinates);
+        for (const side of [-1, 1]) {
+          if (railings === (side === -1 ? "right" : "left")) continue;
+          for (const end of [flight.path[0], flight.path.at(-1)]) {
+            const x = end.x + (side * flight.widthMeters * flight.side[0]) / 2;
+            const z = end.z + (side * flight.widthMeters * flight.side[1]) / 2;
+            assert.ok(
+              guards.some(
+                ({ from, to }) =>
+                  Math.abs(from[0] - x) < 1e-8 &&
+                  Math.abs(to[0] - x) < 1e-8 &&
+                  Math.abs(from[2] - z) < 1e-8 &&
+                  Math.abs(to[2] - z) < 1e-8 &&
+                  Math.abs(from[1] - end.elevation) < 1e-8 &&
+                  Math.abs(to[1] - end.elevation - 0.95) < 1e-8,
+              ),
+              `Missing post: ${railings}, side ${side}, height ${end.elevation}`,
+            );
+          }
+        }
+      }
+  });
   test("same-floor guards stay on the high ground instead of floating over the lowered terrace", () => {
     const project = makeStairProject();
     project.floors = [project.floors[0]];
