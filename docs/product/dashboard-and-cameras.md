@@ -6,9 +6,11 @@ its duplicate navigation. Automatic chooses the room page for the mapped HA area
 custom views require an explicit choice. The room header, Walk, cleaning and Close
 remain Cabane actions. Device shortcuts still open Cabane's focused device controls.
 **Show Cabane room controls** provides a temporary fallback, with a return action to the
-HA dashboard; it does not rewrite the saved preference. Standalone Cabane provides
-an **Open in HA** link and the same fallback, because it cannot style a different
-origin's dashboard. Draft previews never embed live HA controls. On compact portrait
+HA dashboard; it does not rewrite the saved preference. Outside the native HA panel,
+rooms always show the ordinary Cabane controls, even with a saved HA dashboard
+preference. There are no dashboard-specific buttons, messages or view choices in
+the standalone dashboard. The preference remains available in the native panel.
+Draft previews never embed live HA controls. On compact portrait
 screens the HA dashboard uses a taller 74% sheet, a compact room header, and space
 above the action dock so its own scrollable controls remain reachable.
 
