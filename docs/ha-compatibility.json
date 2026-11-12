@@ -10510,6 +10510,48 @@
                           }
                         }
                       },
+                      "roomDashboards": {
+                        "optional": true,
+                        "schema": {
+                          "properties": {},
+                          "additionalProperties": {
+                            "properties": {
+                              "appearance": {
+                                "optional": false,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": "cabane"
+                                    },
+                                    {
+                                      "const": "original"
+                                    }
+                                  ]
+                                }
+                              },
+                              "controls": {
+                                "optional": false,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": "cabane"
+                                    },
+                                    {
+                                      "const": "home-assistant"
+                                    }
+                                  ]
+                                }
+                              },
+                              "view": {
+                                "optional": false,
+                                "schema": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
                       "schemaVersion": {
                         "optional": false,
                         "schema": {
@@ -10612,6 +10654,48 @@
                           "properties": {},
                           "additionalProperties": {
                             "type": "string"
+                          }
+                        }
+                      },
+                      "roomDashboards": {
+                        "optional": true,
+                        "schema": {
+                          "properties": {},
+                          "additionalProperties": {
+                            "properties": {
+                              "appearance": {
+                                "optional": false,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": "cabane"
+                                    },
+                                    {
+                                      "const": "original"
+                                    }
+                                  ]
+                                }
+                              },
+                              "controls": {
+                                "optional": false,
+                                "schema": {
+                                  "anyOf": [
+                                    {
+                                      "const": "cabane"
+                                    },
+                                    {
+                                      "const": "home-assistant"
+                                    }
+                                  ]
+                                }
+                              },
+                              "view": {
+                                "optional": false,
+                                "schema": {
+                                  "type": "string"
+                                }
+                              }
+                            }
                           }
                         }
                       },

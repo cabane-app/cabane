@@ -5,6 +5,7 @@ import { copyFloorContents, type FloorCopyOptions } from "./floor-duplication";
 import type { DraftLayoutFloorSpec } from "./types";
 import { removeWorkspaceSlotReferences } from "./workspace-bindings";
 import { itemBindingSlotIds } from "./item-binding-identities";
+import { retainRoomDashboards } from "../room-dashboards/room-dashboard";
 
 export const addTopFloor = (
   snapshot: EditorWorkspaceSnapshot,
@@ -165,6 +166,14 @@ export const removeFloor = (
           ...state,
           draft: {
             ...state.draft,
+            ...retainRoomDashboards(
+              state.draft.roomDashboards,
+              new Set(
+                project.floors
+                  .filter((floor) => floor.id !== removedFloor.id)
+                  .flatMap((floor) => roomsForFloor(floor).map((room) => room.id)),
+              ),
+            ),
             roomAreaIds: Object.fromEntries(
               Object.entries(state.draft.roomAreaIds).filter(([id]) => !roomIds.has(id)),
             ),

@@ -25,6 +25,14 @@ recovery path rather than overwriting saved data; optional browser features such
 clipboard access retain their unavailable-feature guidance. Model synchronization
 uses the borrowed authenticated WebSocket, including chunked GLB uploads.
 
+Optional room dashboard frames use only this same-origin host session's ordinary
+HA page authentication. Cabane never injects tokens into the frame or changes HA's
+saved dashboard, profile theme or configuration. Private per-room view paths are
+canonical same-server paths without credentials, query strings or fragments.
+Cross-origin standalone sessions offer an external HA link instead of embedding.
+The frame owns its native HA actions; draft previews and disconnected sessions do
+not mount it. Embedded styling is local and removed when the frame is released.
+
 Native initialization skips standalone legacy URL and authentication migration.
 It does not read, copy, remove, or persist legacy OAuth material, write OAuth
 return state, or consume the host URL's callback parameters. Ordinary workspace

@@ -62,9 +62,29 @@ selected automatically; choosing one reveals its connections and readings. The w
 source picker opens only after choosing a connection or starting Add reading.
 Switching rooms clears device and connection selection. Outside rooms,
 opening contacts, covers and dashboard sources remain available in the same flow.
-There is no room dropdown, workspace back-to-plan link or HA-area control. Existing
+There is no room dropdown or workspace back-to-plan link. Existing
 room-area associations can influence suggestions but do not limit explicit compatible choices.
 The floor picker is hidden while a room is open and remains available on House plan.
+
+### Room controls from Home Assistant
+
+Choose **Room controls** in the selected room's device rail to review its HA area
+and choose **Cabane room controls** (the existing default) or **Home Assistant dashboard**.
+The latter offers **Mapped HA room** (automatic), discovered dashboard/view choices,
+and an explicit same-server view URL fallback. Automatic uses the mapped area ID
+with HA's built-in `/home/areas-<area_id>` page when the host exposes that dashboard.
+It never guesses a custom view from room names. Older HA versions without room
+pages require a custom view. Missing areas, permissions and discovery failures
+retain saved choices and show recovery guidance. Discovery is read-only and includes
+dashboards hidden from the sidebar.
+
+**Original HA theme** preserves card styling; **Cabane palette** applies local
+theme overrides in the embedded view and is the default for new preferences. Existing saved appearance choices are retained. Custom cards may retain their own styling.
+Dashboard editing stays in HA. Settings are private per-origin `roomDashboards`
+entries, staged through normal history and Save, backed up and synchronized with
+the workspace's private mappings. Portable home exports exclude them. Removing a
+room or floor clears its draft preferences while retaining the published snapshot
+until Save. Outside rooms and focused device controls retain Cabane controls.
 
 Each declared function has its own connection row and Connect or Change action.
 Optional sensor and event readings are separate from device functions. Connection, source

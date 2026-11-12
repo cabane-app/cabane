@@ -761,6 +761,9 @@ export type LegacyHomeManifest = Omit<
 };
 
 export interface RuntimeBindingProfile {
+  roomDashboards?: Readonly<
+    Record<string, import("./room-dashboards/room-dashboard").RoomDashboardSettings>
+  >;
   weatherSource?: import("./weather/weather-state").WeatherSource;
   schemaVersion: 1;
   homeId: string;

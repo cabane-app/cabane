@@ -61,11 +61,13 @@ export function ConnectDeviceGrid({
   manifest,
   models,
   onOpen,
+  onRoomControls,
 }: {
   editor: ConnectEditor;
   manifest: HomeBindingManifest;
   models: DeviceModelRegistry;
   onOpen: (id: string) => void;
+  onRoomControls: () => void;
 }) {
   const [query, setQuery] = useState("");
   const relationships = editor.groups.flatMap((group) => group.relationships);
@@ -78,6 +80,16 @@ export function ConnectDeviceGrid({
         <h2>{editor.room?.name}</h2>
         <p>{relationships.length} devices and connections</p>
       </header>
+      {manifest.floors.some((floor) => floor.rooms.some((room) => room.id === editor.roomId)) && (
+        <button
+          type="button"
+          className="connect-room-controls-button"
+          aria-pressed={!editor.relationshipId}
+          onClick={onRoomControls}
+        >
+          Room controls
+        </button>
+      )}
       <label className="connect-device-search">
         <input
           type="search"

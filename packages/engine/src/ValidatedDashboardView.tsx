@@ -531,6 +531,11 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
 
           {controlRoom && resolvedBindings.rooms[controlRoom.id] && (
             <RoomDashboardPanel
+              dashboardSettings={
+                outsideControlRoom
+                  ? undefined
+                  : bindingManager.profile.roomDashboards?.[controlRoom.id]
+              }
               homeId={manifest.home.id}
               cleaningAreaId={
                 outsideControlRoom ? undefined : bindingManager.profile.roomAreaIds[controlRoom.id]

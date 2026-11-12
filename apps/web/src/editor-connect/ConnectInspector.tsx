@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   DeviceConnectionWorkbench,
+  RoomDashboardSettings,
   type DeviceModelRegistry,
   type HomeBindingManifest,
 } from "@cabane/engine";
@@ -54,6 +55,10 @@ export function ConnectInspector({
             manifest={manifest}
             models={deviceModels}
             onOpen={selectDevice}
+            onRoomControls={() => {
+              editor.selectRelationship(null);
+              setDeviceOpen(true);
+            }}
           />
           {editor.relationship ? (
             <DeviceConnectionWorkbench
@@ -78,13 +83,64 @@ export function ConnectInspector({
               }
             />
           ) : (
-            <section className="connect-workspace-empty connection-column-heading">
-              <h2>{editor.groups.length ? "Choose a device" : "No devices yet"}</h2>
-              <p>
-                {editor.groups.length
-                  ? "Select a device to see its connections and readings."
-                  : "Add an object in Arrange to get started."}
-              </p>
+            <section className="connect-workspace-empty connect-room-controls connection-column-heading">
+              <button
+                type="button"
+                className="connection-mobile-back"
+                onClick={() => setDeviceOpen(false)}
+              >
+                Back to devices
+              </button>
+              <h2>{room.name}</h2>
+              {manifest.floors.some((floor) =>
+                floor.rooms.some((candidate) => candidate.id === room.id),
+              ) ? (
+                <>
+                  <label className="connect-room-area">
+                    Home Assistant area
+                    <select
+                      aria-label={`Home Assistant area for ${room.name}`}
+                      value={editor.profile.roomAreaIds[room.id] ?? ""}
+                      disabled={editor.disconnected}
+                      onChange={(event) =>
+                        editor.assignRoomArea(room.id, event.target.value || null)
+                      }
+                    >
+                      <option value="">No Home Assistant area</option>
+                      {editor.profile.roomAreaIds[room.id] &&
+                        !editor.displayRuntime.areas.some(
+                          (area) => area.area_id === editor.profile.roomAreaIds[room.id],
+                        ) && (
+                          <option value={editor.profile.roomAreaIds[room.id]}>
+                            Saved area unavailable
+                          </option>
+                        )}
+                      {editor.displayRuntime.areas.map((area) => (
+                        <option
+                          key={area.area_id}
+                          value={area.area_id}
+                          disabled={Object.entries(editor.profile.roomAreaIds).some(
+                            ([id, mapped]) => id !== room.id && mapped === area.area_id,
+                          )}
+                        >
+                          {area.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <p className="connect-room-area-copy">
+                    Used for the room’s name, readings, and automatic dashboard.
+                  </p>
+                  <RoomDashboardSettings
+                    key={room.id}
+                    value={editor.profile.roomDashboards?.[room.id]}
+                    areaId={editor.profile.roomAreaIds[room.id]}
+                    onChange={editor.setRoomDashboard}
+                  />
+                </>
+              ) : (
+                <p>Select a device to see its connections and readings.</p>
+              )}
             </section>
           )}
         </ModelThumbnailRenderer>

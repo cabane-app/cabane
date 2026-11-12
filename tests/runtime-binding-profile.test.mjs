@@ -15,6 +15,14 @@ await withModules(async (load) => {
   const { neutralDemoManifest } = await load("/packages/engine/src/demo.ts");
   const profileModule = await load("/packages/engine/src/runtime-binding-profile.ts");
   const setupModule = await load("/packages/engine/src/RuntimeBindingSetup.tsx");
+  // Register all modules before withModules releases its loader; test callbacks run later.
+  const resolver = await load("/packages/engine/src/home-assistant-resolver.ts");
+  const groups = await load("/packages/engine/src/home-assistant-mapping/device-mapping-groups.ts");
+  const { DeviceMappingInspector } = await load(
+    "/packages/engine/src/home-assistant-mapping/DeviceMappingInspector.tsx",
+  );
+  const { groupRoomMappingRelationships } = groups;
+  const controls = await load("/packages/engine/src/home-assistant-controls.ts");
 
   const manifestFixture = () => connectedManifestFixture(neutralDemoManifest);
 
@@ -51,7 +59,6 @@ await withModules(async (load) => {
       profileModule.importRuntimeBindingProfile(JSON.stringify(shared), manifest, runtime).valid,
       true,
     );
-    const resolver = await load("/packages/engine/src/home-assistant-resolver.ts");
     const resolved = resolver.resolveHomeAssistantBindings(manifest, shared, runtime);
     const lights = resolved.rooms[room.id].devices.filter((device) =>
       ["fixture-light-device", "second-light-device"].includes(device.slot.id),
@@ -88,9 +95,6 @@ await withModules(async (load) => {
       .find((slot) => slot.slotId === "garden-light-slot");
     assert.deepEqual(descriptor.roomIds, []);
     const outsideId = `outside-rooms:${manifest.floors[0].id}`;
-    const groups = await load(
-      "/packages/engine/src/home-assistant-mapping/device-mapping-groups.ts",
-    );
     assert.equal(
       groups.groupRoomMappingRelationships(manifest, outsideId)[0].relationships[0].id,
       "garden-light",
@@ -124,7 +128,6 @@ await withModules(async (load) => {
         profileModule.importRuntimeBindingProfile(JSON.stringify(mapped), manifest, runtime).valid,
         true,
       );
-      const resolver = await load("/packages/engine/src/home-assistant-resolver.ts");
       const resolved = resolver.resolveHomeAssistantBindings(manifest, mapped, runtime);
       assert.equal(
         resolved.rooms[outsideId].devices[0].entities[0].state,
@@ -153,12 +156,6 @@ await withModules(async (load) => {
     assert.ok(
       candidates.indexOf(plug) >
         candidates.findIndex((candidate) => candidate.entityId === "light.demo_ceiling"),
-    );
-    const { DeviceMappingInspector } = await load(
-      "/packages/engine/src/home-assistant-mapping/DeviceMappingInspector.tsx",
-    );
-    const { groupRoomMappingRelationships } = await load(
-      "/packages/engine/src/home-assistant-mapping/device-mapping-groups.ts",
     );
     const relationship = groupRoomMappingRelationships(manifest, "demo-room")
       .flatMap((group) => group.relationships)
@@ -203,14 +200,12 @@ await withModules(async (load) => {
       profileModule.importRuntimeBindingProfile(JSON.stringify(mapped), manifest, runtime).valid,
       true,
     );
-    const resolver = await load("/packages/engine/src/home-assistant-resolver.ts");
     const resolved = resolver.resolveHomeAssistantBindings(manifest, mapped, runtime);
     const light = resolved.rooms["demo-room"].devices.find(
       (device) => device.slot.id === "fixture-light-device",
     ).entities[0];
     assert.equal(light.domain, "switch");
     assert.deepEqual(light.issues, []);
-    const controls = await load("/packages/engine/src/home-assistant-controls.ts");
     assert.equal(controls.toggleEntityCall(light.state).domain, "switch");
     assert.equal(controls.supportsLightBrightness(light.state), false);
     runtime.entityRegistry = runtime.entityRegistry.filter(
