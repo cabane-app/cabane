@@ -33,7 +33,10 @@ projects. Pet can coexist with the gun and works in orbit and Walk views.
 
 The package owns a bounded grid planner with an injected walkability predicate.
 In orbit it follows reachable paths and pauses between destinations. In Walk it
-aims for a reachable point ahead of the user, keeping its head facing forward.
+approaches the user only when both occupy the same room, stopping about one metre
+away and smoothly looking toward the user with bounded head rotation. When the
+user leaves that room it immediately returns to autonomous roaming. Orbit cameras
+do not attract the pet.
 It accelerates and brakes around turns. The walk clip playback rate follows actual
 ground speed and the injected stride length, including model scale; an idle clip
 takes over when stopped. It does not teleport through disconnected rooms. Walls, closed doors,

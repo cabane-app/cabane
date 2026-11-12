@@ -5,6 +5,19 @@ import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
   const { walkPlaybackRate } = await load("/packages/pet/src/gait.ts");
+  const { petAttention } = await load("/packages/pet/src/attention.ts");
+  test("pet greets only a visitor in its room and releases the target on departure", () => {
+    const pet = { x: 3, z: 0 },
+      visitor = { x: 0, z: 0 };
+    assert.deepEqual(petAttention(pet, visitor, "room", "room", true).target, { x: 1, z: 0 });
+    assert.deepEqual(petAttention({ x: 0.7, z: 0 }, visitor, "room", "room", true).target, {
+      x: 0.7,
+      z: 0,
+    });
+    assert.equal(petAttention(pet, visitor, "room", "other", true), null);
+    assert.equal(petAttention(pet, visitor, "room", undefined, true), null);
+    assert.equal(petAttention(pet, visitor, "room", "room", false), null);
+  });
   const { createLookAhead } = await load("/packages/pet/src/look-ahead.ts");
   test("pet gait covers the measured ground distance, including scaled models and stops", () => {
     const stride = 0.15 / 0.7;
@@ -42,5 +55,32 @@ await withModules(async (load) => {
       look.restore();
       assert.ok(head.quaternion.angleTo(before) < 1e-7);
     }
+  });
+  test("pet head turns toward the visitor and smoothly returns forward after departure", () => {
+    const actor = new Group(),
+      head = new Bone();
+    head.name = "head";
+    actor.add(head);
+    const look = createLookAhead(actor, { bone: "head", forward: [0, 0, 1] });
+    const target = new Vector3(2, 1, 2);
+    for (let frame = 0; frame < 60; frame++) {
+      look.restore();
+      look.update(actor, target, 0.05);
+    }
+    const direction = new Vector3(0, 0, 1).applyQuaternion(
+      head.getWorldQuaternion(new Quaternion()),
+    );
+    assert.ok(
+      direction.x > 0.5 && direction.y > 0.2,
+      "head visibly turns and lifts toward visitor",
+    );
+    for (let frame = 0; frame < 60; frame++) {
+      look.restore();
+      look.update(actor, undefined, 0.05);
+    }
+    const returned = new Vector3(0, 0, 1).applyQuaternion(
+      head.getWorldQuaternion(new Quaternion()),
+    );
+    assert.ok(returned.distanceTo(new Vector3(0, 0, 1)) < 1e-7);
   });
 });

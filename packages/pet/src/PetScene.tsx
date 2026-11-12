@@ -11,7 +11,8 @@ import {
   type AnimationAction,
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import type { SceneFeatureProps } from "@cabane/engine";
+import { roomAtWorldPoint, type SceneFeatureProps } from "@cabane/engine";
+import { petAttention } from "./attention";
 import type { PetModel } from "./model";
 import { createLookAhead } from "./look-ahead";
 import { walkPlaybackRate } from "./gait";
@@ -45,7 +46,7 @@ export default function PetScene(props: SceneFeatureProps & { model: PetModel })
   } | null>(null);
   const [failed, setFailed] = useState(false);
   const moving = useRef(false);
-  const direction = useRef(new Vector3());
+  const visitor = useRef(new Vector3());
   useEffect(() => {
     let disposed = false;
     let release = () => {};
@@ -101,25 +102,31 @@ export default function PetScene(props: SceneFeatureProps & { model: PetModel })
   }, [enabled, reducedMotion, roaming, invalidate]);
   useFrame(({ camera }, delta) => {
     if (!group.current || !roaming || !asset) return;
-    if (enabled && !reducedMotion) {
-      camera.getWorldDirection(direction.current);
-      direction.current.y = 0;
-      direction.current.normalize();
-      roaming.step(
-        Math.min(delta, 0.05),
-        props.view === "walk"
-          ? {
-              x: camera.position.x + direction.current.x * 2.4,
-              z: camera.position.z + direction.current.z * 2.4,
-            }
-          : undefined,
-      );
-    }
+    camera.getWorldPosition(visitor.current);
+    const attention = roaming.position
+      ? petAttention(
+          roaming.position,
+          visitor.current,
+          roomAtWorldPoint(roaming.position, floor)?.id,
+          roomAtWorldPoint(visitor.current, floor)?.id,
+          props.view === "walk",
+        )
+      : null;
+    if (enabled && !reducedMotion) roaming.step(Math.min(delta, 0.05), attention?.target);
     const point = roaming.position;
     group.current.visible = !!point;
     if (!point) return;
     group.current.position.set(point.x, elevation, point.z);
-    group.current.rotation.y = roaming.yaw;
+    const facing =
+      attention && !roaming.moving
+        ? Math.atan2(visitor.current.x - point.x, visitor.current.z - point.z)
+        : roaming.yaw;
+    const turn = Math.atan2(
+      Math.sin(facing - group.current.rotation.y),
+      Math.cos(facing - group.current.rotation.y),
+    );
+    if (enabled && !reducedMotion)
+      group.current.rotation.y += turn * (1 - Math.exp(-6 * Math.min(delta, 0.05)));
     const nextMoving = enabled && !reducedMotion && roaming.moving;
     if (nextMoving !== moving.current) {
       const next = nextMoving ? asset.walk : asset.idle;
@@ -141,7 +148,11 @@ export default function PetScene(props: SceneFeatureProps & { model: PetModel })
       asset.mixer.update(Math.min(delta, 0.05));
       invalidate();
     }
-    asset.look?.update(group.current);
+    asset.look?.update(
+      group.current,
+      attention ? visitor.current : undefined,
+      enabled && !reducedMotion ? Math.min(delta, 0.05) : 0,
+    );
   });
   if (failed)
     return (
