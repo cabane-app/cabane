@@ -3,6 +3,64 @@ import test from "node:test";
 import { IDBFactory } from "fake-indexeddb";
 import { withModules } from "./test-server.mjs";
 
+test("fresh demo uses Larch with a clear welcome tour and working simulated hall lights", async () => {
+  await withModules(async (load) => {
+    const { initializeWorkspaces } = await load(
+      "/apps/web/src/workspaces/initialize-workspaces.ts",
+    );
+    const { composeOwnerProjectManifest } = await load("/apps/web/src/project-runtime.ts");
+    const { firstOnboardingLight } = await load(
+      "/apps/web/src/workspaces/first-onboarding-light.ts",
+    );
+    const { onboardingDemoRoomId } = await load("/apps/web/src/onboarding-config.ts");
+    const { createWelcomeWalkLoop, sampleWelcomeWalkLoop } = await load(
+      "/packages/engine/src/onboarding/preview/welcome-walk-loop.ts",
+    );
+    const { createWelcomeWalkNavigation } = await load(
+      "/packages/engine/src/onboarding/preview/welcome-walk-navigation.ts",
+    );
+    const { deriveDemoSessionDefinition, applyDemoServiceCall } = await load(
+      "/packages/engine/src/DemoHomeAssistantSession.tsx",
+    );
+    const factory = new IDBFactory();
+    const storage = {
+      getItem: () => null,
+      setItem() {},
+      removeItem() {},
+    };
+    const { repository } = await initializeWorkspaces(factory, storage);
+    const onboarding = await repository.readOnboarding();
+    const entry = await repository.read(onboarding.demoWorkspaceId);
+    assert.equal(entry.record.published.home.name, "Larch Observatory");
+    const manifest = composeOwnerProjectManifest(entry.record.published);
+    const floor = manifest.floors.find((floor) => floor.id === manifest.home.walkStart.floorId);
+    const loop = createWelcomeWalkLoop(manifest, floor);
+    assert.ok(loop, "Larch offers the walking preview instead of falling back to orbit");
+    const navigation = createWelcomeWalkNavigation(manifest, floor);
+    for (let seconds = 0; seconds < loop.durationSeconds; seconds += 0.02) {
+      const pose = sampleWelcomeWalkLoop(loop, seconds);
+      const [x, y, z] = pose.position;
+      assert.ok(navigation.isClear({ x, y, z }), `Tour is clear at ${seconds}s`);
+      assert.ok(Number.isFinite(pose.yaw));
+    }
+    const light = firstOnboardingLight(manifest, onboardingDemoRoomId);
+    assert.equal(light.roomId, "ground-floor:room-1");
+    const definition = deriveDemoSessionDefinition(manifest);
+    const entityId = definition.profile.entityIdsBySlotId[light.slotId];
+    const state = definition.runtime.entityStates[entityId];
+    const updated = applyDemoServiceCall(state, {
+      domain: "light",
+      service: state.state === "on" ? "turn_off" : "turn_on",
+      target: { entity_id: entityId },
+    });
+    assert.notEqual(updated.state, state.state);
+
+    const original = await repository.readRaw(entry.metadata.id);
+    await initializeWorkspaces(factory, storage);
+    assert.equal(await repository.readRaw(entry.metadata.id), original);
+  });
+});
+
 test("native initialization never reads or migrates legacy connection storage", async () => {
   const indexedDB = new IDBFactory();
   await withModules(async (load) => {

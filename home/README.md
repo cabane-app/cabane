@@ -1,6 +1,15 @@
-# Bundled home
+# Bundled homes
 
-The demo is an ordinary `HomeProject`, using the same schema as portable workspace
+New `/welcome` and `/demo` workspaces use **Larch Observatory** from
+`dev-workspaces/larch-observatory.project.json`. `src/showcase.ts` parses the same
+portable design with a separate demo identity, leaving the development workspace
+independent. The welcome tour walks through its Cathedral hall; demo controls
+simulate its existing device slots.
+
+Existing browser workspaces keep their saved contents. The original seed below
+remains available for legacy connection migration and compatibility fixtures.
+
+The original home is an ordinary `HomeProject`, using the same schema as portable workspace
 import/export. Its checked-in source is split for easier editing:
 
 - `src/layout.json`: building coordinates, floors, rooms, walls, openings, ceilings, and stairs.
