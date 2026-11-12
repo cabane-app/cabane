@@ -167,6 +167,43 @@ await withModules(async (load) => {
     ]);
   });
 
+  test("same-titled dashboards and pages stay distinguishable without duplicating navigation targets", async () => {
+    const result = await discoverDashboardViews(async (message) => {
+      if (message.type === "get_panels")
+        return { "dashboard-one": { component_name: "lovelace", title: "Home" } };
+      if (message.type === "lovelace/dashboards/list")
+        return [
+          { url_path: "dashboard-one", title: "Home" },
+          { url_path: "dashboard-two", title: "Home" },
+        ];
+      return {
+        views:
+          message.url_path === "dashboard-one"
+            ? [
+                { title: "Home", path: "kitchen" },
+                { title: "Home", path: "lounge" },
+                { title: "Home", path: "kitchen" },
+                { path: "garage" },
+              ]
+            : [{ title: "Home", path: "kitchen" }],
+      };
+    }, "https://ha.fixture.test");
+    assert.equal(result.views.length, 4);
+    assert.equal(new Set(result.views.map((view) => view.label)).size, 4);
+    assert.equal(
+      result.views.find((view) => view.path === "/dashboard-one/kitchen").label,
+      "Home → Home (/dashboard-one/kitchen)",
+    );
+    assert.equal(
+      result.views.find((view) => view.path === "/dashboard-two/kitchen").label,
+      "Home → Home (/dashboard-two/kitchen)",
+    );
+    assert.equal(
+      result.views.find((view) => view.path === "/dashboard-one/garage").label,
+      "Home → garage",
+    );
+  });
+
   test("embedded appearance styles late shadow roots and fully restores the original document on teardown", async () => {
     const dom = new JSDOM("<!doctype html><home-assistant></home-assistant>", {
       pretendToBeVisual: true,

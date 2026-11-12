@@ -77,6 +77,10 @@ It never guesses a custom view from room names. Older HA versions without room
 pages require a custom view. Missing areas, permissions and discovery failures
 retain saved choices and show recovery guidance. Discovery is read-only and includes
 dashboards hidden from the sidebar.
+The picker lists dashboard pages, not just dashboard names. Page titles fall back
+to their HA path when unnamed. Identical labels include their full view path so
+same-named dashboards and pages remain distinguishable. Repeated navigation URLs
+appear only once; distinct pages are retained even when their titles match.
 
 **Original HA theme** preserves card styling; **Cabane palette** applies local
 theme overrides in the embedded view and is the default for new preferences. Existing saved appearance choices are retained. Custom cards may retain their own styling.

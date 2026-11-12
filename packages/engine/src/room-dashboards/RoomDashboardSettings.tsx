@@ -65,7 +65,7 @@ export function RoomDashboardSettings({
       {enabled && (
         <div className="room-dashboard-settings__view">
           <label>
-            Dashboard view
+            Dashboard page
             <select
               value={custom ? "custom" : value.view}
               onChange={(event) => {
