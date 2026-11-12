@@ -14,6 +14,8 @@ import { useRoomHeroParallax } from "./useRoomHeroParallax";
 import { RoomCleanAction } from "./RoomCleanAction";
 import { HaRoomDashboard } from "../room-dashboards/HaRoomDashboard";
 import type { RoomDashboardSettings } from "../room-dashboards/room-dashboard";
+import { useHomeAssistantHostSession } from "../HomeAssistantHostSession";
+import { useHomeAssistantRuntime } from "../HomeAssistantRuntimeContext";
 
 export interface RoomControlSheetProps {
   dashboardSettings?: RoomDashboardSettings | undefined;
@@ -132,10 +134,19 @@ export function RoomControlSheet({
   onEscape,
 }: RoomControlSheetProps) {
   const dom = useCabaneDom();
+  const host = useHomeAssistantHostSession();
+  const runtime = useHomeAssistantRuntime();
+  const nativeHaPanel = Boolean(
+    host &&
+    runtime.origin === host.origin &&
+    typeof window !== "undefined" &&
+    window.location.origin === host.origin,
+  );
   const outsideRooms = roomStatus === undefined;
   const roomOverview = !deviceOverlay && !outsideRooms;
   const [cabaneControlsRoom, setCabaneControlsRoom] = useState<string | null>(null);
-  const hasHaDashboard = roomOverview && dashboardSettings?.controls === "home-assistant";
+  const hasHaDashboard =
+    nativeHaPanel && roomOverview && dashboardSettings?.controls === "home-assistant";
   const showHaDashboard =
     hasHaDashboard && !selectedDeviceId && cabaneControlsRoom !== resolved.room.id;
   const modules = useMemo(() => buildRoomModules(resolved), [resolved]);

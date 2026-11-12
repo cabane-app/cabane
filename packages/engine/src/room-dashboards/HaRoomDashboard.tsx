@@ -74,15 +74,13 @@ export function HaRoomDashboard({
       ? "Map this room to a Home Assistant area in Connect, or choose a dashboard view."
       : runtime.status !== "connected"
         ? "Reconnect to Home Assistant to use this dashboard."
-        : !sameOrigin
-          ? "Open Cabane from your Home Assistant sidebar to show this view here."
-          : !runtime.canMutate
-            ? "Open the saved home to use the Home Assistant dashboard."
-            : automaticUnavailable
-              ? "This Home Assistant version does not provide automatic room pages. Choose a dashboard view in Connect."
-              : state === "error"
-                ? "The dashboard could not be displayed. Open it in Home Assistant, or retry."
-                : "Loading Home Assistant dashboard…";
+        : !runtime.canMutate
+          ? "Open the saved home to use the Home Assistant dashboard."
+          : automaticUnavailable
+            ? "This Home Assistant version does not provide automatic room pages. Choose a dashboard view in Connect."
+            : state === "error"
+              ? "The dashboard could not be displayed. Open it in Home Assistant, or retry."
+              : "Loading Home Assistant dashboard…";
   return (
     <section className="ha-room-dashboard" aria-label={`${roomName} Home Assistant dashboard`}>
       <div className="ha-room-dashboard__actions">

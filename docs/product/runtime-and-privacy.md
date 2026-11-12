@@ -29,7 +29,7 @@ Optional room dashboard frames use only this same-origin host session's ordinary
 HA page authentication. Cabane never injects tokens into the frame or changes HA's
 saved dashboard, profile theme or configuration. Private per-room view paths are
 canonical same-server paths without credentials, query strings or fragments.
-Cross-origin standalone sessions offer an external HA link instead of embedding.
+Standalone sessions keep ordinary Cabane room controls without embedding or extra dashboard UI.
 The frame owns its native HA actions; draft previews and disconnected sessions do
 not mount it. Embedded styling is local and removed when the frame is released.
 
