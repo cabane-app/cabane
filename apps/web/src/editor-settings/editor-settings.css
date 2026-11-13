@@ -186,9 +186,19 @@
   }
 }
 @media (max-width: 760px) {
+  .direction-preview.is-settings {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    row-gap: 8px;
+    padding-bottom: max(38px, env(safe-area-inset-bottom));
+  }
   .direction-preview.is-settings .editor-header {
-    left: max(10px, env(safe-area-inset-left));
-    right: max(10px, env(safe-area-inset-right));
+    position: relative;
+    inset: auto;
+    grid-area: 1 / 1;
+    margin: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 0
+      max(10px, env(safe-area-inset-left));
     gap: 8px;
   }
   .direction-preview.is-settings .editor-project-controls {
@@ -203,10 +213,12 @@
   }
   .direction-preview.is-settings .direction-rail {
     display: flex;
-    inset: 126px 0 auto;
+    position: relative;
+    inset: auto;
+    grid-area: 2 / 1;
     width: 100%;
     height: auto;
-    padding: 0 12px 10px;
+    padding: 0 max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left));
     overflow: visible;
     border: 0;
   }
@@ -234,7 +246,10 @@
     display: none;
   }
   .editor-settings {
-    inset: 194px 0 38px;
+    position: relative;
+    inset: auto;
+    grid-area: 3 / 1;
+    min-height: 0;
     padding: 16px 20px 28px;
   }
   .editor-settings__heading {

@@ -286,7 +286,8 @@
       "workspace-routes.test.mjs",
       "workspace-sync-coordinator.test.mjs",
       "workspace-transfer.test.mjs",
-      "mobile-editor-panels-browser.test.mjs"
+      "mobile-editor-panels-browser.test.mjs",
+      "settings-navigation-browser.test.mjs"
     ]
   },
   "full": {
