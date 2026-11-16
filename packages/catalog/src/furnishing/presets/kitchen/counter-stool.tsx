@@ -1,5 +1,7 @@
-import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
+import { Outlines, ToonMaterial, type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
+
+import { stoolBentBack, stoolFootrails, stoolFrame } from "./counter-stool-frame";
 
 export const COUNTER_STOOL_SIZE = [0.48, 0.92, 0.5] as const;
 
@@ -17,46 +19,45 @@ export function CounterStool({
       scale={[size[0] / 0.48, size[1] / 0.92, size[2] / 0.5]}
       userData={{ walkCollider: true }}
     >
-      {[-0.19, 0.19].flatMap((x) =>
-        [-0.2, 0.2].map((z) => (
-          <mesh key={`${x}-${z}`} name="counter-stool-leg" position={[x, 0.31, z]} castShadow>
-            <boxGeometry args={[0.045, 0.62, 0.045]} />
-            <ToonMaterial color="#b58b5b" />
-          </mesh>
-        )),
-      )}
-      {[
-        [-0.19, 0, 0.4, 0.03],
-        [0.19, 0, 0.4, 0.03],
-        [0, -0.2, 0.38, 0.03],
-        [0, 0.2, 0.38, 0.03],
-      ].map((rail, i) =>
-        i < 2 ? (
-          <mesh key={i} name="counter-stool-footrail" position={[rail[0], rail[2], 0]}>
-            <boxGeometry args={[0.025, 0.035, 0.4]} />
-            <ToonMaterial color="#9b754e" />
-          </mesh>
-        ) : (
-          <mesh key={i} name="counter-stool-footrail" position={[0, rail[2], rail[1]]}>
-            <boxGeometry args={[0.38, 0.035, 0.025]} />
-            <ToonMaterial color="#9b754e" />
-          </mesh>
-        ),
-      )}
+      <mesh name="counter-stool-leg" geometry={stoolFrame} dispose={null} castShadow receiveShadow>
+        <ToonMaterial color="#b58b5b" />
+      </mesh>
+      <mesh
+        name="counter-stool-footrail"
+        geometry={stoolFootrails}
+        dispose={null}
+        castShadow
+        receiveShadow
+      >
+        <ToonMaterial color="#9b754e" />
+      </mesh>
+      <RoundedFurniturePanel
+        name="counter-stool-seat-pan"
+        size={[0.46, 0.042, 0.45]}
+        position={[0, 0.604, 0.006]}
+        color="#c7a271"
+        radius={0.02}
+        outline={false}
+      />
       <RoundedFurniturePanel
         name="counter-stool-seat"
-        size={[0.48, 0.1, 0.5]}
-        position={[0, 0.65, 0]}
+        size={[0.48, 0.075, 0.47]}
+        position={[0, 0.6525, 0.015]}
         color={color ?? "#d9cbb4"}
-        radius={0.045}
+        radius={0.035}
+        outlineColor="#a2947d"
       />
-      <RoundedFurniturePanel
+      <mesh
         name="counter-stool-back"
-        size={[0.48, 0.25, 0.07]}
-        position={[0, 0.795, -0.215]}
-        color="#d0ad78"
-        radius={0.025}
-      />
+        geometry={stoolBentBack}
+        position-y={0.916}
+        dispose={null}
+        castShadow
+        receiveShadow
+      >
+        <ToonMaterial color="#d0ad78" />
+        <Outlines color="#95784f" thickness={0.0015} screenspace={false} />
+      </mesh>
     </group>
   );
 }

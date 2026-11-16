@@ -2,10 +2,10 @@ import { CylinderGeometry, LatheGeometry, SphereGeometry, TorusGeometry, Vector2
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { cord, DiningOakMesh } from "./dining-construction";
 
-const coils = Array.from({ length: 25 }, (_, i) => {
-  const g = new TorusGeometry(0.018 + i * 0.008, 0.0045, 5, 48);
+const coils = Array.from({ length: 15 }, (_, i) => {
+  const g = new TorusGeometry(0.012 + i * 0.014, 0.007, 5, 40);
   g.rotateX(Math.PI / 2);
-  g.scale(1, 1, 0.76);
+  g.scale(1, 0.65, 0.76);
   g.translate(0, 0.766, 0);
   return g;
 });

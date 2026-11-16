@@ -1,6 +1,8 @@
 import type { BufferGeometry } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { bentwood, cord, DiningOakMesh, timber, WovenDiningSeat } from "./dining-construction";
+import { bentwood, DiningOakMesh, timber, WovenDiningSeat } from "./dining-construction";
+
+import { wishboneSplat } from "./wishbone-splat";
 
 const members: BufferGeometry[] = [-1, 1].flatMap((s) => [
   timber([s * 0.222, 0, 0.182], [s * 0.211, 0.671, 0.13], 0.013, 0.019),
@@ -12,25 +14,6 @@ members.push(
   timber([-0.213, 0.425, 0.171], [0.213, 0.425, 0.171], 0.021),
   timber([-0.201, 0.425, -0.168], [0.201, 0.425, -0.168], 0.018),
   timber([-0.212, 0.255, -0.166], [0.212, 0.255, -0.166], 0.011),
-  cord(
-    [
-      [0, 0.442, -0.17],
-      [0, 0.574, -0.187],
-      [-0.048, 0.67, -0.2],
-      [-0.104, 0.754, -0.202],
-    ],
-    0.013,
-    14,
-  ),
-  cord(
-    [
-      [0, 0.568, -0.187],
-      [0.048, 0.67, -0.2],
-      [0.104, 0.754, -0.202],
-    ],
-    0.013,
-    10,
-  ),
 );
 const frame = mergeGeometries(members);
 members.forEach((g) => g.dispose());
@@ -49,6 +32,7 @@ export function CustomDiningChair({
     <group name="chaise-repas-cannee-custom" position={position} rotation={[0, rotationY, 0]}>
       <DiningOakMesh name="wishbone-chair-joined-frame" geometry={frame} />
       <DiningOakMesh name="continuous-bentwood-back-and-arms" geometry={rail} color="#cba16b" />
+      <DiningOakMesh name="carved-wishbone-splat" geometry={wishboneSplat} color="#c49a64" />
       <WovenDiningSeat color={color} />
     </group>
   );

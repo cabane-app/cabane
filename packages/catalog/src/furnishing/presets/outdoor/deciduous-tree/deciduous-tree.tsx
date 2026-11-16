@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { Box3, Matrix4, Vector3 } from "three";
+import { Box3, DoubleSide, Matrix4, Vector3 } from "three";
 import { Outlines, ToonMaterial, type SceneModelProps } from "@cabane/engine";
 import { createDeciduousCrownGeometry } from "./deciduous-crown-geometry";
 import { createDeciduousWoodGeometry } from "./deciduous-wood-geometry";
@@ -33,11 +33,10 @@ export function DeciduousTree({ size }: SceneModelProps) {
         receiveShadow
       >
         <ToonMaterial color="#896547" />
-        <Outlines color="#4c4030" thickness={0.003} />
+        <Outlines color="#4c4030" thickness={0.0015} screenspace={false} />
       </mesh>
-      <mesh name="deciduous-layered-crown" geometry={geometry.crown} castShadow receiveShadow>
-        <ToonMaterial vertexColors />
-        <Outlines color="#354f32" thickness={0.002} />
+      <mesh name="deciduous-layered-crown" geometry={geometry.crown} castShadow>
+        <ToonMaterial vertexColors side={DoubleSide} />
       </mesh>
     </group>
   );

@@ -15,5 +15,5 @@ export const mediaWallDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "wall",
   outlineContact: true,
-  complexity: { visibleMeshes: 32, triangles: 6_000 },
+  complexity: { visibleMeshes: 32, triangles: 8_200 },
 });

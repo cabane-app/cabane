@@ -1,5 +1,6 @@
 import { ToonMaterial } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
+import { SectionalBackCushion } from "./sectional-back-cushion";
 import { CozySofaCushions, TailoredCushion } from "./sofa-upholstery";
 
 /** Existing sectional envelope and offset origin retained for saved placements. */
@@ -20,8 +21,9 @@ export function CustomSectionalSofa({
       userData={{ walkCollider: true }}
     >
       <RoundedFurniturePanel
-        size={[2.72, 0.32, 0.72]}
-        position={[0, 0.31, 0.02]}
+        name="two-seat-upholstered-deck"
+        size={[1.82, 0.32, 0.72]}
+        position={[0.45, 0.31, 0.02]}
         color={color ?? "#d2ccbd"}
         radius={0.055}
       />
@@ -68,14 +70,7 @@ export function CustomSectionalSofa({
         />
       ))}
       {[-0.91, -0.02, 0.84].map((x) => (
-        <TailoredCushion
-          key={x}
-          name="sectional-back-cushion"
-          size={[0.81, 0.2, 0.6]}
-          position={[x, 0.927, -0.29]}
-          rotation={[Math.PI / 2, 0, 0]}
-          color={color ?? "#e9e4d7"}
-        />
+        <SectionalBackCushion key={x} x={x} color={color ?? "#e9e4d7"} />
       ))}
       {[-1.37, 1.37].map((x) => (
         <group key={x}>

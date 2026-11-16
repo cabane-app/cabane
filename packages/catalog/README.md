@@ -1,5 +1,22 @@
 # Cabane model catalog
 
+## Cel-shaded construction refinements
+
+These existing presets retain their model IDs, dimensions, placement origins,
+colors and resize policies. Their refinements use native toon materials and
+physical geometry, with no additional textures or model-owned lighting.
+
+| Models                                                                                             | Construction details                                                                                            |
+| -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `sectional-sofa`, `media-wall`, `round-coffee-table`, `dining-set`, `oak-dining-chair`             | Sculpted upholstery, recessed cabinetry, softened tabletops, connected aprons and bentwood chair frames.        |
+| `counter-stool`, `double-bed`, `flat-door-wardrobe`, `wooden-crib`, `oak-nightstand`               | Splayed stool supports, upholstered headboard panels, inset doors, arched crib ends and a recessed drawer pull. |
+| `wooden-vanity`, `vessel-sink-faucet`, `arched-mirror`, `family-bathtub`, `dark-oak-vessel-vanity` | Framed joinery, hollow ceramic basins, curved spouts, continuous mirror framing and a rolled bath rim.          |
+| `garden-shrub`, `deciduous-tree`, `olive-tree`, `tall-ficus`, `potted-plant`                       | Species-specific branching and foliage, attached leaves, shaped planter rims and recessed soil.                 |
+
+The existing variants remain available through Arrange → Details → Variant.
+Fine repeated details use restrained surface colors rather than individual
+outline shells.
+
 ## Everyday household additions
 
 These static furnishings are available in Arrange and All items. No runtime

@@ -1,29 +1,27 @@
-import { CatmullRomCurve3, CylinderGeometry, Quaternion, Vector3 } from "three";
+import { CatmullRomCurve3, TubeGeometry, Vector3 } from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 type Point = [number, number, number];
 
 export function createDeciduousWoodGeometry() {
-  const parts: CylinderGeometry[] = [];
-  const branch = (points: Point[], base: number, tip: number, steps = 9) => {
+  const parts: TubeGeometry[] = [];
+  const branch = (points: Point[], base: number, tip: number, steps = 5) => {
     const curve = new CatmullRomCurve3(points.map((point) => new Vector3(...point)));
-    for (let step = 0; step < steps; step++) {
-      const a = curve.getPoint(step / steps),
-        b = curve.getPoint((step + 1) / steps);
-      const direction = b.clone().sub(a);
-      const radius = (t: number) => tip + (base - tip) * Math.pow(1 - t, 1.15);
-      const segment = new CylinderGeometry(
-        radius((step + 1) / steps),
-        radius(step / steps),
-        direction.length() + 0.012,
-        9,
-      );
-      segment.applyQuaternion(
-        new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction.normalize()),
-      );
-      segment.translate(...a.add(b).multiplyScalar(0.5).toArray());
-      parts.push(segment);
+    const sides = 6;
+    const tube = new TubeGeometry(curve, steps, 1, sides);
+    const positions = tube.getAttribute("position");
+    const vertex = new Vector3();
+    for (let ring = 0; ring <= steps; ring++) {
+      const t = ring / steps;
+      const center = curve.getPointAt(t);
+      const radius = tip + (base - tip) * (1 - t) ** 1.15;
+      for (let side = 0; side <= sides; side++) {
+        const index = ring * (sides + 1) + side;
+        vertex.fromBufferAttribute(positions, index).sub(center).multiplyScalar(radius).add(center);
+        positions.setXYZ(index, vertex.x, Math.max(0, vertex.y), vertex.z);
+      }
     }
+    parts.push(tube);
   };
   branch(
     [
@@ -36,7 +34,7 @@ export function createDeciduousWoodGeometry() {
     ],
     0.24,
     0.025,
-    18,
+    9,
   );
   branch(
     [
@@ -88,7 +86,7 @@ export function createDeciduousWoodGeometry() {
       ],
       0.105,
       0.008,
-      5,
+      3,
     );
   }
   const wood = mergeGeometries(parts);

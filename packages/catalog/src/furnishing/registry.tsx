@@ -674,7 +674,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 9, triangles: 1_600 },
+    complexity: { visibleMeshes: 9, triangles: 2_700 },
   }),
   "oak-nightstand": defineFurnishingModel({
     component: OakNightstand,
@@ -698,7 +698,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 10, triangles: 5_000 },
+    complexity: { visibleMeshes: 14, triangles: 5_000 },
   }),
   "oak-desk": defineFurnishingModel({
     component: OakDesk,
@@ -929,7 +929,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 16, triangles: 3_500 },
+    complexity: { visibleMeshes: 24, triangles: 3_500 },
   }),
   "white-corner-wardrobe": defineFurnishingModel({
     component: WhiteCornerWardrobe,
@@ -1216,7 +1216,7 @@ const stableFurnishingDefinitions = {
     preferredPlacement: "absolute",
     placementEnvironment: "outdoor",
     outlineContact: true,
-    complexity: { visibleMeshes: 7, triangles: 1_200 },
+    complexity: { visibleMeshes: 7, triangles: 4_800 },
   }),
   "olive-tree": defineFurnishingModel({
     component: OliveTree,
@@ -1244,7 +1244,7 @@ const stableFurnishingDefinitions = {
     preferredPlacement: "absolute",
     placementEnvironment: "outdoor",
     outlineContact: false,
-    complexity: { visibleMeshes: 4, triangles: 700 },
+    complexity: { visibleMeshes: 4, triangles: 1_500 },
   }),
   "pool-chaise-longue": defineFurnishingModel({
     defaultColor: "#94a58c",

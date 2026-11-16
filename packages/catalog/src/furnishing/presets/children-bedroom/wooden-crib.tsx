@@ -1,5 +1,6 @@
-import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
+import { Outlines, ToonMaterial, type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
+import { cribEnd, cribSpindles } from "./crib-joinery";
 
 export const WOODEN_CRIB_SIZE = [0.76, 0.95, 1.46] as const;
 
@@ -11,64 +12,95 @@ export function WoodenCrib({
   size?: SceneItemSize;
   color?: string | undefined;
 }) {
-  const sideSlats = [-0.56, -0.37, -0.18, 0.01, 0.2, 0.39, 0.58];
   return (
     <group
       name="wooden-crib"
       scale={[size[0] / 0.76, size[1] / 0.95, size[2] / 1.46]}
       userData={{ walkCollider: true }}
     >
-      {[-0.34, 0.34].flatMap((x) =>
+      {[-0.35, 0.35].flatMap((x) =>
         [-0.7, 0.7].map((z) => (
-          <mesh key={`${x}-${z}`} position={[x, 0.475, z]} castShadow>
-            <boxGeometry args={[0.08, 0.95, 0.06]} />
-            <ToonMaterial color="#c89f6d" />
-          </mesh>
+          <RoundedFurniturePanel
+            key={x + "-" + z}
+            name="crib-post"
+            position={[x, 0.449, z]}
+            size={[0.06, 0.898, 0.06]}
+            color="#c89f6d"
+            radius={0.013}
+            outline={false}
+          />
         )),
       )}
-      {[-0.7, 0.7].map((z) => (
-        <RoundedFurniturePanel
-          key={z}
+      {[-0.72, 0.68].map((z) => (
+        <mesh
           name="crib-end"
-          size={[0.6, 0.3, 0.06]}
-          position={[0, 0.8, z]}
-          color="#d4b17e"
-          radius={0.015}
-        />
+          key={z}
+          position-z={z}
+          geometry={cribEnd}
+          dispose={null}
+          castShadow
+          receiveShadow
+        >
+          <ToonMaterial color="#d4b17e" />
+          <Outlines color="#ab895d" thickness={0.0015} screenspace={false} />
+        </mesh>
       ))}
-      {[-0.365, 0.365].flatMap((x) =>
-        sideSlats.map((z) => (
-          <mesh key={`${x}-${z}`} name="crib-side-slat" position={[x, 0.64, z]} castShadow>
-            <boxGeometry args={[0.025, 0.48, 0.035]} />
+      {[-0.357, 0.357].map((x) => (
+        <group key={x} position-x={x}>
+          <mesh
+            name="crib-side-slats"
+            geometry={cribSpindles}
+            dispose={null}
+            castShadow
+            receiveShadow
+          >
             <ToonMaterial color="#c8a06e" />
           </mesh>
-        )),
-      )}
-      {[-0.37, 0.37].map((x) => (
-        <RoundedFurniturePanel
-          key={x}
-          name="crib-top-rail"
-          size={[0.02, 0.07, 1.34]}
-          position={[x, 0.91, 0]}
-          color="#d0aa77"
-          radius={0.009}
-        />
+          <RoundedFurniturePanel
+            name="crib-bottom-rail"
+            size={[0.039, 0.094, 1.362]}
+            position={[0, 0.312, 0]}
+            color="#c39b6b"
+            radius={0.008}
+            outline={false}
+          />
+          <RoundedFurniturePanel
+            name="crib-top-rail"
+            size={[0.046, 0.051, 1.362]}
+            position={[0, 0.861, 0]}
+            color="#d0aa77"
+            radius={0.018}
+            outlineColor="#aa875b"
+          />
+        </group>
       ))}
+      <mesh position={[0, 0.304, 0]} receiveShadow>
+        <boxGeometry args={[0.705, 0.025, 1.39]} />
+        <ToonMaterial color="#bc986c" />
+      </mesh>
       <RoundedFurniturePanel
         name="crib-mattress-70x140"
         size={[0.7, 0.14, 1.4]}
         position={[0, 0.38, 0]}
         color="#f1ece0"
         radius={0.035}
-        outlineColor="#aaa08c"
+        outlineColor="#bbb29e"
       />
       <RoundedFurniturePanel
         name="crib-blanket"
-        size={[0.66, 0.035, 0.62]}
-        position={[0, 0.468, 0.26]}
+        size={[0.66, 0.036, 0.66]}
+        position={[0, 0.466, 0.29]}
         color={color ?? "#d8d3bd"}
+        radius={0.016}
+        outlineColor="#ada793"
+      />
+      <RoundedFurniturePanel
+        name="crib-folded-hem"
+        size={[0.65, 0.026, 0.103]}
+        position={[0, 0.487, 0.009]}
+        color={color ?? "#dfdbc8"}
         radius={0.012}
-        outlineColor="#a39d86"
+        outline={false}
       />
     </group>
   );

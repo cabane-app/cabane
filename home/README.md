@@ -22,6 +22,11 @@ Reusable models belong to `packages/catalog`. Use an existing preset ID before
 creating geometry. The home contains no per-room React compositions or separate
 hand-maintained furnishing inventory. The runtime manifest is derived from the project data.
 
+The fitted kitchen extension uses recessed cream cabinet fronts, brass pulls,
+a ribbed oak peninsula, a beveled worktop and an open sink bowl. These are
+geometry refinements within its existing envelope; its model ID, placements
+and cabinet-lighting slots are unchanged.
+
 Create an importable JSON file with:
 
 ```sh

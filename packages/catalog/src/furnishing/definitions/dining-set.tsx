@@ -16,5 +16,5 @@ export const diningSetDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 26, triangles: 65_000 },
+  complexity: { visibleMeshes: 31, triangles: 65_000 },
 });
