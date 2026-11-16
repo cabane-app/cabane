@@ -54,12 +54,20 @@ export function FlatDoorWardrobe({ size = FLAT_DOOR_WARDROBE_SIZE }: { size?: Sc
       {[-0.732, -0.244, 0.244, 0.732].map((x, index) => (
         <group key={x}>
           <RoundedFurniturePanel
-            name="wardrobe-flat-door"
+            name="wardrobe-edgebanded-leaf"
             size={[0.482, 2.002, 0.037]}
             position={[x, 1.145, 0.2425]}
-            color="#eeeade"
+            color="#cfb591"
             radius={0.005}
-            outlineColor="#b4aa96"
+            outline={false}
+          />
+          <RoundedFurniturePanel
+            name="wardrobe-flat-door"
+            size={[0.474, 1.994, 0.012]}
+            position={[x, 1.145, 0.259]}
+            radius={0.005}
+            color="#eeeade"
+            outline={false}
           />
           <mesh
             name="wardrobe-oak-pull"

@@ -11,5 +11,5 @@ export const showerAssemblyDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 20, triangles: 4_000 },
+  complexity: { visibleMeshes: 22, triangles: 2850 },
 });

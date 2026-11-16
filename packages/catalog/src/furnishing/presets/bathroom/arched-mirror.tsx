@@ -1,3 +1,4 @@
+import { MirrorFaceJoinery } from "./mirror-face-joinery";
 import { Outlines, ToonMaterial } from "@cabane/engine";
 import { Path, Shape } from "three";
 
@@ -25,7 +26,7 @@ export function ArchedMirror() {
           args={[
             frame,
             {
-              depth: 0.052,
+              depth: 0.047,
               bevelEnabled: true,
               bevelSize: 0.004,
               bevelThickness: 0.004,
@@ -37,6 +38,7 @@ export function ArchedMirror() {
         <ToonMaterial color="#875d42" />
         <Outlines color="#72513d" thickness={0.0013} screenspace={false} />
       </mesh>
+      <MirrorFaceJoinery />
       <mesh name="inner-glazing-bead" position={[0, 0, 0.006]}>
         <extrudeGeometry
           args={[

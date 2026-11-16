@@ -1,5 +1,8 @@
-import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
+import { type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
+
+import { BoxedCushion } from "./sofa-upholstery/boxed-cushion";
+import { TurnedSeatFoot } from "./sofa-upholstery/turned-seat-foot";
 
 export const UPHOLSTERED_OTTOMAN_SIZE = [0.7, 0.42, 0.55] as const;
 
@@ -19,29 +22,38 @@ export function UpholsteredOttoman({
     >
       {[-0.27, 0.27].flatMap((x) =>
         [-0.195, 0.195].map((z) => (
-          <mesh key={`${x}-${z}`} name="ottoman-foot" position={[x, 0.045, z]} castShadow>
-            <boxGeometry args={[0.055, 0.09, 0.055]} />
-            <ToonMaterial color="#a67d51" />
-          </mesh>
+          <TurnedSeatFoot
+            key={`${x}-${z}`}
+            x={x}
+            z={z}
+            height={0.106}
+            radius={0.041}
+            name="ottoman-foot"
+            color="#a67d51"
+          />
         )),
       )}
       <RoundedFurniturePanel
-        size={[0.64, 0.23, 0.49]}
-        position={[0, 0.205, 0]}
+        name="oak-bottom-rail"
+        size={[0.6, 0.035, 0.45]}
+        position={[0, 0.1075, 0]}
+        color="#a67d51"
+        radius={0.014}
+        outline={false}
+      />
+      <BoxedCushion
+        name="upholstered-boxing"
+        size={[0.66, 0.216, 0.51]}
+        position={[0, 0.216, 0]}
         color={color ?? "#c9b9a1"}
-        radius={0.045}
       />
-      <RoundedFurniturePanel
+      <BoxedCushion
         name="ottoman-cushion"
-        size={[0.7, 0.17, 0.55]}
-        position={[0, 0.335, 0]}
+        size={[0.7, 0.15, 0.55]}
+        position={[0, 0.345, 0]}
         color={color ?? "#ded1ba"}
-        radius={0.065}
+        outlineColor="#ac9980"
       />
-      <mesh name="ottoman-seam" position={[0, 0.405, 0.273]}>
-        <boxGeometry args={[0.58, 0.008, 0.004]} />
-        <ToonMaterial color={color ?? "#aa9c85"} />
-      </mesh>
     </group>
   );
 }

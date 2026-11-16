@@ -1,4 +1,5 @@
-import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
+import { NightstandBase } from "./nightstand-base";
+import { type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
 
 import { NightstandDrawer } from "./nightstand-drawer";
@@ -12,14 +13,7 @@ export function OakNightstand({ size = OAK_NIGHTSTAND_SIZE }: { size?: SceneItem
       scale={[size[0] / 0.45, size[1] / 0.5, size[2] / 0.4]}
       userData={{ walkCollider: true }}
     >
-      {[-0.178, 0.178].flatMap((x) =>
-        [-0.145, 0.145].map((z) => (
-          <mesh key={`${x}-${z}`} position={[x, 0.06, z]} castShadow>
-            <cylinderGeometry args={[0.026, 0.016, 0.12, 10]} />
-            <ToonMaterial color="#b99262" />
-          </mesh>
-        )),
-      )}
+      <NightstandBase />
       <RoundedFurniturePanel
         name="nightstand-overhanging-cap"
         size={[0.45, 0.033, 0.4]}

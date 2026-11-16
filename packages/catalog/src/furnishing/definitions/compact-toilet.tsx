@@ -15,5 +15,5 @@ export const compactToiletDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 12, triangles: 3_000 },
+  complexity: { visibleMeshes: 10, triangles: 3400 },
 });

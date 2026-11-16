@@ -1,3 +1,4 @@
+import { LinenPillow } from "./linen-pillow";
 import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
 import { CozyBedHeadboard, CozyWhiteBlueBedding } from "./cozy-white-blue-bed";
@@ -90,14 +91,13 @@ export function DoubleBed({
               outline={false}
             />
             {[-0.4, 0.4].map((x) => (
-              <RoundedFurniturePanel
+              <LinenPillow
                 key={x}
                 name="double-bed-pillow"
                 size={[0.68, 0.11, 0.39]}
                 position={[x, 0.605, -0.716]}
                 rotation={[0.22, x * 0.1, 0]}
                 color={color ?? "#f4f0e6"}
-                radius={0.05}
                 outlineColor="#b6ad9c"
               />
             ))}
