@@ -32,31 +32,35 @@ export type HouseplantGrowth = {
 function blade({ start, tip, width, arch, roll = 0, color }: Blade, profile: number[]) {
   const a = new Vector3(...start),
     b = new Vector3(...tip);
-  const across = new Vector3(b.z - a.z, 0, a.x - b.x)
-    .normalize()
-    .applyAxisAngle(b.clone().sub(a).normalize(), roll);
+  const axis = b.clone().sub(a).normalize();
+  const lateral = new Vector3(axis.z, 0, -axis.x).normalize();
   const positions: number[] = [],
     colors: number[] = [],
     indices: number[] = [];
   const hue = new Color(color);
+  const ribs = [-1, -0.1, 0, 0.1, 1];
   for (const [row, spread] of profile.entries()) {
     const t = row / (profile.length - 1);
-    const center = a.clone().lerp(b, t);
-    center.y += Math.sin(t * Math.PI) * arch;
-    for (const side of [-1, 0, 1]) {
-      const vertex = center.clone().addScaledVector(across, side * width * spread);
-      vertex.y += side === 0 ? spread * width * 0.25 : 0;
+    const bend = Math.sin(t * Math.PI);
+    const across = lateral.clone().applyAxisAngle(axis, roll * (0.3 + 0.9 * t));
+    const normal = axis.clone().cross(across).normalize();
+    const center = a
+      .clone()
+      .lerp(b, t)
+      .addScaledVector(lateral, bend * width * roll * 0.45);
+    center.y += bend * arch;
+    for (const [column, side] of ribs.entries()) {
+      const ridge = 1 - Math.abs(side);
+      const vertex = center
+        .clone()
+        .addScaledVector(across, side * width * spread)
+        .addScaledVector(normal, spread * width * (0.24 * ridge + (side === 0 ? 0.035 : 0)));
       positions.push(...vertex.toArray());
-      colors.push(
-        ...hue
-          .clone()
-          .multiplyScalar(side === -1 ? 0.89 : 1)
-          .toArray(),
-      );
-    }
-    if (row < profile.length - 1) {
-      const i = row * 3;
-      indices.push(i, i + 3, i + 1, i + 1, i + 3, i + 4, i + 1, i + 4, i + 2, i + 2, i + 4, i + 5);
+      colors.push(...hue.clone().multiplyScalar([0.82, 0.95, 1.2, 1.02, 0.95][column]).toArray());
+      if (column < ribs.length - 1 && row < profile.length - 1) {
+        const i = row * ribs.length + column;
+        indices.push(i, i + 5, i + 1, i + 1, i + 5, i + 6);
+      }
     }
   }
   const geometry = new BufferGeometry();

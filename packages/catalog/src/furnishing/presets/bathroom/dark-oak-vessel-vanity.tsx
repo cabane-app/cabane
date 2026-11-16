@@ -1,3 +1,5 @@
+import { VanityRaisedPanels } from "./vanity-raised-panels";
+import { VanitySideJoinery } from "./vanity-side-joinery";
 import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
 import { VanityDoor } from "./vanity-door";
@@ -32,6 +34,8 @@ export function DarkOakVesselVanity({
         radius={0.009}
         outline={false}
       />
+      <VanitySideJoinery />
+      <VanityRaisedPanels />
       {[-0.189, 0.189].map((x) => (
         <group key={x} name="dark-oak-vanity-door" position={[x, 0.466, 0.219]}>
           <VanityDoor color={x < 0 ? "#50372d" : "#493329"} />

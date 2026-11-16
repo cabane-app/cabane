@@ -15,5 +15,5 @@ export const tallFicusDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 16, triangles: 4_000 },
+  complexity: { visibleMeshes: 4, triangles: 5600 },
 });

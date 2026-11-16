@@ -24,7 +24,7 @@ export const cozyDecorDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: false,
-    complexity: { visibleMeshes: 49, triangles: 57000 },
+    complexity: { visibleMeshes: 2, triangles: 25000 },
   }),
   "leafy-planter": defineFurnishingModel({
     component: LeafyPlanter,
@@ -36,7 +36,7 @@ export const cozyDecorDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: false,
-    complexity: { visibleMeshes: 6, triangles: 21000 },
+    complexity: { visibleMeshes: 6, triangles: 9800 },
     variants: [
       { id: "terracotta", label: "Terracotta" },
       { id: "ivory", label: "Ivory stone" },
@@ -70,7 +70,7 @@ export const cozyDecorDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: false,
-    complexity: { visibleMeshes: 2, triangles: 150 },
+    complexity: { visibleMeshes: 3, triangles: 1150 },
     variants: [
       { id: "ivory", label: "Ivory wax" },
       { id: "clay", label: "Clay wax" },
@@ -86,7 +86,7 @@ export const cozyDecorDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: false,
-    complexity: { visibleMeshes: 38, triangles: 4000 },
+    complexity: { visibleMeshes: 3, triangles: 5600 },
     variants: [
       { id: "lavender", label: "Lavender" },
       { id: "white", label: "White flowers" },

@@ -17,5 +17,5 @@ export const hexagonalSideTableDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: true,
-  complexity: { visibleMeshes: 2, triangles: 60 },
+  complexity: { visibleMeshes: 3, triangles: 1900 },
 });

@@ -1,4 +1,5 @@
 import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
+import { RugSelvedge } from "./rug-selvedge";
 import { FluffyRugLayers } from "./fluffy-rug-layers";
 import { RoundedFurniturePanel } from "../construction";
 
@@ -15,22 +16,44 @@ function NeutralRugLayers({ color }: { color?: string | undefined }) {
     <>
       <RoundedFurniturePanel
         name="area-rug-field"
-        size={[2, 0.01, 3]}
+        size={[2, 0.01, 2.934]}
         position={[0, 0.005, 0]}
         color={color ?? "#d8cfbd"}
         radius={0.015}
-        outlineColor="#9b907e"
+        outline={false}
       />
+      <RugSelvedge color={color ?? "#d4c8b3"} />
       {/* Border tops at 12 mm; bands top at 15 mm, avoiding coplanar faces. */}
       <mesh name="area-rug-border" position={[0, 0.011, 0]} receiveShadow>
         <boxGeometry args={[1.91, 0.002, 2.91]} />
         <ToonMaterial color={color ?? "#c5b79f"} />
       </mesh>
-      {[-0.54, 0, 0.54].map((x) => (
-        <mesh key={x} name="area-rug-band" position={[x, 0.013, 0]} receiveShadow>
-          <boxGeometry args={[0.05, 0.004, 2.76]} />
-          <ToonMaterial color="#aaa48d" />
-        </mesh>
+      {[-0.74, 0.74].map((x) => (
+        <group key={x}>
+          {[-0.055, 0, 0.055].map((offset, j) => (
+            <mesh key={offset} position={[x + offset, 0.013, 0]} receiveShadow>
+              <boxGeometry args={[j === 1 ? 0.043 : 0.014, 0.004, 2.77]} />
+              <ToonMaterial color={j === 1 ? "#aaa48d" : "#d6c8af"} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      {[-0.85, 0, 0.85].map((z) => (
+        <group key={z} position={[0, 0.013, z]}>
+          {[-1, 1].flatMap((side) =>
+            [-1, 1].map((slope) => (
+              <mesh
+                key={side + ":" + slope}
+                position={[side * 0.113, 0, slope * 0.153]}
+                rotation={[0, -side * slope * 0.635, 0]}
+                receiveShadow
+              >
+                <boxGeometry args={[0.018, 0.004, 0.365]} />
+                <ToonMaterial color="#aaa48d" />
+              </mesh>
+            )),
+          )}
+        </group>
       ))}
     </>
   );
@@ -46,10 +69,11 @@ function ColorfulRugLayers({
   const style = COLORFUL_RUG_VARIANTS[variant];
   return (
     <>
+      <RugSelvedge color={color ?? style.field} />
       {/* Field top is 13 mm. Every colored overlay is 2 mm thick and tops at 15 mm. */}
       <RoundedFurniturePanel
         name="area-rug-field"
-        size={[2, 0.013, 3]}
+        size={[2, 0.013, 2.934]}
         position={[0, 0.0065, 0]}
         color={color ?? style.field}
         radius={0.015}

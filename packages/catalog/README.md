@@ -17,6 +17,34 @@ The existing variants remain available through Arrange → Details → Variant.
 Fine repeated details use restrained surface colors rather than individual
 outline shells.
 
+## Larch Observatory first-floor furniture
+
+The Gallery & suites level uses 33 furnishing models. Their geometry refinements
+preserve saved sizes, origins, colors, variants and placements:
+
+- Seating and tables: `upholstered-ottoman`, `sage-tub-armchair`,
+  `two-seat-loveseat`, `teak-lounge-sofa`, `teak-lounge-chair`,
+  `pool-chaise-longue`, `pedestal-side-table`, `rectangular-coffee-table`,
+  `hexagonal-side-table` and `oak-slab-bench` gain shaped upholstery, connected
+  timber joinery, rounded edges and more deliberate support profiles.
+- Cabinets and decor: `three-door-sideboard`, `hallway-console-table`,
+  `low-media-console`, `book-row`, `bronze-armillary`, `ring-ceramic-vase`,
+  `tabletop-candle`, `framed-wall-art`, `neutral-area-rug` and `round-jute-rug`
+  gain recessed construction, turned profiles, page blocks, frame rebates and
+  woven edges. Existing artwork images and loading behavior are preserved.
+- Bedroom and bathroom: `double-bed`, `oak-nightstand`, `flat-door-wardrobe`,
+  `dark-oak-vessel-vanity`, `arched-mirror`, `freestanding-bathtub`,
+  `wicker-towel-basket`, `shower-assembly`, `compact-toilet` and `leafy-planter`
+  gain softer profiles, framed joinery, hollow ceramic forms, connected fittings
+  and clearer material detail.
+- Plants: `tall-ficus`, `potted-plant` and `flower-pot` gain curved leaves,
+  connected shoots, shaped pots and modeled flower throats.
+
+The round jute rug uses one continuous woven spiral instead of separate rings;
+its solid geometry measures 2 meshes and 24,384 triangles, down from 49 meshes
+and 55,680 triangles. These are catalog-wide model changes, so existing instances
+also receive the refinements without a project migration.
+
 ## Everyday household additions
 
 These static furnishings are available in Arrange and All items. No runtime
@@ -294,8 +322,8 @@ location; any model can be placed in another suitable room.
 with sage cushions, a reclined back and connected supports. Its inferred overall
 dimensions are 80 × 210 × 85 cm (width × depth × height), including the tilted
 back. The floor origin is centered in X/Z, the feet face +Z, and resizing is uniform.
-Arrange: Outdoor → Pool chaise longue. Numeric inspection: 13 toon meshes,
-4,816 triangles; bounds [-0.4, 0, -1.05] to [0.4, 0.85, 1.05] m.
+Arrange: Outdoor → Pool chaise longue. Numeric inspection: 20 toon meshes,
+6,964 triangles; bounds [-0.4, 0, -1.05] to [0.4, 0.85, 1.05] m.
 
 `garden-hedge` (`GardenHedge`) is an independently placeable 200 × 60 × 140 cm
 clipped hedge segment with timber stems and softly shaped green foliage.

@@ -38,28 +38,43 @@ for (const [i, [x, y, z]] of [
   const base: Point = [a[0] + (b[0] - a[0]) * t, height, a[2] + (b[2] - a[2]) * t];
   const end: Point = [x, y, z];
   growth.stems.push([base, end, 0.012, 0.006]);
-  for (const [j, turn] of [-1.13, 1.12, -0.28, 0.36].entries()) {
+  for (const [j, turn] of [-1.29, 1.12, -0.58, 0.45].entries()) {
     const t = 0.38 + j * 0.2;
     const start: Point = [
       base[0] + (x - base[0]) * t,
       base[1] + (y - base[1]) * t,
       base[2] + (z - base[2]) * t,
     ];
-    const angle = Math.atan2(z, x) + turn;
+    const angle = Math.atan2(z, x) + turn + 0.16 * Math.sin(i * 2.3);
     const length = 0.25 + 0.045 * Math.sin(i + j);
+    const petiole: Point = [
+      start[0] + Math.cos(angle) * 0.04,
+      start[1] + 0.017,
+      start[2] + Math.sin(angle) * 0.04,
+    ];
+    growth.stems.push([start, petiole, 0.0045, 0.0025]);
     growth.leaves.push({
-      start,
+      start: petiole,
       tip: [
         start[0] + Math.cos(angle) * length,
         start[1] - 0.13 + 0.063 * j,
         start[2] + Math.sin(angle) * length,
       ],
       width: 0.085 + 0.025 * Math.cos(i * 3 + j),
-      arch: 0.062,
+      arch: 0.039 + 0.018 * Math.sin(i + j),
       roll: 0.55 * Math.sin(i + j * 2) + 0.21,
       color: ["#496b3a", "#638449", "#547b43", "#719053"][(i + j) % 4],
     });
   }
+  // A copper stipule sheath stands upright beside the youngest leaf at each shoot tip.
+  growth.leaves.push({
+    start: end,
+    tip: [x * 1.14, y + 0.067, z * 1.14],
+    width: 0.011,
+    arch: 0.007,
+    roll: 0.32,
+    color: i % 2 ? "#a98360" : "#96a069",
+  });
 }
 export function TallFicus() {
   return (

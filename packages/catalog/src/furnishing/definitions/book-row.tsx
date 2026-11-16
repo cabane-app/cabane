@@ -10,5 +10,5 @@ export const bookRowDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: true,
-  complexity: { visibleMeshes: 10, triangles: 150 },
+  complexity: { visibleMeshes: 7, triangles: 1300 },
 });

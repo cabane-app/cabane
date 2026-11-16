@@ -31,5 +31,5 @@ export const pottedPlantDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 4, triangles: 1_200 },
+  complexity: { visibleMeshes: 4, triangles: 2000 },
 });

@@ -1,3 +1,4 @@
+import { LinenPillow } from "./linen-pillow";
 import { RoundedFurniturePanel } from "../construction";
 import { CozyBedCover } from "./cozy-bed-cover";
 
@@ -67,41 +68,37 @@ export function CozyWhiteBlueBedding({
       />
       {[-0.39, 0.39].map((x) => (
         <group key={x}>
-          <RoundedFurniturePanel
+          <LinenPillow
             name="cozy-sleeping-pillow"
             size={[0.7, 0.14, 0.4]}
             position={[x, 0.614, -0.72]}
             color={color ?? "#e9e1d3"}
-            radius={0.065}
             outlineColor="#b7ad9c"
           />
-          <RoundedFurniturePanel
+          <LinenPillow
             name="cozy-ivory-cushion"
             size={[0.48, 0.16, 0.47]}
             position={[x, 0.845, -0.55]}
             rotation={[0.65, x < 0 ? -0.08 : 0.08, x < 0 ? -0.06 : 0.06]}
             color="#f3ecdf"
-            radius={0.07}
             outlineColor="#b9af9d"
           />
-          <RoundedFurniturePanel
+          <LinenPillow
             name="cozy-navy-cushion"
             size={[0.4, 0.15, 0.4]}
             position={[x * 1.18, 0.805, -0.27]}
             rotation={[0.6, x < 0 ? -0.1 : 0.1, x < 0 ? -0.08 : 0.08]}
             color={palette[0]}
-            radius={0.065}
             outlineColor="#74685b"
           />
         </group>
       ))}
-      <RoundedFurniturePanel
+      <LinenPillow
         name="cozy-ivory-lumbar-cushion"
         size={[0.43, 0.14, 0.28]}
         position={[0, 0.754, -0.2]}
         rotation={[0.46, 0, -0.08]}
         color="#e9dfc9"
-        radius={0.055}
         outlineColor="#b9aa91"
       />
     </group>
