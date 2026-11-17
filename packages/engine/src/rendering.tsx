@@ -24,7 +24,7 @@ import {
 import { cameraFacingWallOpacityForNormals } from "./wall-fade";
 import { SceneContourContext } from "./StylizedScene";
 import { SceneOutlines } from "./SceneOutlines";
-import { SceneLightWallMaskContext } from "./scene-light-wall-mask";
+import { ScenePointShadowsContext } from "./scene-point-shadows";
 
 export const TOON_GRADIENT_DATA = [55, 115, 185, 255] as const;
 // Wide constant bands retain cel shading. Linear filtering only blends their
@@ -62,7 +62,7 @@ export function ToonMaterial(props: ToonMaterialProps) {
     invalidate();
   }, [style, invalidate]);
   const hovered = useContext(DeviceHoverContext);
-  const lightWalls = useContext(SceneLightWallMaskContext);
+  const pointShadows = useContext(ScenePointShadowsContext);
   const { onUpdate: authoredUpdate } = props;
   const onUpdate = useCallback(
     (material: MeshToonMaterial) => {
@@ -71,9 +71,9 @@ export function ToonMaterial(props: ToonMaterialProps) {
         material.needsUpdate = true;
       }
       authoredUpdate?.(material);
-      lightWalls?.prepareMaterial(material);
+      pointShadows?.prepareMaterial(material);
     },
-    [authoredUpdate, lightWalls, style],
+    [authoredUpdate, pointShadows, style],
   );
   let color = style === "sims" ? simsMaterialColor(props.color ?? "white") : props.color;
   if (hovered) {

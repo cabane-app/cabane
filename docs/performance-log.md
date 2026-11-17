@@ -1,5 +1,56 @@
 # Performance measurements
 
+## 2026-11-08 — Household shadows on Larch Observatory
+
+The nearest-wall mask missed a solid divider one metre from its lamp. In the
+WebGL fixture on `9b9c4b17`, an 8-bit pixel in the far room went from 0 to 37
+when the lamp switched on. It stays unchanged with cached point shadows. The
+lamp-facing surface remains lit, and open doorways, finite wall ends and low
+partitions admit light. The browser regression checks toon and PBR surfaces,
+oblique rays, cutaway walls, and a door moved while the lamp is off.
+
+A direct port of the earlier diffuse lightmap bake worked on that fixture but
+stalled the first Larch Orbit drag for up to 3,033 ms. It used grouped beauty
+passes until the atlas charts and individual lamp bakes were ready. The final
+renderer caches native Three.js point shadow depth in one atlas and keeps one
+beauty pass. It prepares one lamp per frame, prioritizing powered lamps.
+Camera motion and lamp photometry reuse the maps. The React recolour smoke with
+64 emitters submits zero additional shadow draws.
+
+The production harness uses Chromium with ANGLE Metal on an Apple M5 Pro. The
+mobile viewport is 390 × 844 with effective DPR 1.25. The before column is the
+already optimized `main` at `9b9c4b17`. Cold rows are individual fresh contexts.
+Warm Orbit and Walk use three four-second runs.
+
+| Larch interaction                                  | Main           | Point shadow atlas |
+| -------------------------------------------------- | -------------- | ------------------ |
+| First night touch Orbit, p95 / worst gap           | 9.2 / 25.2 ms  | 10.2 / 25.1 ms     |
+| Warm night touch Orbit, median p95 / worst gap     | 10.0 / 13.9 ms | 9.1 / 13.5 ms      |
+| Plain day Walk, median p95 / worst gap             | 13.0 / 24.9 ms | 12.5 / 24.2 ms     |
+| Plain night Walk, median p95 / worst gap           | 14.5 / 27.0 ms | 11.7 / 24.7 ms     |
+| Six connected lamp taps, tap to rendered light     | 29.8–36.3 ms   | 29.2–35.2 ms       |
+| Connected table lamp touch dimmer, p95 / worst gap | 16.6 / 25.0 ms | 16.6 / 25.0 ms     |
+
+The connected controls use the ordinary dashboard and the in-memory Home
+Assistant fixture. Warm toggles compiled zero new shaders. The dimmer replay
+measures a continuous touch drag and verifies the final Home Assistant value
+and scene intensity. The existing command coalescing accounts for roughly
+500 ms between release and the final confirmation. The confirmation run gave
+29.0–41.4 ms tap-to-light, a worst frame of 42.4 ms and zero new shader compiles.
+
+One four-second run per version with Chromium CPU slowdown ×2 measured night
+Orbit p95 at 17.6 → 20.0 ms and night Walk at 20.5 → 24.1 ms. Walk's worst
+interval was comparable at 40.3 → 40.6 ms. The slowed Walk run missed the 20 ms
+p95 target.
+
+The cold trace copied all 366 faces for 61 lamps exactly once. They were ready
+roughly 0.65 seconds after the first drag began, with no frames above 33 ms
+during that drag. The first measured ready state came at 3.33 seconds versus
+2.58 seconds on `main`. The trace attributed the initial overhead to
+synchronous shader linking. Reopening with the shader variants already cached
+was comparable to `main`. These are laptop GPU measurements with mobile input
+and viewport emulation.
+
 ## 2026-11-08 — Larch Observatory interaction hitches
 
 [Investigation plan](performance-plan.md). The production harness opens the

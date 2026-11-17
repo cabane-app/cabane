@@ -9,7 +9,7 @@ import {
   Object3D,
   StaticDrawUsage,
 } from "three";
-import { sceneLightMaterialHooks } from "../scene-light-wall-mask";
+import { sceneLightMaterialHooks } from "../scene-point-shadows";
 
 const basisPairs = [
   [0, 4],

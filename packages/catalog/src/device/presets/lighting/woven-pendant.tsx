@@ -9,7 +9,7 @@ export function WovenPendantGeometry({ brightness = 0 }: { readonly brightness?:
         <cylinderGeometry args={[0.008, 0.008, 0.4, 8]} />
         <ToonMaterial color="#5b5147" />
       </mesh>
-      <mesh position={[0, -0.48, 0]} castShadow>
+      <mesh position={[0, -0.48, 0]}>
         <cylinderGeometry args={[0.1, 0.43, 0.2, 18, 1, true]} />
         <ToonMaterial color="#b4895d" transparent opacity={0.82} />
         <Outlines color="#6e5139" thickness={0.005} />

@@ -50,7 +50,7 @@ function FlatCeilingSlab({
     [floor, polygon, apertures, height, override],
   );
   return (
-    <mesh position={[0, height, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+    <mesh position={[0, height, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       <extrudeGeometry args={[shape, ceilingExtrusion]} />
       <ToonMaterial color={CEILING_SURFACE_COLOR} side={DoubleSide} />
     </mesh>
@@ -197,7 +197,7 @@ function SlopedCeilingSurface({ floor, plane }: { floor: FloorSpec; plane: Ceili
   useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (
-    <mesh geometry={geometry} receiveShadow={false}>
+    <mesh geometry={geometry} receiveShadow>
       <ToonMaterial color={CEILING_SURFACE_COLOR} side={DoubleSide} />
     </mesh>
   );

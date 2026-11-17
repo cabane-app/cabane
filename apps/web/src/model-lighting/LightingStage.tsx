@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { useState, type KeyboardEvent } from "react";
-import { modelLightSources } from "@cabane/engine";
+import { modelLightSources, StylizedScene } from "@cabane/engine";
 import { EditorButton } from "../editor-chrome/EditorButton";
 import { EditorIcon } from "../editor-chrome/EditorIcon";
 import { LightingStageScene, type LightingSceneProps } from "./LightingStageScene";
@@ -66,6 +66,7 @@ export function LightingStage(props: LightingSceneProps & { step: number }) {
         }}
       >
         <Canvas
+          shadows="percentage"
           frameloop="demand"
           dpr={[1, 2]}
           camera={{
@@ -75,14 +76,16 @@ export function LightingStage(props: LightingSceneProps & { step: number }) {
             far: Math.max(100, span * 100),
           }}
         >
-          <LightingStageScene
-            {...props}
-            throughGlass={throughGlass}
-            markers={markers}
-            night={night}
-            request={request}
-            rotate={rotate}
-          />
+          <StylizedScene enabled={false}>
+            <LightingStageScene
+              {...props}
+              throughGlass={throughGlass}
+              markers={markers}
+              night={night}
+              request={request}
+              rotate={rotate}
+            />
+          </StylizedScene>
         </Canvas>
         <div className="lighting-view-tools" role="group" aria-label="Preview camera">
           {(["3D", "Top", "Front", "Side"] as const).map((name) => (

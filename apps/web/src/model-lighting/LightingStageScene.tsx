@@ -3,6 +3,7 @@ import { Line, TransformControls } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Group, Quaternion, Vector3, type Mesh, type Material, type BufferGeometry } from "three";
 import {
+  ActiveSceneLightPool,
   controlModelLightMaterials,
   ModelLightingStateContext,
   importedLightSources,
@@ -128,7 +129,11 @@ export function LightingStageScene({
       <ambientLight intensity={night ? 0.04 : 0.45} />
       <hemisphereLight args={["#f4f5ff", "#7a7166", night ? 0.12 : 1.3]} />
       <directionalLight position={[4, 6, 5]} intensity={night ? 0.12 : 2} />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, center[1] + bounds.min[1] - 0.005, 0]}>
+      <mesh
+        receiveShadow
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, center[1] + bounds.min[1] - 0.005, 0]}
+      >
         <planeGeometry args={[span * 3, span * 3]} />
         <meshStandardMaterial color={night ? "#706a5e" : "#dcd7ca"} roughness={1} />
       </mesh>
@@ -151,19 +156,16 @@ export function LightingStageScene({
             {children}
           </ModelLightingStateContext.Provider>
         </group>
-        {emitters.map((source, index) => (
-          <pointLight
-            key={index}
-            position={source.position}
-            color={source.color}
-            intensity={
+        <ActiveSceneLightPool
+          sources={emitters.map((source, index) => ({
+            ...source,
+            name: `preview-light-${index}`,
+            intensity:
               state.state === "on"
                 ? (source.maxIntensity * Number(state.attributes.brightness ?? 255)) / 255
-                : 0
-            }
-            distance={source.distance}
-          />
-        ))}
+                : 0,
+          }))}
+        />
         {markers &&
           sources.map((source, index) => (
             <group key={index}>

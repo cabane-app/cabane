@@ -195,7 +195,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("the execution budget fairly samples strips, merges all logical contributions and skips glow-only work", () => {
+  test("the execution budget fairly samples strips, preserves source contributions and skips glow-only work", () => {
     const settings = {
       ...light,
       sources: [
@@ -226,13 +226,18 @@ await withModules(async (load) => {
     };
     const merged = api.modelLightingExecution(many);
     assert.equal(merged.lights.length, api.SCENE_LIGHT_BUDGET);
+    assert.ok(
+      merged.lights.every((source) =>
+        many.sources.some((input) => input.position[0] === source.position[0]),
+      ),
+    );
     assert.equal(merged.requested, 257);
     assert.ok(Math.abs(merged.lights.reduce((sum, s) => sum + s.intensity, 0) - 257) < 1e-8);
     assert.ok(
-      Math.abs(
-        merged.lights.reduce((sum, s) => sum + s.position[0] * s.intensity, 0) - (256 * 257) / 2,
-      ) < 1e-8,
-      "even sources beyond the budget contribute their energy and position",
+      many.sources.every(({ position }) =>
+        merged.lights.some((emitter) => Math.abs(emitter.position[0] - position[0]) <= 4),
+      ),
+      "grouping keeps a nearby emitter for every declared source",
     );
     assert.deepEqual(api.importedLightSources({ ...settings, illuminate: false }), []);
     assert.deepEqual(api.importedLightSources({ ...settings, maxIntensity: 0 }), []);
@@ -304,7 +309,11 @@ await withModules(async (load) => {
         Math.abs(lights.reduce((sum, source) => sum + source.intensity, 0) - (6 * 128) / 255) <
           1e-8,
       );
-      assert.ok(lights.every((source) => source.color.b > source.color.r && !source.castShadow));
+      assert.ok(
+        lights.every(
+          (source) => source.color.b > source.color.r && source.userData.cabaneSceneLight,
+        ),
+      );
       for (const snapshot of [
         state({ state: "off" }),
         state({ available: false }),
@@ -331,12 +340,17 @@ await withModules(async (load) => {
           sceneItems: [...withManyOff.props.sceneItems].reverse(),
         }),
       );
-      assert.equal(renderer.scene.findAll((node) => node.instance.isPointLight).length, 5);
+      const stationary = renderer.scene
+        .findAll((node) => node.instance.isPointLight)
+        .map((node) => node.instance);
+      assert.equal(stationary.length, api.SCENE_LIGHT_BUDGET);
+      const active = stationary.filter((source) => source.intensity > 0);
+      assert.ok(active.length > 0 && active.length < stationary.length);
+      assert.ok(active[0].position.distanceTo(expected) < 1e-8);
       assert.ok(
-        renderer.scene
-          .findAll((node) => node.instance.isPointLight)
-          .every((node) => node.instance.intensity > 0),
-        "120 earlier off sources cannot crowd out the on light",
+        Math.abs(active.reduce((sum, source) => sum + source.intensity, 0) - (6 * 128) / 255) <
+          1e-8,
+        "the on strip retains its configured intensity with 24 other strips off",
       );
       await renderer.update(render({ ...item, lightState: "always-on" }, state(), true, 25));
       assert.equal(
@@ -357,11 +371,7 @@ await withModules(async (load) => {
       const crowded = renderer.scene
         .findAll((node) => node.instance.isPointLight)
         .map((node) => node.instance);
-      assert.equal(
-        crowded.length,
-        api.SCENE_LIGHT_BUDGET,
-        "copies share a floor budget before expanding strip samples",
-      );
+      assert.equal(crowded.length, api.SCENE_LIGHT_BUDGET, "copies share the floor budget");
       assert.ok(Math.abs(crowded.reduce((sum, source) => sum + source.intensity, 0) - 600) < 1e-8);
       const withRoom = render({ ...item, lightState: "always-on" }, state(), true, 100);
       const roomBindings = withRoom.props.resolvedBindings.rooms[roomId];

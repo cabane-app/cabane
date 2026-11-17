@@ -13,7 +13,7 @@ import {
   type Texture,
   type WebGLRenderer,
 } from "three";
-import { sceneLightMaterialHooks } from "./scene-light-wall-mask";
+import { sceneLightMaterialHooks } from "./scene-point-shadows";
 
 const positionAttribute = ["position"];
 
@@ -61,9 +61,10 @@ class ShadowInputs {
 /** Whole-map reuse only. Unknown shader/deformation hooks always redraw. */
 export class ShadowMapCache {
   private inputs = new ShadowInputs();
+  dynamic = false;
   reset = () => this.inputs.clear();
 
-  needsUpdate(scene: Scene, camera: Camera, shadowType: number) {
+  needsUpdate(scene: Scene, camera: Camera, shadowType: number, caster?: Mesh) {
     const s = this.inputs;
     s.begin();
     s.add(shadowType);
@@ -81,8 +82,8 @@ export class ShadowMapCache {
       // Video and user-updated texture contents may change without a version bump.
       if ("isVideoTexture" in t && t.isVideoTexture) untracked = true;
     };
-    scene.traverseVisible((object) => {
-      if (object.onBeforeRender !== Object3D.prototype.onBeforeRender) untracked = true;
+    const inspect = (object: Object3D) => {
+      if (!caster && object.onBeforeRender !== Object3D.prototype.onBeforeRender) untracked = true;
       if ((object as DirectionalLight).isLight && (object as DirectionalLight).castShadow) {
         const light = object as DirectionalLight;
         s.add(light);
@@ -122,7 +123,7 @@ export class ShadowMapCache {
       if (
         mesh.onBeforeShadow !== Object3D.prototype.onBeforeShadow ||
         mesh.onAfterShadow !== Object3D.prototype.onAfterShadow ||
-        mesh.onBeforeRender !== Object3D.prototype.onBeforeRender ||
+        (!caster && mesh.onBeforeRender !== Object3D.prototype.onBeforeRender) ||
         mesh.customDepthMaterial ||
         mesh.customDistanceMaterial ||
         (mesh as Mesh & { isSkinnedMesh?: boolean }).isSkinnedMesh ||
@@ -195,8 +196,9 @@ export class ShadowMapCache {
         s.add(m.wireframe);
         s.add(m.wireframeLinewidth);
         if (
-          !m.isMeshToonMaterial ||
-          sceneLightMaterialHooks(m).onBeforeCompile !== Material.prototype.onBeforeCompile
+          !caster &&
+          (!m.isMeshToonMaterial ||
+            sceneLightMaterialHooks(m).onBeforeCompile !== Material.prototype.onBeforeCompile)
         )
           untracked = true;
         if (material.alphaTest > 0 || material.alphaHash || material.alphaToCoverage) {
@@ -208,8 +210,14 @@ export class ShadowMapCache {
         s.add(m.displacementScale);
         s.add(m.displacementBias);
       }
-    });
+    };
+    if (caster) inspect(caster);
+    else scene.traverseVisible(inspect);
     const changed = s.end();
+    this.dynamic = untracked;
+    // Local caster inputs are compared even for skinned meshes. Their owning
+    // atlas can refresh dynamic shadows without keeping a demand canvas awake.
+    if (caster) return changed;
     // A custom pass may have produced different depth: refresh once when returning
     // to the tracked path, even if all tracked values happen to match again.
     if (untracked) {

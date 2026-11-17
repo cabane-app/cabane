@@ -3,38 +3,46 @@ import test from "node:test";
 import { withBrowserDiagnostics } from "./browser-test-diagnostics.mjs";
 import { createBrowserTestSession, getBrowserTestServer } from "./browser-test-environment.mjs";
 
-// Browser-only risk: a dense copied lighting setup must compile real toon/PBR
-// wall-masked shaders, and retain a bounded shader layout after peak use.
-const fixture = `<html><body><div id="root" style="width:640px;height:360px"></div>
+// Browser-only risk: a dense lighting setup must compile real toon/PBR shadow
+// shaders and reuse its warmed layout and shadow depths through state changes.
+const fixture = `<html><body><div id="root" style="width:320px;height:180px"></div>
 <script type="module">
 import React from "react";
 import {createRoot} from "react-dom/client";
-import {Canvas,useThree,useFrame} from "@react-three/fiber";
+import {Canvas,useThree} from "@react-three/fiber";
 import {ActiveSceneLightPool} from "/@fs/${process.cwd()}/packages/engine/src/SceneLightPool.tsx";
-import {SceneLightWallMask} from "/@fs/${process.cwd()}/packages/engine/src/scene-light-wall-mask.ts";
+import {StylizedScene} from "/@fs/${process.cwd()}/packages/engine/src/StylizedScene.tsx";
 const h=React.createElement;
-const floor={rooms:[],walls:[],openings:[],coordinates:{origin:[0,0],metersPerPlanUnit:1}};
 function Scene(){
  const state=useThree();
  const [on,setOn]=React.useState(true);
  const [copies,setCopies]=React.useState(8);
  const [samples,setSamples]=React.useState(7);
- const mask=React.useMemo(()=>new SceneLightWallMask(),[]);
- React.useEffect(()=>()=>mask.dispose(),[mask]);
- React.useEffect(()=>{window.lightPool={state,toggle:()=>setOn(value=>!value),configure:(copies,samples)=>{setCopies(copies);setSamples(samples)}}},[state]);
- useFrame(({gl,scene,camera})=>mask.render(gl,scene,camera),1);
+ const [color,setColor]=React.useState("#ffcc88");
+ React.useEffect(()=>{
+   let shadowDraws=0;
+   const {gl}=state;
+   const draw=gl.renderBufferDirect;
+   gl.renderBufferDirect=function(...args){
+     if(args[3].isMeshDepthMaterial||args[3].isMeshDistanceMaterial)shadowDraws++;
+     return draw.apply(this,args);
+   };
+   window.lightPool={state,get shadowDraws(){return shadowDraws},recolor:()=>setColor("#ff895d"),
+     toggle:()=>setOn(value=>!value),configure:(copies,samples)=>{setCopies(copies);setSamples(samples)}};
+   return ()=>{gl.renderBufferDirect=draw};
+ },[state]);
  const sources=Array.from({length:copies},(_,copy)=>Array.from({length:4},(_,i)=>({
    name:copy+"-source-"+i,position:[copy%8-3.5,1+i*.1,Math.floor(copy/8)-2],
    ...(i>1?{strip:{end:[copy%8-2.5,1+i*.1,Math.floor(copy/8)-2],samples}}:{}),
-   color:"#ffcc88",intensity:on?1:0,distance:5,
+   color,intensity:on?1:0,distance:5,
  }))).flat();
  return h(React.Fragment,null,
-  h(ActiveSceneLightPool,{floor,sources}),
-  ...Array.from({length:20},(_,i)=>h("mesh",{key:i,position:[(i%5-2)*2.2,0,Math.floor(i/5)*2-3]},
+  h(ActiveSceneLightPool,{sources}),
+  ...Array.from({length:6},(_,i)=>h("mesh",{key:i,castShadow:true,receiveShadow:true,position:[(i%5-2)*2.2,0,Math.floor(i/5)*2]},
     h("boxGeometry",{args:[1.5,.8,1.3]}),h(i%2?"meshToonMaterial":"meshStandardMaterial",{color:"#bba998"}))));
 }
-createRoot(document.getElementById("root")).render(h(Canvas,{frameloop:"demand",dpr:1,
- camera:{position:[9,9,12],fov:45}},h(Scene)));
+createRoot(document.getElementById("root")).render(h(Canvas,{shadows:'percentage',frameloop:"demand",dpr:1,
+ camera:{position:[9,9,12],fov:45}},h(StylizedScene,{antialias:false},h(Scene))));
 </script></body></html>`;
 
 test(
@@ -63,7 +71,10 @@ test(
         }),
       );
       await page.goto(server.resolvedUrls.local[0] + "__light-pool");
-      await page.waitForFunction(() => window.lightPool?.state.gl.info.render.frame > 0);
+      await page.waitForFunction(() => {
+        const state = window.lightPool?.state;
+        return state?.gl.info.render.frame > 0 && state.internal.frames === 0;
+      });
       const before = await page.evaluate(() => {
         const { gl, scene } = window.lightPool.state;
         const ids = [];
@@ -81,14 +92,15 @@ test(
       assert.equal(before.ids.length, 64);
       assert.equal(before.runnable, true);
       assert.equal(before.error, 0);
-      await page.evaluate(() => window.lightPool.configure(64, 4294967296));
-      await page.waitForFunction(() => {
+      await page.evaluate(() => window.lightPool.configure(16, 4294967296));
+      await page.waitForFunction((frame) => {
+        const { gl, internal, scene } = window.lightPool.state;
         let intensity = 0;
-        window.lightPool.state.scene.traverse((object) => {
+        scene.traverse((object) => {
           if (object.isPointLight) intensity += object.intensity;
         });
-        return intensity === 256;
-      });
+        return intensity === 64 && gl.info.render.frame > frame && internal.frames === 0;
+      }, before.frame);
       const crowded = await page.evaluate(() => {
         const { gl, scene } = window.lightPool.state;
         const ids = [];
@@ -100,15 +112,30 @@ test(
           programs: gl.info.programs.map((program) => program.id),
           frame: gl.info.render.frame,
           error: gl.getContext().getError(),
+          shadowDraws: window.lightPool.shadowDraws,
         };
       });
       assert.deepEqual(crowded.ids, before.ids);
       assert.deepEqual(crowded.programs, before.programs);
       assert.equal(crowded.error, 0);
+      assert.ok(crowded.shadowDraws > 0, "the test must observe the original shadow draws");
+      await page.evaluate(() => window.lightPool.recolor());
+      await page.waitForFunction((frame) => {
+        const { gl, scene } = window.lightPool.state;
+        return (
+          gl.info.render.frame > frame &&
+          scene.getObjectByName("0-source-0")?.color.getHexString() === "ff895d"
+        );
+      }, crowded.frame);
+      const recolored = await page.evaluate(() => ({
+        frame: window.lightPool.state.gl.info.render.frame,
+        shadowDraws: window.lightPool.shadowDraws,
+      }));
+      assert.equal(recolored.shadowDraws, crowded.shadowDraws);
       await page.evaluate(() => window.lightPool.toggle());
       await page.waitForFunction(
         (frame) => window.lightPool.state.gl.info.render.frame > frame,
-        crowded.frame,
+        recolored.frame,
       );
       const after = await page.evaluate(() => {
         const { gl, scene } = window.lightPool.state;

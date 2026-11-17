@@ -697,7 +697,6 @@ await withModules(async (load) => {
     }
   });
   test("the light pool borrows off slots while retaining sources that stay on", async () => {
-    const floor = { ...fixture().project.floors[0], rooms: [], walls: [], openings: [] };
     const source = (name, x, intensity = 1) => ({
       name,
       position: [x, 1, 0],
@@ -705,7 +704,7 @@ await withModules(async (load) => {
       intensity,
       distance: 5,
     });
-    const render = (sources) => React.createElement(ActiveSceneLightPool, { floor, sources });
+    const render = (sources) => React.createElement(ActiveSceneLightPool, { sources });
     const scene = await create(render([source("a", 0), source("b", 1)]));
     try {
       const lights = () => scene.scene.findAllByType("PointLight").map((node) => node.instance);
@@ -743,8 +742,7 @@ await withModules(async (load) => {
       await scene.unmount();
     }
   });
-  test("the bounded pool includes every active source, blends linear color and retains a safe peak layout", async () => {
-    const floor = { ...fixture().project.floors[0], rooms: [], walls: [], openings: [] };
+  test("the bounded pool keeps every contribution at an authored position", async () => {
     const sources = Array.from({ length: 256 }, (_, i) => ({
       name: `copy-${i}`,
       position: [Math.floor(i / 2), 1, 0],
@@ -755,13 +753,18 @@ await withModules(async (load) => {
     const execution = planSceneLights(sources);
     assert.equal(execution.lights.length, api.SCENE_LIGHT_BUDGET);
     assert.ok(
-      execution.lights.every((source) => source.color === "#8900e1" && source.distance === 0),
+      execution.lights.every(
+        (source) =>
+          source.color === "#8900e1" &&
+          source.distance === 0 &&
+          sources.some((input) => input.position === source.position),
+      ),
     );
     assert.equal(
       execution.lights.reduce((sum, source) => sum + source.intensity, 0),
       512,
     );
-    const render = (sources) => React.createElement(ActiveSceneLightPool, { floor, sources });
+    const render = (sources) => React.createElement(ActiveSceneLightPool, { sources });
     const scene = await create(render(sources));
     const lights = () => scene.scene.findAllByType("PointLight").map((node) => node.instance);
     try {
@@ -780,33 +783,26 @@ await withModules(async (load) => {
       await scene.unmount();
     }
   });
-  test("native off sources prewarm only spare budget and retain slots on their first activation", async () => {
-    const floor = { ...fixture().project.floors[0], rooms: [], walls: [], openings: [] };
-    const off = Array.from({ length: 256 }, (_, i) => ({
-      name: `native-${i}`,
-      position: [i, 1, 0],
+  test("stationary strip samples stay in place when another lamp switches off", () => {
+    const sources = [0, 2].map((x) => ({
+      name: `strip-${x}`,
+      position: [x, 1, 0],
+      strip: { end: [x, 1, 3], samples: 64 },
       color: "#ffffff",
-      intensity: 0,
+      intensity: 6,
       distance: 5,
-      prewarm: true,
     }));
-    assert.equal(planSceneLights(off).lights.length, api.SCENE_LIGHT_BUDGET);
-    assert.equal(planSceneLights(off).requested, 0);
-    const active = { ...off[0], name: "custom-on", intensity: 3, prewarm: false };
-    const prioritized = planSceneLights([...off, active]);
-    assert.equal(prioritized.lights.length, api.SCENE_LIGHT_BUDGET);
-    assert.equal(prioritized.lights.find((source) => source.name === active.name).intensity, 3);
-    const render = (sources) => React.createElement(ActiveSceneLightPool, { floor, sources });
-    const scene = await create(render([off[0]]));
-    try {
-      const initial = scene.scene.findByProps({ name: off[0].name }).instance;
-      assert.equal(initial.intensity, 0);
-      await scene.update(render([{ ...off[0], intensity: 2 }]));
-      assert.equal(scene.scene.findByProps({ name: off[0].name }).instance, initial);
-      assert.equal(initial.intensity, 2);
-    } finally {
-      await scene.unmount();
-    }
+    const before = planSceneLights(sources, true).lights;
+    const after = planSceneLights([{ ...sources[0], intensity: 0 }, sources[1]], true).lights;
+    assert.equal(before.length, 64);
+    assert.deepEqual(
+      after.map(({ name, position }) => [name, position]),
+      before.map(({ name, position }) => [name, position]),
+    );
+    assert.equal(
+      after.reduce((sum, source) => sum + source.intensity, 0),
+      6,
+    );
   });
   test("native surface glow is isolated between copies and preview highlights preserve shared geometry/materials", () => {
     const original = new MeshToonMaterial({ color: "#aabbcc" });
