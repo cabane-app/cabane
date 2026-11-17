@@ -1,4 +1,4 @@
-import type { WalkToolProps } from "@cabane/engine";
+import { RoundedBox, type WalkToolProps } from "@cabane/engine";
 import { BlasterGlove } from "@cabane/walk-laser";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
@@ -39,11 +39,20 @@ export default function Torchlight({ enabled }: WalkToolProps) {
       <ambientLight intensity={1.1} />
       <directionalLight position={[-2, 4, 3]} intensity={2.2} />
       <group ref={grip}>
-        <TorchlightModel />
-        <group rotation={[-0.48, 0.25, -0.08]} scale={0.85}>
-          <group position={[0, 0.17, -0.13]}>
-            <BlasterGlove />
+        <group position={[0, 0.082, -0.07]} rotation={[0, 0.46, -0.05]} scale={0.77}>
+          <group position={[0, 0.026, 0.021]}>
+            <TorchlightModel />
           </group>
+          {/* A raked handle seats the flashlight above the glove's closed grasp. */}
+          <group position={[0, -0.128, 0.145]} rotation={[-0.34, 0, 0]}>
+            <RoundedBox args={[0.079, 0.24, 0.074]} radius={0.016}>
+              <meshStandardMaterial color="#384659" />
+            </RoundedBox>
+            <RoundedBox args={[0.087, 0.023, 0.082]} radius={0.008} position={[0, -0.115, 0]}>
+              <meshStandardMaterial color="#eda83e" />
+            </RoundedBox>
+          </group>
+          <BlasterGlove />
         </group>
       </group>
     </>,
