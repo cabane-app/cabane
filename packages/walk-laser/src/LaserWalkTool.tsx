@@ -77,8 +77,8 @@ export function LaserWalkTool({
       const width = height * lens.aspect;
       gun.current.scale.setScalar(Math.min(0.58, width * 0.56));
       gun.current.position.set(
-        width * 0.29 + sway,
-        -height * 0.19 + bob - weight * 0.004,
+        width * 0.23 + sway,
+        -height * 0.14 + bob - weight * 0.004,
         -0.6 + (reducedMotion ? 0 : recoil.current),
       );
       gun.current.position.applyQuaternion(camera.quaternion).add(camera.position);

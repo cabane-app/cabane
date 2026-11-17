@@ -9,7 +9,7 @@ import {createRoot} from 'react-dom/client';
 import {useFrame,useThree} from '@react-three/fiber';
 import {CabaneDashboard,HomeAssistantRuntimeProvider} from '@cabane/engine';
 import {stableArchitectureModelRegistry} from '@cabane/catalog/architecture';
-import {installedWalkTools} from '/src/walk-tools.ts'; const torchlight=installedWalkTools.find(tool=>tool.id==="cabane.torchlight");
+import {installedWalkTools} from '/src/walk-tools.ts'; const flashlight=installedWalkTools.find(tool=>tool.label==="Flashlight");
 import {neutralDemoManifest} from '/@fs/${process.cwd()}/packages/engine/src/demo.ts';
 import '@cabane/engine/styles.css';
 const manifest=structuredClone(neutralDemoManifest);
@@ -19,16 +19,16 @@ delete manifest.actionBar;
 function ObservedTorch(props) {
  const {scene}=useThree();
  useFrame(()=>{window.beamOn=scene.getObjectsByProperty("isSpotLight",true).some(o=>o.intensity===48);});
- return React.createElement(torchlight.Scene,props);
+ return React.createElement(flashlight.Scene,props);
 }
 createRoot(document.getElementById('root')).render(
  React.createElement(HomeAssistantRuntimeProvider,null,
   React.createElement(CabaneDashboard,{manifest,architectureModels:stableArchitectureModelRegistry,
-   walkTools:[{...torchlight,Scene:ObservedTorch}]})));
+   walkTools:[{...flashlight,Scene:ObservedTorch}]})));
 </script>`;
 
 test(
-  "equipping the torchlight reuses compiled world lighting programs",
+  "equipping the flashlight reuses compiled world lighting programs",
   { timeout: 30_000 },
   withBrowserDiagnostics(async () => {
     const { server } = await getBrowserTestServer("app");
@@ -54,22 +54,22 @@ test(
         return original.call(this, program);
       };
     });
-    await page.route("**/torchlight-smoke", async (route) =>
+    await page.route("**/flashlight-smoke", async (route) =>
       route.fulfill({
         contentType: "text/html",
-        body: await server.transformIndexHtml("/torchlight-smoke", fixture),
+        body: await server.transformIndexHtml("/flashlight-smoke", fixture),
       }),
     );
-    await page.goto(server.resolvedUrls.local[0] + "torchlight-smoke");
+    await page.goto(server.resolvedUrls.local[0] + "flashlight-smoke");
     await page.getByRole("button", { name: "Walk mode", exact: true }).click();
     await page.waitForFunction(() => document.pointerLockElement);
     await page.getByRole("button", { name: "Exit walk mode", exact: true }).waitFor();
     const before = await page.evaluate(() => window.spotlightPrograms);
     await page.keyboard.press("t");
     await page.waitForFunction(() => window.beamOn);
-    await page.screenshot({ path: "test-results/torchlight.png" });
+    await page.screenshot({ path: "test-results/flashlight.png" });
     await page.keyboard.press("t");
-    await page.waitForFunction(() => !document.querySelector('[aria-label="Unequip Torchlight"]'));
+    await page.waitForFunction(() => !document.querySelector('[aria-label="Unequip Flashlight"]'));
     assert.equal(await page.evaluate(() => window.spotlightPrograms), before);
     assert.deepEqual(errors, []);
   }),

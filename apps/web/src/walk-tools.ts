@@ -1,18 +1,19 @@
 import type { WalkToolDefinition } from "@cabane/engine";
 import { laserWalkTool } from "@cabane/walk-laser";
 import { createElement, lazy } from "react";
-import { TorchlightBeam } from "./torchlight/TorchlightBeam";
-import torchlightIcon from "./torchlight/icon.svg";
+import { FlashlightBeam } from "./flashlight/FlashlightBeam";
+import flashlightIcon from "./flashlight/icon.svg";
 
-const torchlight: WalkToolDefinition = {
+const flashlight: WalkToolDefinition = {
+  // Persisted tool IDs survive display-name changes.
   id: "cabane.torchlight",
-  label: "Torchlight",
+  label: "Flashlight",
   defaultShortcut: true,
   shortcutKey: "T",
-  Icon: () => createElement("img", { src: torchlightIcon, alt: "", draggable: false }),
-  WorldLighting: TorchlightBeam,
-  Scene: lazy(() => import("./torchlight/Torchlight")),
+  Icon: () => createElement("img", { src: flashlightIcon, alt: "", draggable: false }),
+  WorldLighting: FlashlightBeam,
+  Scene: lazy(() => import("./flashlight/Flashlight")),
 };
 
 /** Single installation point: engine and home packages know no experiments. */
-export const installedWalkTools = [laserWalkTool, torchlight];
+export const installedWalkTools = [laserWalkTool, flashlight];

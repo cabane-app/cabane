@@ -20,7 +20,7 @@ const perimeter = [
   [-1, -0.62],
 ] as const;
 
-function torchGeometry() {
+function flashlightGeometry() {
   const positions: number[] = [];
   const colors: number[] = [];
   const key = new Vector3(-0.5, -0.25, -0.83).normalize();
@@ -160,8 +160,8 @@ function torchGeometry() {
   return geometry;
 }
 
-export default function TorchlightModel() {
-  const geometry = useMemo(torchGeometry, []);
+export default function FlashlightModel() {
+  const geometry = useMemo(flashlightGeometry, []);
   useEffect(() => () => geometry.dispose(), [geometry]);
   return (
     <mesh rotation={[-Math.PI / 2 + 0.17, 0, -0.28]} geometry={geometry}>

@@ -2,7 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { Object3D, PerspectiveCamera, type SpotLight } from "three";
 
-export function TorchlightBeam({ active }: { active: boolean }) {
+export function FlashlightBeam({ active }: { active: boolean }) {
   const target = useMemo(() => new Object3D(), []);
   const beam = useRef<SpotLight>(null);
   useFrame(({ camera }) => {

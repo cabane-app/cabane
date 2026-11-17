@@ -1,6 +1,8 @@
 import type { RefObject } from "react";
 import type { Group } from "three";
-import { BlasterBarrel, BlasterGrip, BlasterReceiver, BlasterGlove } from "./laser-gun";
+import { BlasterBarrel, BlasterGrip, BlasterReceiver } from "./laser-gun";
+
+import { BlasterHand } from "./laser-gun/BlasterHand";
 
 /** Layered toy blaster, built entirely from procedural toon geometry. */
 export function LaserGun({
@@ -14,12 +16,12 @@ export function LaserGun({
     <group
       name="cartoon-laser-gun"
       userData={{ walkToolVisual: true }}
-      rotation={[0, 0.25, -0.055]}
+      rotation={[0, 0.42, -0.105]}
     >
       <BlasterReceiver />
       <BlasterBarrel muzzleRef={muzzleRef} shotId={shotId} />
       <BlasterGrip />
-      <BlasterGlove />
+      <BlasterHand />
     </group>
   );
 }
