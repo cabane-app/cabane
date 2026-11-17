@@ -1,0 +1,121 @@
+.graphics-debug {
+  position: fixed;
+  z-index: 24;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  left: max(16px, env(safe-area-inset-left));
+  font:
+    500 13px "Roboto",
+    sans-serif;
+  color: #38433b;
+}
+body:has(.direction-preview.is-plan, .direction-preview.is-settings) .graphics-debug {
+  display: none;
+}
+.graphics-debug button,
+.graphics-debug input {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.graphics-debug__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  background: #faf8f1;
+  border: 1px solid #b9bcae;
+  border-radius: 9px;
+  box-shadow: 0 2px 7px #282e2321;
+}
+.graphics-debug__panel {
+  position: fixed;
+  inset: auto auto calc(119px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  box-sizing: border-box;
+  width: min(252px, calc(100vw - 32px));
+  max-height: calc(100dvh - 145px);
+  margin: 0;
+  overflow: auto;
+  padding: 13px 14px 8px;
+  color: #38433b;
+  background: #faf8f1;
+  border: 1px solid #b9bcae;
+  border-radius: 12px;
+  box-shadow: 0 9px 28px #222c2530;
+}
+.graphics-debug__panel header,
+.graphics-debug__features label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.graphics-debug__panel h2 {
+  margin: 0;
+  font:
+    500 20px Georgia,
+    serif;
+}
+.graphics-debug__panel header button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+.graphics-debug__presets {
+  display: flex;
+  gap: 2px;
+  margin: 9px 0;
+  padding: 3px;
+  border-radius: 8px;
+  background: #e8e7dd;
+}
+.graphics-debug__presets button {
+  flex: 1;
+  height: 30px;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+}
+.graphics-debug__presets button[aria-pressed="true"] {
+  background: #465a48;
+  color: white;
+}
+.graphics-debug__features label {
+  min-height: 35px;
+  border-top: 1px solid #e4e3d8;
+  cursor: pointer;
+}
+.graphics-debug__features input {
+  appearance: none;
+  display: grid;
+  align-items: center;
+  box-sizing: border-box;
+  width: 30px;
+  height: 18px;
+  padding: 2px;
+  margin: 0;
+  border: 1px solid #999e91;
+  border-radius: 12px;
+  background: #d8d9ce;
+}
+.graphics-debug__features input::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+}
+.graphics-debug__features input:checked {
+  background: #536a53;
+  border-color: #536a53;
+}
+.graphics-debug__features input:checked::before {
+  justify-self: end;
+}
+.graphics-debug :focus-visible {
+  outline: 2px solid #547a95;
+  outline-offset: 2px;
+}

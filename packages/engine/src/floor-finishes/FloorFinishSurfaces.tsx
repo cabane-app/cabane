@@ -1,3 +1,4 @@
+import { setWallContactUVs } from "./wall-contact-map";
 import { elevationCutouts } from "../elevation/surfaces";
 import { isOutdoorPlatformRoom, outdoorPlatformRoomId } from "../outdoor-platforms/platform-rooms";
 import { useTerrainSurface } from "../terrain/TerrainSurface";
@@ -8,8 +9,9 @@ import { useHoveredRoom, useRoomHoverTarget, useRoomHoverEnabled } from "../room
 import { useStairSurfaceApertures } from "../stairs/surface-apertures";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { DoubleSide, type Mesh } from "three";
+import { DoubleSide, type Mesh, type Texture } from "three";
 import { ToonMaterial } from "../rendering";
+import { useScannedFinish } from "../scanned-finishes";
 import { RoomFloorMaterial } from "../room-navigation/RoomFloorMaterial";
 import { roomSurfaceEmphasis } from "../room-navigation/room-surface-emphasis";
 import { POOL_GROUND_Y } from "../pools/pool-footprint";
@@ -29,6 +31,7 @@ interface FinishSurfaceProps {
   finish: FloorFinishSpec;
   variant: FloorPatternVariant;
   textureSet: FloorFinishTextureSet;
+  wallContact?: Texture | null;
   layer: number;
   name: string;
   roomId?: string | undefined;
@@ -48,6 +51,7 @@ function FinishSurface({
   finish,
   variant,
   textureSet,
+  wallContact = null,
   layer,
   name,
   roomId,
@@ -61,43 +65,53 @@ function FinishSurface({
   surfaceId,
 }: FinishSurfaceProps) {
   const dom = useCabaneDom();
-  const repeatMeters = finish.kind === "preset" ? floorFinishPreset(finish.preset).repeatMeters : 1;
+  const preset = finish.kind === "preset" ? floorFinishPreset(finish.preset) : null;
+  const repeatMeters = preset?.repeatMeters ?? 1;
   const terrain = useTerrainSurface();
   const groundTerrain =
     cutPools && variant === "scene" && floor.id === terrain?.floorId ? terrain : null;
   const apertures = useStairSurfaceApertures("floor");
   const terrainApertures = useStairSurfaceApertures("terrain");
-  const geometry = useMemo(
-    () =>
-      conformToTerrain(
-        createFloorFinishGeometry(
-          polygon,
-          floor.coordinates,
-          repeatMeters,
-          [
-            ...apertures,
-            ...(cutPools ? terrainApertures : []),
-            ...(groundTerrain?.cutouts ?? []),
-            ...(variant === "scene" ? elevationCutouts(floor, surfaceId) : []),
-          ],
-          cutPools ? floor : undefined,
-        ),
-        groundTerrain,
+  const geometry = useMemo(() => {
+    const surface = conformToTerrain(
+      createFloorFinishGeometry(
+        polygon,
+        floor.coordinates,
+        repeatMeters,
+        [
+          ...apertures,
+          ...(cutPools ? terrainApertures : []),
+          ...(groundTerrain?.cutouts ?? []),
+          ...(variant === "scene" ? elevationCutouts(floor, surfaceId) : []),
+        ],
+        cutPools ? floor : undefined,
       ),
-    [
-      cutPools,
-      floor,
-      polygon,
-      repeatMeters,
-      apertures,
-      terrainApertures,
       groundTerrain,
-      variant,
-      surfaceId,
-    ],
-  );
+    );
+    if (wallContact) setWallContactUVs(surface);
+    return surface;
+  }, [
+    cutPools,
+    floor,
+    polygon,
+    repeatMeters,
+    wallContact,
+    apertures,
+    terrainApertures,
+    groundTerrain,
+    variant,
+    surfaceId,
+  ]);
   useEffect(() => () => geometry.dispose(), [geometry]);
-  const texture = finish.kind === "preset" ? textureSet.get(finish.preset, finish.color) : null;
+  const scanId = variant === "scene" && finish.kind === "preset" ? finish.preset : undefined;
+  const scan = useScannedFinish(scanId);
+  const relief = useScannedFinish(
+    scanId === "pine-bark" || scanId === "gravel" ? `${scanId}-normal` : undefined,
+  );
+  const texture =
+    scan === undefined && finish.kind === "preset"
+      ? textureSet.get(finish.preset, finish.color)
+      : scan;
   const color = floorFinishRepresentativeColor(finish);
   const press = useRef<{
     pointerId: number;
@@ -216,11 +230,13 @@ function FinishSurface({
       />
     ) : (
       <RoomFloorMaterial
-        key={texture ? "pattern" : "solid"}
+        key={`${texture ? "pattern" : "solid"}-${wallContact ? "contact" : "flat"}-${Boolean(relief)}`}
+        roughness={preset?.roughness ?? (finish.kind === "grass" ? 0.96 : 0.65)}
+        aoMap={wallContact}
         color={texture ? "#ffffff" : color}
         emphasis={emphasis}
         reducedMotion={reducedMotion}
-        {...omitUndefinedProperties({ map: texture ?? undefined })}
+        {...omitUndefinedProperties({ map: texture ?? undefined, normalMap: relief ?? undefined })}
         side={DoubleSide}
         polygonOffset={layer > 0}
         polygonOffsetFactor={-layer}
@@ -267,17 +283,20 @@ function FinishSurface({
 
 export const FloorFinishSurfaces = memo(function FloorFinishSurfaces({
   floor,
+  wallContact = null,
   variant,
   selectedRoomId = null,
   reducedMotion = false,
   onSelectRoom,
 }: {
   floor: FloorSpec;
+  wallContact?: Texture | null;
   variant: FloorPatternVariant;
   selectedRoomId?: string | null;
   reducedMotion?: boolean;
   onSelectRoom?: ((id: string) => void) | undefined;
 }) {
+  const terrain = useTerrainSurface();
   const textureSet = useMemo(() => createFloorFinishTextureSet(variant), [variant]);
   useEffect(() => () => textureSet.dispose(), [textureSet]);
   return (
@@ -294,6 +313,7 @@ export const FloorFinishSurfaces = memo(function FloorFinishSurfaces({
                 textureSet={textureSet}
                 layer={index + 1}
                 elevation={variant === "scene" ? POOL_GROUND_Y + 0.006 : 0.001}
+                wallContact={terrain ? null : wallContact}
                 cutPools
                 name={`ground-zone-${zone.id}`}
               />,
@@ -337,6 +357,7 @@ export const FloorFinishSurfaces = memo(function FloorFinishSurfaces({
             elevation={
               variant === "scene" ? (platform.elevation?.offsetMeters ?? 0) + 0.002 : 0.001
             }
+            wallContact={platform.elevation?.offsetMeters ? null : wallContact}
             name={`platform-finish-${platform.id}`}
           />
         ))}
@@ -363,6 +384,7 @@ export const FloorFinishSurfaces = memo(function FloorFinishSurfaces({
           <FinishSurface
             key={room.id}
             {...common}
+            wallContact={wallContact}
             polygon={room.polygon}
             finish={
               room.isSolid ? { kind: "solid", color: "#b8b3aa" } : resolveRoomFloorFinish(room)
@@ -376,6 +398,7 @@ export const FloorFinishSurfaces = memo(function FloorFinishSurfaces({
                   <FinishSurface
                     key={zone.id}
                     {...common}
+                    wallContact={zone.elevation?.offsetMeters ? null : wallContact}
                     polygon={zone.polygon}
                     finish={zone.finish}
                     layer={index + 1}

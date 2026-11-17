@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { openingWorldPlacement } from "@cabane/engine";
 import { ToonMaterial } from "@cabane/engine";
 import type { PassageSpec } from "@cabane/engine";
-import { buildArchedPassageSpandrelShape } from "./arched-passage-spandrel";
+import { archedPassageCurve, buildArchedPassageSpandrelShape } from "./arched-passage-spandrel";
 import type { OpeningModelProps } from "../opening-model-props";
 
 export function PassageModel({ wall, opening, floor }: OpeningModelProps<PassageSpec>) {
@@ -33,3 +33,10 @@ export function PassageModel({ wall, opening, floor }: OpeningModelProps<Passage
     </group>
   );
 }
+
+PassageModel.wallHeadProfile = (opening: PassageSpec, width: number) =>
+  opening.variant === "arched"
+    ? archedPassageCurve(opening, width)
+        .getPoints()
+        .map(({ x, y }) => [x, y] as const)
+    : null;

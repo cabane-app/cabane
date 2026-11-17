@@ -2,13 +2,60 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { createMemoryRouter, RouterProvider } from "react-router";
+import { renderToStaticMarkup } from "react-dom/server";
+import { createMemoryRouter, MemoryRouter, RouterProvider } from "react-router";
 import { withModules } from "./test-server.mjs";
 import { withStorageDom } from "./dom-test-environment.mjs";
 
 await withModules(async (load) => {
   const { WorkspaceApplication } = await load("/apps/web/src/workspaces/WorkspaceApplication.tsx");
   const { initializeWorkspaces } = await load("/apps/web/src/workspaces/initialize-workspaces.ts");
+  const { isDashboardEntryPath, populatedPublishedHome } = await load(
+    "/apps/web/src/workspaces/workspace-presentation.ts",
+  );
+  test("cold demo startup presents the home entry while welcome, editor and sign-in resolve separately", () => {
+    const markup = (path) =>
+      renderToStaticMarkup(
+        React.createElement(
+          MemoryRouter,
+          { initialEntries: [path] },
+          React.createElement(WorkspaceApplication),
+        ),
+      );
+    assert.match(markup("/demo"), /aria-label="Opening home"/);
+    for (const path of ["/", "/welcome", "/build", "/demo?auth_callback=1", "/workspaces"])
+      assert.doesNotMatch(markup(path), /aria-label="Opening home"/);
+  });
+  test("personal home entry requires a published floor and the workspace dashboard route", () => {
+    const published = {
+      floors: [
+        {
+          footprint: [
+            [0, 0],
+            [3, 0],
+            [0, 3],
+          ],
+        },
+      ],
+    };
+    assert.equal(populatedPublishedHome({ publishedAt: 1, published }), published);
+    assert.equal(populatedPublishedHome({ publishedAt: 0, published, draft: published }), null);
+    assert.equal(
+      populatedPublishedHome({ publishedAt: 1, published: { floors: [{ footprint: [] }] } }),
+      null,
+    );
+    assert.equal(populatedPublishedHome(undefined), null);
+    assert.ok(isDashboardEntryPath("/workspaces/my%20home/"));
+    for (const path of [
+      "/welcome",
+      "/build",
+      "/workspaces",
+      "/workspaces/home/arrange",
+      "/workspaces/home/settings",
+      "/open/home",
+    ])
+      assert.equal(isDashboardEntryPath(path), false);
+  });
   async function mount({ repository, path = "/" }) {
     const router = createMemoryRouter(
       [

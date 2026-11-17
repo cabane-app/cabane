@@ -1,4 +1,6 @@
-import { ToonMaterial, type GardenGateVariant } from "@cabane/engine";
+import { ToonMaterial, type DoorFinish, type GardenGateVariant } from "@cabane/engine";
+
+import { DetailedGardenGate } from "./detailed-garden-gate";
 
 export const GARDEN_GATE_HINGE_OFFSET_METERS = 0.026;
 export const GARDEN_GATE_SWEEP_DEPTH_METERS = GARDEN_GATE_HINGE_OFFSET_METERS + 0.055;
@@ -71,17 +73,23 @@ function gateParts(
 
 export function GardenGateLeaf({
   variant,
+  detailed,
+  finish,
   width,
   height,
   color,
   handleSide,
 }: {
   variant: GardenGateVariant;
+  detailed: boolean;
+  finish: DoorFinish;
   width: number;
   height: number;
   color: string;
   handleSide: -1 | 1;
 }) {
+  if (detailed)
+    return <DetailedGardenGate {...{ variant, finish, color, width, height, handleSide }} />;
   const plateWidth = Math.min(0.034, width / 6);
   const plateX = handleSide * (width / 2 - plateWidth / 2);
   const latchY = height * 0.22;

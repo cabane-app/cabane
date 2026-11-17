@@ -1,5 +1,5 @@
 import { RoundedBox } from "@cabane/engine";
-import { Outlines, ToonMaterial } from "@cabane/engine";
+import { Outlines, JoineryMaterial } from "@cabane/engine";
 import type { DoorSpec } from "@cabane/engine";
 import { OpeningFrameBox } from "../opening-frame-box";
 
@@ -43,7 +43,7 @@ export function PlankDoorLeaf({
         smoothness={3}
         castShadow
       >
-        <ToonMaterial color={wood} />
+        <JoineryMaterial finish={white ? "paint" : "wood"} color={wood} />
         <Outlines thickness={0.006} color={woodDark} screenspace={false} />
       </RoundedBox>
       {Array.from({ length: plankCount }, (_, index) => {
@@ -52,12 +52,15 @@ export function PlankDoorLeaf({
           <group key={index}>
             <mesh position={[x, 0, 0.04]} castShadow>
               <boxGeometry args={[Math.max(0.01, plankWidth - 0.008), innerHeight, 0.018]} />
-              <ToonMaterial color={index % 3 === 1 ? woodLight : wood} />
+              <JoineryMaterial
+                finish={white ? "paint" : "wood"}
+                color={index % 3 === 1 ? woodLight : wood}
+              />
             </mesh>
             {index < plankCount - 1 && (
               <mesh position={[x + plankWidth / 2, 0, 0.052]}>
                 <boxGeometry args={[0.006, innerHeight - 0.01, 0.009]} />
-                <ToonMaterial color={woodDark} />
+                <JoineryMaterial finish={white ? "paint" : "wood"} color={woodDark} />
               </mesh>
             )}
           </group>
@@ -89,7 +92,7 @@ export function PlankDoorLeaf({
           position={[0, 0, 0.096]}
           castShadow
         >
-          <ToonMaterial color={woodLight} />
+          <JoineryMaterial finish={white ? "paint" : "wood"} color={woodLight} />
           <Outlines thickness={0.004} color={woodDark} screenspace={false} />
         </RoundedBox>
       ))}
@@ -120,7 +123,7 @@ export function PlankDoorLeaf({
           >
             <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
               <cylinderGeometry args={[0.085, 0.085, 0.045, 16]} />
-              <ToonMaterial color="#242525" />
+              <JoineryMaterial finish="metal" color="#242525" />
               <Outlines thickness={0.006} color="#111212" screenspace={false} />
             </mesh>
             <OpeningFrameBox

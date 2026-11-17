@@ -1,7 +1,7 @@
 import { roofRegionSurface } from "./roof-region-surface";
 import { DEFAULT_WALL_COLORS } from "../wall-colors";
 import polygonClipping, { type Polygon as ClipPolygon } from "polygon-clipping";
-import { BufferGeometry, Color, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
+import { BufferGeometry, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
 import type { FloorSpec } from "../types";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { deriveRoofRegions, type RoofRegion } from "./roof-coverage";
@@ -11,15 +11,17 @@ import {
   ROOF_THICKNESS_METERS,
   type RoofSettings,
 } from "./roof-settings";
-import { createRoofWallLookup, roofWallFaceColor } from "./roof-wall-finish";
+import { createRoofWallLookup, roofWallFace } from "./roof-wall-finish";
 import { createRoofGableSpans } from "./roof-gable-spans";
 import {
   alignRoofRim,
+  appendRimFace,
   roofRimOffset,
   roofWallCenterlinePoint,
   type RoofRimSegment,
 } from "./roof-rim";
 import { splitSlopeRim, splitSlopeSurface } from "./roof-slope-profile";
+import { createRoofInfill } from "./roof-wall-infill";
 import { sharedSlopeEdgeSpans } from "./roof-slope-seams";
 
 type Point = [number, number];
@@ -62,8 +64,7 @@ function appendRegion(
   interiorColor: string,
   top: number[],
   edges: number[],
-  infill: number[],
-  infillColors: number[],
+  infill: ReturnType<typeof createRoofInfill>,
   slopes: readonly RoofRegion[],
   gableSpans?: ReturnType<typeof createRoofGableSpans>,
 ) {
@@ -151,8 +152,12 @@ function appendRegion(
           to: q,
           seam,
           gabled: gable !== undefined,
-          finish: roofWallFaceColor(support, p, q, exteriorColor),
+          face: roofWallFace(support, p, q, exteriorColor),
           support: supportedRim,
+          wallTop:
+            support && !support.wall.leanMeters && !support.wall.gable
+              ? walls.top(support.wall)
+              : undefined,
           offset: roofRimOffset(supportedRim, p, q),
         });
       }
@@ -182,13 +187,8 @@ function appendRegion(
   const bottom = region.baseHeight - ROOF_CEILING_DEPTH_METERS;
   const gableTop = (point: Point, support: RoofRimSegment["support"]) =>
     heightAt(support ? roofWallCenterlinePoint(point, support) : point) - ROOF_CEILING_DEPTH_METERS;
-  const addInfill = (p0: number[], p1: number[], q0: number[], q1: number[], finish: string) => {
-    infill.push(...p0, ...p1, ...q1, ...p0, ...q1, ...q0);
-    const color = new Color(finish);
-    for (let vertex = 0; vertex < 6; vertex++) infillColors.push(color.r, color.g, color.b);
-  };
   for (const rim of outerRims) {
-    for (const { from: p, to: q, seam, gabled, finish, support } of rim) {
+    for (const { from: p, to: q, seam, gabled, face, support, wallTop } of rim) {
       if (seam || Math.hypot(q[0] - p[0], q[1] - p[1]) < 1e-6) continue;
       const p1 = [p[0], heightAt(p), p[1]],
         p2 = [p[0], p1[1] + ROOF_THICKNESS_METERS, p[1]];
@@ -197,8 +197,8 @@ function appendRegion(
       // A gable reaches the ceiling. Close the remaining depth up to the roof skin.
       const p0 = [p[0], gabled ? Math.min(p1[1], gableTop(p, support)) : bottom, p[1]];
       const q0 = [q[0], gabled ? Math.min(q1[1], gableTop(q, support)) : bottom, q[1]];
-      edges.push(...p1, ...p2, ...q2, ...p1, ...q2, ...q1);
-      addInfill(p0, p1, q0, q1, finish);
+      appendRimFace(edges, [p1, p2, q2, q1], wallTop);
+      infill.add([p0, p1, q1, q0], face, walls.elevation, wallTop);
     }
   }
 
@@ -219,12 +219,15 @@ function appendRegion(
     const pBase = Math.min(pTop, baseAt(p));
     const qBase = Math.min(qTop, baseAt(q));
     if (pTop - pBase < 1e-6 && qTop - qBase < 1e-6) continue;
-    addInfill(
-      [q[0], qBase, q[1]],
-      [q[0], qTop, q[1]],
-      [p[0], pBase, p[1]],
-      [p[0], pTop, p[1]],
-      roofWallFaceColor(support, p, q, interiorColor, false),
+    infill.add(
+      [
+        [q[0], qBase, q[1]],
+        [q[0], qTop, q[1]],
+        [p[0], pTop, p[1]],
+        [p[0], pBase, p[1]],
+      ],
+      roofWallFace(support, p, q, interiorColor, false),
+      walls.elevation,
     );
   }
 }
@@ -236,14 +239,13 @@ export function buildRoofGeometries(
   interiorColor: string = DEFAULT_WALL_COLORS.interior,
 ) {
   const top: number[] = [],
-    edges: number[] = [],
-    infill: number[] = [],
-    infillColors: number[] = [];
+    edges: number[] = [];
+  const infill = createRoofInfill();
   const byId = new Map(floors.map((floor) => [floor.id, floor]));
   const regions = deriveRoofRegions(floors);
   const slopes = regions.filter((region) => region.heightAt);
-  const wallsByFloor = new Map<string, ReturnType<typeof createRoofWallLookup>>();
-  const levels = slopes.length ? deriveFloorLevels(floors) : [];
+  const wallLookups = new Map<string, ReturnType<typeof createRoofWallLookup>>();
+  const levels = deriveFloorLevels(floors);
   const levelsByFloor = new Map(
     levels.map(({ floorId, elevationMeters }, index) => [
       floorId,
@@ -262,10 +264,16 @@ export function buildRoofGeometries(
     : undefined;
   for (const region of regions) {
     const floor = byId.get(region.floorId)!;
-    let walls = wallsByFloor.get(floor.id);
+    const level = levelsByFloor.get(floor.id)!;
+    const leanHeight =
+      !region.heightAt && floor.walls.some((wall) => wall.leanMeters)
+        ? region.baseHeight - level.elevationMeters - ROOF_CEILING_DEPTH_METERS
+        : 0;
+    const key = `${floor.id}:${leanHeight}`;
+    let walls = wallLookups.get(key);
     if (!walls) {
-      walls = createRoofWallLookup(floor, levelsByFloor.get(floor.id));
-      wallsByFloor.set(floor.id, walls);
+      walls = createRoofWallLookup(floor, level, leanHeight);
+      wallLookups.set(key, walls);
     }
     appendRegion(
       region,
@@ -276,12 +284,9 @@ export function buildRoofGeometries(
       top,
       edges,
       infill,
-      infillColors,
       slopes,
       region.heightAt ? gableSpans : undefined,
     );
   }
-  const wallInfill = meshGeometry(infill);
-  wallInfill.setAttribute("color", new Float32BufferAttribute(infillColors, 3));
-  return { top: meshGeometry(top), edges: meshGeometry(edges), infill: wallInfill };
+  return { top: meshGeometry(top), edges: meshGeometry(edges), infill: infill.geometry() };
 }

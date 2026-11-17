@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import { Color } from "three";
+import { Color, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
@@ -127,6 +127,74 @@ await withModules(async (load) => {
       });
       assert.ok(checked > 0);
       await renderer.unmount();
+    }
+  });
+  test("cutaway returns use the authored edge and interior skirting stops at passages", () => {
+    const floor = structuredClone(neutralDemoManifest.floors[0]);
+    const wall = {
+      id: "section",
+      from: [1, 1],
+      to: [4, 1],
+      classification: "interior",
+      thicknessMeters: 0.2,
+      heightMeters: 2.5,
+      edgeColor: "#927257",
+      faceColors: { left: "#e6ddcc" },
+    };
+    floor.walls = [wall];
+    floor.wallJunctions = [];
+    floor.rooms = [
+      {
+        ...floor.rooms[0],
+        polygon: [
+          [0, 1],
+          [5, 1],
+          [5, 3],
+          [0, 3],
+        ],
+      },
+    ];
+    floor.openings = [
+      {
+        id: "tall-passage",
+        wallId: wall.id,
+        kind: "passage",
+        variant: "rectangular",
+        offsetFromWallStartPlanUnits: 1,
+        widthPlanUnits: 1,
+        sillHeightMeters: 0,
+        openingHeightMeters: 2.485,
+      },
+    ];
+    for (const sectionEdges of [false, true]) {
+      const material = new MeshBasicMaterial();
+      const meshes = buildArchitecturalWallGeometries(floor, undefined, undefined, 0, {
+        sectionEdges,
+        skirting: sectionEdges,
+      }).map(({ geometry }) => new Mesh(geometry, material));
+      const colorAt = (x, y, inside = true) => {
+        const [hit] = new Raycaster(
+          new Vector3(x, y, inside ? 2 : 0),
+          new Vector3(0, 0, inside ? -1 : 1),
+        ).intersectObjects(meshes);
+        return hit
+          ? new Color()
+              .fromBufferAttribute(hit.object.geometry.attributes.color, hit.face.a)
+              .getHexString()
+          : null;
+      };
+      assert.equal(colorAt(1.5, 2.4), "e6ddcc");
+      assert.equal(colorAt(1.5, 2.48), sectionEdges ? "927257" : "e6ddcc");
+      assert.equal(colorAt(2.5, 2.48), null);
+      assert.equal(colorAt(2.5, 2.49), sectionEdges ? "927257" : "e6ddcc");
+      assert.equal(
+        colorAt(1.5, 0.05),
+        sectionEdges ? new Color("#e6ddcc").multiplyScalar(0.73).getHexString() : "e6ddcc",
+      );
+      assert.equal(colorAt(1.5, 0.05, false), colorAt(1.5, 0.5, false));
+      assert.equal(colorAt(2.5, 0.05), null);
+      meshes.forEach((mesh) => mesh.geometry.dispose());
+      material.dispose();
     }
   });
   test("connected cap finishes stay within their walls and conflicting junctions use the general finish", () => {

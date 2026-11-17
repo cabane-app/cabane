@@ -1,4 +1,5 @@
 import { MeasurementText } from "./MeasurementText";
+import { DashboardFallbackReady } from "./DashboardSceneReady";
 import { useState } from "react";
 import type { ManifestIssue } from "./types";
 
@@ -29,6 +30,7 @@ export function ConfigurationScreen({
   };
   return (
     <main className="configuration-screen">
+      <DashboardFallbackReady />
       <section>
         <h1>This home couldn’t be opened.</h1>
         <p>Cabane found a problem that prevents this home from opening.</p>

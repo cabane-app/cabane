@@ -1,7 +1,9 @@
 import { ApartmentFloors } from "./building/ApartmentFloors";
-import { createTerrainSurface } from "./terrain/terrain-surface";
-import { TerrainSurfaceContext } from "./terrain/TerrainSurface";
-import { DioramaGround } from "./architecture-scene/DioramaGround";
+import { TerrainSurfaceContext, useSceneTerrain } from "./terrain/TerrainSurface";
+import { DioramaFrameContext, DioramaGround } from "./architecture-scene/DioramaGround";
+import { orbitDioramaFrame } from "./architecture-scene/diorama-frame";
+import { SceneStyleContext } from "./scene-style";
+import { useGraphicsFeature } from "./graphics-features";
 import { worldBoundsForFloorScene } from "./pools";
 import type { HomeManifest } from "./types";
 import { isOutdoorPlatformOutline } from "./outdoor-platforms/platform-geometry";
@@ -16,7 +18,7 @@ import {
 import { deriveStairFlight, deriveStairApertures } from "./stairs/flight-geometry";
 import { stairFloorIds } from "./stairs/stair-connection";
 import { StairSurfaceApertures } from "./stairs/surface-apertures";
-import { memo, useMemo } from "react";
+import { memo, useContext, useMemo } from "react";
 import { FloorScene, type FloorSceneProps } from "./building/FloorScene";
 import { deriveFloorLevels } from "./building/floor-levels";
 import { visibleFloorIds, type FloorView } from "./building/floor-visibility";
@@ -28,6 +30,7 @@ export { ArchitecturalFloor, ArchitecturalWall } from "./building/FloorScene";
 type ArchitectureSceneProps = Omit<
   FloorSceneProps,
   | "sourceFloor"
+  | "contactEnabled"
   | "showGround"
   | "showCeiling"
   | "ceilingCutawayHeightMeters"
@@ -39,11 +42,13 @@ type ArchitectureSceneProps = Omit<
   selectedRoomId: string | null;
   activeFloorId?: string;
   floorView?: FloorView;
+  fitGroundToSite?: boolean;
 };
 export const ArchitectureScene = memo(function ArchitectureScene({
   activeFloorId,
   floorView,
   selectedRoomId,
+  fitGroundToSite = false,
   ...props
 }: ArchitectureSceneProps) {
   const { manifest, walkMode } = props;
@@ -66,12 +71,9 @@ export const ArchitectureScene = memo(function ArchitectureScene({
       view,
     ),
   );
-  const terrain = useMemo(
-    () =>
-      manifest.home.apartmentFloor
-        ? null
-        : createTerrainSurface(manifest.home.terrain, manifest.floors),
-    [manifest.home.terrain, manifest.home.apartmentFloor, manifest.floors],
+  const terrain = useSceneTerrain(
+    manifest.home.apartmentFloor ? undefined : manifest.home.terrain,
+    manifest.floors,
   );
   if (view === "whole" && !terrain)
     manifest.floors
@@ -80,6 +82,17 @@ export const ArchitectureScene = memo(function ArchitectureScene({
   const ground = manifest.floors.find(
     (floor) =>
       !floor.belowGround && (floor.elevationMeters === undefined || floor.elevationMeters === 0),
+  );
+  const style = useContext(SceneStyleContext);
+  const contacts = useGraphicsFeature("contact");
+  const framedGround = useGraphicsFeature("grounds");
+  const inheritedFrame = useContext(DioramaFrameContext);
+  const siteFrame = useMemo(
+    () =>
+      framedGround && fitGroundToSite && !walkMode && style === "default" && !terrain
+        ? orbitDioramaFrame(manifest, props.deviceModels)
+        : null,
+    [framedGround, fitGroundToSite, walkMode, style, terrain, manifest, props.deviceModels],
   );
   const apertureKey = JSON.stringify(deriveStairApertures(manifest));
   const terrainApertureKey = JSON.stringify(
@@ -151,7 +164,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
       : 0;
   // Unshadowed point lights stay on the viewed storey so fixtures below cannot
   // illuminate the floor above.
-  return (
+  const scene = (
     <SceneRoomSelection.Provider value={selectedRoomId}>
       <TerrainSurfaceContext.Provider value={view === "plan" ? null : terrain}>
         <group name="architecture-scene" position={[0, offset, 0]}>
@@ -182,6 +195,7 @@ export const ArchitectureScene = memo(function ArchitectureScene({
                     <FloorScene
                       {...props}
                       sourceFloor={floor}
+                      contactEnabled={contacts && style === "default" && view !== "plan"}
                       platformBelow={manifest.floors[index - 1]}
                       sceneLightingEnabled={floor.id === active}
                       below={
@@ -264,5 +278,10 @@ export const ArchitectureScene = memo(function ArchitectureScene({
         </group>
       </TerrainSurfaceContext.Provider>
     </SceneRoomSelection.Provider>
+  );
+  return (
+    <DioramaFrameContext.Provider value={siteFrame ?? inheritedFrame}>
+      {scene}
+    </DioramaFrameContext.Provider>
   );
 });

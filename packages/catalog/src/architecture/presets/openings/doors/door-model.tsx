@@ -1,5 +1,6 @@
 import { framedHingedDoorMount } from "./framed-hinged-door-mount";
-import { omitUndefinedProperties } from "@cabane/engine";
+import { omitUndefinedProperties, useDetailedJoinery } from "@cabane/engine";
+import { SlidingGlassTrack } from "./sliding-glass-track";
 import { RollUpDoorModel } from "./roll-up-door-model";
 import {
   isGardenGate,
@@ -30,6 +31,7 @@ export function DoorModel({
   position,
   reducedMotion,
 }: OpeningModelProps<DoorSpec>) {
+  const detailed = useDetailedJoinery();
   if (opening.operation === "roll-up")
     return (
       <RollUpDoorModel
@@ -116,6 +118,13 @@ export function DoorModel({
       position={[placement.start[0], opening.sillHeightMeters, placement.start[1]]}
       rotation={[0, placement.rotationY, 0]}
     >
+      {detailed && opening.variant === "full-glass" && opening.operation === "sliding" && (
+        <SlidingGlassTrack
+          width={placement.widthMeters}
+          height={opening.openingHeightMeters}
+          color={opening.color ?? (opening.finish === "white" ? "#d8d2c6" : "#9c6b49")}
+        />
+      )}
       {opening.variant !== "full-glass" &&
         opening.variant !== "steel-arched" &&
         !flush &&
@@ -125,6 +134,7 @@ export function DoorModel({
               color: opening.color ?? (gate ? gardenGateColor(variant, opening.finish) : undefined),
             })}
             depth={frameDepth}
+            finish={opening.finish}
             width={placement.widthMeters}
             height={opening.openingHeightMeters}
             openTop={gate}

@@ -3,6 +3,25 @@ import { wallFrame, wallSurfaceU } from "./wall-coordinate-frame";
 import type { FloorSpec, WallSpec, WallSurfaceFinish } from "../types";
 import { wallSurfaceRepeatHeight } from "../wall-types";
 
+export const paintedWallU = (x: number, z: number, nx: number, nz: number) => x * nz - z * nx;
+
+/** Painted faces, caps and opening reveals each carry the plaster at its 1 m scale. */
+export function projectPaintedWallUVs(geometry: BufferGeometry) {
+  const positions = geometry.getAttribute("position");
+  const normals = geometry.getAttribute("normal");
+  const uv =
+    geometry.getAttribute("uv") ??
+    new Float32BufferAttribute(new Float32Array(positions.count * 2), 2);
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i),
+      y = positions.getY(i),
+      z = positions.getZ(i);
+    if (Math.abs(normals.getY(i)) > 0.7) uv.setXY(i, x, z);
+    else uv.setXY(i, paintedWallU(x, z, normals.getX(i), normals.getZ(i)), y);
+  }
+  geometry.setAttribute("uv", uv);
+}
+
 /** Partition the existing standalone mesh without changing its junction trims or cutouts. */
 export function splitWallSurfaceGeometry(source: BufferGeometry, wall: WallSpec, floor: FloorSpec) {
   if (!wall.faceFinishes) return [{ geometry: source, finish: undefined }];

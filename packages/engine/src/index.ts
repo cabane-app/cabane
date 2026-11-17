@@ -22,9 +22,12 @@ export * from "./floor-finishes";
 export * from "./opening-orientation";
 export * from "./architecture-geometry";
 export { physicalFloor } from "./architecture-geometry/physical-floor";
+export { ArchitecturalGlass } from "./architecture-scene/ArchitecturalGlass";
+export { JoineryMaterial, useDetailedJoinery } from "./architecture-scene/JoineryMaterial";
 export * from "./architecture-models";
 export * from "./lighting";
 export * from "./SceneLighting";
+export * from "./graphics-features";
 export * from "./HomeAssistantSceneLighting";
 export * from "./navigation";
 export * from "./performance";
@@ -105,6 +108,7 @@ export { createSetupRecord, loadSetupRecord, saveSetupRecord } from "./setup-pro
 export { RoundedBox } from "./rounded-box/RoundedBox";
 
 export { ScenePreviewContext } from "./ScenePreview";
+export { DashboardSceneReadyContext } from "./DashboardSceneReady";
 
 export { deviceMappingRooms, outsideRoomGroupId } from "./outside-room-devices";
 

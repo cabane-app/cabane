@@ -19,7 +19,7 @@ export const atelierLibraryDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 48, triangles: 6000 },
+    complexity: { visibleMeshes: 50, triangles: 10000 },
   }),
   "atelier-library-credenza": defineFurnishingModel({
     component: AtelierLibraryCredenza,

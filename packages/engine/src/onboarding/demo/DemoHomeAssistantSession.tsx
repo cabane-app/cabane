@@ -8,6 +8,7 @@ import type { SupportedServiceCall } from "../../home-assistant-controls";
 import type { HomeManifest } from "../../types";
 
 import { deriveDemoSessionDefinition } from "./demo-session-definition";
+import { sampleDemoRoomSensors } from "./demo-room-readings";
 import { applyDemoServiceToStates } from "./demo-device-state";
 export { deriveDemoSessionDefinition, type DemoSessionDefinition } from "./demo-session-definition";
 export { applyDemoServiceCall } from "./demo-device-state";
@@ -49,6 +50,24 @@ export function DemoHomeAssistantSession({
       live.current = false;
     };
   }, []);
+  useEffect(() => {
+    if (!definition.roomSensors.length) return;
+    const started = Date.now();
+    const timer = setInterval(() => {
+      if (current.current.definition !== definition) return;
+      const minute = Math.floor((Date.now() - started) / 60_000);
+      const entityStates = sampleDemoRoomSensors(
+        current.current.entityStates,
+        definition.roomSensors,
+        night,
+        minute,
+      );
+      if (entityStates === current.current.entityStates) return;
+      current.current = { ...current.current, entityStates };
+      setSnapshot(current.current);
+    }, 60_000);
+    return () => clearInterval(timer);
+  }, [definition, night]);
   const callService = useCallback(
     async (call: SupportedServiceCall) => {
       if (!live.current || current.current.definition !== definition)

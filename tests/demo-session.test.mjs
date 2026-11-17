@@ -25,6 +25,51 @@ await withModules(async (load) => {
   const { deviceVisualStateForSnapshot } = await load("/packages/engine/src/devices.ts");
   const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
 
+  const { showcaseHomeProject, homeExtensions } = await load("/home/src/index.ts");
+  const { composeHomeManifest } = await load("/packages/engine/src/index.ts");
+  const { resolveHomeAssistantBindings } = await load(
+    "/packages/engine/src/home-assistant-resolver.ts",
+  );
+  const { deriveRoomStatusMap } = await load("/packages/engine/src/room-status/model.ts");
+  const { sampleDemoRoomSensors } = await load(
+    "/packages/engine/src/onboarding/demo/demo-room-readings.ts",
+  );
+  test("every Larch room and outdoor room has three simulated environmental readings", async () => {
+    const manifest = composeHomeManifest(showcaseHomeProject, homeExtensions);
+    for (const item of showcaseHomeProject.sceneItems.filter(
+      (i) => i.modelId === "air-quality-monitor",
+    )) {
+      const placement = item.placement;
+      if (placement.kind !== "wall") continue;
+      const floor = showcaseHomeProject.floors.find((f) => f.id === item.floorId);
+      for (const opening of floor.openings.filter((o) => o.wallId === placement.wallId)) {
+        const start = opening.offsetFromWallStartPlanUnits;
+        const end = start + opening.widthPlanUnits;
+        assert.ok(
+          placement.offsetFromWallStartPlanUnits < start - 0.05 ||
+            placement.offsetFromWallStartPlanUnits > end + 0.05,
+          item.id,
+        );
+      }
+    }
+    const { runtime, profile, roomSensors, sampleEntityId } = deriveDemoSessionDefinition(manifest);
+    const resolved = resolveHomeAssistantBindings(manifest, profile, runtime);
+    const rooms = Object.values(deriveRoomStatusMap(manifest, profile, resolved, runtime));
+    assert.equal(rooms.length, 15);
+    for (const room of rooms) {
+      assert.equal(room.temperature?.unit, "°C", room.roomId);
+      assert.equal(room.humidity?.unit, "%", room.roomId);
+      assert.ok(Number.isFinite(Number(room.aqi?.value)), room.roomId);
+    }
+    const next = sampleDemoRoomSensors(runtime.entityStates, roomSensors, false, 4);
+    assert.ok(
+      roomSensors.some(
+        ({ entityId }) => next[entityId].state !== runtime.entityStates[entityId].state,
+      ),
+    );
+    assert.equal(next[sampleEntityId], runtime.entityStates[sampleEntityId]);
+  });
+
   test("bundled fan and sprinkler animate from demo state and stop through normal controls", async () => {
     const definition = deriveDemoSessionDefinition(homeManifest);
     for (const [modelId, domain, stop, start, rotorName, axis] of [

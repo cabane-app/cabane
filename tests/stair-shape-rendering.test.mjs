@@ -1,16 +1,116 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
-import { create } from "@react-three/test-renderer";
-import { Vector3, Raycaster } from "three";
+import { act, create } from "@react-three/test-renderer";
+import { Vector3, Raycaster, Texture, TextureLoader } from "three";
 import { withModules } from "./test-server.mjs";
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
   const { StairPlan } = await load("/packages/engine/src/stairs/models/StairPlan.tsx");
+  const { StairPolygonSurface } = await load(
+    "/packages/engine/src/stairs/models/StairPolygonSurface.tsx",
+  );
+  const { MasonryStairTreads } = await load(
+    "/packages/engine/src/stairs/models/MasonryStairTreads.tsx",
+  );
   const { deriveStairFlight } = await load("/packages/engine/src/stairs/flight-geometry.ts");
   const { makeStairProject } = await load("/tests/fixtures/multiple-floors.ts");
   const { CabaneDomProvider } = await load("/packages/engine/src/CabaneDom.tsx");
   const { EditableStair } = await load("/apps/web/src/editor-floors/EditableStair.tsx");
+
+  test("a tread enables the texture shader when its finish loads after the first draw", async (t) => {
+    const renderer = await create(createElement("group"));
+    const previousDocument = globalThis.document;
+    const previousImage = globalThis.Image;
+    globalThis.document ??= {};
+    globalThis.Image ??= class {};
+    let complete;
+    const scan = new Texture({ width: 768, height: 768 });
+    t.mock.method(TextureLoader.prototype, "load", (_url, ready) => {
+      complete = () => ready(scan);
+      return scan;
+    });
+    try {
+      await renderer.update(
+        createElement(StairPolygonSurface, {
+          polygon: [
+            [0, 0],
+            [1.2, 0],
+            [1.2, 0.3],
+            [0, 0.3],
+          ],
+          elevation: 0.2,
+        }),
+      );
+      const mesh = renderer.scene.findByType("Mesh").instance;
+      const original = mesh.material,
+        version = original.version;
+      assert.equal(original.map, null);
+      await act(async () => complete());
+      assert.equal(mesh.material.map, scan);
+      assert.ok(
+        mesh.material !== original || mesh.material.version > version,
+        "changing USE_MAP must invalidate the original program",
+      );
+    } finally {
+      await renderer.unmount();
+      if (previousDocument === undefined) delete globalThis.document;
+      else globalThis.document = previousDocument;
+      if (previousImage === undefined) delete globalThis.Image;
+      else globalThis.Image = previousImage;
+    }
+  });
+
+  test("closed stairs shade both faces of a riser joint and only the occupied half of a return landing", async () => {
+    const treads = [
+      {
+        polygon: [
+          [0, 0],
+          [2, 0],
+          [2, 1],
+          [0, 1],
+        ],
+        elevation: 0.2,
+      },
+      {
+        polygon: [
+          [1, -0.3],
+          [2, -0.3],
+          [2, 0],
+          [1, 0],
+        ],
+        elevation: 0.4,
+      },
+    ];
+    for (const style of ["stone", "concrete"]) {
+      const renderer = await create(
+        createElement(MasonryStairTreads, { flight: { style, treads } }),
+      );
+      try {
+        const scene = renderer.scene.instance;
+        scene.updateMatrixWorld(true);
+        const sample = (origin, direction) => {
+          const [hit] = new Raycaster(
+            new Vector3(...origin),
+            new Vector3(...direction),
+          ).intersectObject(scene, true);
+          const { aoMap } = hit.object.material;
+          assert.equal(aoMap.channel, 1);
+          const { data, width, height } = aoMap.image;
+          const pixel = (uv, size) => Math.min(size - 1, Math.max(0, Math.floor(uv * size)));
+          return data[pixel(hit.uv1.y, height) * width + pixel(hit.uv1.x, width)];
+        };
+        assert.ok(sample([1.5, 1, 0.005], [0, -1, 0]) < 200, "horizontal tread against riser");
+        assert.ok(sample([1.5, 0.205, 0.4], [0, 0, -1]) < 200, "vertical riser at the tread");
+        assert.equal(sample([1.5, 1, 0.13], [0, -1, 0]), 255, "tread beyond contact");
+        assert.equal(sample([1.5, 0.3, 0.4], [0, 0, -1]), 255, "riser above contact");
+        assert.equal(sample([0.4, 1, 0.005], [0, -1, 0]), 255, "exposed landing edge");
+        assert.equal(sample([2.4, 0.205, -0.015], [-1, 0, 0]), 255, "exposed side face");
+      } finally {
+        await renderer.unmount();
+      }
+    }
+  });
 
   test("a stair whose landings become level stays selectable and can be moved to a valid height", async () => {
     const building = makeStairProject();
@@ -109,6 +209,7 @@ await withModules(async (load) => {
         renderer = await create(createElement(StairPlan, { flight: f, onSelect() {} }));
       try {
         const hit = renderer.scene.findByProps({ name: "stair-plan-hit-shape" }).instance;
+        assert.ok(hit.material.isMeshToonMaterial && !hit.material.map && !hit.material.toneMapped);
         hit.updateWorldMatrix(true, false);
         const ray = (p) =>
           new Raycaster(new Vector3(p[0], 10, p[1]), new Vector3(0, -1, 0)).intersectObject(hit);
@@ -131,6 +232,47 @@ await withModules(async (load) => {
   const { deriveStairFlight } = await load("/packages/engine/src/stairs/flight-geometry.ts");
   const { makeStairProject } = await load("/tests/fixtures/multiple-floors.ts");
   const { Matrix4 } = await import("three");
+  test("a single open-flight mesh preserves each tread and its overlap in plan and 3D", async () => {
+    const project = makeStairProject();
+    const flight = deriveStairFlight(project, {
+      ...project.stairs[0],
+      rotationYRadians: 0.34,
+      railings: "none",
+    });
+    for (const plan of [false, true]) {
+      const renderer = await create(
+        createElement(StraightStairModel, { flight, plan, showUpperGuard: false }),
+      );
+      try {
+        const treads = renderer.scene.findByProps({ name: "stair-open-treads" }).instance;
+        assert.ok(
+          plan ? treads.material.isMeshToonMaterial : treads.material.isMeshStandardMaterial,
+        );
+        treads.updateWorldMatrix(true, false);
+        const hitAt = (distance) => {
+          const origin = new Vector3(
+            flight.startWorld[0] + distance * flight.forward[0],
+            10,
+            flight.startWorld[1] + distance * flight.forward[1],
+          );
+          return new Raycaster(origin, new Vector3(0, -1, 0)).intersectObject(treads)[0];
+        };
+        const run = flight.runMeters / flight.stepCount;
+        for (let i = 0; i < flight.stepCount; i++) {
+          const top = flight.riseMeters * ((i + 1) / flight.stepCount);
+          const expected = plan ? top * 0.001 : flight.baseElevationMeters + top;
+          for (const point of [(i + 0.5) * run, i * run - 0.003]) {
+            assert.ok(Math.abs(hitAt(point).point.y - expected) < 1e-6);
+          }
+        }
+        assert.equal(hitAt(-0.006), undefined);
+        assert.equal(hitAt(flight.runMeters + 0.006), undefined);
+      } finally {
+        await renderer.unmount();
+      }
+    }
+  });
+
   test("Concrete and Stone close the stair base without changing the route or legacy open treads", async () => {
     const project = makeStairProject();
     const open = deriveStairFlight(project, project.stairs[0]);

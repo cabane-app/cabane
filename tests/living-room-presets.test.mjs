@@ -8,6 +8,45 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
   const furnishing = await load("/packages/catalog/src/furnishing/index.ts");
   const device = await load("/packages/catalog/src/device/index.ts");
+  test("book rows share geometry within a canvas until its last row unmounts", async () => {
+    const BookRow = furnishing.stableFurnishingRegistry["book-row"].component;
+    const rows = (count) =>
+      createElement(
+        "group",
+        null,
+        Array.from({ length: count }, (_, key) => createElement(BookRow, { key })),
+      );
+    const editor = await create(rows(2));
+    const preview = await create(rows(1));
+    try {
+      const bindings = (renderer) =>
+        renderer.scene
+          .findAllByProps({ name: "book-row" })
+          .map((row) => row.instance.children.map((mesh) => mesh.geometry));
+      const [first, second] = bindings(editor);
+      const [other] = bindings(preview);
+      assert.ok(first.length > 0);
+      assert.equal(other.length, first.length);
+      const disposed = [];
+      for (const [i, geometry] of first.entries()) {
+        assert.equal(second[i], geometry);
+        assert.notEqual(other[i], geometry);
+        for (const item of [geometry, other[i]])
+          item.addEventListener("dispose", () => disposed.push(item.uuid));
+      }
+      const ids = (geometries) => geometries.map((g) => g.uuid).sort();
+      await editor.update(rows(1));
+      assert.deepEqual(disposed, []);
+      await editor.update(rows(0));
+      assert.deepEqual(disposed.sort(), ids(first));
+      await preview.update(rows(0));
+      assert.deepEqual(disposed.sort(), ids([...first, ...other]));
+    } finally {
+      await editor.unmount();
+      await preview.unmount();
+    }
+  });
+
   test("living-room case has six doors and genuinely open arched fronts", async () => {
     let renderer = await create(
       createElement(furnishing.stableFurnishingRegistry["six-door-oak-sideboard"].component),

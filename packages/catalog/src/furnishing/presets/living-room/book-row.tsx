@@ -1,7 +1,8 @@
 import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
-import { BoxGeometry, CylinderGeometry, type BufferGeometry } from "three";
+import { useThree } from "@react-three/fiber";
+import { BoxGeometry, CylinderGeometry, type BufferGeometry, type Scene } from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { useMemo, useEffect } from "react";
+import { useEffect } from "react";
 export const BOOK_ROW_SIZE = [0.4, 0.28, 0.18] as const;
 const cloth = ["#e5dfcc", "#c1c7b9", "#364940", "#d3aa60", "#b46d53"];
 /** Bound volumes: cloth boards stand proud of the deckle, with round-backed sewn spines. */
@@ -51,12 +52,33 @@ function makeVolumes() {
     return { color, geometry };
   });
 }
+// Each canvas owns its LOD families. Rows in that scene share one upload and
+// one set of distance levels for each binding.
+const sceneVolumes = new WeakMap<
+  Scene,
+  { bindings: ReturnType<typeof makeVolumes>; rows: number }
+>();
+function volumesFor(scene: Scene) {
+  let volumes = sceneVolumes.get(scene);
+  if (!volumes) {
+    volumes = { bindings: makeVolumes(), rows: 0 };
+    sceneVolumes.set(scene, volumes);
+  }
+  return volumes;
+}
+
 export function BookRow({ size = BOOK_ROW_SIZE }: { size?: SceneItemSize; variant?: string }) {
-  const bindings = useMemo(makeVolumes, []);
-  useEffect(() => () => bindings.forEach((b) => b.geometry.dispose()), [bindings]);
+  const scene = useThree((state) => state.scene);
+  const volumes = volumesFor(scene);
+  useEffect(() => {
+    volumes.rows++;
+    return () => {
+      if (--volumes.rows === 0) volumes.bindings.forEach(({ geometry }) => geometry.dispose());
+    };
+  }, [volumes]);
   return (
     <group name="book-row" scale={[size[0] / 0.4, size[1] / 0.28, size[2] / 0.18]}>
-      {bindings.map(({ color, geometry }) => (
+      {volumes.bindings.map(({ color, geometry }) => (
         <mesh key={color} geometry={geometry} castShadow receiveShadow>
           <ToonMaterial color={color} />
         </mesh>

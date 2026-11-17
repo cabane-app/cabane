@@ -21,6 +21,7 @@ await withModules(async (load) => {
     "/apps/web/src/editor-preview/construct/useConstructionOutlineDrag.ts",
   );
   const { ArchitecturalHedges } = await load("/packages/engine/src/hedges/index.ts");
+  const { MasonryBoundary } = await load("/packages/engine/src/boundaries/MasonryBoundary.tsx");
   const { exportFloorSpec, importFloorSpec } = await load(
     "/packages/engine/src/home-project/legacy-floor-storage.ts",
   );
@@ -164,6 +165,102 @@ await withModules(async (load) => {
     unknown.floor.hedges[0].texture = "external";
     assert.equal(engine.parseHomeProjectSchema(unknown).valid, false);
   });
+  test("masonry has recessed staggered joints inside one solid, textured boundary", async () => {
+    const renderer = await create(
+      createElement(MasonryBoundary, { length: 3.2, height: 0.82, width: 0.4 }),
+    );
+    try {
+      const meshes = renderer.scene.findAll((node) => node.instance.isMesh);
+      assert.equal(meshes.length, 1);
+      const mesh = meshes[0].instance;
+      const { geometry } = mesh;
+      assert.ok(mesh.material.isMeshToonMaterial && mesh.material.vertexColors);
+      assert.ok(geometry.boundingBox.min.distanceTo(new Vector3(-1.6, 0, -0.2)) < 1e-6);
+      assert.ok(geometry.boundingBox.max.distanceTo(new Vector3(1.6, 0.82, 0.2)) < 1e-6);
+      const joints = (y) => {
+        const samples = new Set();
+        const ray = new Raycaster(new Vector3(0, y, 1), new Vector3(0, 0, -1));
+        for (let i = 0; i < 300; i++) {
+          ray.ray.origin.x = -1.495 + i * 0.01;
+          const hit = ray.intersectObject(mesh)[0];
+          assert.ok(hit, "mortar closes the wall between stones");
+          if (hit.point.z < 0.172) samples.add(i);
+        }
+        return samples;
+      };
+      const lower = joints(0.08),
+        upper = joints(0.35);
+      assert.ok(lower.size > 1 && upper.size > 1);
+      assert.ok([...lower].some((x) => !upper.has(x)) && [...upper].some((x) => !lower.has(x)));
+      const uv = geometry.getAttribute("uv");
+      for (let i = 0; i < geometry.index.count; i += 3) {
+        const tiles = new Set(
+          [0, 1, 2].map((corner) => {
+            const index = geometry.index.getX(i + corner);
+            return Math.floor(uv.getX(index) * 2) + 2 * Math.floor(uv.getY(index) * 2);
+          }),
+        );
+        assert.equal(tiles.size, 1, "a stone face never crosses photographed grout");
+      }
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
+  test("connected masonry coping has a single top on both sides of its miter, including on a grade", async () => {
+    const wall = { style: "masonry", heightMeters: 0.85, widthMeters: 0.4 };
+    const floor = {
+      ...base,
+      rooms: [],
+      outdoorPlatforms: [],
+      coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },
+      footprint: [
+        [-2, -2],
+        [2, -2],
+        [2, 2],
+        [-2, 2],
+      ],
+      hedges: [
+        { ...wall, id: "west", from: [-2, 0], to: [0, 0] },
+        { ...wall, id: "north", from: [0, 2], to: [0, 0] },
+      ],
+    };
+    const slope = createTerrainSurface(
+      { topLeftMeters: 0, topRightMeters: 0.2, bottomRightMeters: 0.4, bottomLeftMeters: 0.2 },
+      [floor],
+    );
+    for (const terrain of [null, slope]) {
+      const renderer = await create(
+        createElement(
+          TerrainSurfaceContext.Provider,
+          { value: terrain },
+          createElement(ArchitecturalHedges, { floor }),
+        ),
+      );
+      try {
+        const meshes = renderer.scene
+          .findAllByProps({ name: "coursed-masonry" })
+          .map((node) => node.instance);
+        renderer.scene.instance.updateMatrixWorld(true);
+        for (const [x, z] of [
+          [-0.12, 0.07],
+          [-0.07, 0.12],
+          [0.12, -0.07],
+          [0.07, -0.12],
+        ]) {
+          const top = -0.05 + wall.heightMeters + (terrain?.offsetAt(x, z) ?? 0);
+          const ray = new Raycaster(new Vector3(x, 2, z), new Vector3(0, -1, 0));
+          const hits = ray
+            .intersectObjects(meshes)
+            .filter((hit) => Math.abs(hit.point.y - top) < 0.003);
+          assert.equal(hits.length, 1, `one solid coping face at ${x},${z}`);
+        }
+      } finally {
+        await renderer.unmount();
+      }
+    }
+  });
+
   test("all hedge models render toon geometry and derive a matching walk obstacle", async () => {
     for (const style of engine.HEDGE_STYLES.map((entry) => entry.id)) {
       const floor = {

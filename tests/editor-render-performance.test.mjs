@@ -188,7 +188,7 @@ await withModules(async (load) => {
     const renderer = await create(createElement(ArchitectureScene, props));
     const wallMeshes = () =>
       renderer.scene
-        .findAll((node) => node.instance?.isMesh && node.instance.material?.vertexColors)
+        .findAllByProps({ name: "structural-wall-surface" })
         .map((node) => node.instance);
     const wall = floor.walls.find((candidate) => candidate.id === addedWindow.wallId);
     assert.ok(wall);
@@ -216,7 +216,7 @@ await withModules(async (load) => {
           ),
           new Vector3(-normal[0] * side, 0, -normal[1] * side),
         )
-          .intersectObjects(wallMeshes())
+          .intersectObjects(wallMeshes(), false)
           .filter((hit) => hit.distance < 1),
       );
     try {
@@ -232,7 +232,7 @@ await withModules(async (load) => {
         wallMeshes().map((mesh) => mesh.geometry.uuid),
         before,
       );
-      assert.deepEqual(wallHitsAcrossOpening(), [], "walk mode sees the complete window cut");
+      assert.equal(wallHitsAcrossOpening().length, 0, "walk mode sees the complete window cut");
     } finally {
       await renderer.unmount();
     }

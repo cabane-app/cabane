@@ -18,13 +18,13 @@ export function StraightStairModel({
       scale={[1, plan ? 0.001 : 1, 1]}
     >
       {flight.style && flight.style !== "open" ? (
-        <MasonryStairTreads flight={flight} />
+        <MasonryStairTreads flight={flight} plan={plan} />
       ) : (
         <group
           position={[flight.startWorld[0], 0, flight.startWorld[1]]}
           rotation={[0, flight.rotationYRadians, 0]}
         >
-          <StairTreads flight={flight} />
+          <StairTreads flight={flight} plan={plan} />
         </group>
       )}
       <ShapedStairGuards flight={flight} coordinates={flight.coordinates} />

@@ -1,3 +1,4 @@
+import { useGraphicsFeature } from "./graphics-features";
 import { useSceneStyle, styleSolarLighting } from "./scene-style";
 import {
   CLEAR_WEATHER,
@@ -40,9 +41,10 @@ export function SolarLighting({
   floors?: readonly RenderableFloorSpec[];
 }) {
   const style = useSceneStyle();
+  const studioDaylight = useGraphicsFeature("lighting");
   const solar = useMemo(
-    () => deriveSolarLighting(sunState, mode, northAngleDegrees),
-    [mode, sunState, northAngleDegrees],
+    () => deriveSolarLighting(sunState, mode, northAngleDegrees, studioDaylight),
+    [mode, sunState, northAngleDegrees, studioDaylight],
   );
   const target = useMemo(
     () => styleSolarLighting(weatherSolarLighting(solar, weather), style),
@@ -99,6 +101,8 @@ export function SolarLighting({
     hemisphere.groundColor.lerp(targetGround, progress);
     hemisphere.intensity += (target.hemisphereIntensity - hemisphere.intensity) * progress;
     background.lerp(targetBackground, progress);
+    const probeIntensity = 0.06 + target.daylight * 0.36;
+    scene.environmentIntensity += (probeIntensity - scene.environmentIntensity) * progress;
     const remaining = Math.max(
       sun.position.clone().sub(lightTarget.position).distanceTo(targetPosition) / frame.distance,
       colorDifference(sun.color, targetSun),
@@ -116,6 +120,7 @@ export function SolarLighting({
       hemisphere.groundColor.copy(targetGround);
       hemisphere.intensity = target.hemisphereIntensity;
       background.copy(targetBackground);
+      scene.environmentIntensity = probeIntensity;
       transitioning.current = false;
     } else invalidate();
     // Preserve the shadow shader across day/night changes. The dark sun contributes no light.
@@ -160,8 +165,8 @@ export function SolarLighting({
         shadow-autoUpdate={initial.current.sunIntensity > 0}
         // PCF shaders need a valid depth texture even when the sun starts dark.
         shadow-needsUpdate={true}
-        shadow-intensity={0.62}
-        shadow-radius={2}
+        shadow-intensity={studioDaylight ? 0.77 : 0.62}
+        shadow-radius={studioDaylight ? 3 : 2}
         shadow-mapSize-width={shadowMapSize}
         shadow-mapSize-height={shadowMapSize}
         shadow-camera-left={-frame.radius}

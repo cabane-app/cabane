@@ -1,7 +1,10 @@
+import { useGraphicsFeature } from "./graphics-features";
+import { DashboardRenderFailureContext } from "./DashboardSceneReady";
+import { SceneEnvironment } from "./SceneEnvironment";
 import { SceneStyleContext, useSceneStyle } from "./scene-style";
 import { ImportedContourMask } from "./imported-models/contour-mask";
 import { contourFragmentShader } from "./scene-contour-shader";
-import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
   Color,
@@ -22,11 +25,22 @@ import { SceneLightWallMask, SceneLightWallMaskContext } from "./scene-light-wal
 /** Decorative mesh shells are replaced by a single visible-depth contour pass. */
 export const SceneContourContext = createContext(false);
 
-function SceneContourPass({ antialias, active }: { antialias: boolean; active: boolean }) {
+function SceneContourPass({
+  antialias,
+  active,
+  onFirstFrame,
+}: {
+  antialias: boolean;
+  active: boolean;
+  onFirstFrame?: (() => void) | null | undefined;
+}) {
+  const presented = useRef(false);
   const style = useSceneStyle();
+  const detailedFinishes = useGraphicsFeature("finishes");
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
   const lightWalls = useContext(SceneLightWallMaskContext)!;
+  const onRenderFailure = useContext(DashboardRenderFailureContext);
   const resources = useMemo(() => {
     const target = new WebGLRenderTarget(1, 1, {
       type: HalfFloatType,
@@ -41,6 +55,7 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
       depthWrite: false,
       uniforms: {
         simsStyle: { value: false },
+        inkStrength: { value: 0.72 },
         beauty: { value: target.texture },
         importedDepth: { value: importedMask.target.depthTexture },
         hasImportedModels: { value: false },
@@ -82,9 +97,10 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
     return () => gl.domElement.removeEventListener("webglcontextrestored", resources.shadows.reset);
   }, [gl, resources]);
   useEffect(() => {
+    resources.material.uniforms.inkStrength.value = detailedFinishes ? 0.35 : 0.72;
     resources.material.uniforms.simsStyle.value = style === "sims";
     invalidate();
-  }, [style, resources, invalidate]);
+  }, [style, detailedFinishes, resources, invalidate]);
   // Positive priority owns rendering, but never invalidates a resting demand canvas.
   useFrame(({ gl, scene, camera }) => {
     if (!active) {
@@ -126,9 +142,27 @@ function SceneContourPass({ antialias, active }: { antialias: boolean; active: b
       );
       gl.setRenderTarget(previousTarget);
       quad.render(gl);
+    } catch (error) {
+      if (!onRenderFailure) throw error;
+      onRenderFailure(error);
+      return;
     } finally {
       gl.setRenderTarget(previousTarget);
       gl.autoClear = autoClear;
+    }
+    // The architecture and compositor share a Suspense boundary. An empty
+    // scene or a lost context can still let WebGL render an empty quad.
+    if (
+      onFirstFrame &&
+      !presented.current &&
+      scene.getObjectByName("architecture-scene")?.getObjectByProperty("isMesh", true)
+    ) {
+      if (gl.getContext().isContextLost()) {
+        onRenderFailure?.(new Error("The WebGL context was lost."));
+        return;
+      }
+      presented.current = true;
+      onFirstFrame();
     }
   }, 1);
   return null;
@@ -139,23 +173,29 @@ export function StylizedScene({
   enabled = true,
   antialias = true,
   active = true,
+  onFirstFrame,
 }: {
   children: ReactNode;
   enabled?: boolean;
   antialias?: boolean;
   /** Suspend postprocessing without disposing its resources or changing model outlines. */
   active?: boolean;
+  onFirstFrame?: (() => void) | null | undefined;
 }) {
   const style = useSceneStyle();
+  const studioLighting = useGraphicsFeature("lighting");
   const lightWalls = useMemo(() => new SceneLightWallMask(), []);
   useEffect(() => () => lightWalls.dispose(), [lightWalls]);
   return (
     <SceneLightWallMaskContext.Provider value={lightWalls}>
       <SceneContourContext.Provider value={enabled}>
         <SceneStyleContext.Provider value={active ? style : "default"}>
+          {active && studioLighting && style === "default" && <SceneEnvironment />}
           {children}
         </SceneStyleContext.Provider>
-        {enabled && <SceneContourPass antialias={antialias} active={active} />}
+        {enabled && (
+          <SceneContourPass antialias={antialias} active={active} onFirstFrame={onFirstFrame} />
+        )}
       </SceneContourContext.Provider>
     </SceneLightWallMaskContext.Provider>
   );

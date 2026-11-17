@@ -10,6 +10,8 @@ import {
   Float32BufferAttribute,
   Mesh,
   MeshToonMaterial,
+  Raycaster,
+  Vector3,
   SphereGeometry,
   TorusGeometry,
 } from "three";
@@ -805,6 +807,9 @@ await withModules(async (load) => {
 
   test("renders opening variants independently from their operation", async () => {
     const manifest = structuredClone(neutralDemoManifest);
+    const host = manifest.floors[0].walls.find((wall) => wall.id === "east-wall");
+    host.faceColors = { left: "#765345", right: "#eee6d0" };
+    host.edgeColor = "#554732";
     Object.assign(manifest.floors[0].openings[0], {
       operation: "hinged",
       variant: "french",
@@ -875,7 +880,53 @@ await withModules(async (load) => {
     assert.ok(renderer.scene.findByProps({ name: "opening-model-french" }));
     assert.ok(renderer.scene.findByProps({ name: "opening-model-full-glass" }));
     assert.ok(renderer.scene.findByProps({ name: "opening-model-muntined" }));
-    assert.ok(renderer.scene.findByProps({ name: "opening-model-arched" }));
+    const arch = manifest.floors[0].openings.find((opening) => opening.id === "demo-archway");
+    const walls = renderer.scene
+      .findAllByProps({ name: "structural-wall-surface" })
+      .map((node) => node.instance);
+    const { start, rotationY } = geometry.openingWorldPlacement(
+      host,
+      arch,
+      manifest.floors[0].coordinates,
+    );
+    const dir = new Vector3(Math.cos(rotationY), 0, -Math.sin(rotationY));
+    const normal = new Vector3(-dir.z, 0, dir.x);
+    function archHit(s, side) {
+      const origin = new Vector3(start[0], arch.openingHeightMeters - 0.05, start[1])
+        .addScaledVector(dir, s)
+        .addScaledVector(normal, 0.35 * side);
+      return new Raycaster(origin, normal.clone().multiplyScalar(-side), 0, 0.65).intersectObjects(
+        walls,
+        false,
+      )[0];
+    }
+    for (const [side, color] of [
+      [1, host.faceColors.left],
+      [-1, host.faceColors.right],
+    ]) {
+      const hit = archHit(0.025, side);
+      assert.ok(hit, "the curved head belongs to the structural wall");
+      const colors = hit.object.geometry.getAttribute("color");
+      assert.equal(
+        new Color().fromBufferAttribute(colors, hit.face.a).getHexString(),
+        color.slice(1),
+      );
+      assert.equal(archHit(0.5, side), undefined, "the crown stays open");
+      assert.ok(archHit(-0.0005, side), "the head meets the cut left jamb");
+      assert.ok(archHit(1.0005, side), "the head meets the cut right jamb");
+    }
+    const reveal = new Raycaster(
+      new Vector3(start[0], 1.9, start[1]).addScaledVector(dir, 0.05),
+      new Vector3(0, 1, 0),
+      0,
+      0.35,
+    ).intersectObjects(walls, false)[0];
+    assert.ok(reveal && reveal.point.y < arch.openingHeightMeters);
+    const revealColors = reveal.object.geometry.getAttribute("color");
+    assert.equal(
+      new Color().fromBufferAttribute(revealColors, reveal.face.a).getHexString(),
+      host.edgeColor.slice(1),
+    );
     assert.ok(renderer.scene.findByProps({ name: "opening-model-plank" }));
     assert.ok(renderer.scene.findAllByProps({ name: "opening-door-handles" }).length >= 2);
     assert.ok(renderer.scene.findAllByProps({ name: "opening-door-handle-rosette" }).length >= 2);
@@ -911,6 +962,112 @@ await withModules(async (load) => {
     assert.equal(shape.curves[0].getPoint(0).y, 2.07);
     assert.equal(shape.curves[0].getPoint(1).y, 2.19);
     assert.equal(shape.curves[1].getPoint(1).y, 2.07);
+  });
+
+  test("a wall-height arch closes its exposed shoulders and omits caps under solid walls", () => {
+    const footprint = [
+      [0, 0],
+      [4, 0],
+      [4, 3],
+      [0, 3],
+    ];
+    const host = {
+      id: "host",
+      from: [0, 0],
+      to: [4, 0],
+      classification: "exterior",
+      thicknessMeters: 0.2,
+      edgeColor: "#885522",
+    };
+    const opening = {
+      id: "arch",
+      kind: "passage",
+      variant: "arched",
+      wallId: "host",
+      widthPlanUnits: 1,
+      offsetFromWallStartPlanUnits: 1,
+      sillHeightMeters: 0,
+      archRiseMeters: 0.35,
+    };
+    const base = {
+      ...neutralDemoManifest.floors[0],
+      coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },
+      footprint,
+      footprintRegions: [footprint],
+      floorToFloorHeightMeters: 3,
+      defaultWallHeightMeters: 3,
+      defaultCeilingHeightMeters: 3,
+      walls: [host],
+      rooms: [{ id: "room", polygon: footprint }],
+      wallJunctions: [],
+      openings: [],
+    };
+    const topRay = (height, floorOptions = {}, above = undefined) => {
+      const arch = { ...opening, openingHeightMeters: height };
+      const profile = openingModels.stableArchitectureModelRegistry.passage.wallHeadProfile(
+        arch,
+        1,
+      );
+      const floor = { ...base, ...floorOptions, openings: [arch] };
+      const groups = architecture.buildArchitecturalWallGeometries(floor, undefined, undefined, 0, {
+        passageHeads: new Map([[arch.id, { opening: arch, profile }]]),
+        above,
+      });
+      const material = new MeshToonMaterial();
+      try {
+        const meshes = groups.map(({ geometry }) => new Mesh(geometry, material));
+        return [1.025, 1.975].map((x) => {
+          const [hit] = new Raycaster(
+            new Vector3(x, height + 0.01, 0),
+            new Vector3(0, -1, 0),
+            0,
+            0.02,
+          ).intersectObjects(meshes);
+          return hit
+            ? new Color()
+                .fromBufferAttribute(hit.object.geometry.attributes.color, hit.face.a)
+                .getHexString()
+            : null;
+        });
+      } finally {
+        material.dispose();
+        groups.forEach(({ geometry }) => geometry.dispose());
+      }
+    };
+    assert.deepEqual(topRay(3), ["885522", "885522"]);
+    assert.deepEqual(topRay(2.5), [null, null], "the ordinary lintel already closes the head");
+    const upper = { ...base, id: "upper", walls: [{ ...host, from: [1.5, 0] }] };
+    assert.deepEqual(
+      topRay(3, {}, upper),
+      ["885522", null],
+      "clip only the half under the upper wall",
+    );
+    const ceiling = {
+      id: "roof",
+      kind: "sloped",
+      roomIds: ["room"],
+      planes: [
+        {
+          id: "plane",
+          boundary: footprint,
+          lowEdge: [
+            [0, 3],
+            [4, 3],
+          ],
+          highEdge: [
+            [0, 0],
+            [4, 0],
+          ],
+          lowHeightMeters: 3,
+          highHeightMeters: 4,
+        },
+      ],
+    };
+    assert.deepEqual(
+      topRay(3, { walls: [{ ...host, gable: { fill: "solid" } }], ceilings: [ceiling] }),
+      [null, null],
+      "a solid gable continues the wall above the head",
+    );
   });
 
   test("resolves a directed face color after rotating the full floor and preserves fallback faces", () => {

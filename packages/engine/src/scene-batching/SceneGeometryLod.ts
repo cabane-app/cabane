@@ -73,7 +73,8 @@ export class SceneGeometryLod {
       draw();
       return;
     }
-    if (scene.matrixWorldAutoUpdate) scene.updateMatrixWorld();
+    const autoUpdate = scene.matrixWorldAutoUpdate;
+    if (autoUpdate) scene.updateMatrixWorld();
     camera.updateWorldMatrix(true, false);
     const perspective = camera.projectionMatrix.elements[15] === 0;
     const projectionScale = (viewportHeight * camera.projectionMatrix.elements[5]) / 2;
@@ -142,8 +143,12 @@ export class SceneGeometryLod {
           this.entries.delete(source);
         }
       }
+      // LOD selection, batching and the beauty pass use the same transforms.
+      // On canvases without shadow caching, this is their first world update.
+      scene.matrixWorldAutoUpdate = false;
       draw();
     } finally {
+      scene.matrixWorldAutoUpdate = autoUpdate;
       for (const [mesh, geometry] of originals) mesh.geometry = geometry;
       if (this.queue.length && !this.running) this.ready = this.drain();
     }

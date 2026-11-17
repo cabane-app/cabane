@@ -119,3 +119,20 @@ The workspace library and import dialog use the official Home Assistant SVG mark
 from [Home Assistant frontend](https://github.com/home-assistant/frontend/blob/dev/src/resources/home-assistant-logo-svg.ts)
 to identify Home Assistant connections. The logo is a trademark of the Open Home
 Foundation; see the [official logo guidelines](https://github.com/home-assistant/assets/tree/master/logo).
+
+## Architectural finish scans
+
+The bundled WebP finish maps derive from Poly Haven's 1K diffuse scans,
+retrieved on 17 November 2026 under [CC0 1.0](https://polyhaven.com/license).
+
+- Jenelle van Heerden's [White Oak Veneer](https://polyhaven.com/a/white_oak_veneer) and [American Walnut Veneer](https://polyhaven.com/a/american_walnut_veneer) supply the grain for the 3.6 m plank repeats. Cabane arranges the scans into staggered 18 cm boards and grades them for the oak and walnut presets.
+- Timber door joinery uses a neutral monochrome grade of the White Oak Veneer scan so each door retains its selected stain.
+- [Herringbone Parquet](https://polyhaven.com/a/herringbone_parquet), photographed by Sergej Majboroda and processed by Jenelle van Heerden, supplies the 3.4 m parquet repeat.
+- Rob Tuytel's [Marble 01](https://polyhaven.com/a/marble_01) supplies the mineral detail for the limestone and travertine finishes. The limestone retains the scanned 1.5 m layout. The travertine uses individual stone crops in a 60 cm square layout.
+- Rob Tuytel's [White Plaster 02](https://polyhaven.com/a/white_plaster_02) supplies a neutral 1 m repeat that takes the authored wall color.
+- Charlotte Baglioni's [Grass Ground](https://polyhaven.com/a/grass_ground) supplies the 2.5 m turf repeat. Cabane grades the diffuse scan to retain the home's authored ground color.
+- [Wood Chips](https://polyhaven.com/a/wood_chips) by eye-candy.xyz supplies the 2 m pine bark repeat. [Gravel Floor 02](https://polyhaven.com/a/gravel_floor_02), photographed by Dimitrios Savva and processed by Jenelle van Heerden, supplies the 2 m gravel repeat. Cabane grades the diffuse and occlusion scans for the garden palette and uses reduced OpenGL normal maps for surface relief.
+
+The architectural reflection probe is a 256 × 128 linear-light reduction of
+Sergej Majboroda’s [Studio Small 09](https://polyhaven.com/a/studio_small_09),
+bundled under [CC0](https://polyhaven.com/license).

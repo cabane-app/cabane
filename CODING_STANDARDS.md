@@ -21,11 +21,14 @@ raising a ceiling is not a fix.
 
 ## Rendering and asset ownership
 
-Use the engine's `ToonMaterial` for native procedural geometry, including catalog
-and home-local models. Reuse the shared gradient, fading, and outline behavior.
-Scene lighting belongs to the engine; models declare emitter metadata for the
-engine to render. Procedural floor textures, including `CanvasTexture` creation,
-belong in the engine's floor-finish modules.
+Use the engine's `ToonMaterial` for procedural furnishings and devices in catalog
+and home-local models. The engine also owns the materials for architectural
+surfaces, glazing, and joinery. Default uses light-responsive materials and
+bundled scans for selected finishes. Sims uses the shared toon materials. Use
+`ArchitecturalGlass` for panes and `JoineryMaterial` for joinery in catalog openings.
+Keep lighting, fade, and outline behavior in the engine. Models declare emitter
+metadata for the engine to render. Procedural floor textures, including
+`CanvasTexture` creation, belong in the engine's floor-finish modules.
 
 Follow the [visual-asset contract](docs/product/geometry-and-rendering.md#visual-assets)
 for hosted and bundled assets and engine atmosphere. Loaded models may preserve

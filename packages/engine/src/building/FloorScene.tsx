@@ -1,11 +1,16 @@
+import type { PassageHead } from "../architecture-geometry/passage-head";
+import { OpeningThreshold } from "../architecture-scene/OpeningThreshold";
 import { ElevationEdges } from "../elevation/ElevationEdges";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
+import { ItemContactShadows } from "../item-contacts/ItemContactShadows";
+import { createWallContactMap } from "../floor-finishes/wall-contact-map";
 import { ItemEntityReadings } from "../ItemEntityReadings";
 import { SolidRooms } from "../architecture-scene/SolidRooms";
 import { ArchitecturalOutdoorPlatforms, floorSlabPolygons } from "../outdoor-platforms";
 import { ArchitecturalHedges } from "../hedges";
 export type FloorSceneProps = {
   sourceFloor: HomeManifest["floors"][number];
+  contactEnabled: boolean;
   below?: HomeManifest["floors"][number] | undefined;
   platformBelow?: HomeManifest["floors"][number];
   above?: HomeManifest["floors"][number] | undefined;
@@ -51,6 +56,7 @@ import { ArchitecturalWall, ArchitecturalWalls } from "../architecture-scene/Arc
 import { PolygonSurface } from "../architecture-scene/ArchitecturePolygonSurface";
 import { CeilingSurfaces } from "../architecture-scene/CeilingSurfaces";
 import { WallLeanGroup } from "../architecture-scene/WallLeanGroup";
+import { GroundLawnMargins } from "../floor-finishes/GroundLawnMargins";
 import { DioramaGround } from "../architecture-scene/DioramaGround";
 import {
   EMPTY_MEDIA,
@@ -72,6 +78,7 @@ import type {
 
 export const FloorScene = memo(function FloorScene({
   sourceFloor,
+  contactEnabled,
   showGround,
   showCeiling,
   ceilingCutawayHeightMeters,
@@ -95,6 +102,11 @@ export const FloorScene = memo(function FloorScene({
   sceneLightingEnabled = true,
 }: FloorSceneProps) {
   const floor = useSceneArchitectureFloor(sourceFloor);
+  const wallContact = useMemo(
+    () => (contactEnabled ? createWallContactMap(floor) : null),
+    [floor, contactEnabled],
+  );
+  useEffect(() => () => wallContact?.dispose(), [wallContact]);
   const outsideRoomId = useMemo(
     () => outsideRoomGroupId(floor.id, manifest.floors),
     [floor.id, manifest.floors],
@@ -121,6 +133,24 @@ export const FloorScene = memo(function FloorScene({
   const DoorModel = architectureModels.door;
   const WindowModel = architectureModels.window;
   const PassageModel = architectureModels.passage;
+  const openingModels = manifest.extensions.openingModels;
+  const passageHeads = useMemo(() => {
+    const heads = new Map<string, PassageHead>();
+    if (!PassageModel?.wallHeadProfile) return heads;
+    for (const opening of floor.openings) {
+      if (
+        opening.kind !== "passage" ||
+        (opening.visualModel && Object.hasOwn(openingModels, opening.visualModel))
+      )
+        continue;
+      const profile = PassageModel.wallHeadProfile(
+        opening,
+        opening.widthPlanUnits * floor.coordinates.metersPerPlanUnit,
+      );
+      if (profile) heads.set(opening.id, { opening, profile });
+    }
+    return heads;
+  }, [floor, PassageModel, openingModels]);
   const resolvedDeviceById = useMemo(
     () =>
       Object.fromEntries(
@@ -150,16 +180,25 @@ export const FloorScene = memo(function FloorScene({
       name="floor-scene"
       userData={{ editorVisualOnly: interactionMode === "editor" }}
     >
+      {contactEnabled && <ItemContactShadows floor={floor} items={manifest.sceneItems} />}
       {onWalkDeviceTargetChange && (
         <WalkDeviceTargeting active={walkMode} onTargetChange={onWalkDeviceTargetChange} />
       )}
       {showGround && (
         <DioramaGround
+          wallContact={wallContact}
           floor={floor}
           centerX={bounds.centerX}
           centerZ={bounds.centerZ}
           size={groundSize}
           color={manifest.home.palette.ground}
+        />
+      )}
+      {showGround && (
+        <GroundLawnMargins
+          floor={floor}
+          groundColor={manifest.home.palette.ground}
+          wallContact={wallContact}
         />
       )}
       <ElevationEdges floor={floor} />
@@ -178,6 +217,7 @@ export const FloorScene = memo(function FloorScene({
         />
       ))}
       <RoomSelectionSurfaces
+        wallContact={wallContact}
         sourceFloor={sourceFloor}
         floor={floor}
         outsideRoomId={outsideRoomId}
@@ -190,6 +230,9 @@ export const FloorScene = memo(function FloorScene({
         onSelectRoom={onSelectRoom}
       />
       <ArchitecturalWalls
+        passageHeads={passageHeads}
+        allowContact={contactEnabled}
+        sectionEdges={ceilingCutawayHeightMeters === 0}
         onSelectRoom={!walkMode && interactionMode === "runtime" ? onSelectRoom : undefined}
         baseElevationMeters={showGround ? undefined : 0}
         below={below}
@@ -237,6 +280,8 @@ export const FloorScene = memo(function FloorScene({
             position={openingPositions[opening.id] ?? 0}
             reducedMotion={reducedMotion}
           />
+        ) : passageHeads.has(opening.id) ? (
+          <OpeningThreshold wall={wall} opening={opening} floor={floor} />
         ) : (
           <SceneOpeningRenderer
             model={PassageModel}

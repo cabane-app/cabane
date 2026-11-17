@@ -590,7 +590,11 @@ export type ArchitectureModelComponent<Opening extends OpeningSpec = OpeningSpec
 export interface ArchitectureModelRegistry {
   door: ArchitectureModelComponent<DoorSpec>;
   window: ArchitectureModelComponent<WindowSpec>;
-  passage: ArchitectureModelComponent<PassageSpec>;
+  passage: ArchitectureModelComponent<PassageSpec> & {
+    /** Lower outline of a masonry head in metres from the left jamb and sill.
+     * The host wall renders this outline in place of the standalone model. */
+    wallHeadProfile?: (opening: PassageSpec, widthMeters: number) => readonly PlanPoint[] | null;
+  };
 }
 
 export type HomeOpeningModelProps = ArchitectureModelProps;

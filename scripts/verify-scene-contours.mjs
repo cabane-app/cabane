@@ -56,6 +56,7 @@ try {
         nearPlane: { value: 0.1 },
         farPlane: { value: 100 },
         perspective: { value: true },
+        inkStrength: { value: 0.72 },
         ink: { value: new T.Color("#35434c") },
       },
       vertexShader:
@@ -65,8 +66,9 @@ try {
       depthWrite: false,
     });
     const quad = new FullScreenQuad(material);
-    const run = (field, perspective) => {
+    const run = (field, perspective, inkStrength) => {
       material.uniforms.perspective.value = perspective;
+      material.uniforms.inkStrength.value = inkStrength;
       for (let y = 0; y < width; y++)
         for (let x = 0; x < width; x++) {
           const z = field(x, y);
@@ -87,13 +89,16 @@ try {
         }
       return inked;
     };
-    const result = [true, false].map((perspective) => ({
-      perspective,
-      flat: run(() => 4, perspective),
-      slope: run((x, y) => 4 + x * 0.03 + y * 0.02, perspective),
-      occlusion: run((x) => (x < 16 ? 4 : 10), perspective),
-      contact: run((x) => (x < 16 ? 4 : 4.01), perspective),
-    }));
+    const result = [true, false].flatMap((perspective) =>
+      [0.72, 0.35].map((inkStrength) => ({
+        perspective,
+        flat: run(() => 4, perspective, inkStrength),
+        slope: run((x, y) => 4 + x * 0.03 + y * 0.02, perspective, inkStrength),
+        occlusion: run((x) => (x < 16 ? 4 : 10), perspective, inkStrength),
+        contact: run((x) => (x < 16 ? 4 : 4.01), perspective, inkStrength),
+        nearby: run((x) => (x < 16 ? 4 : 4.2), perspective, inkStrength),
+      })),
+    );
     quad.dispose();
     material.dispose();
     target.dispose();
@@ -107,6 +112,7 @@ try {
     assert.equal(result.flat, 0, "Flat surfaces must have no interior lines");
     assert.equal(result.slope, 0, "Slanted surfaces must have no interior lines");
     assert.equal(result.contact, 0, "Nearly coplanar contacts must stay clean");
+    assert.equal(result.nearby, 28, "Nearby objects cannot paint halos on their surroundings");
     assert.equal(
       result.occlusion,
       28,

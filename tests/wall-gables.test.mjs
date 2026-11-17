@@ -221,7 +221,11 @@ await withModules(async (load) => {
       assert.deepEqual(ridgeWall, []);
     }
     const frontInfill = (geometry) => heights(geometry.infill).filter(([, , z]) => z <= 0.01);
-    assert.ok(frontInfill(plain).some(([x, y]) => x > 1 && x < 7 && y < 2));
+    // A plain end wall closes the first 2.4 m. Its roof infill starts exactly
+    // there; overlapping the wall below would flicker on the same facade plane.
+    const abovePlain = frontInfill(plain).filter(([x]) => x > 1 && x < 7);
+    near(Math.min(...abovePlain.map(([, y]) => y)), 2.4);
+    assert.ok(abovePlain.some(([x, y]) => Math.abs(x - 4) < 0.01 && y > ridge));
     const aboveGlass = frontInfill(glass);
     assert.ok(aboveGlass.some(([x, y]) => Math.abs(x - 4) < 0.01 && Math.abs(y - ridge) < 0.01));
     for (const [x, y] of aboveGlass) {

@@ -11,6 +11,61 @@ await withModules(async (load) => {
   );
   const engine = await load("/packages/engine/src/index.ts");
   const { ownerHomeProject } = await load("/tests/fixtures/bundled-home.ts");
+  const { DoorFrame } = await load(
+    "/packages/catalog/src/architecture/presets/openings/doors/door-frame.tsx",
+  );
+  const { SceneStyleContext } = await load("/packages/engine/src/scene-style.ts");
+  const { GlassDoorHandle } = await load(
+    "/packages/catalog/src/architecture/presets/openings/doors/glass-door-handle.tsx",
+  );
+  test("glass pulls share buffers until the last copy unmounts and keep independent materials", async () => {
+    const handle = () => create(createElement(GlassDoorHandle, { width: 0.9, side: 1 }));
+    const first = await handle();
+    const second = await handle();
+    const pull = (renderer) =>
+      renderer.scene.instance.getObjectByName("opening-glass-door-handle").children[0];
+    const geometry = pull(first).geometry;
+    let disposals = 0;
+    geometry.addEventListener("dispose", () => disposals++);
+    assert.equal(pull(second).geometry, geometry);
+    assert.notEqual(pull(second).material, pull(first).material);
+    await first.unmount();
+    assert.equal(disposals, 0);
+    await second.unmount();
+    assert.equal(disposals, 1);
+  });
+
+  test("switching joinery style keeps the two jambs and head renderable", async () => {
+    const frame = (style) =>
+      createElement(
+        SceneStyleContext.Provider,
+        { value: style },
+        createElement(DoorFrame, { width: 0.9, height: 2.1, depth: 0.18 }),
+      );
+    const renderer = await create(frame("default"));
+    try {
+      for (const style of ["sims", "default", "sims"]) {
+        await renderer.update(frame(style));
+        const scene = renderer.scene.instance;
+        if (style === "default") {
+          const casing = scene.getObjectByName("opening-door-frame-casing");
+          assert.ok(casing?.geometry.getAttribute("position")?.count > 0);
+          assert.ok(casing.material.isMeshStandardMaterial);
+          assert.equal(casing.geometry.groups.length, 3);
+          assert.ok(casing.geometry.groups.every(({ count }) => count > 0));
+        } else {
+          for (let member = 0; member < 3; member++) {
+            const mesh = scene.getObjectByName(`opening-door-frame-${member}`);
+            assert.ok(mesh.geometry.getAttribute("position")?.count > 0);
+            assert.equal(mesh.geometry.type, "BoxGeometry");
+          }
+        }
+      }
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("garden gates cut the wall above the leaf in both wall renderers", () => {
     const wall = {
       id: "garden-wall",
@@ -84,6 +139,9 @@ await withModules(async (load) => {
         "french",
         "full-glass",
         "steel-arched",
+        "garden-wood",
+        "garden-anthracite",
+        "garden-metal",
       ].map((variant) => ({ ...door, variant })),
       { ...door, operation: "sliding", variant: "plank" },
       { ...door, operation: "roll-up", variant: "slatted", leafCount: undefined },
@@ -106,7 +164,10 @@ await withModules(async (load) => {
       const colors = () => {
         const found = [];
         renderer.scene.instance.traverse((object) => {
-          if (object.isMesh && object.material?.type === "MeshToonMaterial")
+          if (
+            object.isMesh &&
+            (object.material?.isMeshToonMaterial || object.material?.isMeshStandardMaterial)
+          )
             found.push(object.material.color.getHexString());
         });
         return found.sort();
