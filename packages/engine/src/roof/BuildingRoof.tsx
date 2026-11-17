@@ -1,5 +1,8 @@
 import { useEffect, useMemo } from "react";
 import { DoubleSide } from "three";
+import { useWallFaceTexture } from "../architecture-scene/wall-surface-textures";
+import { ArchitecturalMaterial } from "../architecture-scene/ArchitecturalMaterial";
+import { useGraphicsFeature } from "../graphics-features";
 import type { HomeManifest } from "../types";
 import { ToonMaterial } from "../rendering";
 import { buildRoofGeometries } from "./roof-geometry";
@@ -24,6 +27,9 @@ export function BuildingRoof({ manifest }: { manifest: HomeManifest }) {
       manifest.home.palette.interior,
     ],
   );
+  const wallSurfaces = geometry.infill.surfaces;
+  const faceTexture = useWallFaceTexture(wallSurfaces);
+  const receiveSun = useGraphicsFeature("lighting");
   useEffect(
     () => () => {
       geometry.top.dispose();
@@ -40,8 +46,26 @@ export function BuildingRoof({ manifest }: { manifest: HomeManifest }) {
       <mesh name="roof-edges" geometry={geometry.edges} castShadow receiveShadow>
         <ToonMaterial color={settings.edgeColor} side={DoubleSide} />
       </mesh>
-      <mesh name="roof-wall-infill" geometry={geometry.infill} castShadow>
-        <ToonMaterial color="white" vertexColors side={DoubleSide} />
+      <mesh
+        key={wallSurfaces.length}
+        name="roof-wall-infill"
+        geometry={geometry.infill}
+        castShadow
+        receiveShadow={receiveSun}
+      >
+        {wallSurfaces.map(({ finish }, index) => {
+          const texture = faceTexture(finish);
+          return (
+            <ArchitecturalMaterial
+              key={`${index}-${texture ? "pattern" : "solid"}`}
+              {...(wallSurfaces.length > 1 ? { attach: `material-${index}` } : {})}
+              color={texture ? "white" : (finish?.color ?? "white")}
+              map={texture}
+              vertexColors
+              side={DoubleSide}
+            />
+          );
+        })}
       </mesh>
     </group>
   );

@@ -466,7 +466,10 @@
   flex: 1;
   min-height: 0;
   flex-direction: column;
-  overflow: auto;
+  /* Give the nested inspectors room for their negative inline margins. */
+  margin-inline: -8px;
+  padding-inline: 8px;
+  overflow: hidden auto;
   scrollbar-width: thin;
 }
 .editor-sidebar-content

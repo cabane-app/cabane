@@ -1,4 +1,7 @@
-import { omitUndefinedProperties } from "@cabane/engine";
+import { isGardenGate, omitUndefinedProperties, useDetailedJoinery } from "@cabane/engine";
+import { PanelDoorSurface } from "./panel-door-surface";
+import { gardenGateColor } from "../../../door-presets";
+import { GardenGateLeaf } from "./garden-gate-leaf";
 import { WhiteLeverDoorHandles } from "./white-lever-door-handles";
 import { ConcealedDoorLeaf } from "./concealed-door-leaf";
 import { FlushDoorLeaf } from "./flush-door-leaf";
@@ -24,8 +27,22 @@ export function DoorLeaf({
   handleSide: -1 | 1;
   plankDepthScale?: number;
 }) {
+  const detailed = useDetailedJoinery();
   const white = opening.finish === "white";
   const frameColor = opening.color ?? (white ? "#d8d2c6" : "#9c6b49");
+
+  if (isGardenGate(opening.variant))
+    return (
+      <GardenGateLeaf
+        detailed={detailed}
+        finish={opening.finish}
+        variant={opening.variant}
+        width={width}
+        height={height}
+        color={opening.color ?? gardenGateColor(opening.variant, opening.finish)}
+        handleSide={handleSide}
+      />
+    );
 
   if (opening.variant === "concealed")
     return (
@@ -52,6 +69,7 @@ export function DoorLeaf({
     return (
       <group>
         <ArchedSteelGlassPanel
+          door
           width={width}
           height={height}
           {...omitUndefinedProperties({ frameColor: opening.color })}
@@ -68,9 +86,16 @@ export function DoorLeaf({
           columns={opening.variant === "french" ? 2 : 1}
           rows={opening.variant === "french" ? 5 : 1}
           frameColor={frameColor}
+          slidingSash={
+            detailed && opening.variant === "full-glass" && opening.operation === "sliding"
+          }
+          {...(detailed && {
+            doorFinish: opening.variant === "full-glass" ? "metal" : white ? "paint" : "wood",
+          })}
+          {...(detailed && opening.variant === "french" && { latchSide: handleSide })}
         />
         {opening.variant === "french" ? (
-          <PanelDoorHandles width={width} side={handleSide} />
+          <PanelDoorHandles width={width} side={handleSide} sash={detailed} />
         ) : (
           <GlassDoorHandle width={width} side={handleSide} />
         )}
@@ -94,14 +119,23 @@ export function DoorLeaf({
 
   return (
     <group>
-      <RoundedBox args={[width, height, 0.05]} radius={0.018} smoothness={3} castShadow>
-        <ToonMaterial color={opening.color ?? (white ? "#f1f0eb" : "#b89a73")} />
-        <Outlines
-          color={white ? "#676965" : "#493c31"}
-          thickness={white ? 0.008 : 0.01}
-          screenspace={false}
+      {detailed ? (
+        <PanelDoorSurface
+          width={width}
+          height={height}
+          finish={opening.finish}
+          color={opening.color ?? (white ? "#f1f0eb" : "#b89a73")}
         />
-      </RoundedBox>
+      ) : (
+        <RoundedBox args={[width, height, 0.05]} radius={0.018} smoothness={3} castShadow>
+          <ToonMaterial color={opening.color ?? (white ? "#f1f0eb" : "#b89a73")} />
+          <Outlines
+            color={white ? "#676965" : "#493c31"}
+            thickness={white ? 0.008 : 0.01}
+            screenspace={false}
+          />
+        </RoundedBox>
+      )}
       {opening.variant === "panel-white-lever" ? (
         <WhiteLeverDoorHandles width={width} side={handleSide} />
       ) : (

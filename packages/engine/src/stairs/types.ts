@@ -16,7 +16,7 @@ interface StairPlacement {
 export type StairConnection =
   | { lowerFloorId: string; upperFloorId: string; terrain?: never }
   | {
-      terrain: { floorId: string; end: "lower" | "upper" };
+      terrain: { floorId: string; end: "lower" | "upper"; surfaces?: boolean };
       lowerFloorId?: never;
       upperFloorId?: never;
     };

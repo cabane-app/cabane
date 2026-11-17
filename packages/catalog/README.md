@@ -1,5 +1,50 @@
 # Cabane model catalog
 
+## Cel-shaded construction refinements
+
+These existing presets retain their model IDs, dimensions, placement origins,
+colors and resize policies. Their refinements use native toon materials and
+physical geometry, with no additional textures or model-owned lighting.
+
+| Models                                                                                             | Construction details                                                                                            |
+| -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `sectional-sofa`, `media-wall`, `round-coffee-table`, `dining-set`, `oak-dining-chair`             | Sculpted upholstery, recessed cabinetry, softened tabletops, connected aprons and bentwood chair frames.        |
+| `counter-stool`, `double-bed`, `flat-door-wardrobe`, `wooden-crib`, `oak-nightstand`               | Splayed stool supports, upholstered headboard panels, inset doors, arched crib ends and a recessed drawer pull. |
+| `wooden-vanity`, `vessel-sink-faucet`, `arched-mirror`, `family-bathtub`, `dark-oak-vessel-vanity` | Framed joinery, hollow ceramic basins, curved spouts, continuous mirror framing and a rolled bath rim.          |
+| `garden-shrub`, `deciduous-tree`, `olive-tree`, `tall-ficus`, `potted-plant`                       | Species-specific branching and foliage, attached leaves, shaped planter rims and recessed soil.                 |
+
+The existing variants remain available through Arrange → Details → Variant.
+Fine repeated details use restrained surface colors rather than individual
+outline shells.
+
+## Larch Observatory first-floor furniture
+
+The Gallery & suites level uses 33 furnishing models. Their geometry refinements
+preserve saved sizes, origins, colors, variants and placements:
+
+- Seating and tables: `upholstered-ottoman`, `sage-tub-armchair`,
+  `two-seat-loveseat`, `teak-lounge-sofa`, `teak-lounge-chair`,
+  `pool-chaise-longue`, `pedestal-side-table`, `rectangular-coffee-table`,
+  `hexagonal-side-table` and `oak-slab-bench` gain shaped upholstery, connected
+  timber joinery, rounded edges and more deliberate support profiles.
+- Cabinets and decor: `three-door-sideboard`, `hallway-console-table`,
+  `low-media-console`, `book-row`, `bronze-armillary`, `ring-ceramic-vase`,
+  `tabletop-candle`, `framed-wall-art`, `neutral-area-rug` and `round-jute-rug`
+  gain recessed construction, turned profiles, page blocks, frame rebates and
+  woven edges. Existing artwork images and loading behavior are preserved.
+- Bedroom and bathroom: `double-bed`, `oak-nightstand`, `flat-door-wardrobe`,
+  `dark-oak-vessel-vanity`, `arched-mirror`, `freestanding-bathtub`,
+  `wicker-towel-basket`, `shower-assembly`, `compact-toilet` and `leafy-planter`
+  gain softer profiles, framed joinery, hollow ceramic forms, connected fittings
+  and clearer material detail.
+- Plants: `tall-ficus`, `potted-plant` and `flower-pot` gain curved leaves,
+  connected shoots, shaped pots and modeled flower throats.
+
+The round jute rug uses one continuous woven spiral instead of separate rings;
+its solid geometry measures 2 meshes and 24,384 triangles, down from 49 meshes
+and 55,680 triangles. These are catalog-wide model changes, so existing instances
+also receive the refinements without a project migration.
+
 ## Everyday household additions
 
 These static furnishings are available in Arrange and All items. No runtime
@@ -277,8 +322,8 @@ location; any model can be placed in another suitable room.
 with sage cushions, a reclined back and connected supports. Its inferred overall
 dimensions are 80 × 210 × 85 cm (width × depth × height), including the tilted
 back. The floor origin is centered in X/Z, the feet face +Z, and resizing is uniform.
-Arrange: Outdoor → Pool chaise longue. Numeric inspection: 13 toon meshes,
-4,816 triangles; bounds [-0.4, 0, -1.05] to [0.4, 0.85, 1.05] m.
+Arrange: Outdoor → Pool chaise longue. Numeric inspection: 20 toon meshes,
+6,964 triangles; bounds [-0.4, 0, -1.05] to [0.4, 0.85, 1.05] m.
 
 `garden-hedge` (`GardenHedge`) is an independently placeable 200 × 60 × 140 cm
 clipped hedge segment with timber stems and softly shaped green foliage.
@@ -548,6 +593,10 @@ standard proportions rather than verified manufacturer specifications.
 | `bathroom-extractor-fan`    | `BathroomExtractorFanModel`    | 18 × 9 × 18    | `fan` or `switch`                          | Bathroom, wall               |
 | `refrigerator`              | `RefrigeratorModel`            | 70 × 72 × 185  | `sensor` / `temperature`                   | Kitchen, surface             |
 | `smart-power-strip`         | `SmartPowerStripModel`         | 34 × 6.5 × 5.5 | `switch` / `outlet`                        | Office, surface              |
+
+The `floor-lamp` has a turned wood spindle, stepped brass foot and open pleated
+linen shade. It is 179.6 cm tall with a 65.2 cm shade diameter. Its bulb and
+shade follow the bound light's brightness.
 
 All instances receive a fresh manual primary slot. Lights, including the
 illuminated mirror's perimeter ring, contribute an engine-owned scene light,
@@ -1094,7 +1143,7 @@ These eight independently placeable presets are available in Arrange and All ite
 Each receives a fresh manual primary slot. Printers, minivan, wallbox, fireplace
 and iron accept `switch`, `sensor` or `binary_sensor`: switches use existing on/off
 controls, while readings remain read-only. The fireplace also accepts `light` for
-its native illumination. The lamp uses the standard `light`
+its native illumination and `climate` for thermostat control. The lamp uses the standard `light`
 profile, brightness-responsive glow and engine-owned warm illumination. The tripod
 TV preserves the television camera, media-player and switch profiles, live camera
 surface, animated picture, and reduced-motion behavior. No vendor-specific
@@ -1127,7 +1176,8 @@ cable bottom at the desired elevation; the fireplace hearth belongs at floor lev
 The wallbox and minivan also allow indoor garage placement. The lamp articulation
 is a fixed working pose. The minivan's Color picker changes the painted body while preserving glass, trim
 and wheels. Reset color restores sage. The fireplace's stylized flames follow its
-connected on-state or Scene state → Always on, with warm engine-owned light.
+connected on-state, a thermostat's `heating` action, or Scene state → Always on,
+with warm engine-owned light.
 Always off hides the fire, and reduced motion keeps its flames static. Other new utility devices use status or display
 feedback without implying continuous mechanical activity.
 
@@ -1207,8 +1257,9 @@ height includes its tap. Appliance details are static, with no device bindings.
 
 ## Atelier library
 
-Three matching smoked-oak pieces combine recessed bronze pulls, composed book
-shelves, pale stone and flax upholstery. These generic dimensions are inferred.
+Three matching smoked-oak pieces combine recessed bronze pulls, pale stone and
+flax upholstery. The bookcase holds four upright rows of clothbound books and a
+horizontal stack, all built from the `book-row` preset. These generic dimensions are inferred.
 Find them in Arrange → Living room → Storage (bookcase/credenza) or Seating
 (bench). All axes resize independently; floor-contact Y=0, centered footprints,
 front +Z. The public components are `AtelierLibraryBookcase`,
@@ -1247,3 +1298,44 @@ preserves the silhouette. The bottom is Y=0 and wall contact is Z=0. Each copy
 accepts a manual `light` binding with existing on/off and brightness controls,
 state-aware bulb emission and engine-owned warm lighting. The component and
 `OUTDOOR_WALL_LANTERN_SIZE` are exported from `@cabane/catalog/device`.
+
+## Outdoor vegetation collection
+
+Arrange → **Vegetation** collects the existing outdoor plants and ten new presets.
+They are also available in Outdoor and All items, with independent width, height,
+and depth controls. All origins sit at ground level with centered footprints.
+Dimensions below are inferred landscaping sizes, in metres (width × height × depth).
+These are stylized procedural models, not measured botanical specimens.
+
+| Model ID           | Public component  | Size            |
+| ------------------ | ----------------- | --------------- |
+| `eucalyptus-tree`  | `EucalyptusTree`  | 3.8 × 6 × 3.5   |
+| `english-oak`      | `EnglishOak`      | 5 × 5.5 × 4.8   |
+| `silver-birch`     | `SilverBirch`     | 2.8 × 6 × 2.6   |
+| `sugar-maple`      | `SugarMaple`      | 4.2 × 5 × 4     |
+| `weeping-willow`   | `WeepingWillow`   | 5 × 5 × 4.8     |
+| `scots-pine`       | `ScotsPine`       | 4 × 6 × 3.8     |
+| `italian-cypress`  | `ItalianCypress`  | 1.2 × 5 × 1.2   |
+| `date-palm`        | `DatePalm`        | 4.5 × 5 × 4.5   |
+| `fan-palm`         | `FanPalm`         | 3.5 × 3.8 × 3.5 |
+| `ornamental-grass` | `OrnamentalGrass` | 1.3 × 1.5 × 1.3 |
+
+The eucalyptus is inspired by the supplied garden photo: a pale forked trunk,
+open branching and hanging narrow leaves. Species identification is approximate.
+The oak has a broad lobed crown, birch a slim pale fork, maple an autumn crown,
+willow pendant foliage, pine open spreading tiers, and cypress a narrow spire.
+Date palm has feathered fronds; fan palm has radial fans. Ornamental grass has
+arching blades and pale seed heads. Foliage is batched without individual outlines.
+
+## Sage metal bistro furniture
+
+**Metal bistro chair** (`metal-bistro-chair`) and **Round bistro table**
+(`round-bistro-table`) appear in Arrange → Outdoor → Seating / Tables.
+Both use pale sage painted metal by default; Color changes the slats, top and
+frames. They are independently placeable and resize proportionally.
+The supplied photo informs the chair's five seat slats, two back slats and
+folding frame, and the table's thin solid circular top and crossed legs.
+Dimensions are inferred: chair 40 × 82 × 50 cm, table 70 × 72 × 70 cm
+(width × height × depth). Both start at floor Y=0 with centered footprints.
+The chair faces +Z. Public exports are `MetalBistroChair` /
+`METAL_BISTRO_CHAIR_SIZE` and `RoundBistroTable` / `ROUND_BISTRO_TABLE_SIZE`.

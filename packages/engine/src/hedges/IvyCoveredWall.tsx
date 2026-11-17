@@ -1,7 +1,94 @@
-import { useEffect, useMemo } from "react";
-import type { BufferGeometry } from "three";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { BoxGeometry, Color, DoubleSide, Float32BufferAttribute, InstancedMesh } from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { ToonMaterial } from "../rendering";
-import { hedgeFoliageLobe, mergeHedgeFoliage } from "./hedge-foliage-geometry";
+import { useNativeHedgeMap } from "../scanned-finishes";
+import { ivyGrowth, type IvyBlade } from "./ivy-growth";
+import { ivyLeaf } from "./ivy-leaf";
+
+function ivyBacking(length: number, height: number, halfDepth: number) {
+  const cap = Math.min(0.055, height * 0.12);
+  const bodyHeight = height - cap;
+  const wall = new BoxGeometry(
+    length,
+    bodyHeight,
+    halfDepth * 2,
+    Math.min(72, Math.ceil(length / 0.35)),
+    4,
+    1,
+  );
+  wall.translate(0, bodyHeight / 2, 0);
+  const plaster = new Color("#b9b19a");
+  const color: number[] = [];
+  const position = wall.attributes.position;
+  for (let i = 0; i < position.count; i++) {
+    const x = position.getX(i),
+      y = position.getY(i);
+    const tone =
+      0.84 +
+      (0.14 * y) / bodyHeight +
+      0.022 * Math.sin(x * 2.4 + y * 2.8) +
+      0.016 * Math.sin(x * 5.6 - y * 1.3);
+    color.push(plaster.r * tone, plaster.g * tone, plaster.b * tone);
+  }
+  wall.setAttribute("color", new Float32BufferAttribute(color, 3));
+  const parts = [wall];
+  const count = Math.max(1, Math.min(80, Math.round(length / 0.61)));
+  const step = length / count;
+  for (let i = 0; i < count; i++) {
+    const stone = new BoxGeometry(step - Math.min(0.006, step * 0.02), cap, halfDepth * 2.2);
+    stone.translate(-length / 2 + (i + 0.5) * step, height - cap / 2, 0);
+    const shade = new Color("#aea38b").multiplyScalar(0.97 + 0.04 * Math.sin(i * 2.1));
+    const tint: number[] = [];
+    for (let j = 0; j < stone.attributes.position.count; j++) tint.push(shade.r, shade.g, shade.b);
+    stone.setAttribute("color", new Float32BufferAttribute(tint, 3));
+    parts.push(stone);
+  }
+  const backing = mergeGeometries(parts)!;
+  parts.forEach((part) => part.dispose());
+  return backing;
+}
+
+function IvyLeaves({ blades, young }: { blades: IvyBlade[]; young: boolean }) {
+  const map = useNativeHedgeMap("ivy");
+  const mapped = Boolean(map);
+  const leaf = useMemo(() => ivyLeaf(young, mapped), [young, mapped]);
+  const instances = useRef<InstancedMesh>(null);
+  useLayoutEffect(() => {
+    const mesh = instances.current;
+    if (!mesh) return;
+    for (const [i, blade] of blades.entries()) {
+      mesh.setMatrixAt(i, blade.matrix);
+      mesh.setColorAt(i, blade.color);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }, [blades]);
+  // Keep terrain-adjusted matrices when the atlas replaces the solid foliage.
+  useLayoutEffect(() => {
+    instances.current?.computeBoundingBox();
+    instances.current?.computeBoundingSphere();
+  }, [blades, leaf]);
+  useEffect(() => () => leaf.dispose(), [leaf]);
+  return (
+    <instancedMesh
+      name={young ? "young-ivy-leaves" : "climbing-ivy-leaves"}
+      userData={{ thumbnailPending: map === null }}
+      ref={instances}
+      args={[undefined, undefined, blades.length]}
+      geometry={leaf}
+      castShadow
+      receiveShadow
+    >
+      <ToonMaterial
+        key={mapped ? "atlas" : "solid"}
+        side={DoubleSide}
+        map={map ?? null}
+        alphaTest={mapped ? 0.43 : 0}
+      />
+    </instancedMesh>
+  );
+}
 
 export function IvyCoveredWall({
   length,
@@ -12,53 +99,23 @@ export function IvyCoveredWall({
   height: number;
   width: number;
 }) {
-  const foliage = useMemo(() => {
-    const parts: BufferGeometry[] = [];
-    const columns = Math.min(100, Math.max(2, Math.ceil(length / 0.32)));
-    const rows = Math.min(16, Math.max(2, Math.ceil(height / 0.3)));
-    for (let col = 0; col < columns; col++) {
-      const x = -length / 2 + ((col + 0.5) * length) / columns;
-      for (const side of [-1, 1])
-        for (let row = 0; row < rows; row++) {
-          const seed = col * 7.1 + row * 3.7 + side;
-          const y = ((row + 0.5 + Math.sin(seed * 2.3) * 0.26) * height) / rows;
-          parts.push(
-            hedgeFoliageLobe(
-              [x + ((Math.sin(seed) * length) / columns) * 0.22, y, side * width * 0.23],
-              [
-                (length / columns) * (0.65 + 0.12 * Math.sin(seed)),
-                (height / rows) * (0.66 + 0.13 * Math.cos(seed)),
-                width * (0.23 + 0.04 * Math.sin(seed * 3)),
-              ],
-              ["#365b32", "#497239", "#5b8040", "#426632"][
-                Math.abs(Math.floor(Math.sin(seed) * 97)) % 4
-              ],
-              seed,
-            ),
-          );
-        }
-      // Dense growth spills over the cap into irregular hanging clusters.
-      parts.push(
-        hedgeFoliageLobe(
-          [x, height * 0.96, Math.sin(col * 2.4) * width * 0.1],
-          [(length / columns) * 0.7, height * 0.065, width * 0.46],
-          "#63864a",
-          col,
-        ),
-      );
-    }
-    return mergeHedgeFoliage(parts);
-  }, [length, height, width]);
-  useEffect(() => () => foliage.dispose(), [foliage]);
+  const growth = useMemo(() => ivyGrowth(length, height, width), [length, height, width]);
+  const backing = useMemo(
+    () => ivyBacking(length, growth.wallHeight, growth.wallSide),
+    [length, growth.wallHeight, growth.wallSide],
+  );
+  useEffect(() => () => backing.dispose(), [backing]);
+  useEffect(() => () => growth.stems.dispose(), [growth]);
   return (
     <group name="dense-ivy-covered-wall">
-      <mesh position={[0, height * 0.47, 0]} castShadow receiveShadow>
-        <boxGeometry args={[length, height * 0.94, width * 0.35]} />
-        <ToonMaterial color="#a59b80" />
-      </mesh>
-      <mesh geometry={foliage} castShadow receiveShadow>
+      <mesh name="ivy-wall-plaster" geometry={backing} castShadow receiveShadow>
         <ToonMaterial vertexColors />
       </mesh>
+      <mesh name="climbing-ivy-stems" geometry={growth.stems} castShadow receiveShadow>
+        <ToonMaterial vertexColors />
+      </mesh>
+      <IvyLeaves blades={growth.leaves} young={false} />
+      <IvyLeaves blades={growth.tips} young />
     </group>
   );
 }

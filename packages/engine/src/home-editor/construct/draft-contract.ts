@@ -128,6 +128,7 @@ export type FloorEditorAction =
     }
   | {
       type: "add-floor-zone";
+      elevation?: FloorFinishZoneSpec["elevation"];
       room: Pick<EditorRoomIdentity, "id" | "name" | "accent" | "anchor">;
       polygon: Polygon;
       finish: FloorFinishSpec;
@@ -140,7 +141,7 @@ export type FloorEditorAction =
   | {
       type: "update-floor-zone";
       zoneId: string;
-      changes: Partial<Pick<FloorFinishZoneSpec, "polygon" | "finish">>;
+      changes: Partial<Pick<FloorFinishZoneSpec, "polygon" | "finish" | "elevation">>;
     }
   | {
       type: "configure-pool";

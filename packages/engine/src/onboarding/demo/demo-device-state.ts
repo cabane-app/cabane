@@ -21,6 +21,7 @@ export function demoDomain(slot: EntityBindingSlotSpec): DemoDomain | null {
   return supportedDomains.find((domain) => slot.compatibleDomains.includes(domain)) ?? null;
 }
 const sensorDefaults: Readonly<Record<string, readonly [string, string]>> = {
+  aqi: ["32", ""],
   temperature: ["21.5", "°C"],
   humidity: ["45", "%"],
   battery: ["86", "%"],
@@ -85,7 +86,7 @@ export function createDemoDeviceState(
     case "sensor": {
       const reading = deviceClass ? sensorDefaults[deviceClass] : undefined;
       state = reading?.[0] ?? (deviceClass ? "unknown" : "idle");
-      if (reading) attributes.unit_of_measurement = reading[1];
+      if (reading?.[1]) attributes.unit_of_measurement = reading[1];
       break;
     }
     case "event":

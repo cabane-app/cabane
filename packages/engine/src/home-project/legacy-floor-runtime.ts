@@ -1,4 +1,5 @@
 import { collectBindingSlots } from "../runtime-binding-profile";
+import { retainRoomDashboards } from "../room-dashboards/room-dashboard";
 import type {
   FloorSpec,
   RenderableFloorSpec,
@@ -43,6 +44,7 @@ export const reconcileRuntimeBindingProfile = (
     ...profile,
     schemaVersion: 1,
     homeId: manifest.home.id,
+    ...retainRoomDashboards(profile.roomDashboards, roomIds),
     roomAreaIds: Object.fromEntries(
       Object.entries(profile.roomAreaIds).filter(([roomId]) => roomIds.has(roomId)),
     ),

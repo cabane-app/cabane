@@ -1,99 +1,47 @@
 import { ToonMaterial } from "@cabane/engine";
+import { MilledSurface, type Face } from "./milled-surface";
 import { BrassCabinetHandle } from "./brass-cabinet-handle";
-import { CabinetJoint } from "./cabinet-joint";
-import {
-  KITCHEN_CREAM,
-  KITCHEN_CREAM_LIGHT,
-  KITCHEN_OAK,
-  KITCHEN_OAK_LIGHT,
-  KITCHEN_STONE,
-  KitchenBox,
-} from "./kitchen-finish";
-import { StoneVein } from "./stone-vein";
+import { KITCHEN_CREAM, KITCHEN_OAK, KitchenBox, KitchenPanel } from "./kitchen-finish";
 
+// A continuous tambour face: thirty shallow oak ribs follow a softly scalloped profile.
+const tambour: Face[] = [];
+for (let i = 0; i < 30 * 6; i++) {
+  const x = (j: number) => -1.16 + (j * 2.32) / 180;
+  const z = (j: number) => 0.001 + 0.016 * Math.sin((Math.PI * (j % 6)) / 6);
+  tambour.push([
+    [x(i), 0, z(i)],
+    [x(i + 1), 0, z(i + 1)],
+    [x(i + 1), 0.681, z(i + 1)],
+    [x(i), 0.681, z(i)],
+  ]);
+  tambour.push([
+    [x(i), 0.681, z(i)],
+    [x(i + 1), 0.681, z(i + 1)],
+    [x(i + 1), 0.681, -0.004],
+    [x(i), 0.681, -0.004],
+  ]);
+}
 export function KitchenPeninsula() {
   return (
     <group name="retour-et-barre-du-u-custom">
+      <KitchenBox size={[0.46, 0.1, 1.15]} position={[3.61, 0.05, 1.24]} color="#94877a" />
       <KitchenBox
-        size={[0.56, 0.83, 1.7]}
-        position={[3.59, 0.425, 1.15]}
+        size={[0.56, 0.737, 1.23]}
+        position={[3.59, 0.4655, 1.265]}
         color={KITCHEN_CREAM}
-        outline="#71685d"
       />
-      <mesh position={[3.298, 0.43, 1.15]} receiveShadow>
-        <boxGeometry args={[0.018, 0.72, 1.64]} />
-        <ToonMaterial color={KITCHEN_CREAM_LIGHT} />
-      </mesh>
-      {[0.74, 1.16, 1.58].map((jointZ) => (
-        <CabinetJoint
-          key={jointZ}
-          from={[3.286, 0.07, jointZ]}
-          to={[3.286, 0.79, jointZ]}
-          color="#aaa298"
-        />
-      ))}
-      <CabinetJoint from={[3.286, 0.63, 0.34]} to={[3.286, 0.63, 1.96]} color="#aaa298" />
-      {[0.53, 0.95, 1.37, 1.79].map((handleZ) => (
-        <group key={handleZ} position={[3.255, 0.7, handleZ]} rotation={[0, Math.PI / 2, 0]}>
-          <BrassCabinetHandle position={[0, 0, 0]} />
+      {[0.855, 1.265, 1.675].map((z) => (
+        <group key={z} position={[3.304, 0, z]} rotation={[0, -Math.PI / 2, 0]}>
+          <KitchenPanel width={0.401} height={0.712} position={[0, 0.46, 0]} />
+          <BrassCabinetHandle position={[0, 0.732, 0.04]} />
         </group>
       ))}
-
-      <KitchenBox
-        size={[2.4, 0.83, 0.56]}
-        position={[2.59, 0.425, 2.16]}
-        color={KITCHEN_OAK}
-        outline="#664326"
-      />
-      <mesh position={[2.59, 0.43, 2.449]} receiveShadow>
-        <boxGeometry args={[2.34, 0.72, 0.018]} />
-        <ToonMaterial color={KITCHEN_OAK_LIGHT} />
+      <KitchenBox size={[2.28, 0.1, 0.45]} position={[2.59, 0.05, 2.16]} color="#816044" />
+      <KitchenBox size={[2.4, 0.737, 0.56]} position={[2.59, 0.4655, 2.16]} color={KITCHEN_OAK} />
+      <mesh position={[2.59, 0.126, 2.44]} castShadow receiveShadow>
+        <MilledSurface faces={tambour} />
+        <ToonMaterial color="#c38e57" />
       </mesh>
-      {[1.79, 2.59, 3.39].map((jointX) => (
-        <CabinetJoint
-          key={jointX}
-          from={[jointX, 0.07, 2.461]}
-          to={[jointX, 0.79, 2.461]}
-          color="#815b39"
-        />
-      ))}
-      <KitchenBox
-        size={[0.82, 0.095, 1.9]}
-        position={[3.54, 0.89, 1.2]}
-        color={KITCHEN_STONE}
-        outline="#81776b"
-        receiveShadow
-      />
-      <KitchenBox
-        size={[2.72, 0.095, 0.9]}
-        position={[2.59, 0.89, 2.1]}
-        color={KITCHEN_STONE}
-        outline="#81776b"
-        receiveShadow
-      />
-      <StoneVein
-        points={[
-          [3.2, 0.942, 0.51],
-          [3.34, 0.944, 0.72],
-          [3.31, 0.943, 0.98],
-          [3.53, 0.945, 1.24],
-          [3.62, 0.944, 1.5],
-          [3.83, 0.944, 1.68],
-        ]}
-        width={0.007}
-      />
-      <StoneVein
-        points={[
-          [1.35, 0.944, 1.82],
-          [1.61, 0.945, 1.93],
-          [1.88, 0.943, 1.98],
-          [2.16, 0.945, 2.13],
-          [2.47, 0.944, 2.18],
-          [2.76, 0.946, 2.34],
-          [3.02, 0.944, 2.38],
-        ]}
-        width={0.006}
-      />
     </group>
   );
 }

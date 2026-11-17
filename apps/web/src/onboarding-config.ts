@@ -3,5 +3,5 @@ export const onboardingLinks = {
   source: "https://github.com/cabane-app/cabane",
 };
 
-/** Content hint for the bundled villa; selection falls back when this room is absent. */
-export const onboardingDemoRoomId = "open-plan-living";
+/** Start the light controls in Larch's Cathedral hall. */
+export const onboardingDemoRoomId = "ground-floor:room-1";

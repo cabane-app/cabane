@@ -20,6 +20,7 @@ areas:
       [
         packages/engine/src/CabaneDashboard.tsx,
         packages/engine/src/home-assistant-dashboard/,
+        packages/engine/src/room-dashboards/,
         packages/engine/src/navigation/,
         packages/engine/src/building/,
       ]

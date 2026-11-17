@@ -55,7 +55,7 @@ export function WelcomeLighting({
     return { target, position, radius: frame.radius, far: frame.far };
   }, [floors]);
 
-  useFrame(({ gl }) => {
+  useFrame(({ gl, scene }) => {
     const daylight = daylightRef.current;
     if (
       !ambient.current ||
@@ -68,6 +68,7 @@ export function WelcomeLighting({
     const to = daylight < 0.5 ? TWILIGHT : DAY;
     const blend = daylight < 0.5 ? daylight * 2 : daylight * 2 - 1;
 
+    scene.environmentIntensity = 0.06 + daylight * 0.36;
     sky.current?.lerpColors(from.sky, to.sky, blend);
     ambient.current.color.lerpColors(from.ambient, to.ambient, blend);
     ambient.current.groundColor.lerpColors(from.ground, to.ground, blend);

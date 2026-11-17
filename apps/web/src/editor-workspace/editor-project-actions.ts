@@ -1,6 +1,7 @@
 import {
   addBottomFloor,
   addTopFloor,
+  deriveStairFlight,
   floorRemovalDisabledReason,
   parseHomeProjectSchema,
   pointOnFloorSupport,
@@ -101,6 +102,12 @@ export function editProject(snapshot: EditorWorkspaceSnapshot, action: EditorPro
   }
   const schema = parseHomeProjectSchema(next.project);
   if (!schema.valid) throw new Error(schema.issues.map((issue) => issue.message).join(" "));
+  if (
+    (action.type === "add-stair" || action.type === "update-stair") &&
+    !deriveStairFlight(next.project, action.stair)
+  ) {
+    throw new Error("Stairs need positive dimensions and landings at different heights.");
+  }
   if (action.type === "set-walk-start" && action.walkStart) {
     const floor = next.project.floors.find((floor) => floor.id === action.walkStart!.floorId);
     if (!floor || !pointOnFloorSupport(action.walkStart.at, floor))

@@ -1,4 +1,7 @@
 import { SceneActionButton } from "./SceneActionButton";
+import topDownIcon from "../assets/scene-actions/top-down.svg";
+import resetViewIcon from "../assets/scene-actions/reset-view.svg";
+import lockViewIcon from "../assets/scene-actions/lock-view.svg";
 export function OrbitViewMenu({
   locked,
   disabled,
@@ -18,26 +21,22 @@ export function OrbitViewMenu({
     <>
       {" "}
       {[
-        { label: "Top-down", action: onTopDown, path: "M4 4h16v16H4zM4 12h8v8M12 4v8h8" },
-        { label: "Reset view", action: onResetView, path: "M4 10a8 8 0 1 1 1 8M4 4v6h6" },
+        { label: "Top-down", action: onTopDown, icon: topDownIcon },
+        { label: "Reset view", action: onResetView, icon: resetViewIcon },
         {
           label: "Lock view",
           action: onToggleLock,
-          path: "M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4",
+          icon: lockViewIcon,
         },
       ].map(
-        ({ label, action, path }) =>
+        ({ label, action, icon }) =>
           action && (
             <SceneActionButton
               key={label}
               label={label}
               active={label === "Lock view" && locked}
               disabled={disabled}
-              icon={
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d={path} />
-                </svg>
-              }
+              icon={<img src={icon} alt="" draggable={false} />}
               onClick={() => {
                 action();
                 onClose();

@@ -137,7 +137,13 @@ export function placementCandidate(
       const elevation = input.elevation ?? Math.max(0, -definition.bounds.min[1]) + 0.001;
       if (!Number.isFinite(elevation) || elevation < Math.max(0, -definition.bounds.min[1]))
         return invalid("The item must stay above the floor.");
-      placement = { kind, at, elevationMeters: elevation, rotationYRadians: 0 };
+      placement = {
+        kind,
+        at,
+        elevationMeters: elevation,
+        rotationYRadians: 0,
+        surfaceRelative: true,
+      };
     }
   }
   const roomCount = (candidate: ItemPlacement) => {

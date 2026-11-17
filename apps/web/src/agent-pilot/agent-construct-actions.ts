@@ -15,6 +15,7 @@ import {
   wallPatch,
   hedge,
   platformPatch,
+  elevation,
   doorConfiguration,
   opening,
   settings,
@@ -155,8 +156,9 @@ export function executeConstructAction(
       editor.addGroundZone(polygon(action.polygon, "polygon"), finish(action.finish));
       return;
     case "update-floor-zone": {
-      const input = object(action.changes, "changes", ["polygon", "finish"]);
+      const input = object(action.changes, "changes", ["polygon", "finish", "elevation"]);
       editor.updateFloorZone(id("zoneId"), {
+        ...(input.elevation === undefined ? {} : { elevation: elevation(input.elevation) }),
         ...(input.polygon === undefined
           ? {}
           : { polygon: polygon(input.polygon, "changes.polygon") }),

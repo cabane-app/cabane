@@ -3,6 +3,7 @@ import {
   availableOpeningOffsetRanges,
   nearestAvailableOpeningOffset,
   nicheDepthLimit,
+  openingCutTop,
   type FloorEditorDraft,
   type DoorConfiguration,
 } from "@cabane/engine";
@@ -21,11 +22,14 @@ export function useWallOpeningPlacement(
       if (selection?.kind !== "wall") return;
       const wall = draft.walls.find((candidate) => candidate.id === selection.id);
       if (!wall) return;
-      const {
-        widthPlanUnits: width,
-        sillHeightMeters,
-        openingHeightMeters,
-      } = openingToolDimensions(kind, doorConfiguration, draft.coordinates.metersPerPlanUnit);
+      const dimensions = openingToolDimensions(
+        kind,
+        doorConfiguration,
+        draft.coordinates.metersPerPlanUnit,
+      );
+      const { widthPlanUnits: width, sillHeightMeters } = dimensions;
+      const wallTop =
+        (wall.heightMeters ?? draft.defaultWallHeightMeters) - (kind === "niche" ? 0.002 : 0);
       const length = Math.hypot(wall.to[0] - wall.from[0], wall.to[1] - wall.from[1]);
       const offsetPlanUnits = nearestAvailableOpeningOffset(
         Math.max(0, (length - width) / 2),
@@ -40,8 +44,7 @@ export function useWallOpeningPlacement(
       if (
         offsetPlanUnits === undefined ||
         (kind === "niche" && nicheDepthLimit(draft, wall.id) < 0.01) ||
-        openingHeightMeters + sillHeightMeters >
-          (wall.heightMeters ?? draft.defaultWallHeightMeters) - (kind === "niche" ? 0.002 : 0)
+        openingCutTop(dimensions, wallTop) > wallTop
       ) {
         setOpeningError("This opening does not fit on this wall.");
         return;
@@ -64,11 +67,12 @@ export function useWallOpeningPlacement(
       side?: "left" | "right",
       configuration = doorConfiguration,
     ) => {
-      const { widthPlanUnits, sillHeightMeters, openingHeightMeters } = openingToolDimensions(
+      const dimensions = openingToolDimensions(
         kind,
         configuration,
         draft.coordinates.metersPerPlanUnit,
       );
+      const { widthPlanUnits, sillHeightMeters } = dimensions;
       const valid = availableOpeningOffsetRanges({
         draft,
         wallId,
@@ -77,11 +81,12 @@ export function useWallOpeningPlacement(
         kind,
       }).some((range) => offsetPlanUnits >= range.min && offsetPlanUnits <= range.max);
       const wall = draft.walls.find((wall) => wall.id === wallId);
+      const wallTop =
+        (wall?.heightMeters ?? draft.defaultWallHeightMeters) - (kind === "niche" ? 0.002 : 0);
       if (
         !valid ||
         (kind === "niche" && nicheDepthLimit(draft, wallId) < 0.01) ||
-        openingHeightMeters + sillHeightMeters >
-          (wall?.heightMeters ?? draft.defaultWallHeightMeters) - (kind === "niche" ? 0.002 : 0)
+        openingCutTop(dimensions, wallTop) > wallTop
       ) {
         setOpeningError("This opening does not fit on this wall.");
         return false;

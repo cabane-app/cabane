@@ -129,6 +129,7 @@ function DeviceSceneItem({
       : item.lightState,
     primary?.state,
     nightLighting,
+    item.modelId,
   );
   const lightingSlot = lightingSlotForItem(item);
   const lightingState = sceneLightState(
@@ -138,6 +139,7 @@ function DeviceSceneItem({
           (lightingSlot.id === primarySlot?.id ? primary?.state : undefined))
       : undefined,
     nightLighting,
+    item.modelId,
   );
   const visualState = deviceVisualStateForSnapshot(state);
   const runtime = useHomeAssistantRuntime();
@@ -190,6 +192,7 @@ function DeviceSceneItem({
       scale={scale}
       userData={{
         walkCollider: item.modelId.startsWith("custom:") && item.placement.kind === "absolute",
+        itemContactCaster: item.placement.kind === "absolute" && item.modelId !== "robot-vacuum",
         deviceBindingId: item.id,
         deviceModel: item.modelId,
         visualState,
@@ -314,6 +317,7 @@ export const SceneItemRenderer = memo(function SceneItemRenderer({
       <group
         name={`scene-item-${item.id}`}
         userData={{
+          itemContactCaster: !!definition && item.placement.kind === "absolute",
           walkCollider: item.modelId.startsWith("custom:") && item.placement.kind === "absolute",
         }}
         position={transform.position}

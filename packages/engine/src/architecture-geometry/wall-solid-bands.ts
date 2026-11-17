@@ -1,3 +1,6 @@
+import { elevationAreas } from "../elevation/surfaces";
+import { lowerWallFootprint } from "../elevation/wall-support";
+import { openingCutTop } from "../geometry";
 import { wallNicheCutPolygon } from "./wall-niche-cut";
 import { differenceClippingGeometry, unionClippingPolygons } from "./architecture-clipping";
 import { EPSILON } from "./architecture-geometry-contract";
@@ -13,8 +16,18 @@ export function wallSolidBands(
   cornerBands: readonly WallCornerBand[] = [],
 ) {
   const floor = physicalFloor(requestedFloor);
+  const wallsById = new Map(floor.walls.map((wall) => [wall.id, wall]));
+  const openings = floor.openings.flatMap((opening) => {
+    const wall = wallsById.get(opening.wallId);
+    if (!wall) return [];
+    const top = openingCutTop(opening, wall.heightMeters ?? floor.defaultWallHeightMeters);
+    return [{ opening, wall, top }];
+  });
   const heights = uniqueSorted([
     0,
+    ...elevationAreas(floor)
+      .filter((area) => area.roomId && area.elevation.offsetMeters < 0)
+      .map((area) => area.elevation.offsetMeters),
     ...floor.walls.map((wall) => wall.heightMeters ?? floor.defaultWallHeightMeters),
     ...cornerBands.map(({ top }) => top),
     ...floor.walls.flatMap((wall) =>
@@ -27,10 +40,7 @@ export function wallSolidBands(
         ]),
       ]),
     ),
-    ...floor.openings.flatMap((opening) => [
-      opening.sillHeightMeters,
-      opening.sillHeightMeters + opening.openingHeightMeters,
-    ]),
+    ...openings.flatMap(({ opening, top }) => [opening.sillHeightMeters, top]),
   ]);
   return heights.slice(0, -1).map((bottom, index) => {
     const top = heights[index + 1];
@@ -42,11 +52,11 @@ export function wallSolidBands(
     const corners = cornerBands.filter((band) => middle > band.bottom && middle < band.top);
     solids.push(...corners.map(({ footprint }) => footprint));
     let footprint = unionClippingPolygons(solids);
-    const cuts = floor.openings.flatMap((opening) => {
-      const openingBottom = opening.sillHeightMeters;
-      const openingTop = opening.sillHeightMeters + opening.openingHeightMeters;
-      const wall = activeWalls.find((candidate) => candidate.id === opening.wallId);
-      return wall && middle > openingBottom - EPSILON && middle < openingTop + EPSILON
+    if (middle < 0) footprint = lowerWallFootprint(floor, footprint, middle);
+    const cuts = openings.flatMap(({ opening, wall, top }) => {
+      return activeWalls.includes(wall) &&
+        middle > opening.sillHeightMeters - EPSILON &&
+        middle < top + EPSILON
         ? [openingCutPolygon(wall, opening, floor)]
         : [];
     });

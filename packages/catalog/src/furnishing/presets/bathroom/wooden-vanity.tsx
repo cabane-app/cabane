@@ -1,51 +1,63 @@
-import { Outlines, ToonMaterial } from "@cabane/engine";
+import { Vector2 } from "three";
+import { ToonMaterial } from "@cabane/engine";
+import { RoundedFurniturePanel } from "../construction";
+import { VanityDoor } from "./vanity-door";
 
-const doorCenters = [-0.72, -0.24, 0.24, 0.72] as const;
-const slatHeights = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6] as const;
+const knob = [
+  [0, 0.017],
+  [0.015, 0.017],
+  [0.015, 0.021],
+  [0.009, 0.025],
+  [0.008, 0.04],
+  [0.018, 0.046],
+  [0.024, 0.051],
+  [0.024, 0.056],
+  [0.019, 0.061],
+  [0.009, 0.065],
+  [0, 0.065],
+].map(([r, y]) => new Vector2(r, y));
 
 export function WoodenVanity() {
   return (
-    <group name="wooden-vanity">
-      {[-0.78, 0.78].flatMap((z) =>
-        [-0.17, 0.17].map((x) => (
-          <mesh key={`${x}-${z}`} position={[x, 0.06, z]} castShadow>
-            <boxGeometry args={[0.07, 0.12, 0.07]} />
+    <group name="wooden-vanity" rotation={[0, -Math.PI / 2, 0]}>
+      {[-0.94, 0.94].flatMap((x) =>
+        [-0.173, 0.173].map((z) => (
+          <mesh
+            key={x + "-" + z}
+            position={[x, 0.068, z]}
+            rotation={[0, Math.PI / 4, 0]}
+            castShadow
+          >
+            <cylinderGeometry args={[0.057, 0.041, 0.136, 4, 1, false]} />
             <ToonMaterial color="#684735" />
           </mesh>
         )),
       )}
-      <mesh position={[0, 0.42, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.48, 0.68, 2.12]} />
-        <ToonMaterial color="#9a6745" />
-        <Outlines color="#5f3e2e" thickness={0.006} />
-      </mesh>
-      <mesh position={[-0.247, 0.43, 0]} castShadow>
-        <boxGeometry args={[0.018, 0.58, 2.01]} />
-        <ToonMaterial color="#a87550" />
-      </mesh>
-      {doorCenters.flatMap((z) =>
-        slatHeights.map((y) => (
-          <mesh key={`${z}-${y}`} position={[-0.26, y, z]} castShadow>
-            <boxGeometry args={[0.018, 0.018, 0.38]} />
-            <ToonMaterial color={Math.round(y * 100) % 10 === 0 ? "#704a35" : "#7f563d"} />
-          </mesh>
-        )),
-      )}
-      {doorCenters.map((z) => (
-        <mesh
-          key={`handle-${z}`}
-          position={[-0.278, 0.44, z + 0.16]}
-          rotation={[0, 0, Math.PI / 2]}
-        >
-          <cylinderGeometry args={[0.022, 0.022, 0.035, 10]} />
-          <ToonMaterial color="#4b4039" />
-        </mesh>
+      <RoundedFurniturePanel
+        size={[2.113, 0.642, 0.471]}
+        position={[0, 0.43, -0.005]}
+        color="#9a6745"
+        radius={0.012}
+        outline={false}
+      />
+      <RoundedFurniturePanel
+        size={[2.18, 0.055, 0.52]}
+        position={[0, 0.7775, 0]}
+        color="#a97650"
+        radius={0.009}
+        outlineColor="#876043"
+      />
+      {[-0.762, -0.254, 0.254, 0.762].map((x, index) => (
+        <group key={x} position={[x, 0.429, 0.231]}>
+          <VanityDoor color="#ad7a54" louvered />
+          <group position={[index % 2 === 0 ? 0.221 : -0.221, 0.076, 0]}>
+            <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+              <latheGeometry args={[knob, 16]} />
+              <ToonMaterial color="#4b4039" />
+            </mesh>
+          </group>
+        </group>
       ))}
-      <mesh position={[0, 0.78, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.52, 0.05, 2.18]} />
-        <ToonMaterial color="#a97650" />
-        <Outlines color="#5f3e2e" thickness={0.005} />
-      </mesh>
     </group>
   );
 }

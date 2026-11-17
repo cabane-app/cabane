@@ -2,12 +2,14 @@ import { DecorationsTools } from "./DecorationsTools";
 import type { FloorEditorTool } from "@cabane/engine";
 import { EditorActionButton } from "./EditorActionButton";
 import { EditorToolGroup } from "./EditorToolGroup";
-import { wallTools, openingTools } from "./construction-tool-options";
+import { wallTools, openingTools, floorTools } from "./construction-tool-options";
 
 export interface EditorActionBarProps {
   inert?: boolean | undefined;
   tool: FloorEditorTool | null;
   onToolChange: (tool: FloorEditorTool) => void;
+  floorTarget?: "room" | "custom-area" | "outdoor-platform";
+  onFloorTargetChange?: (target: "room" | "custom-area") => void;
   onStairs?: () => void;
   stairsActive?: boolean;
   stairsDisabledReason?: string | undefined;
@@ -17,6 +19,8 @@ export function EditorActionBar({
   inert,
   tool,
   onToolChange,
+  floorTarget,
+  onFloorTargetChange,
   onStairs,
   stairsActive,
   stairsDisabledReason,
@@ -56,14 +60,22 @@ export function EditorActionBar({
         onToolChange={onToolChange}
         disabled={inert}
       />
-      <EditorActionButton
+      <EditorToolGroup
         icon="floor"
         label="Floor"
-        showLabel
-        pressed={!stairsActive && tool === "floor"}
-        shortcut="F"
-        keyShortcuts="F"
-        onClick={() => onToolChange("floor")}
+        panelLabel="Floor tools"
+        tools={floorTools}
+        tool={
+          !stairsActive && (tool === "floor" || tool === "platform")
+            ? floorTarget === "custom-area" || tool === "platform"
+              ? "custom-area"
+              : "room"
+            : null
+        }
+        disabled={inert}
+        onToolChange={(target) =>
+          onFloorTargetChange ? onFloorTargetChange(target) : onToolChange("floor")
+        }
       />
       {onStairs && (
         <EditorActionButton

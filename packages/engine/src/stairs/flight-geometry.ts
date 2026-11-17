@@ -3,11 +3,11 @@ import { planPointToWorld, worldPointToPlan } from "../geometry";
 import type { Polygon } from "../types";
 import type { BuildingGeometry, StairSpec } from "./types";
 import { SPIRAL_CORE_RADIUS_METERS } from "./spiral-geometry";
-import { resolveStairConnection } from "./stair-connection";
+import { resolveStairConnection, reverseStairRoute, stairSurfaceSupport } from "./stair-connection";
 import { stairShapeGeometry } from "./stair-shape-geometry";
 
 export const STAIR_LANDING_METERS = 0.6;
-export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) => {
+function deriveStairGeometry(building: BuildingGeometry, stair: StairSpec, allowLevel: boolean) {
   if (![...stair.at, stair.rotationYRadians].every(Number.isFinite)) return null;
   const dimensions =
     stair.shape === "spiral"
@@ -28,10 +28,20 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
     !["left", "right"].includes(stair.turn)
   )
     return null;
-  const connection = resolveStairConnection(building, stair);
+  let connection = resolveStairConnection(building, stair);
   if (!connection) return null;
+  if (stair.terrain?.surfaces && connection.riseMeters < 0) {
+    stair = reverseStairRoute(stair, building.coordinates);
+    connection = resolveStairConnection(building, stair);
+    if (!connection) return null;
+  }
   const { baseElevationMeters, riseMeters } = connection;
-  if (!Number.isFinite(riseMeters) || riseMeters <= 0) return null;
+  if (
+    !Number.isFinite(riseMeters) ||
+    riseMeters < 0 ||
+    (riseMeters === 0 && !(allowLevel && stair.terrain?.surfaces))
+  )
+    return null;
   const stepCount = Math.max(2, Math.min(512, Math.ceil(riseMeters / 0.2)));
   const [x, z] = planPointToWorld(stair.at, building.coordinates);
   const forward = [Math.sin(stair.rotationYRadians), Math.cos(stair.rotationYRadians)] as const;
@@ -102,6 +112,12 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
     path,
     entranceForward,
     exitForward,
+    upperSurfaceSupport: stair.terrain?.surfaces
+      ? stairSurfaceSupport(
+          building,
+          building.floors.find((floor) => floor.id === stair.terrain?.floorId)!,
+        )
+      : undefined,
     upperSupportWorld: building.floors
       .filter((floor) => floor.id === connection.upperFloorId)
       .flatMap((floor) =>
@@ -115,26 +131,42 @@ export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) 
     lowerLanding: landing(false),
     upperLanding: landing(true),
   };
-};
+}
+export const deriveStairFlight = (building: BuildingGeometry, stair: StairSpec) =>
+  deriveStairGeometry(building, stair, false);
+
+/** Keep a level same-floor stair editable in plan, without producing a physical flight. */
+export const deriveStairPlanFlight = (building: BuildingGeometry, stair: StairSpec) =>
+  deriveStairGeometry(building, stair, true);
+
 export type StairFlight = NonNullable<ReturnType<typeof deriveStairFlight>>;
 export const deriveStairApertures = (building: BuildingGeometry) =>
   building.stairs.flatMap((stair) => {
     const flight = deriveStairFlight(building, stair);
-    return flight && !stair.terrain
+    return flight && stair.terrain?.surfaces
       ? [
           {
             stairId: stair.id,
-            floorId: stair.lowerFloorId,
-            surface: "ceiling" as const,
-            polygon: flight.footprint,
-            riseMeters: flight.riseMeters,
-          },
-          {
-            stairId: stair.id,
-            floorId: stair.upperFloorId,
+            floorId: stair.terrain.floorId,
             surface: "floor" as const,
             polygon: flight.footprint,
           },
         ]
-      : [];
+      : flight && !stair.terrain
+        ? [
+            {
+              stairId: stair.id,
+              floorId: stair.lowerFloorId,
+              surface: "ceiling" as const,
+              polygon: flight.footprint,
+              riseMeters: flight.riseMeters,
+            },
+            {
+              stairId: stair.id,
+              floorId: stair.upperFloorId,
+              surface: "floor" as const,
+              polygon: flight.footprint,
+            },
+          ]
+        : [];
   });

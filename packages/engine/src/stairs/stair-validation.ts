@@ -2,7 +2,7 @@ import { deriveFloorLevels } from "../building/floor-levels";
 import { stairFloorIds } from "./stair-connection";
 import { stairEndSupported } from "./stair-landing-support";
 import type { ManifestIssue, FloorSpec } from "../types";
-import { deriveStairFlight } from "./flight-geometry";
+import { deriveStairFlight, deriveStairPlanFlight } from "./flight-geometry";
 import {
   stairClearanceVolumes,
   stairStructureVolumes,
@@ -51,11 +51,15 @@ export const validateStairs = (
     }
     const flight = flights[index];
     if (!flight) {
+      const level =
+        stair.terrain?.surfaces && deriveStairPlanFlight(building, stair)?.riseMeters === 0;
       add(
         "stair.geometry",
-        stair.terrain
-          ? "Connect the floor landing to a different ground height with positive stair dimensions."
-          : "Stairs require positive dimensions and adjacent floors.",
+        level
+          ? "Stairs need landings at different heights. Move one end to another level."
+          : stair.terrain
+            ? "Connect the floor landing to a different ground height with positive stair dimensions."
+            : "Stairs require positive dimensions and adjacent floors.",
         "fatal",
       );
       return;

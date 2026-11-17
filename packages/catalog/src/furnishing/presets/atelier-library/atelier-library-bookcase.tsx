@@ -23,7 +23,7 @@ export function AtelierLibraryBookcase({
       {[0.7, 1.14, 1.58, 2.02].map((height, index) => (
         <group key={height}>
           <LibraryPanel size={[1.12, 0.035, 0.385]} at={[0, height - 0.0175, 0.0175]} />
-          <LibraryBooks shelf={height} alternate={index % 2 === 1} />
+          <LibraryBooks shelf={height} index={index} />
         </group>
       ))}
     </group>

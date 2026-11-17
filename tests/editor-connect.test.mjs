@@ -11,6 +11,10 @@ await withModules(async (load) => {
   const { useConnectEditor } = await load("/apps/web/src/editor-connect/useConnectEditor.ts");
   const { ConnectInspector } = await load("/apps/web/src/editor-connect/ConnectInspector.tsx");
   const { ConnectSidebar } = await load("/apps/web/src/editor-connect/ConnectSidebar.tsx");
+  const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
+  const { createCatalogItem } = await load(
+    "/apps/web/src/editor-preview/furnish/placement/item-creation.ts",
+  );
   const {
     equippedFixtureManifest: manifest,
     connectedCatalogRuntime: snapshot,
@@ -125,6 +129,52 @@ await withModules(async (load) => {
     };
   }
 
+  test("room dashboard choices stage private draft changes without replacing areas, devices or publication", async () => {
+    const harness = await mount(undefined, true);
+    try {
+      const roomId = manifest.floors[0].rooms[0].id;
+      await act(async () => harness.editor.selectRoom(roomId));
+      const before = structuredClone(harness.bindings);
+      const settings = { controls: "home-assistant", view: "automatic", appearance: "cabane" };
+      const radio = harness.dom.window.document.querySelector(
+        'input[type="radio"][value="home-assistant"]',
+      );
+      assert.ok(radio);
+      await act(async () => radio.click());
+      assert.deepEqual(harness.bindings[origin].draft.roomDashboards[roomId], settings);
+      assert.deepEqual(
+        harness.bindings[origin].draft.roomAreaIds,
+        before[origin].draft.roomAreaIds,
+      );
+      assert.deepEqual(
+        harness.bindings[origin].draft.entityIdsBySlotId,
+        before[origin].draft.entityIdsBySlotId,
+      );
+      assert.deepEqual(harness.bindings[origin].published, before[origin].published);
+      assert.match(harness.dom.window.document.body.textContent, /Cabane room controls/);
+      const appearance = [...harness.dom.window.document.querySelectorAll("select")].find(
+        (select) => [...select.options].some((option) => option.text === "Cabane palette"),
+      );
+      assert.equal(appearance.value, "cabane");
+      await act(async () =>
+        harness.editor.setRoomDashboard({ ...settings, appearance: "original" }),
+      );
+      await act(async () =>
+        harness.editor.setRoomDashboard({
+          ...settings,
+          controls: "cabane",
+          appearance: "original",
+        }),
+      );
+      await act(async () => radio.click());
+      assert.equal(harness.editor.profile.roomDashboards[roomId].appearance, "original");
+      await harness.setBindings(before);
+      assert.equal(harness.editor.profile.roomDashboards, undefined);
+    } finally {
+      await harness.close();
+    }
+  });
+
   test("Arrange and Connect slot entry can choose classless smart outlets and retain their mappings", async () => {
     const floor = manifest.floors[0];
     const room = { ...floor.rooms[0] };
@@ -178,6 +228,74 @@ await withModules(async (load) => {
       for (const device of resolved.rooms[room.id].devices) {
         assert.equal(device.entities[0].entityId, entityId);
         assert.deepEqual(device.entities[0].issues, []);
+      }
+    } finally {
+      await harness.close();
+    }
+  });
+
+  test("Connect binds a thermostat to new and previously placed fireplaces", async () => {
+    const floor = manifest.floors[0];
+    const source = floor.rooms[0].devices[0];
+    const item = createCatalogItem(
+      { kind: "device", modelId: "fireplace", definition: stableDeviceRegistry.fireplace },
+      { kind: "absolute", at: [2, 2], elevationMeters: 0, rotationYRadians: 0 },
+      [],
+      [],
+      floor.id,
+    );
+    const newSlot = item.entitySlots[0];
+    assert.ok(newSlot.compatibleDomains.includes("climate"));
+    const oldSlot = {
+      ...newSlot,
+      id: "existing-fireplace-control",
+      compatibleDomains: ["switch", "sensor", "binary_sensor", "light"],
+    };
+    const room = {
+      ...floor.rooms[0],
+      devices: [oldSlot, newSlot].map((slot) => ({
+        ...source,
+        id: `fireplace-${slot.id}`,
+        model: "fireplace",
+        entitySlots: [slot],
+      })),
+    };
+    const actualManifest = {
+      ...manifest,
+      floors: [{ ...floor, rooms: [room, ...floor.rooms.slice(1)] }, ...manifest.floors.slice(1)],
+    };
+    const entityId = "climate.fixture_ac";
+    const empty = engine.createEmptyRuntimeBindingProfile(manifest.home.id);
+    const harness = await mount(protectedBindings(empty), true);
+    try {
+      await harness.render({ actualManifest });
+      for (const { id } of [oldSlot, newSlot]) {
+        await act(async () => assert.equal(harness.editor.selectSlot(id), true));
+        const button = [...harness.dom.window.document.querySelectorAll(".connection-source")].find(
+          (element) => element.getAttribute("aria-label").includes(entityId),
+        );
+        assert.ok(button);
+        assert.doesNotMatch(button.textContent, /On\/off only/);
+        await act(async () => button.click());
+        assert.equal(harness.bindings[origin].draft.entityIdsBySlotId[id], entityId);
+      }
+      const imported = engine.importRuntimeBindingProfile(
+        engine.exportRuntimeBindingProfile(harness.bindings[origin].draft),
+        actualManifest,
+        runtime,
+      );
+      assert.equal(imported.valid, true, JSON.stringify(imported.issues));
+      const resolved = engine.resolveHomeAssistantBindings(
+        actualManifest,
+        imported.profile,
+        runtime,
+      );
+      for (const {
+        entities: [entity],
+      } of resolved.rooms[room.id].devices) {
+        assert.equal(entity.domain, "climate");
+        assert.equal(entity.entityId, entityId);
+        assert.deepEqual(entity.issues, []);
       }
     } finally {
       await harness.close();

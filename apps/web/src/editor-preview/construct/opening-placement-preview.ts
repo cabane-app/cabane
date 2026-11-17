@@ -1,5 +1,6 @@
 import {
   nicheDepthLimit,
+  openingCutTop,
   type DoorConfiguration,
   type FloorEditorDraft,
   type PlanPoint,
@@ -9,6 +10,8 @@ import type { OpeningTool } from "./construction-pointer-events";
 
 export function openingToolDimensions(kind: OpeningTool, door: DoorConfiguration, scale: number) {
   return {
+    kind,
+    ...(kind === "door" ? { variant: door.variant } : {}),
     widthPlanUnits:
       (kind === "door"
         ? door.widthMeters
@@ -25,7 +28,6 @@ export function openingToolDimensions(kind: OpeningTool, door: DoorConfiguration
 
 export function openingPlacementPreview(
   draft: FloorEditorDraft,
-  kind: OpeningTool,
   point: PlanPoint | null,
   placement: { wallId: string; offsetPlanUnits: number } | null,
   dimensions: ReturnType<typeof openingToolDimensions>,
@@ -33,6 +35,9 @@ export function openingPlacementPreview(
   if (!placement) return null;
   const wall = draft.walls.find((wall) => wall.id === placement.wallId);
   if (!wall) return null;
+  const { kind } = dimensions;
+  const wallTop =
+    (wall.heightMeters ?? draft.defaultWallHeightMeters) - (kind === "niche" ? 0.002 : 0);
   const side =
     point &&
     (wall.to[0] - wall.from[0]) * (point[1] - wall.from[1]) -
@@ -45,8 +50,7 @@ export function openingPlacementPreview(
     side,
     valid:
       (kind !== "niche" || nicheDepthLimit(draft, wall.id) >= 0.01) &&
-      dimensions.openingHeightMeters + dimensions.sillHeightMeters <=
-        (wall.heightMeters ?? draft.defaultWallHeightMeters) - (kind === "niche" ? 0.002 : 0) &&
+      openingCutTop(dimensions, wallTop) <= wallTop &&
       openingPlacementIsValid({
         draft,
         wallId: wall.id,

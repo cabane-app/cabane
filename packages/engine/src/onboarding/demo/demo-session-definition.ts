@@ -6,8 +6,10 @@ import type {
   RuntimeBindingProfile,
 } from "../../types";
 import { createDemoDeviceState, demoDomain } from "./demo-device-state";
+import { demoRoomSensor, sampleDemoRoomSensors, type DemoRoomSensor } from "./demo-room-readings";
 
 export interface DemoSessionDefinition {
+  roomSensors: DemoRoomSensor[];
   runtime: HomeAssistantRuntimeSnapshot;
   profile: RuntimeBindingProfile;
   sampleEntityId: EntityId | null;
@@ -60,7 +62,15 @@ export function deriveDemoSessionDefinition(
         : [],
     ),
   );
+  const roomSensors = slots.flatMap(({ domain, room, descriptor, entityId }) => {
+    const reading =
+      domain === "sensor" &&
+      room &&
+      demoRoomSensor(room.id, descriptor.spec.compatibleDeviceClasses?.[0]);
+    return reading ? [{ entityId, reading }] : [];
+  });
   return {
+    roomSensors,
     runtime: {
       status: "connected",
       configured: false,
@@ -98,11 +108,16 @@ export function deriveDemoSessionDefinition(
         name: descriptor.spec.presentation.label,
         original_name: descriptor.spec.presentation.label,
       })),
-      entityStates: Object.fromEntries(
-        slots.map(({ entityId, domain, descriptor }) => [
-          entityId,
-          createDemoDeviceState(entityId, domain, descriptor.spec, night),
-        ]),
+      entityStates: sampleDemoRoomSensors(
+        Object.fromEntries(
+          slots.map(({ entityId, domain, descriptor }) => [
+            entityId,
+            createDemoDeviceState(entityId, domain, descriptor.spec, night),
+          ]),
+        ),
+        roomSensors,
+        night,
+        0,
       ),
     },
     profile: {

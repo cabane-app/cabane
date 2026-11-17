@@ -456,6 +456,9 @@
   .direction-preview[data-editor-mode="furnish"] .editor-panel-switcher {
     --editor-panel-accent: #3e6144;
   }
+  .direction-preview[data-editor-mode="connect"] .editor-panel-switcher {
+    --editor-panel-accent: var(--connect-blue);
+  }
   .editor-panel-switcher button {
     display: flex;
     align-items: center;
@@ -466,7 +469,7 @@
     gap: 6px;
     margin-bottom: -1px;
     border: 0;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2px solid transparent;
     border-radius: 0;
     padding: 10px 4px 7px;
     color: var(--preview-muted);
@@ -476,7 +479,7 @@
       sans-serif;
     cursor: pointer;
   }
-  .editor-panel-switcher button:hover:not(:disabled) {
+  .editor-panel-switcher button:hover:not(:disabled, [aria-pressed="true"]) {
     color: var(--preview-ink);
     background: #eee9df;
   }
@@ -485,24 +488,6 @@
     color: var(--editor-panel-accent);
     background: transparent;
     font-weight: 600;
-  }
-  .editor-panel-switcher span {
-    display: inline-flex;
-    min-width: 20px;
-    height: 20px;
-    align-items: center;
-    justify-content: center;
-    padding-inline: 5px;
-    border-radius: 10px;
-    background: #e7e4d9;
-    color: var(--preview-ink);
-    font-size: var(--editor-text-caption);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-  .editor-panel-switcher button[aria-pressed="true"] span {
-    background: var(--editor-panel-accent);
-    color: var(--preview-paper);
   }
   .direction-preview:not([data-mobile-panel="tools"]) .direction-rail,
   .direction-preview:not([data-mobile-panel="properties"]) .editor-properties-host,

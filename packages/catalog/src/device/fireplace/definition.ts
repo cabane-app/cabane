@@ -9,7 +9,7 @@ export const fireplaceDefinition = defineDeviceModel({
   defaultSize: FIREPLACE_SIZE,
   resizePolicy: { kind: "fixed" },
   preferredPlacement: "wall",
-  supportedDomains: ["switch", "sensor", "binary_sensor", "light"],
+  supportedDomains: ["switch", "sensor", "binary_sensor", "light", "climate"],
   mountKind: "surface",
   bounds: { min: [-0.7, 0, 0], max: [0.7, 1.2, 0.5] },
   outlineContact: true,

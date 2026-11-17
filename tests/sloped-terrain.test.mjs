@@ -23,6 +23,9 @@ await withModules(async (load) => {
   const { resolveTerrainWalking } = await load(
     "/packages/engine/src/navigation/terrain-walking.ts",
   );
+  const { WALK_MAX_STEP_METERS: maxStep } = await load(
+    "/packages/engine/src/navigation/walk-navigation-contract.ts",
+  );
   const { resolveWalkFall } = await load("/packages/engine/src/navigation/walk-fall.ts");
   const { editProject } = await load("/apps/web/src/editor-workspace/editor-project-actions.ts");
   const { TerrainSettingsEditor } = await load(
@@ -92,14 +95,16 @@ await withModules(async (load) => {
   });
 
   test("terrain exit warnings share Walk's step limit and do not require a basement", () => {
-    for (const height of [-1, -0.30001, 0.30001, 1]) {
+    const aboveMaxStep = maxStep + 0.00001;
+    for (const height of [-1, -aboveMaxStep, aboveMaxStep, 1]) {
       const project = exitProject(height);
       const result = api.validateHomeProject(project, emptyExtensions);
       assert.equal(result.valid, true, JSON.stringify(result.issues));
-      assert.equal(exitWarnings(project).length, 1);
+      assert.equal(exitWarnings(project).length, 1, `terrain height ${height} m`);
       assert.equal(exitWarnings(project)[0].severity, "warning");
     }
-    for (const height of [-0.3, 0.3, 0]) assert.equal(exitWarnings(exitProject(height)).length, 0);
+    for (const height of [-maxStep, maxStep, 0])
+      assert.equal(exitWarnings(exitProject(height)).length, 0, `terrain height ${height} m`);
     const project = exitProject();
     const basement = projectWithGarage().floors[0];
     project.floors.unshift(basement);
@@ -310,6 +315,18 @@ await withModules(async (load) => {
         2,
       );
       const scene = renderer.scene.instance;
+      const lawn = scene.getObjectByName("diorama-ground").geometry;
+      await renderer.update(
+        React.createElement(ArchitectureScene, {
+          ...props,
+          manifest: api.composeHomeManifest(structuredClone(project), emptyExtensions),
+        }),
+      );
+      assert.equal(
+        scene.getObjectByName("diorama-ground").geometry,
+        lawn,
+        "recomposing the same grade preserves the ground receiver during Arrange",
+      );
       const heightAt = createTerrainHeightQuery(scene, 0);
       const ray = new Raycaster();
       scene.updateMatrixWorld(true);
@@ -406,9 +423,18 @@ await withModules(async (load) => {
     }
   });
 
-  test("doorway thresholds clear the supporting basement facade on their top and outer face", async () => {
+  test("doorway thresholds clear adjacent deck finishes and the supporting basement facade", async () => {
     const project = exitProject();
     const floor = project.floors[0];
+    floor.outdoorPlatforms = [
+      {
+        id: "entrance-deck",
+        polygon: rectangle(0, -2, 8, 2),
+        defaultEdge: { kind: "open" },
+        edges: [0, 1, 2, 3].map((index) => ({ id: `deck-edge-${index}` })),
+        finish: { kind: "preset", preset: "light-oak" },
+      },
+    ];
     project.floors.unshift(projectWithGarage().floors[0]);
     for (const level of project.floors) {
       level.floorToFloorHeightMeters = 2.8;
@@ -455,7 +481,7 @@ await withModules(async (load) => {
             (hit) =>
               hit.object !== threshold && Math.abs(hit.distance - thresholdHit.distance) < 0.0001,
           ),
-          "no facade face may share the visible threshold surface and flicker",
+          "no deck or facade face may share the visible threshold surface and flicker",
         );
       }
     } finally {

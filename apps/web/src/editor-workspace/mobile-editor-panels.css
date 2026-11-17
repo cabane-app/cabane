@@ -250,14 +250,7 @@
   font: inherit;
   color: inherit;
 }
-.direction-preview[data-mobile-editor="true"]
-  .editor-panel-switcher
-  button[aria-pressed="true"]
-  .editor-panel-label {
-  background: transparent;
-  color: inherit;
-}
-.direction-preview[data-mobile-editor="true"] .editor-panel-count {
+.editor-panel-switcher .editor-panel-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -312,7 +305,7 @@
   overflow: hidden;
 }
 .direction-preview[data-mobile-editor="true"] .editor-sidebar-content {
-  overflow: auto;
+  margin-inline: 0;
   overscroll-behavior: contain;
 }
 .direction-preview[data-mobile-editor="true"] .direction-rail__brand,

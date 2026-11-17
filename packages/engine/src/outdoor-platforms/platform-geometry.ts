@@ -1,3 +1,4 @@
+import { elevationWithPolygon } from "../elevation/surfaces";
 import { indoorRoomsForFloor } from "./platform-rooms";
 import polygonClipping from "polygon-clipping";
 import { pointInsidePolygon, polygonSignedArea } from "../geometry";
@@ -53,6 +54,9 @@ export const platformWithPolygon = (
   return {
     ...platform,
     polygon,
+    ...(platform.elevation
+      ? { elevation: elevationWithPolygon(platform.elevation, platform.polygon, polygon) }
+      : {}),
     edges: polygon.map((_, index) => {
       const oldIndex =
         polygon.length === platform.polygon.length

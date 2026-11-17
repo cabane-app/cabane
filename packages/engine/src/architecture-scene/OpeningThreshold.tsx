@@ -5,6 +5,8 @@ import type { FloorSpec, OpeningSpec, WallSpec } from "../types";
 
 // A small stone lip keeps the top and sides clear of a supporting storey's facade.
 const THRESHOLD_LIP_METERS = 0.002;
+// Outdoor platform finishes sit 2 mm above their slab; keep the stone clear.
+const THRESHOLD_TOP_METERS = 0.004;
 
 /** Support floor-level exterior openings across the drop to outdoor terrain. */
 export function OpeningThreshold({
@@ -28,7 +30,7 @@ export function OpeningThreshold({
       name={`opening-threshold-${opening.id}`}
       position={[
         placement.center[0],
-        (GROUND_ELEVATION_METERS + THRESHOLD_LIP_METERS) / 2,
+        (GROUND_ELEVATION_METERS + THRESHOLD_TOP_METERS) / 2,
         placement.center[1],
       ]}
       rotation={[0, placement.rotationY, 0]}
@@ -38,7 +40,7 @@ export function OpeningThreshold({
       <boxGeometry
         args={[
           placement.widthMeters + THRESHOLD_LIP_METERS * 2,
-          -GROUND_ELEVATION_METERS + THRESHOLD_LIP_METERS,
+          -GROUND_ELEVATION_METERS + THRESHOLD_TOP_METERS,
           wall.thicknessMeters + THRESHOLD_LIP_METERS * 2,
         ]}
       />

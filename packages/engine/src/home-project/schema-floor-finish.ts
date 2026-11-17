@@ -1,3 +1,4 @@
+import { elevationSettings } from "./schema-elevation";
 import { keys, record, string, polygon } from "./schema-json-values";
 import { FLOOR_PATTERN_PRESET_IDS } from "../types";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
@@ -51,7 +52,9 @@ export const floorFinish = (value: unknown, path: string, issues: HomeProjectIss
 export const floorZone = (value: unknown, path: string, issues: HomeProjectIssue[]) => {
   const candidate = record(value, path, issues);
   if (!candidate) return;
-  keys(candidate, ["id", "polygon", "finish"], path, issues);
+  keys(candidate, ["id", "polygon", "finish", "elevation"], path, issues);
+  if (candidate.elevation !== undefined)
+    elevationSettings(candidate.elevation, `${path}.elevation`, issues);
   string(candidate.id, `${path}.id`, issues);
   polygon(candidate.polygon, `${path}.polygon`, issues);
   floorFinish(candidate.finish, `${path}.finish`, issues);

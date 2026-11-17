@@ -1,3 +1,4 @@
+import { updateFloorZone } from "./floor-zone-edit";
 import { addEditorWall } from "./wall-editor-actions";
 import { unusedElementId, unusedElementSerial } from "./editor-element-identity";
 import { constrainWallNiches, reduceNicheOpeningAction } from "./niche-editor-actions";
@@ -8,6 +9,7 @@ import {
 import { validPlatformEdgeConfiguration } from "../../outdoor-platforms/platform-barriers";
 import { DEFAULT_DOOR_CONFIGURATION, doorFromConfiguration } from "../../door-configuration";
 import { deleteWallSpans } from "./delete-wall-spans";
+import { openingCutTop } from "../../geometry";
 import { validHedge } from "../../hedges/hedge-validity";
 /* Interaction concepts were reviewed against ai_room_planner (MIT); this
  * reducer and metre-first state contract are original to Cabane. */
@@ -233,6 +235,7 @@ const reduceDraftAction = (
       const serial = unusedElementSerial(draft, "floor-zone");
       const zone: FloorFinishZoneSpec = {
         id: `${draft.floorId}:floor-zone-${serial}`,
+        ...(action.elevation ? { elevation: action.elevation } : {}),
         polygon: action.polygon,
         finish: action.finish,
       };
@@ -269,32 +272,8 @@ const reduceDraftAction = (
         nextSerial: serial + 1,
       };
     }
-    case "update-floor-zone": {
-      const groundZone = draft.groundZones?.find((zone) => zone.id === action.zoneId);
-      if (groundZone) {
-        const groundZones = draft.groundZones!.map((zone) =>
-          zone.id === action.zoneId ? { ...zone, ...action.changes } : zone,
-        );
-        if (JSON.stringify(groundZones) === JSON.stringify(draft.groundZones)) {
-          return draft;
-        }
-        return { ...draft, groundZones };
-      }
-      const owner = draft.rooms.find((room) =>
-        room.floorZones?.some((zone) => zone.id === action.zoneId),
-      );
-      if (!owner) return draft;
-      const floorZones = owner.floorZones!.map((zone) =>
-        zone.id === action.zoneId ? { ...zone, ...action.changes } : zone,
-      );
-      if (JSON.stringify(floorZones) === JSON.stringify(owner.floorZones)) {
-        return draft;
-      }
-      return {
-        ...draft,
-        rooms: draft.rooms.map((room) => (room.id === owner.id ? { ...room, floorZones } : room)),
-      };
-    }
+    case "update-floor-zone":
+      return updateFloorZone(draft, action);
     case "configure-pool":
     case "update-pool":
       return reducePoolEdit(draft, action);
@@ -580,7 +559,7 @@ export const reduceDraft = (
     return (
       opening.offsetPlanUnits >= 0 &&
       opening.offsetPlanUnits + opening.widthPlanUnits <= length + 1e-7 &&
-      (opening.sillHeightMeters ?? 0) + opening.openingHeightMeters <= height + 1e-7
+      openingCutTop(opening, height) <= height + 1e-7
     );
   });
   return openings.length === next.openings.length ? next : { ...next, openings };

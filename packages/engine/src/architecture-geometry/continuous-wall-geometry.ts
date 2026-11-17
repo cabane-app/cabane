@@ -1,5 +1,5 @@
 import { buildRecessedWallGeometry } from "./recessed-wall-geometry";
-import { planPointToWorld } from "../geometry";
+import { openingCutTop, planPointToWorld } from "../geometry";
 
 import type { FloorSpec, OpeningSpec, WallSpec } from "../types";
 import {
@@ -32,7 +32,7 @@ export function buildContinuousWallGeometry(
       start: opening.offsetFromWallStartPlanUnits * scale,
       end: (opening.offsetFromWallStartPlanUnits + opening.widthPlanUnits) * scale,
       bottom: opening.sillHeightMeters,
-      top: opening.sillHeightMeters + opening.openingHeightMeters,
+      top: openingCutTop(opening, height),
     }));
   const trimIntervals = floor.wallJunctions
     .filter((junction) => junction.wallIds.includes(wall.id))

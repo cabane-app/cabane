@@ -1,6 +1,6 @@
 import { useWorkspaceToolStorage } from "./workspaces/useWorkspaceToolStorage";
 import { installedWalkTools } from "./walk-tools";
-import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useEffectEvent, useMemo, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router";
 import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
 import {
@@ -21,11 +21,17 @@ import { downloadWorkspaceArchive } from "./workspaces/download-workspace-archiv
 import { CONNECT_RETURN_KEY, readEditorReturn } from "./editor-connect/connect-navigation";
 import { editorPath, editorRoutes, workspaceHomePath } from "./editor-routes";
 import { exportWorkspaceBackup } from "./workspaces/workspace-transfer";
+import { HomeEntryTransition } from "./workspaces/HomeEntryTransition";
+import { populatedPublishedHome } from "./workspaces/workspace-presentation";
 import { RoutedHomeEditor } from "./RoutedHomeEditor";
 import {
   ShortcutDeviceIcon,
   ShortcutThumbnailSurface,
 } from "./editor-action-bar/ShortcutDeviceIcon";
+
+const GraphicsPanel = import.meta.env.DEV
+  ? lazy(() => import("./graphics-debug/GraphicsPanel"))
+  : null;
 
 export function ConnectedProduct({
   record: initialRecord,
@@ -65,12 +71,14 @@ export function ConnectedProduct({
   const navigate = useNavigate();
   const location = useLocation();
   const hostSession = useHomeAssistantHostSession();
-  const [entryRequest] = useState<EditorOpenRequest | null>(
-    () => initialRequest ?? (hostSession ? null : readEditorReturn(initialRecord.homeId)),
-  );
+  const [entryRedirect] = useState(() => {
+    const request = initialRequest ?? (hostSession ? null : readEditorReturn(initialRecord.homeId));
+    return request ? { request, locationKey: location.key } : null;
+  });
   // Consume the entry redirect on mount; later route changes belong to the user.
   const restoreEntry = useEffectEvent(() => {
-    if (entryRequest) {
+    if (entryRedirect) {
+      const entryRequest = entryRedirect.request;
       // Preserve OAuth query parameters until the runtime has consumed them.
       const search = new URLSearchParams(location.search);
       if (entryRequest.destination) search.set("action", entryRequest.destination);
@@ -207,6 +215,16 @@ export function ConnectedProduct({
         </ShortcutThumbnailSurface>
       </WalkToolStorageProvider>
     );
+  const dashboard =
+    publishedManifest &&
+    populatedPublishedHome(record) &&
+    !recovery.message &&
+    entryRedirect?.locationKey !== location.key &&
+    (hostSession || !new URLSearchParams(location.search).has("auth_callback")) ? (
+      <HomeEntryTransition project={record.published}>{home}</HomeEntryTransition>
+    ) : (
+      home
+    );
   return (
     <FloorNavigationProvider
       key={record.homeId}
@@ -220,10 +238,15 @@ export function ConnectedProduct({
           </button>
         </div>
       )}
+      {GraphicsPanel && location.pathname !== "/welcome" && (
+        <Suspense fallback={null}>
+          <GraphicsPanel />
+        </Suspense>
+      )}
       <Routes>
         <Route path="/welcome" element={home} />
-        <Route path="/demo" element={home} />
-        <Route path="/workspaces/:workspaceId" element={home} />
+        <Route path="/demo" element={dashboard} />
+        <Route path="/workspaces/:workspaceId" element={dashboard} />
         <Route
           path="/workspaces/:workspaceId/mobile-editor"
           element={

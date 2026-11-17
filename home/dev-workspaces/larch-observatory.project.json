@@ -128,10 +128,10 @@
           },
           "id": "ground-floor:ground-zone-24",
           "polygon": [
-            [3.4, -6.1],
-            [6.6, -6.1],
-            [6.6, -2.7],
-            [3.4, -2.7]
+            [3.4, -8.5],
+            [4.12, -8.5],
+            [4.12, -4.45],
+            [3.4, -3.73]
           ]
         },
         {
@@ -169,8 +169,8 @@
           },
           "id": "ground-floor:ground-zone-54",
           "polygon": [
-            [-12.95, -7.8],
-            [-7.05, -7.8],
+            [-12.95, -8.5],
+            [-7.05, -8.5],
             [-7.05, -0.03],
             [-12.95, -0.03]
           ]
@@ -182,10 +182,10 @@
           },
           "id": "ground-floor:ground-zone-55",
           "polygon": [
-            [3.4, -8.25],
-            [6.6, -8.25],
-            [6.6, -6.1],
-            [3.4, -6.1]
+            [5.88, -8.5],
+            [6.6, -8.5],
+            [6.6, -3.73],
+            [5.88, -4.45]
           ]
         },
         {
@@ -197,8 +197,8 @@
           "polygon": [
             [0.04, -7.3],
             [3.4, -7.3],
-            [3.4, -2.75],
-            [0.04, -2.75]
+            [3.4, -2.7],
+            [0.04, -2.7]
           ]
         },
         {
@@ -210,8 +210,8 @@
           "polygon": [
             [6.6, -7.3],
             [9.96, -7.3],
-            [9.96, -2.75],
-            [6.6, -2.75]
+            [9.96, -2.7],
+            [6.6, -2.7]
           ]
         },
         {
@@ -225,6 +225,55 @@
             [31.7, 0.1],
             [31.7, 12.9],
             [30, 12.9]
+          ]
+        },
+        {
+          "id": "ground-floor:entry-limestone-walk",
+          "finish": {
+            "kind": "preset",
+            "preset": "limestone"
+          },
+          "polygon": [
+            [4.12, -8.5],
+            [5.88, -8.5],
+            [5.88, -4.45],
+            [6.6, -3.73],
+            [6.6, -2.7],
+            [3.4, -2.7],
+            [3.4, -3.73],
+            [4.12, -4.45]
+          ]
+        },
+        {
+          "id": "ground-floor:carport-garden-walk",
+          "finish": {
+            "kind": "preset",
+            "preset": "limestone"
+          },
+          "polygon": [
+            [-7.05, -2.4],
+            [-6.4, -1.75],
+            [-1.45, -1.75],
+            [-0.7, -2.5],
+            [-0.7, -0.48],
+            [-6.4, -0.48],
+            [-7.05, -1.13]
+          ]
+        },
+        {
+          "id": "ground-floor:pool-garden-walk",
+          "finish": {
+            "kind": "preset",
+            "preset": "limestone"
+          },
+          "polygon": [
+            [10.8, -2.5],
+            [11.55, -1.75],
+            [16.85, -1.75],
+            [18.6, 0],
+            [16.8, 0],
+            [16.32, -0.48],
+            [10.8, -0.48]
           ]
         }
       ],
@@ -605,7 +654,7 @@
           ],
           "finish": {
             "kind": "preset",
-            "preset": "light-oak-horizontal"
+            "preset": "limestone"
           },
           "id": "ground-floor:platform-23",
           "polygon": [
@@ -1080,8 +1129,8 @@
           "edgeColor": "#948574",
           "exteriorColor": "#e1d3b9",
           "faceColors": {
-            "left": "#756168",
-            "right": "#eee3ce"
+            "left": "#eee3ce",
+            "right": "#756168"
           },
           "from": [-6, 0],
           "heightMeters": 3.05,
@@ -1094,8 +1143,8 @@
           "edgeColor": "#948574",
           "exteriorColor": "#e1d3b9",
           "faceColors": {
-            "left": "#756168",
-            "right": "#eee3ce"
+            "left": "#eee3ce",
+            "right": "#756168"
           },
           "from": [-13, 0],
           "heightMeters": 3.05,
@@ -1534,7 +1583,7 @@
           "devices": [],
           "floorFinish": {
             "kind": "preset",
-            "preset": "travertine"
+            "preset": "limestone"
           },
           "id": "larch-loft:room-5",
           "name": "Marble bath",
@@ -1543,6 +1592,23 @@
             [0, 13],
             [-6, 13],
             [-6, 8]
+          ],
+          "floorZones": [
+            {
+              "id": "larch-loft:bathing-stone",
+              "finish": {
+                "kind": "preset",
+                "preset": "travertine"
+              },
+              "polygon": [
+                [-6, 8],
+                [-4.3, 8],
+                [-4.3, 10.72],
+                [-3.9, 11.12],
+                [-3.9, 13],
+                [-6, 13]
+              ]
+            }
           ]
         }
       ],
@@ -1759,7 +1825,7 @@
           "edgeColor": "#948574",
           "exteriorColor": "#e1d3b9",
           "faceColors": {
-            "left": "#eee3ce",
+            "left": "#ddd2bc",
             "right": "#eee3ce"
           },
           "from": [0, 8],
@@ -1836,7 +1902,34 @@
           "heightMeters": 2.4,
           "id": "larch-loft:wall-18",
           "thicknessMeters": 0.15,
-          "to": [-6, 13]
+          "to": [-6, 13],
+          "faceFinishes": {
+            "right": {
+              "pattern": "subway-tile",
+              "color": "#a7b1a3",
+              "repeatMeters": 1.12
+            }
+          },
+          "niches": [
+            {
+              "id": "larch-loft:shower-niche",
+              "side": "right",
+              "offsetFromWallStartPlanUnits": 0.55,
+              "widthPlanUnits": 0.86,
+              "bottomMeters": 1.1,
+              "heightMeters": 0.34,
+              "depthMeters": 0.1
+            },
+            {
+              "id": "larch-loft:bathing-niche",
+              "side": "right",
+              "offsetFromWallStartPlanUnits": 3.92,
+              "widthPlanUnits": 0.65,
+              "bottomMeters": 0.95,
+              "heightMeters": 0.33,
+              "depthMeters": 0.1
+            }
+          ]
         },
         {
           "classification": "interior",
@@ -1954,6 +2047,799 @@
     }
   },
   "sceneItems": [
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:platform-53:room-weather-temperature",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Temperature"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:platform-53:room-weather-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:platform-53:room-weather-aqi",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Air quality index"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:platform-53:room-weather",
+      "kind": "device",
+      "modelId": "weather-station",
+      "placement": {
+        "at": [22.27, 15.98],
+        "elevationMeters": 0.751,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793,
+        "surfaceRelative": true
+      },
+      "size": [0.18, 0.12, 0.04],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "larch-loft:platform-30:room-weather-temperature",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Temperature"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:platform-30:room-weather-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:platform-30:room-weather-aqi",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Air quality index"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "larch-loft",
+      "id": "larch-loft:platform-30:room-weather",
+      "kind": "device",
+      "modelId": "weather-station",
+      "placement": {
+        "at": [-10.46, 2.86],
+        "elevationMeters": 0.38,
+        "kind": "absolute",
+        "rotationYRadians": 3.141592653589793,
+        "surfaceRelative": true
+      },
+      "size": [0.18, 0.12, 0.04],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:room-1-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-1-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-1-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:room-1-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 4.2,
+        "rotationOffsetRadians": 0,
+        "wallId": "ground-floor:wall-8"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:room-2-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-2-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-2-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:room-2-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "left",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 4.2,
+        "rotationOffsetRadians": 0,
+        "wallId": "ground-floor:wall-10"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:room-3-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-3-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-3-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:room-3-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 1.2,
+        "rotationOffsetRadians": 0,
+        "wallId": "ground-floor:wall-10"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:room-4-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-4-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-4-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:room-4-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 5.2,
+        "rotationOffsetRadians": 0,
+        "wallId": "ground-floor:wall-8"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:room-5-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-5-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:room-5-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 4.2,
+        "rotationOffsetRadians": 0,
+        "wallId": "ground-floor:wall-36"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:room-6-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-6-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-6-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:room-6-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "left",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 4.7,
+        "rotationOffsetRadians": 0,
+        "wallId": "ground-floor:wall-33"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:room-7-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-7-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-7-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:room-7-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 4.7,
+        "rotationOffsetRadians": 0,
+        "wallId": "ground-floor:wall-33"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "ground-floor:room-8-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-8-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "ground-floor:room-8-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "ground-floor",
+      "id": "ground-floor:room-8-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 2.2,
+        "rotationOffsetRadians": 0,
+        "wallId": "ground-floor:wall-35"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "larch-loft:room-1-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-1-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-1-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "larch-loft",
+      "id": "larch-loft:room-1-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "kind": "absolute",
+        "at": [4.07, 11.12],
+        "elevationMeters": 0.432,
+        "rotationYRadians": 3.141592653589793,
+        "surfaceRelative": true
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "larch-loft:room-2-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-2-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-2-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "larch-loft",
+      "id": "larch-loft:room-2-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "kind": "absolute",
+        "at": [6.52, 12.62],
+        "elevationMeters": 0.802,
+        "rotationYRadians": 3.141592653589793,
+        "surfaceRelative": true
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "larch-loft:room-3-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-3-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-3-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "larch-loft",
+      "id": "larch-loft:room-3-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 1.45,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-17"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "larch-loft:room-4-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-4-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["humidity"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-4-environment-humidity",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Humidity"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "larch-loft",
+      "id": "larch-loft:room-4-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "left",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 1.45,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-17"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
+    {
+      "entitySlots": [
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["aqi"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "primary",
+          "id": "larch-loft:room-5-environment-aqi",
+          "presentation": {
+            "dashboardRole": "primary",
+            "label": "Air quality index"
+          },
+          "required": true
+        },
+        {
+          "autoMap": "manual",
+          "compatibleDeviceClasses": ["temperature"],
+          "compatibleDomains": ["sensor"],
+          "deviceRole": "secondary",
+          "id": "larch-loft:room-5-environment-temperature",
+          "presentation": {
+            "dashboardRole": "secondary",
+            "label": "Temperature"
+          },
+          "required": false
+        }
+      ],
+      "floorId": "larch-loft",
+      "id": "larch-loft:room-5-environment",
+      "kind": "device",
+      "modelId": "air-quality-monitor",
+      "placement": {
+        "depthOffsetMeters": 0.03,
+        "elevationMeters": 1.43,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 1.2,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-19"
+      },
+      "size": [0.1, 0.16, 0.06],
+      "variant": "default"
+    },
     {
       "entitySlots": [
         {
@@ -2240,7 +3126,7 @@
       "kind": "furnishing",
       "modelId": "garden-shrub",
       "placement": {
-        "at": [-5.5, -2.55],
+        "at": [-5.5, -2.91],
         "elevationMeters": -0.049,
         "kind": "absolute",
         "rotationYRadians": 0
@@ -5098,10 +5984,10 @@
       "kind": "furnishing",
       "modelId": "hallway-console-table",
       "placement": {
-        "at": [-3.7, 7.66],
-        "elevationMeters": 0,
+        "at": [-0.278, 6.04],
+        "elevationMeters": 0.013,
         "kind": "absolute",
-        "rotationYRadians": 3.141592653589793
+        "rotationYRadians": -1.5707963267948966
       },
       "size": [1.1, 0.8, 0.35],
       "variant": "default"
@@ -5112,10 +5998,10 @@
       "kind": "furnishing",
       "modelId": "ring-ceramic-vase",
       "placement": {
-        "at": [-3.75, 7.65],
-        "elevationMeters": 0.802,
+        "at": [-0.288, 6.09],
+        "elevationMeters": 0.815,
         "kind": "absolute",
-        "rotationYRadians": 0
+        "rotationYRadians": 1.5707963267948966
       },
       "size": [0.18, 0.3, 0.06],
       "variant": "default"
@@ -5127,12 +6013,12 @@
       "modelId": "framed-wall-art",
       "placement": {
         "depthOffsetMeters": 0.003,
-        "elevationMeters": 1.5,
-        "face": "left",
+        "elevationMeters": 1.4,
+        "face": "right",
         "kind": "wall",
-        "offsetFromWallStartPlanUnits": 2.32,
+        "offsetFromWallStartPlanUnits": 2.04,
         "rotationOffsetRadians": 0,
-        "wallId": "larch-loft:wall-19"
+        "wallId": "larch-loft:wall-12"
       },
       "size": [0.8, 0.6, 0.04],
       "variant": "riviera-cliffs"
@@ -5160,12 +6046,12 @@
       "kind": "furnishing",
       "modelId": "freestanding-bathtub",
       "placement": {
-        "at": [-3, 11.85],
-        "elevationMeters": 0,
+        "at": [-5.34, 11.77],
+        "elevationMeters": 0.013,
         "kind": "absolute",
-        "rotationYRadians": 0
+        "rotationYRadians": -1.5707963267948966
       },
-      "size": [1.7, 0.6, 0.78],
+      "size": [1.95, 0.64, 0.91],
       "variant": "default"
     },
     {
@@ -5174,12 +6060,12 @@
       "kind": "furnishing",
       "modelId": "wicker-towel-basket",
       "placement": {
-        "at": [-1.73, 11.87],
-        "elevationMeters": 0,
+        "at": [-3.56, 12.55],
+        "elevationMeters": 0.474,
         "kind": "absolute",
         "rotationYRadians": 0
       },
-      "size": [0.38, 0.315, 0.31],
+      "size": [0.4, 0.325, 0.33],
       "variant": "default"
     },
     {
@@ -5188,30 +6074,30 @@
       "kind": "furnishing",
       "modelId": "dark-oak-vessel-vanity",
       "placement": {
-        "at": [-5.58, 9.58],
-        "elevationMeters": 0,
+        "at": [-0.382, 9.11],
+        "elevationMeters": 0.013,
         "kind": "absolute",
-        "rotationYRadians": 1.5707963267948966
+        "rotationYRadians": -1.5707963267948966
       },
-      "size": [1.73, 0.88, 0.55],
+      "size": [1.05, 1.14, 0.56],
       "variant": "default"
     },
     {
       "floorId": "larch-loft",
       "id": "5427864e-f8cf-4719-8fd2-52f14d30430f",
       "kind": "furnishing",
-      "modelId": "arched-mirror",
+      "modelId": "thin-arched-mirror",
       "placement": {
-        "depthOffsetMeters": 0.003,
-        "elevationMeters": 1.25,
-        "face": "left",
+        "depthOffsetMeters": 0.002,
+        "elevationMeters": 1.21,
+        "face": "right",
         "kind": "wall",
-        "offsetFromWallStartPlanUnits": 1.6,
+        "offsetFromWallStartPlanUnits": 1.057,
         "rotationOffsetRadians": 0,
-        "wallId": "larch-loft:wall-18"
+        "wallId": "larch-loft:wall-13"
       },
-      "size": [0.54, 1.05, 0.06],
-      "variant": "default"
+      "size": [0.7, 0.88, 0.02],
+      "variant": "brass"
     },
     {
       "floorId": "larch-loft",
@@ -5219,12 +6105,12 @@
       "kind": "furnishing",
       "modelId": "shower-assembly",
       "placement": {
-        "at": [-5.37, 11.67],
-        "elevationMeters": 0,
+        "at": [-5.354, 9.122],
+        "elevationMeters": 0.013,
         "kind": "absolute",
         "rotationYRadians": 1.5707963267948966
       },
-      "size": [2.018, 2.3, 0.908],
+      "size": [2.08, 2.18, 1.138],
       "variant": "default"
     },
     {
@@ -5233,8 +6119,8 @@
       "kind": "furnishing",
       "modelId": "compact-toilet",
       "placement": {
-        "at": [-0.402, 10.2],
-        "elevationMeters": 0,
+        "at": [-0.402, 11.84],
+        "elevationMeters": -0.007,
         "kind": "absolute",
         "rotationYRadians": 1.5707963267948966
       },
@@ -5247,12 +6133,12 @@
       "kind": "furnishing",
       "modelId": "leafy-planter",
       "placement": {
-        "at": [-0.7, 12.45],
-        "elevationMeters": 0,
+        "at": [-1.13, 12.46],
+        "elevationMeters": 0.013,
         "kind": "absolute",
-        "rotationYRadians": 0
+        "rotationYRadians": 0.38
       },
-      "size": [0.8, 1.25, 0.8],
+      "size": [0.65, 1.05, 0.65],
       "variant": "terracotta"
     },
     {
@@ -5275,7 +6161,7 @@
       "lightState": "night-only",
       "modelId": "ceiling-light",
       "placement": {
-        "at": [-4.14, 10.26],
+        "at": [-4.31, 9.48],
         "dropMeters": 0.123,
         "kind": "ceiling",
         "roomId": "larch-loft:room-5",
@@ -5304,7 +6190,7 @@
       "lightState": "night-only",
       "modelId": "ceiling-light",
       "placement": {
-        "at": [-1.6, 11.8],
+        "at": [-2.34, 11.68],
         "dropMeters": 0.123,
         "kind": "ceiling",
         "roomId": "larch-loft:room-5",
@@ -5334,10 +6220,10 @@
       "modelId": "humidity-sensor",
       "placement": {
         "depthOffsetMeters": 0.003,
-        "elevationMeters": 1.65,
+        "elevationMeters": 1.57,
         "face": "right",
         "kind": "wall",
-        "offsetFromWallStartPlanUnits": 2.92,
+        "offsetFromWallStartPlanUnits": 4.5,
         "rotationOffsetRadians": 0,
         "wallId": "larch-loft:wall-13"
       },
@@ -7745,6 +8631,207 @@
         "rotationYRadians": 0
       },
       "size": [0.55, 1.65, 0.45],
+      "variant": "default"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "f19be41e-7776-5995-9039-f2e4c56b0c2c",
+      "kind": "furnishing",
+      "modelId": "brass-bath-shower-column",
+      "placement": {
+        "depthOffsetMeters": 0.002,
+        "elevationMeters": 0.72,
+        "face": "left",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 3.64,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-18"
+      },
+      "size": [0.27, 1.341, 0.46],
+      "variant": "default"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "622fe0bc-3ae5-5278-8740-7e9a872e5be8",
+      "kind": "furnishing",
+      "modelId": "dark-oak-vessel-vanity",
+      "placement": {
+        "at": [-0.382, 10.166],
+        "elevationMeters": 0.013,
+        "kind": "absolute",
+        "rotationYRadians": -1.5707963267948966
+      },
+      "size": [1.05, 1.14, 0.56],
+      "variant": "default"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "68dcbf06-1aa2-50ae-9bf6-6fa1fd5c991a",
+      "kind": "furnishing",
+      "modelId": "thin-arched-mirror",
+      "placement": {
+        "depthOffsetMeters": 0.002,
+        "elevationMeters": 1.21,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 2.113,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-13"
+      },
+      "size": [0.7, 0.88, 0.02],
+      "variant": "brass"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "d622bdb4-449c-572a-9555-6abe094c673d",
+      "kind": "furnishing",
+      "modelId": "white-tapered-wall-sconce",
+      "placement": {
+        "depthOffsetMeters": 0.063,
+        "elevationMeters": 1.5,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 0.55,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-13"
+      },
+      "size": [0.18, 0.23, 0.12],
+      "variant": "default"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "5d52561b-8091-5d76-935b-bb9f1fcded5d",
+      "kind": "furnishing",
+      "modelId": "white-tapered-wall-sconce",
+      "placement": {
+        "depthOffsetMeters": 0.063,
+        "elevationMeters": 1.5,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 2.64,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-13"
+      },
+      "size": [0.18, 0.23, 0.12],
+      "variant": "default"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "c8128b70-8d2a-5002-898f-8ee51c943d3f",
+      "kind": "furnishing",
+      "modelId": "slatted-room-divider",
+      "placement": {
+        "at": [-0.802, 10.98],
+        "elevationMeters": 0.013,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [1.4, 1.73, 0.2],
+      "variant": "default"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "6bd3c163-302b-5bfd-b4cb-5fda52737024",
+      "kind": "furnishing",
+      "modelId": "toilet-paper-holder",
+      "placement": {
+        "depthOffsetMeters": 0.003,
+        "elevationMeters": 0.62,
+        "face": "right",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 3.35,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-13"
+      },
+      "size": [0.18, 0.12, 0.14],
+      "variant": "covered-black"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "5577773e-d2e5-54ba-9144-68362667568d",
+      "kind": "furnishing",
+      "modelId": "oak-slab-bench",
+      "placement": {
+        "at": [-3.16, 12.55],
+        "elevationMeters": 0.013,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [1.6, 0.46, 0.39],
+      "variant": "default"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "c0ff72c2-c10d-579b-8b27-bbf9c2faaf39",
+      "kind": "furnishing",
+      "modelId": "hexagonal-side-table",
+      "placement": {
+        "at": [-4.42, 12.07],
+        "elevationMeters": 0.013,
+        "kind": "absolute",
+        "rotationYRadians": 0.15
+      },
+      "size": [0.48, 0.42, 0.416],
+      "variant": "oak-top"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "13f76015-532e-55d6-a4b5-b9003a93b441",
+      "kind": "furnishing",
+      "modelId": "tabletop-candle",
+      "placement": {
+        "at": [-4.42, 12.07],
+        "elevationMeters": 0.434,
+        "kind": "absolute",
+        "rotationYRadians": 0
+      },
+      "size": [0.11, 0.175, 0.11],
+      "variant": "ivory"
+    },
+    {
+      "floorId": "larch-loft",
+      "id": "20e283d9-665d-5bd0-8124-24b6480f6a7c",
+      "kind": "furnishing",
+      "modelId": "towel-rail",
+      "placement": {
+        "depthOffsetMeters": 0.003,
+        "elevationMeters": 1.18,
+        "face": "left",
+        "kind": "wall",
+        "offsetFromWallStartPlanUnits": 2.46,
+        "rotationOffsetRadians": 0,
+        "wallId": "larch-loft:wall-18"
+      },
+      "size": [0.46, 0.51, 0.1],
+      "variant": "default",
+      "color": "#b5aa94"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "d7b21292-f62b-5a9e-8b96-d7a60b1413fd",
+      "kind": "furnishing",
+      "modelId": "garden-shrub",
+      "placement": {
+        "at": [0.75, -1.05],
+        "elevationMeters": 0.582,
+        "kind": "absolute",
+        "rotationYRadians": -0.23
+      },
+      "size": [0.68, 0.58, 0.67],
+      "variant": "default"
+    },
+    {
+      "floorId": "ground-floor",
+      "id": "113fa3b8-4385-5d31-96f3-34dffcfa7372",
+      "kind": "furnishing",
+      "modelId": "garden-shrub",
+      "placement": {
+        "at": [9.25, -1.05],
+        "elevationMeters": 0.582,
+        "kind": "absolute",
+        "rotationYRadians": 1.48
+      },
+      "size": [0.68, 0.58, 0.67],
       "variant": "default"
     }
   ],

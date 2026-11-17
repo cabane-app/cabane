@@ -23,7 +23,7 @@ export const twoSeatLoveseatDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: true,
-  complexity: { visibleMeshes: 12, triangles: 6000 },
+  complexity: { visibleMeshes: 12, triangles: 6600 },
 });
 
 export const indoorChaiseLongueDefinition = defineFurnishingModel({

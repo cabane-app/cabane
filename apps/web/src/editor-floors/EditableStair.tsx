@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
 import { Plane, Vector3 } from "three";
 import {
-  deriveStairFlight,
+  deriveStairPlanFlight,
   stairFloorIds,
   planPointToWorld,
   worldPointToPlan,
@@ -95,7 +95,7 @@ export function EditableStair({
     onIssuesChange?.(selected && hasDraft ? validation.issues : null);
     return () => onIssuesChange?.(null);
   }, [onIssuesChange, selected, hasDraft, validation.issues]);
-  const flight = deriveStairFlight(building, candidate);
+  const flight = deriveStairPlanFlight(building, candidate);
   const latest = useRef({ onDraggingChange, validation });
   latest.current = { onDraggingChange, validation };
   const release = () => {
@@ -142,7 +142,7 @@ export function EditableStair({
     if (!hit) return null;
     const coordinates = building.coordinates;
     const endpoint = current && (current.handle === "bottom" || current.handle === "top");
-    const originalFlight = current && deriveStairFlight(building, current.original);
+    const originalFlight = current && deriveStairPlanFlight(building, current.original);
     const fixed =
       originalFlight &&
       (current?.handle === "bottom"
@@ -237,8 +237,7 @@ export function EditableStair({
         event.nativeEvent.clientY <= rect.bottom;
       const next =
         current.dragActive && inside ? (update(event, current) ?? current.candidate) : null;
-      if (next) {
-        validation.flush(next);
+      if (next && validation.flush(next).every((issue) => issue.severity === "warning")) {
         onCommit(next);
       }
       release();
@@ -262,7 +261,9 @@ export function EditableStair({
         flight={flight}
         upper={activeFloorId === flight.upperFloorId}
         selected={selected}
-        invalid={validation.issues.some((issue) => issue.severity !== "warning")}
+        invalid={
+          flight.riseMeters === 0 || validation.issues.some((issue) => issue.severity !== "warning")
+        }
         handlers={enabled ? handlers("body") : undefined}
       />
       <ConstructionAlignmentGuide snap={snap} coordinates={building.coordinates} />

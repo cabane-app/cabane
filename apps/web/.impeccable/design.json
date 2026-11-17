@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T22:25:45.983Z",
+  "generatedAt": "2026-11-12T23:09:08.272Z",
   "title": "Design System: Cabane web editor",
   "extensions": {
     "colorMeta": {
@@ -283,6 +283,38 @@
           "oklch(84% 0.0206 311.08)",
           "oklch(95% 0.0206 311.08)"
         ]
+      },
+      "action-icon-gold": {
+        "role": "tertiary",
+        "displayName": "Action Icon Gold"
+      },
+      "action-icon-gold-shade": {
+        "role": "tertiary",
+        "displayName": "Action Icon Gold Shade"
+      },
+      "action-icon-sage": {
+        "role": "tertiary",
+        "displayName": "Action Icon Sage"
+      },
+      "action-icon-sage-shade": {
+        "role": "tertiary",
+        "displayName": "Action Icon Sage Shade"
+      },
+      "action-icon-powder-blue": {
+        "role": "tertiary",
+        "displayName": "Action Icon Powder Blue"
+      },
+      "action-icon-powder-blue-shade": {
+        "role": "tertiary",
+        "displayName": "Action Icon Powder Blue Shade"
+      },
+      "action-icon-cream": {
+        "role": "tertiary",
+        "displayName": "Action Icon Cream"
+      },
+      "action-icon-cream-shade": {
+        "role": "tertiary",
+        "displayName": "Action Icon Cream Shade"
       }
     },
     "typographyMeta": {
@@ -440,6 +472,14 @@
       "description": "The selected Settings mode and sidebar section share a distinct violet accent.",
       "html": "<nav class=\"ds-settings-navigation\" aria-label=\"Settings sections\"><button type=\"button\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/></svg><span>Shortcuts</span><svg class=\"ds-settings-chevron\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"m9 5 7 7-7 7\"/></svg></button><button type=\"button\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M12 15V3m-5 5 5-5 5 5M4 16v5h16v-5\"/></svg><span>Backups</span><svg class=\"ds-settings-chevron\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"m9 5 7 7-7 7\"/></svg></button></nav>",
       "css": ".ds-settings-navigation { display: grid; gap: 4px; font: 400 var(--editor-text-control, 0.875rem)/1.5 \"Roboto\", sans-serif; } .ds-settings-navigation button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 10px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--preview-ink, #2e3835); font: inherit; text-align: left; cursor: pointer; } .ds-settings-navigation button:hover:not(:disabled) { background: #eae5d9; } .ds-settings-navigation button[aria-current=\"page\"], .ds-settings-navigation button[aria-current=\"page\"]:hover { background: var(--editor-settings-selected, #e9e1ef); color: var(--editor-settings-ink, #67517c); font-weight: 600; } .ds-settings-navigation button:focus-visible { outline: 2px solid #985637; outline-offset: 3px; } .ds-settings-navigation button:disabled { cursor: not-allowed; opacity: 0.38; } .ds-settings-navigation button > span { flex: 1; } .ds-settings-navigation svg { flex: none; width: 19px; height: 19px; } .ds-settings-navigation .ds-settings-chevron { width: 14px; height: 14px; } @media (max-width: 760px) { .ds-settings-navigation { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; } .ds-settings-navigation button { flex: none; width: auto; min-height: 44px; gap: 8px; white-space: nowrap; } .ds-settings-navigation .ds-settings-chevron { display: none; } }"
+    },
+    {
+      "name": "Illustrated Scene Action",
+      "kind": "button",
+      "description": "Authored Life-sim hammer in the existing labeled scene-action slot; shared asset family for the dock, grouped menus and shortcut editor.",
+      "refersTo": "scene-action-desktop",
+      "html": "<button type=\"button\" class=\"ds-scene-action\" aria-label=\"Build\" aria-pressed=\"false\"><span class=\"ds-scene-action-icon\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\">\n  <g transform=\"rotate(35 32 32)\">\n    <path d=\"M25 23h14v29a7 7 0 0 1-14 0Z\" fill=\"#66864b\"/>\n    <path d=\"M25 23h10v29a5 5 0 0 1-10 0Z\" fill=\"#92ae6c\"/>\n    <path d=\"M8 22C10 11 20 7 31 9l8 4h8v-3h9v17h-9v-4h-9v5H25v-8l-7-2Z\" fill=\"#c18a2e\"/>\n    <path d=\"M8 18C12 8 21 5 31 7l8 4h8V8h9v14h-9v-3h-9v5H25v-8l-7-2Z\" fill=\"#ffd166\"/>\n    <path d=\"m8 18 10-4 7 2-4 3-11 3Z\" fill=\"#d9a340\"/>\n    <path d=\"M48 8h8v14h-8Z\" fill=\"#e4ac42\"/>\n  </g>\n</svg></span><span class=\"ds-scene-action-label\" aria-hidden=\"true\">Build</span></button>",
+      "css": ".ds-scene-action { display: grid; grid-template-rows: minmax(0, 1fr) auto; align-items: center; justify-items: center; width: 64px; height: 64px; padding: 3px 3px 4px; overflow: hidden; color: white; background: linear-gradient(145deg, rgba(240, 248, 245, 0.22), rgba(35, 53, 50, 0.54)); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 11px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.13), 0 6px 14px rgba(0, 0, 0, 0.16); cursor: pointer; } .ds-scene-action-icon { display: grid; place-items: center; width: 100%; height: 100%; min-height: 0; } .ds-scene-action-icon svg { width: 100%; height: 100%; min-height: 0; filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.16)); } .ds-scene-action-label { min-height: 2lh; color: rgba(250, 255, 252, 0.92); font: 700 clamp(0.45rem, 1.8vw, 0.54rem)/1.15 \"Roboto\", sans-serif; letter-spacing: 0.005em; } .ds-scene-action:hover:not(:disabled) { border-color: rgba(240, 232, 210, 0.55); filter: brightness(1.12); } .ds-scene-action:focus-visible { outline: 2px solid #f0d7a5; outline-offset: 3px; } .ds-scene-action:active:not(:disabled) { transform: scale(0.94); } .ds-scene-action[aria-pressed=\"true\"] { background: linear-gradient(145deg, rgba(105, 235, 219, 0.34), rgba(24, 80, 75, 0.74)); border-color: rgba(154, 255, 241, 0.9); box-shadow: 0 0 0 2px rgba(72, 226, 207, 0.3), 0 0 24px rgba(58, 218, 202, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25); } .ds-scene-action:disabled { opacity: 0.48; filter: saturate(0.45); }"
     }
   ],
   "narrative": {
@@ -449,7 +489,7 @@
       "Warm paper surfaces and dark green-toned text.",
       "Compact English controls with clear object and connection names.",
       "Tonal grouping, restrained borders and soft corners.",
-      "Model thumbnails and the existing SVG icon family.",
+      "Model thumbnails, existing utility SVGs and Life-sim illustrations for scene actions.",
       "Independent visual treatment for selection, connection availability and model display."
     ],
     "rules": [
@@ -470,14 +510,16 @@
       "**Do** keep source search and type filters adjacent to the source list.",
       "**Do** align Connect column headings with the shared connection-heading role.",
       "**Do** keep mobile navigation sequential with clear return actions.",
-      "**Do** reveal reading configuration after the corresponding action."
+      "**Do** reveal reading configuration after the corresponding action.",
+      "**Do** reuse the authored Life-sim scene-action assets across the dock, grouped menus and shortcut editor, and check their silhouettes in mobile action buttons."
     ],
     "donts": [
       "**Don't** use status color as the only explanation of a connection's state.",
       "**Don't** expose entity IDs as the default source label.",
       "**Don't** turn every source row into an elevated card.",
       "**Don't** compress all three Connect columns into the mobile viewport.",
-      "**Don't** replace the incumbent Cabane typography, palette or icon family when extending these surfaces."
+      "**Don't** replace the incumbent Cabane typography, palette or icon family when extending these surfaces.",
+      "**Don't** extend the scene-action illustration treatment to unrelated utility icons, room photos or device previews."
     ]
   }
 }

@@ -1,3 +1,5 @@
+import { GARDEN_GATE_VARIANTS } from "./garden-gate";
+
 /** Shared schema/manifest checks for the discriminated door design. */
 export function doorDesignErrors(
   door: Record<string, unknown>,
@@ -41,6 +43,7 @@ export function doorDesignErrors(
         "flush-knob",
         "flush",
         "plank",
+        ...(door.operation === "hinged" ? GARDEN_GATE_VARIANTS : []),
       ]
   ).includes(String(door.variant)), "variant", "Door style must match its motion.");
   require(["wood", "white"].includes(

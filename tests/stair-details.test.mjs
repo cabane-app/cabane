@@ -12,6 +12,13 @@ await withModules(async (load) => {
   );
   const { StairDetails } = await load("/apps/web/src/editor-floors/StairDetails.tsx");
   const { makeStairProject } = await load("/tests/fixtures/multiple-floors.ts");
+  const { useEditorConstructionTools } = await load(
+    "/apps/web/src/editor-workspace/useEditorConstructionTools.ts",
+  );
+  const { useConstructEditor } = await load(
+    "/apps/web/src/editor-preview/construct/useConstructEditor.ts",
+  );
+
   async function withDom(run) {
     const dom = new JSDOM('<div id="root"></div>');
     const globals = {
@@ -39,6 +46,46 @@ await withModules(async (load) => {
       }
     }
   }
+  test("new same-floor stairs always resolve surfaces, including the default on a single floor", async () => {
+    for (const singleFloor of [true, false])
+      await withDom(async ({ root }) => {
+        const project = makeStairProject();
+        if (singleFloor) project.floors = [project.floors[0]];
+        let tools;
+        function Harness() {
+          const editor = useConstructEditor(project.floors[0]);
+          tools = useEditorConstructionTools(project, project.floors[0].id, "construct", editor);
+          return null;
+        }
+        await act(async () => root.render(React.createElement(Harness)));
+        await act(async () => tools.beginStairPlacement());
+        if (singleFloor) assert.equal(tools.stairPlacement.terrain.surfaces, true);
+        else assert.equal(tools.stairPlacement.upperFloorId, project.floors[1].id);
+        await act(async () => tools.beginStairPlacement("surfaces"));
+        assert.equal(tools.stairPlacement.terrain.surfaces, true);
+        assert.equal(tools.stairPlacement.terrain.floorId, project.floors[0].id);
+      });
+  });
+  test("same-floor properties describe surface support instead of a competing terrain mode", async () =>
+    withDom(async ({ root }) => {
+      const project = makeStairProject();
+      const stair = {
+        id: "local-stair",
+        terrain: { floorId: project.floors[0].id, end: "upper", surfaces: true },
+        at: [-1, 2],
+        widthMeters: 1,
+        runMeters: 2,
+        rotationYRadians: Math.PI / 2,
+      };
+      await act(async () =>
+        root.render(
+          React.createElement(StairDetails, { project, stair, onSave() {}, onCancel() {} }),
+        ),
+      );
+      assert.match(document.body.textContent, /Same floor/);
+      assert.match(document.body.textContent, /Follows both surfaces/);
+      assert.doesNotMatch(document.body.textContent, /To ground|Between surfaces/);
+    }));
   test("railing selection saves immediately with an explicit ascending-side description", async () =>
     withDom(async ({ root, dom }) => {
       const project = makeStairProject(),

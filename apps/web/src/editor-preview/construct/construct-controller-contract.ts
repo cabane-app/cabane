@@ -59,6 +59,8 @@ export interface ConstructEditorController extends ConstructEditorState {
     defaultEdge: import("@cabane/engine").OutdoorPlatformEdgeConfiguration;
   };
   setPlatformSettings: (settings: ConstructEditorController["platformSettings"]) => void;
+  selectedElevationEdge: { areaId: string; index: number } | null;
+  selectElevationEdge: (areaId: string, index: number | null) => void;
   selectedPlatformEdgeId: string | null;
   selectPlatformEdge: (platformId: string, edgeId: string) => void;
   selectPlatform: (id: string) => void;
@@ -91,7 +93,7 @@ export interface ConstructEditorController extends ConstructEditorState {
   addGroundZone: (polygon: Polygon, finish: FloorFinishSpec) => void;
   updateFloorZone: (
     zoneId: string,
-    changes: Partial<Pick<FloorFinishZoneSpec, "polygon" | "finish">>,
+    changes: Partial<Pick<FloorFinishZoneSpec, "polygon" | "finish" | "elevation">>,
   ) => void;
   /** True until the current architectural inputs have finished composition. */
   isSettling: boolean;

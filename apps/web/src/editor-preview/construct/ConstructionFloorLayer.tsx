@@ -1,3 +1,4 @@
+import { floorAreaDrawingOwners } from "./useFloorZoneDrawing";
 import { omitUndefinedProperties } from "@cabane/engine";
 import { ConstructionAlignmentGuide } from "./ConstructionAlignmentGuide";
 import { ConstructionOutlineMeasurements } from "./ConstructionOutlineMeasurements";
@@ -6,8 +7,6 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import {
   createFloorFinishGeometry,
   floorEditorSelectionIncludes,
-  floorZonePointWithinRoom,
-  groundZonePointOutsideFootprint,
   isFloorZoneOutline,
   planPointToWorld,
   type FloorEditorDraft,
@@ -138,7 +137,6 @@ export function ConstructionFloorLayer({
   paintTarget,
   drawingPoints,
   drawingPreview,
-  drawingRoomId,
   onPaintRoom,
   onSelectZone,
   onUpdateZone,
@@ -153,13 +151,10 @@ export function ConstructionFloorLayer({
     onUpdate: onUpdateZone,
     ...(onDraggingChange === undefined ? {} : { onDraggingChange: onDraggingChange }),
   });
-  const lockedRoom = floor.rooms.find((room) => room.id === drawingRoomId);
-  const previewValid =
-    !drawingPreview || !lockedRoom
-      ? !drawingPreview || groundZonePointOutsideFootprint(drawingPreview, floor)
-      : floorZonePointWithinRoom(drawingPreview, lockedRoom.polygon);
   const pending =
     drawingPreview && drawingPoints.length ? [...drawingPoints, drawingPreview] : drawingPoints;
+  const owners = floorAreaDrawingOwners(pending, floor);
+  const previewValid = !drawingPreview || owners.outdoor || owners.rooms.length > 0;
   const zones = [
     ...(floor.groundZones ?? []),
     ...floor.rooms.flatMap((room) => room.floorZones ?? []),

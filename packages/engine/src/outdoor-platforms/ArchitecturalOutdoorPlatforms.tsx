@@ -31,16 +31,28 @@ export function ArchitecturalOutdoorPlatforms({
             buryInTerrain={showGround && !terrain && platform.finish.kind === "grass"}
           />
         ))}
-      <PlatformLowWallRuns barriers={barriers} />
-      {barriers
-        .filter((barrier) => barrier.configuration.kind !== "low-wall")
-        .map((barrier, index) => (
-          <PlatformBarrierModel
-            key={`${barrier.edgeId}-${index}`}
-            name={`platform-barrier-${barrier.edgeId}-${index}`}
-            {...barrier}
+      {(floor.outdoorPlatforms ?? []).map((platform) => (
+        <group
+          key={`barriers-${platform.id}`}
+          position={[0, platform.elevation?.offsetMeters ?? 0, 0]}
+        >
+          <PlatformLowWallRuns
+            barriers={barriers.filter((barrier) => barrier.platformId === platform.id)}
           />
-        ))}
+          {barriers
+            .filter(
+              (barrier) =>
+                barrier.platformId === platform.id && barrier.configuration.kind !== "low-wall",
+            )
+            .map((barrier, index) => (
+              <PlatformBarrierModel
+                key={`${barrier.edgeId}-${index}`}
+                name={`platform-barrier-${barrier.edgeId}-${index}`}
+                {...barrier}
+              />
+            ))}
+        </group>
+      ))}
     </group>
   );
 }

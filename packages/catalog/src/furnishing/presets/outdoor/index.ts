@@ -27,6 +27,10 @@ export {
   SLATTED_FOLDING_TABLE_SIZE,
   SlattedFoldingChair,
   SLATTED_FOLDING_CHAIR_SIZE,
+  MetalBistroChair,
+  METAL_BISTRO_CHAIR_SIZE,
+  RoundBistroTable,
+  ROUND_BISTRO_TABLE_SIZE,
 } from "./bistro";
 export { RetractableAwning, RETRACTABLE_AWNING_SIZE } from "./retractable-awning";
 
@@ -40,3 +44,5 @@ export {
 } from "./teak-lounge";
 
 export { Carport, CARPORT_SIZE } from "./carport";
+
+export * from "./vegetation";

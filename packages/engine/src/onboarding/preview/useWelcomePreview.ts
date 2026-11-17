@@ -17,7 +17,7 @@ function timeLapseProgress(progress: number, from: number, until: number) {
 
 export function useWelcomePreview(manifest: HomeManifest) {
   const reducedMotion = useReducedMotion();
-  const [selectedMode, selectMode] = useState<WelcomePreviewMode>("walk");
+  const [selectedMode, selectMode] = useState<WelcomePreviewMode>("orbit");
   const [playingOverride, setPlayingOverride] = useState<boolean | null>(null);
   const [walkBlocked, setWalkBlocked] = useState(false);
   const [orbitStage, setOrbitStage] = useState<OrbitStage>("Ground floor");

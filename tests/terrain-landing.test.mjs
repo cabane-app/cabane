@@ -12,6 +12,61 @@ await withModules(async (load) => {
   const { resolveWalkLanding } = await load("/packages/engine/src/navigation/walk-landing.ts");
   const { DioramaGround } = await load("/packages/engine/src/architecture-scene/DioramaGround.tsx");
   const { neutralDemoManifest } = await load("/packages/engine/src/demo.ts");
+  const { orbitDioramaFrame } = await load(
+    "/packages/engine/src/architecture-scene/diorama-frame.ts",
+  );
+  test("Orbit's plot includes detached rotated models and walls in world metres", () => {
+    const floor = {
+      ...neutralDemoManifest.floors[0],
+      coordinates: { origin: [10, 10], metersPerPlanUnit: 0.5, scaleBasis: "measured" },
+      footprint: [
+        [10, 10],
+        [18, 10],
+        [18, 18],
+        [10, 18],
+      ],
+      footprintRegions: [],
+      groundZones: [],
+      outdoorPlatforms: [],
+      hedges: [],
+      pools: [],
+      openings: [],
+      rooms: [],
+      walls: [{ id: "garden-wall", from: [10, 24], to: [15, 24], thicknessMeters: 0.2 }],
+    };
+    const manifest = {
+      ...neutralDemoManifest,
+      floors: [floor],
+      stairs: [],
+      extensions: {
+        ...neutralDemoManifest.extensions,
+        furnishingModels: {
+          pergola: { defaultSize: [2, 2, 4], bounds: { min: [0, 0, -1], max: [2, 2, 3] } },
+        },
+      },
+      sceneItems: [
+        {
+          id: "pergola",
+          floorId: floor.id,
+          kind: "furnishing",
+          modelId: "pergola",
+          size: [4, 2, 8],
+          placement: {
+            kind: "absolute",
+            at: [30, 14],
+            elevationMeters: 0,
+            rotationYRadians: Math.PI / 2,
+          },
+        },
+      ],
+    };
+    const frame = orbitDioramaFrame(manifest, {});
+    assert.ok(Math.abs(frame.centerX + frame.width / 2 - 16.9) < 1e-8);
+    assert.ok(Math.abs(frame.centerZ - frame.depth / 2 + 2.9) < 1e-8);
+    assert.ok(Math.abs(frame.centerZ + frame.depth / 2 - 8.1) < 1e-8);
+    manifest.sceneItems[0].modelId = "unknown";
+    assert.equal(orbitDioramaFrame(manifest, {}), null);
+  });
   test("terrain landings use the rendered outline and pool holes, without relaxing other-floor or obstacle checks", async () => {
     const floor = structuredClone(neutralDemoManifest.floors[0]);
     floor.pools = [

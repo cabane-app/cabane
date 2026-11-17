@@ -412,6 +412,20 @@ export function useConnectEditor({
     groups,
     roomDeviceSummaries,
     profile,
+    setRoomDashboard: (settings: NonNullable<RuntimeBindingProfile["roomDashboards"]>[string]) => {
+      const latest = current.current;
+      if (
+        !room ||
+        !latest.manifest.floors.some((floor) =>
+          floor.rooms.some((candidate) => candidate.id === room.id),
+        )
+      )
+        return;
+      commitProfile({
+        ...latest.profile,
+        roomDashboards: { ...latest.profile.roomDashboards, [room.id]: settings },
+      });
+    },
     addItemReading: (itemId: string, entityId: EntityId, presentation?: ReadingPresentation) => {
       if (!disconnected) onAddReading?.(itemId, entityId, presentation);
     },

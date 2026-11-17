@@ -1,7 +1,4 @@
-import {
-  DOOR_FRAME_EXTRA_DEPTH_METERS,
-  DOOR_FRAME_JAMB_WIDTH_METERS,
-} from "./door-frame-dimensions";
+import { DOOR_FRAME_JAMB_WIDTH_METERS } from "./door-frame-dimensions";
 
 const JAMB_CLEARANCE_METERS = 0.003;
 const MEETING_CLEARANCE_METERS = 0.003;
@@ -10,7 +7,7 @@ const MEETING_CLEARANCE_METERS = 0.003;
 export function framedHingedDoorMount(
   width: number,
   leafCount: 1 | 2,
-  wallThickness: number,
+  frameDepth: number,
   leafDepth: number,
   sideSign: -1 | 1,
   hingeFaceOffset = leafDepth / 2,
@@ -27,7 +24,7 @@ export function framedHingedDoorMount(
   return {
     inset,
     leafWidth: Math.max(0.08, Math.min(closedWidth, sweptWidth)),
-    pivotZ: (sideSign * (wallThickness + DOOR_FRAME_EXTRA_DEPTH_METERS)) / 2,
+    pivotZ: (sideSign * frameDepth) / 2,
     leafZ: -sideSign * hingeFaceOffset,
   };
 }

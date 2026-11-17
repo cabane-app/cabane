@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createElement } from "react";
+import { Fragment, createElement } from "react";
 import { create } from "@react-three/test-renderer";
 import { Box3, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
@@ -147,7 +147,7 @@ await withModules(async (load) => {
     }
   });
 
-  test("fireplace flames follow connected and local scene states with reduced motion", async () => {
+  test("fireplace flames and glow follow switch, thermostat and local scene states", async () => {
     const definition = stableDeviceRegistry.fireplace;
     const projected = engine.resolveProjectModels(
       {},
@@ -186,41 +186,82 @@ await withModules(async (load) => {
       available: true,
       stale: false,
     });
-    const element = (mode, state, reducedMotion = false) =>
-      createElement(engine.SceneItemRenderer, {
-        item: { ...base, lightState: mode },
-        floor,
-        furnishingModels: {},
-        deviceModels: stableDeviceRegistry,
-        entityStatesBySlotId: {},
-        liveMediaByEntityId: {},
-        reducedMotion,
-        walkMode: false,
-        onInteract() {},
-        resolvedDevice: {
-          slot: {
-            id: base.id,
-            model: base.modelId,
-            entitySlots,
-            placement: { at: [2, 2], elevationMeters: 0, support: { kind: "surface" } },
-          },
-          entities: state ? [{ slotId: "fire-primary", entityId: state.entityId, state }] : [],
-          issues: [],
+    const thermostat = (action, state = "heat") => ({
+      ...snapshot(state),
+      entityId: "climate.fixture_fireplace",
+      attributes: action ? { hvac_action: action } : {},
+    });
+    const element = (mode, state, reducedMotion = false) => {
+      const item = { ...base, lightState: mode };
+      const resolvedDevice = {
+        slot: {
+          id: base.id,
+          model: base.modelId,
+          entitySlots,
+          placement: { at: [2, 2], elevationMeters: 0, support: { kind: "surface" } },
         },
-      });
+        entities: state
+          ? [
+              {
+                slotId: "fire-primary",
+                entityId: state.entityId,
+                domain: state.entityId.split(".")[0],
+                state,
+              },
+            ]
+          : [],
+        issues: [],
+      };
+      return createElement(
+        Fragment,
+        null,
+        createElement(engine.SceneItemRenderer, {
+          item,
+          floor,
+          furnishingModels: {},
+          deviceModels: stableDeviceRegistry,
+          entityStatesBySlotId: {},
+          liveMediaByEntityId: {},
+          reducedMotion,
+          walkMode: false,
+          onInteract() {},
+          resolvedDevice,
+        }),
+        createElement(engine.HomeAssistantSceneLighting, {
+          floor,
+          deviceModels: stableDeviceRegistry,
+          extensionDeviceModels: {},
+          sceneItems: [item],
+          resolvedBindings: {
+            rooms: { [floor.rooms[0].id]: { devices: [resolvedDevice], sections: {} } },
+            openings: {},
+            issues: [],
+          },
+        }),
+      );
+    };
     const renderer = await create(element("connected", snapshot("off")));
     try {
       for (const [mode, state, active] of [
         ["connected", snapshot("on"), true],
         ["connected", snapshot("off"), false],
         ["connected", { ...snapshot("on"), available: false }, false],
+        ["connected", thermostat("heating"), true],
+        ["connected", thermostat("idle"), false],
+        ["connected", thermostat("off", "off"), false],
+        ["connected", thermostat(undefined), false],
+        ["connected", { ...thermostat("heating"), stale: true }, false],
         ["connected", undefined, false],
         ["always-on", undefined, true],
-        ["always-off", snapshot("on"), false],
+        ["always-on", thermostat("idle"), true],
+        ["always-off", thermostat("heating"), false],
       ]) {
         await renderer.update(element(mode, state));
         const fire = renderer.scene.instance.getObjectByName("fireplace-flames");
-        assert.equal(Boolean(fire), active, `${mode} / ${state?.state ?? "unbound"}`);
+        const glow = renderer.scene.instance.getObjectByName("ha-device-light-fire");
+        const label = `${mode} / ${state?.attributes.hvac_action ?? state?.state ?? "unbound"}`;
+        assert.equal(Boolean(fire), active, `Flames: ${label}`);
+        assert.equal((glow?.intensity ?? 0) > 0, active, `Glow: ${label}`);
         if (!active) continue;
         await renderer.advanceFrames(1, 0.05);
         const scale = fire.scale.y;

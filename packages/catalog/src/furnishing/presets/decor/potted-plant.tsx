@@ -1,4 +1,41 @@
-import { Outlines, ToonMaterial } from "@cabane/engine";
+import { HouseplantFoliage, type HouseplantGrowth } from "./houseplant-foliage";
+import { HouseplantPot } from "./houseplant-pot";
+import type { Point } from "../outdoor/vegetation/geometry";
+
+const growth: HouseplantGrowth = {
+  min: [-0.3075, 0.31, -0.215],
+  max: [0.3075, 1.105, 0.215],
+  bark: "#778958",
+  bladeProfile: [0.015, 0.31, 0.76, 0.97, 1, 0.86, 0.51, 0.17, 0.008],
+  stems: [],
+  leaves: [],
+};
+// Aspidistra petioles rise independently from the soil; older outer blades arch outward.
+for (const [i, [x, y, z]] of [
+  [-0.32, 0.67, 0.03],
+  [0.28, 0.73, 0.12],
+  [-0.19, 0.79, -0.18],
+  [0.19, 0.88, -0.16],
+  [-0.12, 0.9, 0.19],
+  [-0.08, 1.08, -0.12],
+  [0.14, 1.0, 0.08],
+  [0.04, 0.73, 0.22],
+  [0.02, 0.98, -0.2],
+  [-0.24, 0.8, 0.125],
+  [0.21, 0.63, -0.04],
+  [0.075, 1.04, -0.035],
+].entries()) {
+  const start: Point = [x * 0.33, 0.42 + (y - 0.62) * 0.62, z * 0.33];
+  growth.stems.push([[x * 0.13, 0.31, z * 0.13], start, 0.009, 0.005]);
+  growth.leaves.push({
+    start,
+    tip: [x, y, z],
+    width: 0.052 + 0.008 * (i % 3),
+    arch: 0.067 + 0.032 * (i % 3),
+    roll: 0.28 + Math.sin(i * 2.4) * 0.72,
+    color: ["#66885c", "#789767", "#608259"][i % 3],
+  });
+}
 
 export function PottedPlant({
   potColor = "#c6785e",
@@ -7,25 +44,10 @@ export function PottedPlant({
   potColor?: string;
   potOutlineColor?: string;
 }) {
-  const leaves: readonly [number, number, number][] = [
-    [-0.12, 0.54, 0],
-    [0.12, 0.62, 0.03],
-    [0, 0.78, -0.06],
-  ];
-
   return (
     <group name="potted-plant">
-      <mesh position={[0, 0.18, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.22, 0.16, 0.36, 14]} />
-        <ToonMaterial color={potColor} />
-        <Outlines color={potOutlineColor} thickness={0.006} />
-      </mesh>
-      {leaves.map((position, index) => (
-        <mesh key={index} position={position} scale={[0.75, 1.3, 0.55]} castShadow>
-          <sphereGeometry args={[0.25, 12, 8]} />
-          <ToonMaterial color={index === 1 ? "#789767" : "#66885c"} />
-        </mesh>
-      ))}
+      <HouseplantPot radius={0.22} height={0.36} color={potColor} outline={potOutlineColor} />
+      <HouseplantFoliage growth={growth} />
     </group>
   );
 }

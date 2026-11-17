@@ -1,3 +1,4 @@
+import { elevationSettings } from "./schema-elevation";
 import { keys, record, array, string, finite, polygon } from "./schema-json-values";
 import { floorFinish } from "./schema-floor-finish";
 import { addProjectIssue, type HomeProjectIssue } from "./validation-types";
@@ -25,7 +26,7 @@ export const outdoorPlatforms = (value: unknown, path: string, issues: HomeProje
     if (!platform) return;
     keys(
       platform,
-      ["id", "polygon", "finish", "defaultEdge", "edges", "useAsRoom", "roomName"],
+      ["id", "polygon", "finish", "defaultEdge", "edges", "useAsRoom", "roomName", "elevation"],
       p,
       issues,
     );
@@ -38,6 +39,8 @@ export const outdoorPlatforms = (value: unknown, path: string, issues: HomeProje
       );
     if (platform.roomName !== undefined && typeof platform.roomName !== "string")
       string(platform.roomName, `${p}.roomName`, issues);
+    if (platform.elevation !== undefined)
+      elevationSettings(platform.elevation, `${p}.elevation`, issues);
     string(platform.id, `${p}.id`, issues);
     polygon(platform.polygon, `${p}.polygon`, issues);
     floorFinish(platform.finish, `${p}.finish`, issues);

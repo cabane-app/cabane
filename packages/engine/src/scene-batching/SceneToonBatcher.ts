@@ -90,6 +90,7 @@ export class SceneToonBatcher {
     sources.forEach((source, instance) => {
       const ids = new Map<BufferGeometry, number>();
       const tint = source.material as MeshToonMaterial;
+      const mirrored = matrices[instance].determinant() < 0;
       for (const geometry of families[instance]) {
         const packed = new BufferGeometry();
         packed.setAttribute("position", geometry.attributes.position.clone());
@@ -107,7 +108,19 @@ export class SceneToonBatcher {
           colors[vertex * 3 + 2] = tint.color.b * (tint.vertexColors ? color.getZ(vertex) : 1);
         }
         packed.setAttribute("color", new Float32BufferAttribute(colors, 3));
-        ids.set(geometry, mesh.addGeometry(packed));
+        const id = mesh.addGeometry(packed);
+        if (mirrored) {
+          // Three reverses front-face winding for a reflected object. Its transform
+          // is baked here, so reverse the batch's private copy before upload.
+          const { start, count } = mesh.getGeometryRangeAt(id)!;
+          const index = mesh.geometry.index!.array;
+          for (let i = start; i + 2 < start + count; i += 3) {
+            const second = index[i + 1];
+            index[i + 1] = index[i + 2];
+            index[i + 2] = second;
+          }
+        }
+        ids.set(geometry, id);
         packed.dispose();
       }
       geometryIds.push(ids);

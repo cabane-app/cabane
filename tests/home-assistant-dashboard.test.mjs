@@ -367,6 +367,7 @@ await withModules(async (load) => {
     runtime,
     selectedDeviceId = null,
     profile = connectedProfileFixture(),
+    extraProps = {},
   ) => {
     const manifest = connectedManifestFixture(neutralDemoManifest);
     const resolved = resolveHomeAssistantBindings(manifest, profile, runtime);
@@ -374,6 +375,7 @@ await withModules(async (load) => {
     const roomStatus = deriveRoomStatusMap(manifest, profile, resolved, runtime)["demo-room"];
     return renderToStaticMarkup(
       React.createElement(RoomDashboardPanel, {
+        ...extraProps,
         resolved: room,
         roomStatus,
         status: runtime.status,
@@ -389,6 +391,25 @@ await withModules(async (load) => {
       }),
     );
   };
+
+  test("standalone room controls ignore HA dashboard preferences without adding dashboard UI", () => {
+    const profile = connectedProfileFixture();
+    const dashboardSettings = {
+      controls: "home-assistant",
+      view: "/dashboard-home/kitchen",
+      appearance: "cabane",
+    };
+    for (const status of ["connected", "disconnected"]) {
+      const runtime = { ...connectedRuntimeFixture(), status, canMutate: status === "connected" };
+      const ordinary = renderDashboard(runtime, null, profile);
+      const configuredForHa = renderDashboard(runtime, null, profile, { dashboardSettings });
+      assert.equal(configuredForHa, ordinary);
+      assert.doesNotMatch(
+        configuredForHa,
+        /ha-room-dashboard|Show Home Assistant dashboard|Show Cabane room controls|Open in HA/,
+      );
+    }
+  });
 
   const renderModules = (runtime, focusedDeviceId = null) => {
     const manifest = connectedManifestFixture(neutralDemoManifest);

@@ -51,6 +51,9 @@ export function transformItemGroup(
         rotationYRadians: rotationYRadians + angle,
       };
       const support = item.placement;
+      if (support.kind === "absolute" && support.surfaceRelative)
+        next = { ...next, surfaceRelative: true, elevationMeters: support.elevationMeters + dy };
+
       if (
         support.kind === "ceiling" &&
         floor.rooms.some(

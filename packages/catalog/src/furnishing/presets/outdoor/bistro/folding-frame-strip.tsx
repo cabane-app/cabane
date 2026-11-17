@@ -2,7 +2,17 @@ import { ToonMaterial } from "@cabane/engine";
 import { Quaternion, Vector3 } from "three";
 type Point = readonly [number, number, number];
 /** Flat metal strip whose local Y endpoints meet the specified joints. */
-export function FoldingFrameStrip({ name, from, to }: { name: string; from: Point; to: Point }) {
+export function FoldingFrameStrip({
+  name,
+  from,
+  to,
+  color = "#343936",
+}: {
+  name: string;
+  from: Point;
+  to: Point;
+  color?: string;
+}) {
   const start = new Vector3(...from),
     end = new Vector3(...to);
   const direction = end.clone().sub(start);
@@ -21,7 +31,7 @@ export function FoldingFrameStrip({ name, from, to }: { name: string; from: Poin
       receiveShadow
     >
       <boxGeometry args={[0.018, direction.length(), 0.012]} />
-      <ToonMaterial color="#343936" />
+      <ToonMaterial color={color} />
     </mesh>
   );
 }

@@ -31,6 +31,14 @@ export function roomCameraFraming(
     const [x, z] = planPointToWorld(point, floor.coordinates);
     return [0, floor.defaultWallHeightMeters].map((y) => new Vector3(x, elevation + y, z));
   });
+  return frameOrbitPoints(points, viewport, frame);
+}
+
+export function frameOrbitPoints(
+  points: Vector3[],
+  viewport: { width: number; height: number },
+  frame: RoomFocusFrame,
+): OrbitPose {
   const xs = points.map((point) => point.dot(right));
   const ys = points.map((point) => point.dot(up));
   const minX = Math.min(...xs);

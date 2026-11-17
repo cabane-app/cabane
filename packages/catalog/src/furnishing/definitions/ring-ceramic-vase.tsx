@@ -10,5 +10,5 @@ export const ringCeramicVaseDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 5, triangles: 1400 },
+  complexity: { visibleMeshes: 15, triangles: 3000 },
 });

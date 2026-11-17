@@ -1,5 +1,32 @@
 # Home dashboard, controls, and cameras
 
+Opening a published, populated home shows a fullscreen Cabane scene with the
+home’s name, floor and room counts, and a link back to Workspaces. The dashboard
+becomes interactive on its first composited house frame. A validation or WebGL
+failure reveals the recovery screen. Room, floor and camera changes within the
+dashboard keep the current view. Reduced-motion preferences show still artwork.
+
+Rooms can opt into an existing HA dashboard view through Connect → Room controls.
+The native HA panel embeds the selected view at the host's exact origin and hides
+its duplicate navigation. Automatic chooses the room page for the mapped HA area;
+custom views require an explicit choice. The room header, Walk, cleaning and Close
+remain Cabane actions. Device shortcuts still open Cabane's focused device controls.
+**Show Cabane room controls** provides a temporary fallback, with a return action to the
+HA dashboard; it does not rewrite the saved preference. Outside the native HA panel,
+rooms always show the ordinary Cabane controls, even with a saved HA dashboard
+preference. There are no dashboard-specific buttons, messages or view choices in
+the standalone dashboard. The preference remains available in the native panel.
+Draft previews never embed live HA controls. On compact portrait
+screens the HA dashboard uses a taller 74% sheet, a compact room header, and space
+above the action dock so its own scrollable controls remain reachable.
+
+HA owns its embedded cards, dialogs and device commands. Original styling or local
+Cabane theme overrides leave the saved dashboard and global HA theme unchanged.
+The frame and its observers are released when leaving the room or losing the
+connection. Loading failures offer Retry, Open in HA and Cabane controls. Theme and
+navigation overrides depend on HA frontend markup; unknown custom cards keep their
+own behavior and may keep their own appearance.
+
 Home presents an orbital overview, room details, and walk mode. Orbital and editor 3D
 wheel zoom responds immediately to normalized scroll distance, preserving the point
 under the cursor. Small trackpad deltas stay precise; mouse-wheel steps use a
@@ -11,7 +38,9 @@ mid-flight. Dragging, pinching, scrolling or using camera buttons interrupts it;
 selecting the same room again refocuses it. Reduced motion applies the destination
 immediately. Returning to Overview, including Escape or Back, smoothly restores
 the last manually chosen orbital view. The floor summary returns to that same view;
-only Reset view restores default framing. Both floor pickers restore the selected
+only Reset view restores default framing. A fresh single-floor cutaway fits the
+building footprint and wall height. Zoom out to see the gardens and pool, or
+choose Top-down view to fit the whole site. Both floor pickers restore the selected
 floor's remembered view, or default framing on its first visit.
 
 The last floor explicitly chosen in either floor picker is remembered locally in

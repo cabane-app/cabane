@@ -1,3 +1,4 @@
+import { vegetationDefinitions } from "./definitions/vegetation";
 import { atelierLibraryDefinitions } from "./presets/atelier-library/definitions";
 import { observatoryAccentDefinitions } from "./presets/observatory-accents/definitions";
 import { oakStoneKitchenDefinitions } from "./presets/kitchen/oak-stone/definitions";
@@ -352,7 +353,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 3, triangles: 450 },
+    complexity: { visibleMeshes: 3, triangles: 2800 },
   }),
   "c-shaped-sofa-table": defineFurnishingModel({
     component: CShapedSofaTable,
@@ -673,7 +674,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 9, triangles: 1_600 },
+    complexity: { visibleMeshes: 9, triangles: 2_700 },
   }),
   "oak-nightstand": defineFurnishingModel({
     component: OakNightstand,
@@ -697,7 +698,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 10, triangles: 5_000 },
+    complexity: { visibleMeshes: 18, triangles: 6200 },
   }),
   "oak-desk": defineFurnishingModel({
     component: OakDesk,
@@ -772,7 +773,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 20, triangles: 15_500 },
+    complexity: { visibleMeshes: 20, triangles: 17000 },
   }),
   "oak-floating-shelf": defineFurnishingModel({
     component: OakFloatingShelf,
@@ -796,7 +797,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 6, triangles: 2_000 },
+    complexity: { visibleMeshes: 13, triangles: 4300 },
   }),
   "upholstered-armchair": upholsteredArmchairDefinition,
   "chest-of-drawers": defineFurnishingModel({
@@ -841,7 +842,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: false,
-    complexity: { visibleMeshes: 68, triangles: 20_000 },
+    complexity: { visibleMeshes: 70, triangles: 20000 },
   }),
   "low-media-console": defineFurnishingModel({
     component: LowMediaConsole,
@@ -853,7 +854,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 10, triangles: 4_000 },
+    complexity: { visibleMeshes: 16, triangles: 4700 },
   }),
   "three-door-sideboard": defineFurnishingModel({
     component: ThreeDoorSideboard,
@@ -865,7 +866,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 12, triangles: 4_000 },
+    complexity: { visibleMeshes: 32, triangles: 9000 },
   }),
   "kitchen-base-cabinet": defineFurnishingModel({
     variants: KITCHEN_FINISH_VARIANTS,
@@ -928,7 +929,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 16, triangles: 3_500 },
+    complexity: { visibleMeshes: 26, triangles: 3650 },
   }),
   "white-corner-wardrobe": defineFurnishingModel({
     component: WhiteCornerWardrobe,
@@ -977,7 +978,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 10, triangles: 3_500 },
+    complexity: { visibleMeshes: 16, triangles: 4900 },
   }),
   "floating-wall-shelf": defineFurnishingModel({
     component: FloatingWallShelf,
@@ -1032,7 +1033,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "wall",
     outlineContact: true,
-    complexity: { visibleMeshes: 5, triangles: 1_200 },
+    complexity: { visibleMeshes: 5, triangles: 2150 },
   }),
   "concealed-cistern-toilet": defineFurnishingModel({
     defaultRoomType: "bathroom",
@@ -1133,7 +1134,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: false,
-    complexity: { visibleMeshes: 12, triangles: 3_200 },
+    complexity: { visibleMeshes: 10, triangles: 5100 },
   }),
   "wooden-vanity": defineFurnishingModel({
     defaultRoomType: "bathroom",
@@ -1215,7 +1216,7 @@ const stableFurnishingDefinitions = {
     preferredPlacement: "absolute",
     placementEnvironment: "outdoor",
     outlineContact: true,
-    complexity: { visibleMeshes: 7, triangles: 1_200 },
+    complexity: { visibleMeshes: 7, triangles: 4_800 },
   }),
   "olive-tree": defineFurnishingModel({
     component: OliveTree,
@@ -1231,6 +1232,7 @@ const stableFurnishingDefinitions = {
     complexity: { visibleMeshes: 5, triangles: 32_000 },
   }),
   ...outdoorShelterFurnishingDefinitions,
+  ...vegetationDefinitions,
   "garden-shrub": defineFurnishingModel({
     component: GardenShrub,
     label: "Garden shrub",
@@ -1242,7 +1244,7 @@ const stableFurnishingDefinitions = {
     preferredPlacement: "absolute",
     placementEnvironment: "outdoor",
     outlineContact: false,
-    complexity: { visibleMeshes: 4, triangles: 700 },
+    complexity: { visibleMeshes: 4, triangles: 1_500 },
   }),
   "pool-chaise-longue": defineFurnishingModel({
     defaultColor: "#94a58c",
@@ -1259,7 +1261,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 15, triangles: 6000 },
+    complexity: { visibleMeshes: 22, triangles: 8300 },
   }),
   "garden-hedge": defineFurnishingModel({
     component: GardenHedge,

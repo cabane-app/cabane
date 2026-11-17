@@ -1,3 +1,5 @@
+import { elevationWalkable } from "../elevation/walk-support";
+import { localSurfaceAt, terrainLocalHeight } from "../elevation/surfaces";
 import { createTerrainSurface } from "../terrain/terrain-surface";
 import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
 import { GROUND_ELEVATION_METERS } from "../ground-elevation";
@@ -58,13 +60,18 @@ const landingItemColliders = (
   floor: BuildingGeometry["floors"][number],
   floorElevation: number,
   registries: StairModelRegistries = {},
+  supportElevation = floorElevation,
 ): BoxWalkCollider[] =>
   building.sceneItems.flatMap((item) => {
     if (item.floorId !== floor.id) return [];
     try {
       const bounds = stairItemObstacle(item, floor, 0, registries);
       if (bounds) {
-        if (bounds.bottom > 1.8 || bounds.top < 0.08) return [];
+        if (
+          bounds.bottom > supportElevation - floorElevation + 1.8 ||
+          bounds.top < supportElevation - floorElevation + 0.08
+        )
+          return [];
         return [
           {
             kind: "box" as const,
@@ -80,7 +87,11 @@ const landingItemColliders = (
       }
       const transform = resolveItemTransform(item.placement, floor);
       const [x, y, z] = transform.position;
-      if (y > 1.8 || y + item.size[1] < 0.08) return [];
+      if (
+        y > supportElevation - floorElevation + 1.8 ||
+        y + item.size[1] < supportElevation - floorElevation + 0.08
+      )
+        return [];
       const c = Math.abs(Math.cos(transform.rotationYRadians)),
         s = Math.abs(Math.sin(transform.rotationYRadians));
       const halfX = (item.size[0] * c + item.size[2] * s) / 2;
@@ -244,14 +255,33 @@ export const moveBuildingWalker = (
       if (
         !destinationId ||
         !destination ||
-        (endpointFloorId && !pointOnFloorSupport(plan, destination))
+        (endpointFloorId && !pointOnFloorSupport(plan, destination) && !flight.terrain?.surfaces)
       )
         return pose;
       if (hasUnsupportedStairAperture(flights, destinationId, plan, flight.id)) return pose;
       const destinationElevation = levels.find(
         (level) => level.floorId === destinationId,
       )!.elevationMeters;
-      const items = landingItemColliders(building, destination, destinationElevation, registries);
+      if (flight.terrain?.surfaces) {
+        const groundAt = terrainLocalHeight(
+          destination,
+          terrain ? (x, z) => terrain.offsetAt(x, z) : undefined,
+        );
+        const support = localSurfaceAt(destination, plan, groundAt);
+        const surfaceHeight =
+          pointOnFloorSupport(plan, destination) || support.id !== destination.id
+            ? destinationElevation + support.elevation
+            : options.terrainHeight?.(next);
+        if (surfaceHeight == null || Math.abs(surfaceHeight - endElevation) > WALK_MAX_STEP_METERS)
+          return pose;
+      }
+      const items = landingItemColliders(
+        building,
+        destination,
+        destinationElevation,
+        registries,
+        endElevation,
+      );
       const allColliders =
         prepared?.colliders.get(destinationId)?.(openIds, items) ??
         deriveWalkColliders(destination, openIds, items, destinationElevation, terrain);
@@ -345,7 +375,13 @@ export const moveBuildingWalker = (
     !options.allowUnsupported
   )
     return pose;
-  return candidate;
+  const support = localSurfaceAt(floor, plan);
+  const height = floorElevation + support.elevation;
+  if (height < pose.elevation - WALK_MAX_STEP_METERS) return candidate;
+  if (!elevationWalkable(floor, plan)) return pose;
+  return Math.abs(height - pose.elevation) <= WALK_MAX_STEP_METERS
+    ? { ...candidate, elevation: height }
+    : pose;
 };
 export const safeBuildingSpawn = (
   building: BuildingGeometry,
@@ -374,7 +410,15 @@ export const safeBuildingSpawn = (
   const elevation = deriveFloorLevels(building.floors).find(
     (f) => f.floorId === floorId,
   )!.elevationMeters;
-  const items = itemColliders ?? landingItemColliders(building, floor, elevation);
+  const items =
+    itemColliders ??
+    landingItemColliders(
+      building,
+      floor,
+      elevation,
+      {},
+      elevation + (start ? localSurfaceAt(floor, start).elevation : 0),
+    );
   const terrain = building.home?.apartmentFloor
     ? null
     : createTerrainSurface(building.home?.terrain, building.floors);
@@ -389,8 +433,17 @@ export const safeBuildingSpawn = (
       pointOnFloorSupport(start, floor) ||
       (floor.id === building.floors.find((candidate) => !candidate.belowGround)?.id &&
         supportsTerrain?.({ x, z }));
-    return supported && isWalkPointClear({ x, z }, colliders)
-      ? { x, z, yaw: Math.PI, pitch: 0, floorId, elevation }
+    return supported && elevationWalkable(floor, start) && isWalkPointClear({ x, z }, colliders)
+      ? {
+          x,
+          z,
+          yaw: Math.PI,
+          pitch: 0,
+          floorId,
+          elevation:
+            elevation +
+            localSurfaceAt(floor, worldPointToPlan({ x, z }, floor.coordinates)).elevation,
+        }
       : null;
   }
   const spawnRegions = [
@@ -406,7 +459,12 @@ export const safeBuildingSpawn = (
   ];
   for (const room of spawnRegions) {
     const pose = safeSpawnPoseForRoom(room, floor, colliders, WALK_PLAYER_RADIUS);
-    if (!pose || !isWalkPointClear(pose, colliders)) continue;
+    if (
+      !pose ||
+      !isWalkPointClear(pose, colliders) ||
+      !elevationWalkable(floor, worldPointToPlan(pose, floor.coordinates))
+    )
+      continue;
     const point = worldPointToPlan(pose, building.coordinates);
     if (
       building.stairs.some(
@@ -416,7 +474,12 @@ export const safeBuildingSpawn = (
       )
     )
       continue;
-    return { ...pose, floorId, elevation };
+    return {
+      ...pose,
+      floorId,
+      elevation:
+        elevation + localSurfaceAt(floor, worldPointToPlan(pose, floor.coordinates)).elevation,
+    };
   }
   return null;
 };

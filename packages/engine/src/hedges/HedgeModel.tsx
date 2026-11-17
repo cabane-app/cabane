@@ -1,8 +1,14 @@
 import type { HedgeStyle } from "../types";
+import { useContext } from "react";
+import { useGraphicsFeature } from "../graphics-features";
+import { SceneStyleContext } from "../scene-style";
+import type { TerrainSurface } from "../terrain/terrain-surface";
+import type { BoundaryDimensions } from "../boundaries/BoundaryBeam";
+import type { MasonryMiters } from "../boundaries/masonry-miters";
+import { TerrainHedge } from "./TerrainHedge";
+import { BoxwoodCanopy } from "./BoxwoodCanopy";
 import { ClippedHedge } from "./ClippedHedge";
-import { RoundedHedge } from "./RoundedHedge";
-import { BushyHedge } from "./BushyHedge";
-import { MixedPlantHedge } from "./MixedPlantHedge";
+import { NativeHedge } from "./NativeHedge";
 import { IvyCoveredWall } from "./IvyCoveredWall";
 
 import {
@@ -18,23 +24,30 @@ const models = {
   privacy: PrivacyFence,
   "post-rail": PostRailFence,
   "metal-bars": MetalBarFence,
-  masonry: MasonryBoundary,
 
   clipped: ClippedHedge,
-  rounded: RoundedHedge,
-  bushy: BushyHedge,
-  mixed: MixedPlantHedge,
   "ivy-wall": IvyCoveredWall,
 };
 export function HedgeModel({
   style,
+  terrain,
+  masonryMiters,
   ...dimensions
-}: {
+}: BoundaryDimensions & {
   style: HedgeStyle;
-  length: number;
-  height: number;
-  width: number;
+  terrain?: TerrainSurface;
+  masonryMiters?: MasonryMiters | undefined;
 }) {
-  const Model = models[style];
-  return <Model {...dimensions} />;
+  const grounds = useGraphicsFeature("grounds");
+  const natural = useContext(SceneStyleContext) === "default";
+  let model;
+  if (style === "rounded" || style === "bushy" || style === "mixed") {
+    model = <NativeHedge style={style} {...dimensions} />;
+  } else if (style === "masonry") {
+    model = <MasonryBoundary {...dimensions} miters={masonryMiters} />;
+  } else {
+    const Model = grounds && natural && style === "clipped" ? BoxwoodCanopy : models[style];
+    model = <Model {...dimensions} />;
+  }
+  return terrain ? <TerrainHedge terrain={terrain}>{model}</TerrainHedge> : model;
 }

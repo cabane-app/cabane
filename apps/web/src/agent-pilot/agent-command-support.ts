@@ -229,13 +229,19 @@ export function changedProjectSections(draft: HomeProject, published: HomeProjec
 export function itemPlacement(value: unknown, key: string): ItemPlacement {
   const placement = objectParams(value);
   const kind = placement.kind;
-  if (kind === "absolute")
+  if (kind === "absolute") {
+    if (placement.surfaceRelative !== undefined && typeof placement.surfaceRelative !== "boolean")
+      throw new Error(`${key}.surfaceRelative must be a boolean.`);
     return {
       kind,
       at: planPoint(placement.at, `${key}.at`),
       elevationMeters: finiteNumber(placement.elevationMeters, `${key}.elevationMeters`),
       rotationYRadians: finiteNumber(placement.rotationYRadians, `${key}.rotationYRadians`),
+      ...(placement.surfaceRelative === undefined
+        ? {}
+        : { surfaceRelative: placement.surfaceRelative }),
     };
+  }
   if (kind === "wall") {
     const face = placement.face;
     if (face !== "left" && face !== "right") throw new Error(`${key}.face must be left or right.`);

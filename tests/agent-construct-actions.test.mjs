@@ -15,6 +15,9 @@ await withModules(async (load) => {
   const { executeConstructAction } = await load(
     "/apps/web/src/agent-pilot/agent-construct-actions.ts",
   );
+  const { openingPlacementPreview, openingToolDimensions } = await load(
+    "/apps/web/src/editor-preview/construct/opening-placement-preview.ts",
+  );
   const floor = engine.deriveFloorTopology({
     floorId: "ground",
     floorName: "Ground",
@@ -141,6 +144,48 @@ await withModules(async (load) => {
       assert.deepEqual(current().agent.draft.rooms, current().ui.draft.rooms);
       assert.ok(current().agent.draft.walls.some((wall) => wall.from[0] === 4 && wall.to[0] === 4));
       assert.equal(current().agent.history.past.length, 1);
+    });
+  });
+
+  test("a garden gate can stand taller than its freestanding garden wall", async () => {
+    await withEditors(async (current) => {
+      const gate = {
+        ...engine.DEFAULT_DOOR_CONFIGURATION,
+        variant: "garden-anthracite",
+        widthMeters: 1,
+        heightMeters: 1,
+      };
+      await act(async () => current().ui.addWallSegment([0, 6], [4, 6]));
+      const wallId = current().ui.draft.walls.find((wall) => wall.from[1] === 6).id;
+      await act(async () => current().ui.updateWallMetadata(wallId, { heightMeters: 0.5 }));
+      const preview = (configuration) => {
+        const { draft } = current().ui;
+        return openingPlacementPreview(
+          draft,
+          [1, 6],
+          { wallId, offsetPlanUnits: 0.5 },
+          openingToolDimensions("door", configuration, draft.coordinates.metersPerPlanUnit),
+        ).valid;
+      };
+      assert.equal(preview(engine.DEFAULT_DOOR_CONFIGURATION), false);
+      assert.equal(preview(gate), true);
+      await act(async () => {
+        assert.equal(current().ui.placeOpening("door", wallId, 0.5, undefined, gate), true);
+      });
+      const [opening] = current().ui.draft.openings;
+      assert.equal(opening.openingHeightMeters, 1);
+      await act(async () => {
+        assert.equal(current().ui.updateOpening({ ...opening, openingHeightMeters: 1.2 }), true);
+      });
+      await act(async () => current().ui.updateWallMetadata(wallId, { heightMeters: 0.4 }));
+      assert.equal(current().ui.draft.openings[0].openingHeightMeters, 1.2);
+
+      await act(async () => {
+        current().ui.selectWall(wallId);
+        current().ui.setDoorConfiguration(gate);
+      });
+      await act(async () => current().ui.addOpening("door"));
+      assert.equal(current().ui.draft.openings.length, 2);
     });
   });
 

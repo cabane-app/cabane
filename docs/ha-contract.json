@@ -1,9 +1,9 @@
 {
-  "revision": 40,
-  "fingerprint": "47924347b0d8d610f38554cff8046b8190545261e09db7e9fdb5e3627ea4fc60",
-  "summary": "Allow walls to lean (leanMeters)",
+  "revision": 45,
+  "fingerprint": "8e55f3c2f99ea75a7294a534a0ebf9a40f74020de2a1bfbcdd3f275175a9b5be",
+  "summary": "Show existing Home Assistant dashboard views in room controls",
   "breakingChanges": [
-    "No saved fields or IDs change for existing projects. Walls may now store leanMeters; older frontends and Home Assistant panels reject projects that use it."
+    "Private room dashboard preferences require an updated Cabane frontend and matching Home Assistant panel. Existing rooms keep Cabane controls. Update older clients before opening a workspace with these preferences; portable home files and HA dashboard configurations are unchanged."
   ],
   "history": [
     {
@@ -277,6 +277,41 @@
       "summary": "Add a Grass finish for outdoor spaces",
       "breakingChanges": [
         "Workspaces that use the Grass finish require an updated Cabane panel. Update the integration through HACS, restart Home Assistant, and reload before opening one on an older panel."
+      ]
+    },
+    {
+      "revision": 40,
+      "summary": "Allow walls to lean (leanMeters)",
+      "breakingChanges": [
+        "No saved fields or IDs change for existing projects. Walls may now store leanMeters; older frontends and Home Assistant panels reject projects that use it."
+      ]
+    },
+    {
+      "revision": 41,
+      "summary": "Support bounded elevation areas, local ceiling overrides, surface-relative items and same-storey stairs.",
+      "breakingChanges": [
+        "Older clients must update before opening projects containing elevation settings, surface-relative placements or between-surfaces stairs. Existing projects keep their original elevations."
+      ]
+    },
+    {
+      "revision": 42,
+      "summary": "Allow walking up surface changes of up to 40 cm.",
+      "breakingChanges": [
+        "No stored fields change. Walk stepping and accessibility diagnostics now share a 40 cm threshold instead of 30 cm; older panels retain the smaller threshold."
+      ]
+    },
+    {
+      "revision": 43,
+      "summary": "Allow fireplace connections to Home Assistant thermostats",
+      "breakingChanges": [
+        "Workspaces with a newly placed fireplace or a fireplace connected to a climate entity require the updated frontend and Home Assistant panel. Existing fireplaces keep their slot IDs and mappings."
+      ]
+    },
+    {
+      "revision": 44,
+      "summary": "Add hinged garden gates to the Door tool",
+      "breakingChanges": [
+        "Existing doors remain compatible. Workspaces using the new garden gate styles require an updated Cabane frontend and matching Home Assistant panel."
       ]
     }
   ],

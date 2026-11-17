@@ -1,6 +1,17 @@
-# Bundled home
+# Bundled homes
 
-The demo is an ordinary `HomeProject`, using the same schema as portable workspace
+New `/welcome` and `/demo` workspaces use **Larch Observatory** from
+`dev-workspaces/larch-observatory.project.json`. `src/showcase.ts` parses the same
+portable design with a separate demo identity, leaving the development workspace
+independent. The welcome tour walks through its Cathedral hall; demo controls
+simulate its existing device slots. Each indoor room has an air-quality monitor.
+The pool pavilion and sun terrace have weather consoles. Temperature, relative
+humidity and air-quality index update once per minute in the demo.
+
+Existing browser workspaces keep their saved contents. The original seed below
+remains available for legacy connection migration and compatibility fixtures.
+
+The original home is an ordinary `HomeProject`, using the same schema as portable workspace
 import/export. Its checked-in source is split for easier editing:
 
 - `src/layout.json`: building coordinates, floors, rooms, walls, openings, ceilings, and stairs.
@@ -12,6 +23,11 @@ import/export. Its checked-in source is split for easier editing:
 Reusable models belong to `packages/catalog`. Use an existing preset ID before
 creating geometry. The home contains no per-room React compositions or separate
 hand-maintained furnishing inventory. The runtime manifest is derived from the project data.
+
+The fitted kitchen extension uses recessed cream cabinet fronts, brass pulls,
+a ribbed oak peninsula, a beveled worktop and an open sink bowl. These are
+geometry refinements within its existing envelope; its model ID, placements
+and cabinet-lighting slots are unchanged.
 
 Create an importable JSON file with:
 

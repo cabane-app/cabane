@@ -25,9 +25,10 @@ export function TerrainHedge({
         const instances = mesh as InstancedMesh;
         const original = instances.instanceMatrix.array.slice();
         const matrix = new Matrix4();
+        const point = new Vector3();
         for (let i = 0; i < instances.count; i++) {
           instances.getMatrixAt(i, matrix);
-          const point = new Vector3().setFromMatrixPosition(matrix).applyMatrix4(mesh.matrixWorld);
+          point.setFromMatrixPosition(matrix).applyMatrix4(mesh.matrixWorld);
           matrix.elements[13] += terrain.offsetAt(point.x, point.z);
           instances.setMatrixAt(i, matrix);
         }
@@ -45,6 +46,7 @@ export function TerrainHedge({
         // Terrain geometry uses XY as world X/-Z and displaces its local Z.
         const transform = new Matrix4().makeRotationX(Math.PI / 2).multiply(mesh.matrixWorld);
         const conformed = conformToTerrain(original.clone().applyMatrix4(transform), terrain);
+        if (original.userData.preservePlanarFaces) conformed.userData.preservePlanarFaces = true;
         conformed.applyMatrix4(transform.invert());
         conformed.computeBoundingBox();
         conformed.computeBoundingSphere();

@@ -323,7 +323,7 @@ export function useHomeEditorController({
 
   const stairPlacementLocked =
     editingLocked || dragging || reference.adjusting || northOrientation.active;
-  const startStairs = (connection?: "floors" | "terrain") => {
+  const startStairs = (connection?: "floors" | "surfaces") => {
     if (stairPlacementLocked || (unsettled && !stairPlacement)) return;
     setActiveIssueKey(null);
     beginStairPlacement(connection);

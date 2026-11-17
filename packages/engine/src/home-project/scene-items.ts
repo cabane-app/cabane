@@ -1,3 +1,4 @@
+import { localSurfaceAt } from "../elevation/surfaces";
 import { roomIdForItem } from "./item-rooms";
 import { roomsForFloor } from "../outdoor-platforms/platform-rooms";
 import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
@@ -73,7 +74,12 @@ const validatePlacementBounds = (
       !floor.outdoorPlatforms?.some((p) => pointInsidePolygon(placement.at, p.polygon)) &&
       floor.id === project.floors.find((floor) => !floor.belowGround)?.id &&
       pointStrictlyOutsideFloorFootprint(placement.at, floor);
-    const minimumElevation = onOutdoorGround ? GROUND_ELEVATION_METERS : 0;
+    const support = localSurfaceAt(floor, placement.at).elevation;
+    const minimumElevation = placement.surfaceRelative
+      ? 0
+      : onOutdoorGround
+        ? GROUND_ELEVATION_METERS
+        : support;
     if (placement.elevationMeters + minimumY < minimumElevation - 1e-8) {
       addProjectWarning(
         issues,
@@ -81,6 +87,33 @@ const validatePlacementBounds = (
         `${path}.elevationMeters`,
         "The item extends below the floor. Raise it or reset its placement in Arrange.",
       );
+    }
+    if (placement.surfaceRelative) {
+      const transform = resolveItemTransform(placement, floor);
+      const c = Math.cos(transform.rotationYRadians),
+        s = Math.sin(transform.rotationYRadians);
+      const centerHeight = localSurfaceAt(floor, placement.at).elevation;
+      const uneven = [-1, 1].some((x) =>
+        [-1, 1].some((z) => {
+          const dx = (x * item.size[0]) / 2,
+            dz = (z * item.size[2]) / 2;
+          const point = worldPointToPlan(
+            {
+              x: transform.position[0] + dx * c + dz * s,
+              z: transform.position[2] - dx * s + dz * c,
+            },
+            floor.coordinates,
+          );
+          return Math.abs(localSurfaceAt(floor, point).elevation - centerHeight) > 0.03;
+        }),
+      );
+      if (uneven)
+        addProjectWarning(
+          issues,
+          "project.item-uneven-support",
+          path,
+          "The item spans different surface heights. Move it fully onto a flat area.",
+        );
     }
     return;
   }

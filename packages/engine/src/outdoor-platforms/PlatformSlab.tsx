@@ -1,3 +1,4 @@
+import { removeElevationCutWalls } from "../elevation/cut-wall-geometry";
 import { useEffect, useMemo } from "react";
 import { BackSide, DoubleSide, ExtrudeGeometry, Path, Shape, ShapeGeometry } from "three";
 import { ToonMaterial } from "../rendering";
@@ -26,7 +27,9 @@ export function PlatformSlab({
   buryInTerrain?: boolean;
 }) {
   const apertures = useStairSurfaceApertures("floor");
-  const slabTop = buryInTerrain ? GROUND_ELEVATION_METERS - TERRAIN_CLEARANCE_METERS : 0;
+  const slabTop =
+    platform.elevation?.offsetMeters ??
+    (buryInTerrain ? GROUND_ELEVATION_METERS - TERRAIN_CLEARANCE_METERS : 0);
   const pieces = useMemo(
     () =>
       derivePlatformSlabPieces(platform, floor, below).map((piece) => {
@@ -50,17 +53,25 @@ export function PlatformSlab({
           });
           return shape;
         });
-        const depth = slabTop - piece.bottom;
+        const bottom = Math.min(piece.bottom, slabTop - 0.16);
+        const depth = slabTop - bottom;
         return {
           ...piece,
+          bottom,
           slabGeometry:
-            depth > 0 ? new ExtrudeGeometry(shapes, { depth, bevelEnabled: false }) : null,
+            depth > 0
+              ? removeElevationCutWalls(
+                  new ExtrudeGeometry(shapes, { depth, bevelEnabled: false }),
+                  floor.coordinates,
+                  platform.elevation ? [platform.polygon] : [],
+                )
+              : null,
           ceilingGeometry: new ShapeGeometry(shapes),
         };
       }),
     // Slab geometry uses the outline, transform, lower ceiling, apertures and visual top.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [platform.polygon, floor.coordinates, below, apertures, slabTop],
+    [platform.polygon, platform.elevation, floor.coordinates, below, apertures, slabTop],
   );
   useEffect(
     () => () =>

@@ -121,8 +121,8 @@ export function OutdoorWallLanternModel({ state, visualState }: HomeDeviceModelP
         <cylinderGeometry args={[0.008, 0.014, 0.033, 12]} />
         <ToonMaterial color={iron} />
       </mesh>
-      <mesh position={[0, 0.354, 0.31]}>
-        <cylinderGeometry args={[0.018, 0.018, 0.052, 12]} />
+      <mesh position={[0, 0.358, 0.31]}>
+        <cylinderGeometry args={[0.018, 0.018, 0.06, 12]} />
         <ToonMaterial color="#79736a" />
       </mesh>
       <mesh name="outdoor-lantern-bulb" position={[0, 0.29, 0.31]} scale={[1, 1.5, 1]}>

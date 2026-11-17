@@ -1,4 +1,4 @@
-import type { FloorFinishSpec } from "@cabane/engine";
+import type { FloorFinishSpec, FloorEditorTool } from "@cabane/engine";
 
 export type FloorPaintTarget = "room" | "custom-area" | "outdoor-platform";
 
@@ -11,3 +11,9 @@ export interface FloorPaintingInspector {
   onTargetChange: (target: FloorPaintTarget) => void;
   onCancelDrawing: () => void;
 }
+
+export const isAreaPaintTarget = (target: FloorPaintTarget, tool: FloorEditorTool = "floor") =>
+  tool === "floor" && target === "custom-area";
+
+export const openingToolFor = (tool: FloorEditorTool) =>
+  tool === "door" || tool === "window" || tool === "passage" || tool === "niche" ? tool : null;

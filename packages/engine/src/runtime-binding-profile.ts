@@ -1,4 +1,5 @@
 import { isWeatherSource } from "./weather/weather-state";
+import { isRoomDashboardSettings } from "./room-dashboards/room-dashboard";
 import { omitUndefinedProperties } from "./defined-properties";
 import { bindingDomainMatchRank } from "./binding-slot-compatibility";
 import { entityAreaId } from "./binding-entity-candidates";
@@ -73,6 +74,25 @@ export const validateRuntimeBindingProfile = (
     add("profile.slots", "entityIdsBySlotId", "Entity mappings must be an object.");
   const roomIds = new Set(manifest.floors.flatMap((floor) => floor.rooms).map((room) => room.id));
   const descriptors = collectBindingSlots(manifest);
+  if (input.roomDashboards !== undefined) {
+    if (!isObject(input.roomDashboards))
+      add(
+        "profile.room-dashboards",
+        "roomDashboards",
+        "Room dashboard settings must be an object.",
+      );
+    else
+      for (const [id, settings] of Object.entries(input.roomDashboards)) {
+        if (!roomIds.has(id))
+          add("profile.room-id", `roomDashboards.${id}`, `Unknown room ID "${id}".`);
+        if (!isRoomDashboardSettings(settings))
+          add(
+            "profile.room-dashboard",
+            `roomDashboards.${id}`,
+            "Choose room controls, a local dashboard view, and an appearance.",
+          );
+      }
+  }
   const descriptorsById = new Map(descriptors.map((descriptor) => [descriptor.slotId, descriptor]));
   const claimedAreas = new Map<string, string>();
   if (isObject(input.roomAreaIds))
@@ -192,6 +212,13 @@ export const validateRuntimeBindingProfile = (
           ...(isWeatherSource(input.weatherSource) ? { weatherSource: input.weatherSource } : {}),
           schemaVersion: 1 as const,
           homeId: input.homeId as string,
+          ...(input.roomDashboards !== undefined
+            ? {
+                roomDashboards: structuredClone(input.roomDashboards) as NonNullable<
+                  RuntimeBindingProfile["roomDashboards"]
+                >,
+              }
+            : {}),
           roomAreaIds: { ...(input.roomAreaIds as Record<string, string>) },
           entityIdsBySlotId: { ...(input.entityIdsBySlotId as Record<string, EntityId>) },
           ...(input.actionEntityIdsByShortcutId !== undefined
@@ -214,6 +241,7 @@ export const exportRuntimeBindingProfile = (profile: RuntimeBindingProfile) =>
       weatherSource: profile.weatherSource,
       schemaVersion: profile.schemaVersion,
       homeId: profile.homeId,
+      roomDashboards: profile.roomDashboards,
       roomAreaIds: profile.roomAreaIds,
       entityIdsBySlotId: profile.entityIdsBySlotId,
       actionEntityIdsByShortcutId: profile.actionEntityIdsByShortcutId,

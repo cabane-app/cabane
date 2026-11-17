@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import { Box3, Vector3 } from "three";
+import { Box3, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
@@ -11,6 +11,109 @@ await withModules(async (load) => {
   );
   const engine = await load("/packages/engine/src/index.ts");
   const { ownerHomeProject } = await load("/tests/fixtures/bundled-home.ts");
+  const { DoorFrame } = await load(
+    "/packages/catalog/src/architecture/presets/openings/doors/door-frame.tsx",
+  );
+  const { SceneStyleContext } = await load("/packages/engine/src/scene-style.ts");
+  const { GlassDoorHandle } = await load(
+    "/packages/catalog/src/architecture/presets/openings/doors/glass-door-handle.tsx",
+  );
+  test("glass pulls share buffers until the last copy unmounts and keep independent materials", async () => {
+    const handle = () => create(createElement(GlassDoorHandle, { width: 0.9, side: 1 }));
+    const first = await handle();
+    const second = await handle();
+    const pull = (renderer) =>
+      renderer.scene.instance.getObjectByName("opening-glass-door-handle").children[0];
+    const geometry = pull(first).geometry;
+    let disposals = 0;
+    geometry.addEventListener("dispose", () => disposals++);
+    assert.equal(pull(second).geometry, geometry);
+    assert.notEqual(pull(second).material, pull(first).material);
+    await first.unmount();
+    assert.equal(disposals, 0);
+    await second.unmount();
+    assert.equal(disposals, 1);
+  });
+
+  test("switching joinery style keeps the two jambs and head renderable", async () => {
+    const frame = (style) =>
+      createElement(
+        SceneStyleContext.Provider,
+        { value: style },
+        createElement(DoorFrame, { width: 0.9, height: 2.1, depth: 0.18 }),
+      );
+    const renderer = await create(frame("default"));
+    try {
+      for (const style of ["sims", "default", "sims"]) {
+        await renderer.update(frame(style));
+        const scene = renderer.scene.instance;
+        if (style === "default") {
+          const casing = scene.getObjectByName("opening-door-frame-casing");
+          assert.ok(casing?.geometry.getAttribute("position")?.count > 0);
+          assert.ok(casing.material.isMeshStandardMaterial);
+          assert.equal(casing.geometry.groups.length, 3);
+          assert.ok(casing.geometry.groups.every(({ count }) => count > 0));
+        } else {
+          for (let member = 0; member < 3; member++) {
+            const mesh = scene.getObjectByName(`opening-door-frame-${member}`);
+            assert.ok(mesh.geometry.getAttribute("position")?.count > 0);
+            assert.equal(mesh.geometry.type, "BoxGeometry");
+          }
+        }
+      }
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
+  test("garden gates cut the wall above the leaf in both wall renderers", () => {
+    const wall = {
+      id: "garden-wall",
+      from: [0, 0],
+      to: [4, 0],
+      classification: "interior",
+      thicknessMeters: 0.16,
+      heightMeters: 1.2,
+    };
+    const gate = engine.doorFromConfiguration(
+      { ...engine.DEFAULT_DOOR_CONFIGURATION, variant: "garden-anthracite", heightMeters: 1 },
+      1,
+      { id: "gate", wallId: wall.id, offsetFromWallStartPlanUnits: 1 },
+    );
+    const floor = {
+      ...engine.neutralDemoManifest.floors[0],
+      coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "inferred" },
+      walls: [wall],
+      wallJunctions: [],
+      rooms: [],
+      footprint: [],
+      openings: [gate],
+    };
+    const material = new MeshBasicMaterial({ side: DoubleSide });
+    try {
+      for (const variant of ["panel", "garden-anthracite"]) {
+        const openings = [{ ...gate, variant }];
+        const geometries = [
+          [engine.buildContinuousWallGeometry(wall, floor, openings)],
+          engine
+            .buildArchitecturalWallGeometries({ ...floor, openings })
+            .map(({ geometry }) => geometry),
+        ];
+        for (const group of geometries) {
+          const meshes = group.map((geometry) => new Mesh(geometry, material));
+          const crossesWall = (x) =>
+            new Raycaster(new Vector3(x, 1.1, -1), new Vector3(0, 0, 1)).intersectObjects(meshes)
+              .length > 0;
+          assert.ok(crossesWall(0.5), "the wall remains on either side");
+          assert.equal(crossesWall(1.45), variant === "panel");
+          for (const geometry of group) geometry.dispose();
+        }
+      }
+    } finally {
+      material.dispose();
+    }
+  });
+
   test("opening colors survive portable parsing and recolor every door/window family with exact reset", async () => {
     const project = structuredClone(ownerHomeProject);
     const floor = project.floors[0];
@@ -36,6 +139,9 @@ await withModules(async (load) => {
         "french",
         "full-glass",
         "steel-arched",
+        "garden-wood",
+        "garden-anthracite",
+        "garden-metal",
       ].map((variant) => ({ ...door, variant })),
       { ...door, operation: "sliding", variant: "plank" },
       { ...door, operation: "roll-up", variant: "slatted", leafCount: undefined },
@@ -58,7 +164,10 @@ await withModules(async (load) => {
       const colors = () => {
         const found = [];
         renderer.scene.instance.traverse((object) => {
-          if (object.isMesh && object.material?.type === "MeshToonMaterial")
+          if (
+            object.isMesh &&
+            (object.material?.isMeshToonMaterial || object.material?.isMeshStandardMaterial)
+          )
             found.push(object.material.color.getHexString());
         });
         return found.sort();

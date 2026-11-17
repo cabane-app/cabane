@@ -1,3 +1,4 @@
+import { BoxedCushion } from "../../living-room/sofa-upholstery/boxed-cushion";
 import { RoundedFurniturePanel } from "../../construction";
 
 export const CHAISE_BACK_ANGLE_RADIANS = (42 * Math.PI) / 180;
@@ -36,31 +37,28 @@ export function PoolChaiseUpholstery({
             color="#bc8064"
             radius={0.014}
           />
-          <RoundedFurniturePanel
+          <BoxedCushion
             name="ivory-lumbar-cushion"
             size={[0.48, 0.12, 0.24]}
             position={[0, 0.36, -0.24]}
             color="#e8ddc4"
-            radius={0.05}
           />
         </>
       )}
-      <RoundedFurniturePanel
+      <BoxedCushion
         name="pool-chaise-seat-cushion"
         size={[0.68, 0.09, 1.5]}
         position={[0, 0.255, 0.3]}
         color={color ?? sage}
         outlineColor={sageOutline}
-        radius={0.035}
       />
-      <RoundedFurniturePanel
+      <BoxedCushion
         name="pool-chaise-reclined-back-cushion"
         size={[0.68, BACK_THICKNESS, BACK_DEPTH]}
         position={[...CHAISE_BACK_CENTER]}
         rotation={[CHAISE_BACK_ANGLE_RADIANS, 0, 0]}
         color={color ?? sage}
         outlineColor={sageOutline}
-        radius={0.035}
       />
     </group>
   );

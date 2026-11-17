@@ -11,5 +11,5 @@ export const sageTubArmchairDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: true,
-  complexity: { visibleMeshes: 9, triangles: 2300 },
+  complexity: { visibleMeshes: 7, triangles: 3500 },
 });

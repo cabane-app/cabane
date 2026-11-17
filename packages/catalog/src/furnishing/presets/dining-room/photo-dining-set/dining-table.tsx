@@ -2,6 +2,8 @@ import { LatheGeometry, Vector2 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { cord, DiningOakMesh, timber } from "./dining-construction";
 
+import { tableAprons } from "./table-aprons";
+
 const top = new LatheGeometry(
   [
     [0, 0.728],
@@ -20,10 +22,6 @@ const members = [-1, 1].flatMap((x) =>
     timber([x * 0.382, 0, z * 0.332], [x * 0.322, 0.737, z * 0.272], 0.017, 0.032),
   ),
 );
-for (const s of [-1, 1]) {
-  members.push(timber([-0.325, 0.696, s * 0.274], [0.325, 0.696, s * 0.274], 0.027));
-  members.push(timber([s * 0.323, 0.696, -0.274], [s * 0.323, 0.696, 0.274], 0.027));
-}
 const frame = mergeGeometries(members);
 members.forEach((g) => g.dispose());
 // A handful of long, quiet grain strokes follow the timber instead of concentric rings.
@@ -46,7 +44,8 @@ strokes.forEach((g) => g.dispose());
 export function CustomDiningTable() {
   return (
     <group name="thin-rounded-oak-dining-table">
-      <DiningOakMesh name="tapered-table-legs-and-aprons" geometry={frame} color="#af7f49" />
+      <DiningOakMesh name="tapered-table-legs" geometry={frame} color="#af7f49" />
+      <DiningOakMesh name="arched-oak-aprons" geometry={tableAprons} color="#af7f49" />
       <DiningOakMesh name="soft-bevel-solid-oak-top" geometry={top} color="#b48650" />
       <DiningOakMesh
         name="subtle-longitudinal-oak-grain"

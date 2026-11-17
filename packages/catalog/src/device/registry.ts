@@ -307,7 +307,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
       distance: 4.5,
     },
     interaction,
-    complexity: { visibleMeshes: 5, triangles: 420 },
+    complexity: { visibleMeshes: 10, triangles: 4600 },
   }),
   "rattan-bell-pendant": rattanBellPendantDeviceDefinition,
   "round-globe-wall-lamp": roundGlobeWallLampDeviceDefinition,

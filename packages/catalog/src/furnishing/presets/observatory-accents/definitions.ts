@@ -19,7 +19,7 @@ export const observatoryAccentDefinitions = {
     resizePolicy: { kind: "uniform" },
     preferredPlacement: "absolute",
     outlineContact: false,
-    complexity: { visibleMeshes: 7, triangles: 3000 },
+    complexity: { visibleMeshes: 12, triangles: 5700 },
   }),
   "loop-sculpture": defineFurnishingModel({
     component: LoopSculpture,

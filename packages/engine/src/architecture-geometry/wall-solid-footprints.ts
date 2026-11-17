@@ -15,6 +15,7 @@ import {
   EPSILON,
   Horizontal,
   JUNCTION_SEAM_OVERLAP_METERS,
+  OPENING_CUT_MARGIN_METERS,
   WallPlanFloor,
 } from "./architecture-geometry-contract";
 import { wallExteriorNormal, wallFrame } from "./wall-coordinate-frame";
@@ -204,10 +205,11 @@ export const openingCutPolygon = (wall: WallSpec, opening: OpeningSpec, floor: F
   // clipping-grid rounding of diagonal endpoints can otherwise leave a
   // sub-micron sliver that extrudes into an opaque, full-height wall face.
   return orientedWallPolygon(
-    { ...wall, thicknessMeters: wall.thicknessMeters + 0.002 },
+    { ...wall, thicknessMeters: wall.thicknessMeters + 2 * OPENING_CUT_MARGIN_METERS },
     floor,
-    opening.offsetFromWallStartPlanUnits * scale - 0.001,
-    (opening.offsetFromWallStartPlanUnits + opening.widthPlanUnits) * scale + 0.001,
+    opening.offsetFromWallStartPlanUnits * scale - OPENING_CUT_MARGIN_METERS,
+    (opening.offsetFromWallStartPlanUnits + opening.widthPlanUnits) * scale +
+      OPENING_CUT_MARGIN_METERS,
   );
 };
 

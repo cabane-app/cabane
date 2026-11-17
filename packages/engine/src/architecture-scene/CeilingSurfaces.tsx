@@ -1,3 +1,5 @@
+import { CeilingSteps } from "../elevation/CeilingSteps";
+import { ceilingOverrides } from "../elevation/ceilings";
 import { indoorRoomsForFloor } from "../outdoor-platforms/platform-rooms";
 import {
   cutSurfaceShapes,
@@ -31,15 +33,21 @@ function FlatCeilingSlab({
   polygon,
   floor,
   height,
+  override = false,
 }: {
   polygon: Polygon;
   floor: FloorSpec;
   height: number;
+  override?: boolean;
 }) {
   const apertures = useStairSurfaceApertures("ceiling");
   const shape = useMemo(
-    () => cutSurfaceShapes(leanPlanPolygon(polygon, floor, height), floor.coordinates, apertures),
-    [floor, polygon, apertures, height],
+    () =>
+      cutSurfaceShapes(leanPlanPolygon(polygon, floor, height), floor.coordinates, [
+        ...apertures,
+        ...(override ? [] : ceilingOverrides(floor).map((area) => area.polygon)),
+      ]),
+    [floor, polygon, apertures, height, override],
   );
   return (
     <mesh position={[0, height, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
@@ -99,6 +107,16 @@ export function CeilingSurfaces({
   const allRoomIds = new Set(rooms.map((room) => room.id));
   return (
     <group name="floor-ceilings">
+      {ceilingOverrides(floor).length > 0 && <CeilingSteps floor={floor} />}
+      {ceilingOverrides(floor).map((area) => (
+        <FlatCeilingSlab
+          key={area.id}
+          floor={floor}
+          polygon={area.polygon}
+          height={area.elevation.offsetMeters + area.elevation.ceilingHeightMeters!}
+          override
+        />
+      ))}
       {ceilings.flatMap((ceiling) => {
         if (ceiling.kind === "sloped") {
           return ceiling.planes.flatMap((plane) => {
@@ -160,7 +178,12 @@ function SlopedCeilingSurface({ floor, plane }: { floor: FloorSpec; plane: Ceili
         ? [polygon]
         : [];
     });
-    const result = new ShapeGeometry(cutSurfaceShapes(plane.boundary, coordinates, cuts));
+    const result = new ShapeGeometry(
+      cutSurfaceShapes(plane.boundary, coordinates, [
+        ...cuts,
+        ...ceilingOverrides(floor).map((area) => area.polygon),
+      ]),
+    );
     const positions = result.getAttribute("position");
     for (let index = 0; index < positions.count; index += 1) {
       const x = positions.getX(index);
@@ -170,7 +193,7 @@ function SlopedCeilingSurface({ floor, plane }: { floor: FloorSpec; plane: Ceili
     }
     result.computeVertexNormals();
     return result;
-  }, [apertures, floor.coordinates, plane]);
+  }, [apertures, floor, plane]);
   useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (

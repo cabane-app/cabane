@@ -1,9 +1,16 @@
 import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
-import { RoundedFurniturePanel } from "../construction";
-
+import { Shape, Path } from "three";
+import { RoundedFurniturePanel as Panel } from "../construction";
 export const LOW_MEDIA_CONSOLE_SIZE = [1.6, 0.55, 0.42] as const;
-
-/** Standalone low media cabinet; intentionally does not include a television. */
+const back = new Shape();
+back.moveTo(-0.775, 0.09);
+back.lineTo(0.775, 0.09);
+back.lineTo(0.775, 0.525);
+back.lineTo(-0.775, 0.525);
+back.closePath();
+const port = new Path();
+port.absarc(0, 0.39, 0.033, 0, Math.PI * 2, true);
+back.holes.push(port);
 export function LowMediaConsole({ size = LOW_MEDIA_CONSOLE_SIZE }: { size?: SceneItemSize }) {
   return (
     <group
@@ -13,49 +20,63 @@ export function LowMediaConsole({ size = LOW_MEDIA_CONSOLE_SIZE }: { size?: Scen
     >
       {[-0.68, 0.68].flatMap((x) =>
         [-0.15, 0.15].map((z) => (
-          <mesh key={`${x}-${z}`} position={[x, 0.035, z]} castShadow>
-            <boxGeometry args={[0.05, 0.07, 0.05]} />
+          <mesh
+            key={x + ":" + z}
+            position={[x, 0.042, z]}
+
+            castShadow
+          >
+            <cylinderGeometry args={[0.054, 0.041, 0.084, 4, 1, false, Math.PI / 4]} />
             <ToonMaterial color="#9d754c" />
           </mesh>
         )),
       )}
-      <RoundedFurniturePanel
-        size={[1.6, 0.45, 0.38]}
-        position={[0, 0.295, -0.01]}
-        color="#d7b782"
-        radius={0.012}
-      />
-      {[-0.54, 0.54].map((x) => (
-        <RoundedFurniturePanel
+      <mesh position={[0, 0, -0.197]} castShadow receiveShadow>
+        <extrudeGeometry args={[back, { depth: 0.014, bevelEnabled: false, curveSegments: 12 }]} />
+        <ToonMaterial color="#9b7a52" />
+      </mesh>
+      <Panel size={[1.58, 0.044, 0.4]} position={[0, 0.098, 0]} color="#bc9665" outline={false} />
+      {[-0.764, -0.268, 0.268, 0.764].map((x) => (
+        <Panel
           key={x}
-          name="media-console-door"
-          size={[0.45, 0.34, 0.03]}
-          position={[x, 0.3, 0.195]}
-          color="#e5dfd2"
-          radius={0.008}
+          size={[0.035, 0.412, 0.39]}
+          position={[x, 0.321, -0.004]}
+          color="#c7a473"
+          radius={0.004}
+          outline={false}
         />
       ))}
-      <RoundedFurniturePanel
-        name="media-console-open-niche"
-        size={[0.45, 0.27, 0.03]}
-        position={[0, 0.335, 0.195]}
-        color="#9b7a52"
-        radius={0.006}
+      <Panel
+        size={[0.512, 0.021, 0.347]}
+        position={[0, 0.292, -0.01]}
+        color="#cba978"
         outline={false}
       />
-      <mesh
-        name="media-console-cable-port"
-        position={[0, 0.39, -0.205]}
-        rotation={[Math.PI / 2, 0, 0]}
-      >
-        <cylinderGeometry args={[0.035, 0.035, 0.01, 14]} />
-        <ToonMaterial color="#594f43" />
-      </mesh>
-      <RoundedFurniturePanel
+      {[-0.516, 0.516].map((x) => (
+        <group key={x}>
+          <Panel
+            name="media-console-door"
+            size={[0.471, 0.391, 0.024]}
+            position={[x, 0.319, 0.183]}
+            color="#e5dfd2"
+            radius={0.009}
+            outlineColor="#b7afa1"
+          />
+          <Panel
+            size={[0.093, 0.018, 0.017]}
+            position={[x - Math.sign(x) * 0.155, 0.465, 0.201]}
+            color="#a88a5a"
+            radius={0.004}
+            outline={false}
+          />
+        </group>
+      ))}
+      <Panel
         size={[1.6, 0.03, 0.42]}
         position={[0, 0.535, 0]}
         color="#cfa873"
-        radius={0.006}
+        radius={0.008}
+        outlineColor="#a18663"
       />
     </group>
   );

@@ -5,7 +5,7 @@ import type { SettingsSection } from "../editor-settings/settings-sections";
 import { EditorDraftStatus } from "./EditorDraftStatus";
 import { roomsForFloor } from "@cabane/engine";
 import { WallFinishPreviewProvider } from "../editor-preview/construct/WallFinishPreview";
-import type { BuildTutorialStep, ManifestIssue } from "@cabane/engine";
+import type { ManifestIssue } from "@cabane/engine";
 import {
   FloorPicker,
   floorRemovalDisabledReason,
@@ -17,17 +17,18 @@ import {
 } from "@cabane/engine";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorFloorDialog } from "./EditorFloorDialog";
-import { useBuildTutorial } from "../editor-onboarding/useBuildTutorial";
+import { useEditorBuildTutorial } from "./useEditorBuildTutorial";
 import { installedWalkTools } from "../walk-tools";
 import { EditorCompletionDialogs } from "./EditorCompletionDialogs";
 import { EditorSelectionDetails } from "./EditorSelectionDetails";
 import { ConnectInspector } from "../editor-connect/ConnectInspector";
+import { EditorConstructionSettings } from "./EditorConstructionSettings";
 import { EditorSidebar } from "./EditorSidebar";
 import { EditorValidationPanel } from "./EditorValidationPanel";
 import { EditorPanels } from "./EditorPanels";
 import { useMobileEditorViewport } from "./useMobileEditorViewport";
 import { EditorPanelControls } from "./EditorPanelControls";
-import { editorPanelSelection, editorPanelsBusy, useEditorPanels } from "./useEditorPanels";
+import { editorPropertiesTarget, editorPanelsBusy, useEditorPanels } from "./useEditorPanels";
 import { useArrangeConnectReturn } from "./useArrangeConnectReturn";
 
 import { ownerProjectRegistries } from "../project-runtime";
@@ -51,7 +52,6 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     editorProject,
     northOrientation,
     setActionBarItems,
-    focusRoom,
     floorNavigation,
     activeFloorId,
     stairPlacement,
@@ -93,11 +93,6 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     setAgentPilotOpen(false);
     onAgentPilotClose?.();
   }, [onAgentPilotClose]);
-  const tutorial = useBuildTutorial(
-    editorProject,
-    mode,
-    Object.keys(workspace.snapshot.references ?? {}).length > 0,
-  );
   const request = props.navigation?.request ?? props.initialRequest;
   const requestedSection =
     request?.settingsSection ?? (request?.panel === "action-bar" ? "shortcuts" : "home-assistant");
@@ -122,7 +117,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
   }, [mode, settingsMode, settingsSection]);
   const panelBusy = editorPanelsBusy(controller);
   const panels = useEditorPanels(
-    editorPanelSelection(controller, settingsMode),
+    editorPropertiesTarget(controller, settingsMode),
     panelBusy,
     panelIssues.length > 0,
     `${mode}:${activeFloorId}:${settingsMode}`,
@@ -137,8 +132,13 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     selectMode(next);
   };
   const { closeMobilePanel } = panels;
+  // Reference adjustment needs Properties on phones after canvas interaction.
   const panelsDisabled =
-    editingLocked || publishOpen || previewOpen || northOrientation.active || panelBusy;
+    editingLocked ||
+    publishOpen ||
+    previewOpen ||
+    northOrientation.active ||
+    (panelBusy && !reference.adjusting);
   const collapseProperties = () => {
     panels.collapseProperties();
     requestAnimationFrame(() =>
@@ -180,21 +180,8 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
       ),
     ),
   );
-  const [nameFocusRequest, setNameFocusRequest] = useState<{
-    roomId: string;
-    serial: number;
-  } | null>(null);
-  const [tutorialAction, setTutorialAction] = useState<{
-    step: BuildTutorialStep;
-    target?: { floorId: string; roomId: string };
-  } | null>(null);
-  const tutorialBusy =
-    (tutorial.state?.step === "reference" && !reference.storage.ready) ||
-    editingLocked ||
-    unsettled ||
-    Boolean(constructEditor.drawStart) ||
-    publishOpen ||
-    previewOpen;
+  const { tutorialPanel, tutorialBusy, restartTutorial, nameFocusRequest, onNameFocusHandled } =
+    useEditorBuildTutorial(controller, closeMobilePanel);
   const importWorkspace = (json: string) => {
     const next = stageImportedWorkspace(
       { ...workspace.getRecord(), draft: snapshot.project, bindings: snapshot.bindings },
@@ -204,55 +191,6 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
     commit(next);
     replaceEditorsFromProject(next.project);
   };
-  const activateTutorial = () => {
-    const state = tutorial.state;
-    if (!state || tutorialBusy) return;
-    if (state.step === "reference") {
-      reference.openPicker();
-      return;
-    }
-    if (state.step === "arrange" && mode === "furnish") {
-      tutorial.ready();
-      return;
-    }
-    const nextMode =
-      state.step === "arrange" ? "furnish" : state.step === "connect" ? "connect" : "construct";
-    if (state.target) floorNavigation.selectFloor(state.target.floorId);
-    selectMode(nextMode);
-    setTutorialAction({
-      step: state.step,
-      ...(state.target === undefined ? {} : { target: state.target }),
-    });
-  };
-  useEffect(() => {
-    if (!tutorialAction || tutorialBusy) return;
-    const { step, target } = tutorialAction;
-    const desiredMode =
-      step === "arrange" ? "furnish" : step === "connect" ? "connect" : "construct";
-    if (
-      mode !== desiredMode ||
-      (target &&
-        (activeFloorId !== target.floorId || constructEditor.previewFloor.id !== target.floorId))
-    )
-      return;
-    if (target) focusRoom(target.roomId);
-    if (step === "walls") constructEditor.setTool("wall");
-    if (step === "door" || step === "window") constructEditor.setTool(step);
-    if (step === "name" && target) {
-      constructEditor.setTool("select");
-      constructEditor.selectRoom(target.roomId);
-      setNameFocusRequest({ roomId: target.roomId, serial: Date.now() });
-    }
-    setTutorialAction(null);
-  }, [
-    tutorialAction,
-    tutorialBusy,
-    mode,
-    activeFloorId,
-    constructEditor.previewFloor.id,
-    constructEditor,
-    focusRoom,
-  ]);
   const [walkStartFloor, setWalkStartFloor] = useState<string | null>(null);
   useEffect(() => {
     setWalkStartFloor(null);
@@ -313,7 +251,7 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             cameraReturn={arrangeReturn.cameraReturn}
             onConnectDevice={(id) => arrangeReturn.openConnect({ kind: "device", id })}
             onStairIssuesChange={setStairLiveIssues}
-            onNameFocusHandled={() => setNameFocusRequest(null)}
+            onNameFocusHandled={onNameFocusHandled}
             nameFocusRequest={nameFocusRequest}
             placingWalkStart={placingWalkStart}
             onWalkStartPlaced={() => setWalkStartFloor(null)}
@@ -444,13 +382,8 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             floorControlsDisabled={floorControlsDisabled}
             addFloorAbove={() => setFloorDialog("add-above")}
             addFloorBelow={() => setFloorDialog("add-below")}
-            tutorial={tutorial}
-            tutorialBusy={tutorialBusy}
-            activateTutorial={activateTutorial}
+            tutorialPanel={tutorialPanel}
             stairLiveIssues={stairLiveIssues}
-            importWorkspace={importWorkspace}
-            placingWalkStart={placingWalkStart}
-            setWalkStartFloor={setWalkStartFloor}
             onHomeAssistantSettings={() => selectSettingsSection("home-assistant")}
           />
           <EditorSelectionDetails
@@ -458,6 +391,17 @@ export function EditorWorkspace(props: Parameters<typeof useHomeEditorController
             onConnectSlot={(id) => arrangeReturn.openConnect({ kind: "slot", id }, true)}
             onConnectLighting={(id) => arrangeReturn.openConnect({ kind: "device", id }, true)}
             open={panels.propertiesOpen && !settingsMode}
+            constructionSettings={
+              <EditorConstructionSettings
+                {...controller}
+                importWorkspace={importWorkspace}
+                placingWalkStart={placingWalkStart}
+                setWalkStartFloor={setWalkStartFloor}
+                tutorialPanel={tutorialPanel}
+                tutorialBusy={tutorialBusy}
+                onRestartTutorial={restartTutorial}
+              />
+            }
             onCollapse={collapseProperties}
             liveStairIssues={stairLiveIssues}
             disabled={panelsDisabled}

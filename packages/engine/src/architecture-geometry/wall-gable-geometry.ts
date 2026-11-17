@@ -1,12 +1,13 @@
 import polygonClipping, { type MultiPolygon, type Polygon as ClipPolygon } from "polygon-clipping";
-import { ShapeUtils, Vector2 } from "three";
-import { pointInsidePolygon } from "../geometry";
+import { BufferGeometry, Float32BufferAttribute, ShapeUtils, Vector2 } from "three";
+import { openingCutTop, pointInsidePolygon } from "../geometry";
 import type { FloorSpec, OpeningSpec, PlanPoint, SlopedCeilingSpec, WallSpec } from "../types";
 import { MAX_GABLE_COLUMNS, MAX_GABLE_TRANSOMS } from "../wall-types";
-import { EPSILON } from "./architecture-geometry-contract";
+import { EPSILON, type Horizontal } from "./architecture-geometry-contract";
 import { physicalFloor } from "./physical-floor";
 import { slopedCeilingHeightSampler } from "./sloped-ceiling-plane";
-import { wallFrame } from "./wall-coordinate-frame";
+import { wallExteriorNormal, wallFrame } from "./wall-coordinate-frame";
+import { leanPositions } from "./wall-lean";
 
 type Plane = SlopedCeilingSpec["planes"][number];
 type Vertex = readonly [number, number, number];
@@ -227,6 +228,7 @@ export function wallGableShapes(
     ) as [number, number][],
   ];
   const scale = floor.coordinates.metersPerPlanUnit;
+  const ceilingTop = Math.max(...top.map(([, y]) => y)) + 1;
   const cuts = openings
     .filter((opening) => opening.wallId === wall.id)
     .map((opening) =>
@@ -234,10 +236,9 @@ export function wallGableShapes(
         opening.offsetFromWallStartPlanUnits * scale,
         opening.sillHeightMeters,
         (opening.offsetFromWallStartPlanUnits + opening.widthPlanUnits) * scale,
-        opening.sillHeightMeters + opening.openingHeightMeters,
+        openingCutTop(opening, ceilingTop),
       ),
     );
-  const ceilingTop = Math.max(...top.map(([, y]) => y)) + 1;
   const below = polygonClipping.intersection(outline, rectangle(-1, bandTop, length + 1, height));
   const above = polygonClipping.intersection(
     outline,
@@ -389,4 +390,32 @@ export function extrudeWallPlaneShapes(
         oriented(p0, q1, q0, toward, "edge");
       }
   }
+}
+
+/** The glass of every glass gable on a floor, grouped by the facade it fades with. */
+export function buildWallGableGlass(floor: FloorSpec) {
+  const groups = new Map<string, { outwardNormal: Horizontal | null; positions: number[] }>();
+  const gables = wallGablesForFloor(floor);
+  if (!gables.size) return [];
+  for (const wall of floor.walls) {
+    const shapes = gables.get(wall.id);
+    if (!shapes?.glass.length) continue;
+    const outwardNormal = wallExteriorNormal(wall, floor);
+    const key = outwardNormal
+      ? `${outwardNormal[0].toFixed(4)}:${outwardNormal[1].toFixed(4)}`
+      : "interior";
+    const group = groups.get(key) ?? { outwardNormal, positions: [] };
+    groups.set(key, group);
+    extrudeWallPlaneShapes(shapes.glass, wall, floor, 0.024, (a, b, c, face) => {
+      if (face !== "edge") group.positions.push(...a, ...b, ...c);
+    });
+  }
+  return [...groups.values()].map(({ outwardNormal, positions }) => {
+    leanPositions(positions, floor);
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+    geometry.computeVertexNormals();
+    geometry.computeBoundingSphere();
+    return { geometry, outwardNormal };
+  });
 }

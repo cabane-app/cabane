@@ -1,3 +1,4 @@
+import { ElevationEditLayer } from "../editor-preview/construct/ElevationEditLayer";
 import { EditorConnectionMap } from "./EditorConnectionMap";
 import { NorthOrientationOverlay } from "../editor-preview/construct/NorthOrientationOverlay";
 import { editorCanvasEvents } from "./editor-canvas-events";
@@ -20,6 +21,7 @@ import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
 import {
   type ManifestIssue,
   deriveFloorLevels,
+  useGraphicsFeature,
   stairFloorIds,
   StylizedScene,
   ArchitectureScene,
@@ -47,6 +49,7 @@ import type { EditorCameraState } from "../editor-connect/connect-navigation";
 import type { useHomeEditorController } from "./useHomeEditorController";
 
 const NO_INTERACTION = () => undefined;
+const EDITOR_OPENING_POSITIONS = Object.freeze({});
 type Props = {
   onStairIssuesChange?: (issues: readonly ManifestIssue[] | null) => void;
   reference: ReferencePlanController;
@@ -184,6 +187,7 @@ export function HomeEditorScene({
   duplicateArrangeItem,
   deleteSceneItem,
 }: Props) {
+  const studioDaylight = useGraphicsFeature("lighting");
   const constructPlan = mode === "construct" && cameraView === "top";
   const constructPreview = mode === "construct" && cameraView === "3d";
   const showArchitecture = mode === "furnish" || constructPreview;
@@ -247,6 +251,9 @@ export function HomeEditorScene({
             if (constructPlan) clearConstructionSelection();
             else if (mode === "furnish") clearFurnishingSelection();
           }}
+          onCreated={({ scene }) => {
+            scene.environmentIntensity = 0.42;
+          }}
           shadows={false}
           dpr={1}
           frameloop="demand"
@@ -259,7 +266,7 @@ export function HomeEditorScene({
                 <>
                   <hemisphereLight args={["#ecf4ff", "#768b93", 0.95]} />
                   <directionalLight
-                    position={[7, 12, 8]}
+                    position={studioDaylight ? [-8, 12, 7] : [7, 12, 8]}
                     color="#fff0d7"
                     intensity={1.8}
                     castShadow={false}
@@ -406,7 +413,7 @@ export function HomeEditorScene({
                   reducedMotion
                   resolvedBindings={editorResolvedBindings}
                   deviceModels={deviceModels}
-                  openingPositions={{}}
+                  openingPositions={EDITOR_OPENING_POSITIONS}
                   onInteract={NO_INTERACTION}
                 />
               </RetainedArrangeScene>
@@ -508,6 +515,16 @@ export function HomeEditorScene({
                   onMarqueeChange={setMarqueeSelecting}
                 />
               )}
+              {(constructPlan || constructPreview) &&
+                !editingLocked &&
+                constructEditor.tool === "select" && (
+                  <ElevationEditLayer
+                    editor={constructEditor}
+                    plan={constructPlan}
+                    level={constructPreview ? activeLevel : 0}
+                    onDraggingChange={setDragging}
+                  />
+                )}
               {constructPlan && !editingLocked && (
                 <ConstructionHedgeLayer editor={constructEditor} onDraggingChange={setDragging} />
               )}

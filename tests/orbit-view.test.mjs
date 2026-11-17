@@ -8,9 +8,11 @@ import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
+  const { setGraphicsFeatures } = await load("/packages/engine/src/graphics-features.ts");
   const { OrbitNavigation } = await load("/packages/engine/src/OrbitNavigation.tsx");
   const { OrbitViewMenu } = await load("/packages/engine/src/action-bar/OrbitViewMenu.tsx");
-  const { OrbitCamera } = await load("/packages/engine/src/OrbitCamera.tsx");
+  const { worldBoundsForFloorScene } = await load("/packages/engine/src/pools/pool-footprint.ts");
+  const { OrbitCamera, cameraZoomForViewport } = await load("/packages/engine/src/OrbitCamera.tsx");
   const { orbitViewKey, readOrbitView, writeOrbitView, fitSavedOrbitView, useDashboardOrbitView } =
     await load("/packages/engine/src/navigation/orbit-view.ts");
   const { neutralDemoManifest } = await load("/packages/engine/src/demo.ts");
@@ -79,6 +81,32 @@ await withModules(async (load) => {
     } finally {
       await renderer.unmount();
     }
+  });
+
+  test("comparison framing moves the live overview without saving over a pending manual view", async (context) => {
+    const viewKey = orbitViewKey("debug-preview", floor.id);
+    const renderer = await create(
+      createElement(OrbitCamera, { floor, resetKey: 0, viewKey }),
+      options,
+    );
+    let saved;
+    try {
+      context.mock.timers.enable({ apis: ["setTimeout"] });
+      const controls = controlsFor(renderer);
+      controls.dispatchEvent({ type: "start" });
+      controls.object.zoom = 105;
+      controls.update();
+      saved = readOrbitView(viewKey).pose;
+      assert.equal(saved.zoom, 105);
+      await act(async () => setGraphicsFeatures({ framing: false }));
+      assert.notEqual(controls.object.zoom, saved.zoom);
+      context.mock.timers.tick(150);
+      assert.deepEqual(readOrbitView(viewKey).pose, saved);
+    } finally {
+      await renderer.unmount();
+      setGraphicsFeatures({ framing: true });
+    }
+    assert.deepEqual(readOrbitView(viewKey).pose, saved);
   });
 
   test("top-down persists; lock prevents room reframing; explicit reset restores the default", async () => {
@@ -267,7 +295,17 @@ await withModules(async (load) => {
         const controls = controlsFor(renderer);
         const overview = controls.object.zoom;
         assert.ok(overview > 0.8, "legacy extreme zoom restores the fitted overview");
-        assert.equal(controls.minZoom, overview * 0.7);
+        const siteZoom = cameraZoomForViewport(
+          1200,
+          900,
+          worldBoundsForFloorScene(scaledFloor),
+          false,
+        );
+        assert.equal(
+          controls.minZoom,
+          Math.min(overview, siteZoom) * 0.7,
+          "the full site remains reachable",
+        );
         assert.notDeepEqual(
           controls.target.toArray(),
           [20, 0.2, 20],

@@ -1,6 +1,5 @@
 import { ToonMaterial } from "@cabane/engine";
 import { BrassCabinetHandle } from "./brass-cabinet-handle";
-import { CabinetJoint } from "./cabinet-joint";
 import {
   KITCHEN_CREAM,
   KITCHEN_CREAM_LIGHT,
@@ -8,7 +7,7 @@ import {
   KitchenBox,
   KitchenPanel,
 } from "./kitchen-finish";
-import { StoneVein } from "./stone-vein";
+import { KitchenWorktop } from "./kitchen-worktop";
 
 export const KITCHEN_CEILING_MOUNT_OFFSET = 0.55;
 const UPPER_CABINET_HEIGHT = 0.66;
@@ -18,7 +17,6 @@ const UPPER_CABINET_TOP_Y = UPPER_CABINET_BOTTOM_Y + UPPER_CABINET_HEIGHT;
 export const UNDER_CABINET_STRIP_Y = UPPER_CABINET_BOTTOM_Y - 0.015;
 
 const TALL_PANTRY_HEIGHT = UPPER_CABINET_TOP_Y;
-const TALL_PANTRY_VERTICAL_SCALE = TALL_PANTRY_HEIGHT / 1.65;
 
 const baseCabinets = [
   { center: 1.09, width: 0.58, kind: "oven" },
@@ -47,18 +45,10 @@ function TallPantry() {
         position={[0, TALL_PANTRY_HEIGHT / 2, 0]}
         color={KITCHEN_CREAM}
       />
-      <KitchenPanel
-        width={0.68}
-        height={TALL_PANTRY_HEIGHT - 0.07}
-        position={[0, TALL_PANTRY_HEIGHT / 2, 0.28]}
-      />
-      <CabinetJoint
-        from={[-0.34, 1.04 * TALL_PANTRY_VERTICAL_SCALE, 0.291]}
-        to={[0.34, 1.04 * TALL_PANTRY_VERTICAL_SCALE, 0.291]}
-        color="#a69e93"
-      />
-      <BrassCabinetHandle position={[0.25, 1.32 * TALL_PANTRY_VERTICAL_SCALE, 0.335]} vertical />
-      <BrassCabinetHandle position={[0.25, 0.68 * TALL_PANTRY_VERTICAL_SCALE, 0.335]} vertical />
+      <KitchenPanel width={0.694} height={1.284} position={[0, 0.735, 0.278]} />
+      <KitchenPanel width={0.694} height={0.827} position={[0, 1.7985, 0.278]} />
+      <BrassCabinetHandle position={[0.256, 1.24, 0.319]} vertical />
+      <BrassCabinetHandle position={[0.256, 1.523, 0.319]} vertical />
     </group>
   );
 }
@@ -75,8 +65,8 @@ function GlazedUpperDoor({
 
   return (
     <group position={position}>
-      <mesh position={[0, 0, -0.016]}>
-        <boxGeometry args={[width - 0.035, height - 0.035, 0.018]} />
+      <mesh position={[0, 0, -0.021]}>
+        <boxGeometry args={[width - 0.035, height - 0.035, 0.032]} />
         <ToonMaterial color="#69685f" />
       </mesh>
       <mesh position={[0, 0, 0.002]}>
@@ -86,8 +76,8 @@ function GlazedUpperDoor({
       {[-1, 1].map((side) => (
         <KitchenBox
           key={`vertical-${side}`}
-          size={[frame, height, 0.026]}
-          position={[side * (width / 2 - frame / 2), 0, 0.018]}
+          size={[frame, height, 0.07]}
+          position={[side * (width / 2 - frame / 2), 0, -0.004]}
           color={KITCHEN_CREAM_LIGHT}
           outline="#a49c90"
         />
@@ -95,7 +85,7 @@ function GlazedUpperDoor({
       {[-1, 1].map((side) => (
         <KitchenBox
           key={`edge-${side}`}
-          size={[width, frame, 0.026]}
+          size={[width - frame * 2, frame, 0.026]}
           position={[0, side * (height / 2 - frame / 2), 0.018]}
           color={KITCHEN_CREAM_LIGHT}
           outline="#a49c90"
@@ -110,7 +100,7 @@ function GlazedUpperDoor({
       {[-1, 1].map((row) => (
         <KitchenBox
           key={`row-${row}`}
-          size={[width - frame * 2, frame * 0.8, 0.024]}
+          size={[width - frame * 2, frame * 0.8, 0.018]}
           position={[0, row * (height / 6), 0.02]}
           color={KITCHEN_CREAM_LIGHT}
           outline="#a49c90"
@@ -123,13 +113,10 @@ function GlazedUpperDoor({
 function BaseDoor({ center, width }: { readonly center: number; readonly width: number }) {
   return (
     <group position={[center, 0, 0.31]}>
-      <KitchenPanel width={width} height={0.78} position={[0, 0.415, 0.291]} />
-      <CabinetJoint
-        from={[-width / 2, 0.63, 0.304]}
-        to={[width / 2, 0.63, 0.304]}
-        color="#aaa298"
-      />
-      <BrassCabinetHandle position={[0, 0.7, 0.335]} />
+      <KitchenPanel width={width - 0.008} height={0.536} position={[0, 0.367, 0.291]} />
+      <KitchenPanel width={width - 0.008} height={0.181} position={[0, 0.732, 0.291]} />
+      <BrassCabinetHandle position={[0, 0.735, 0.331]} />
+      <BrassCabinetHandle position={[0, 0.578, 0.331]} />
     </group>
   );
 }
@@ -139,9 +126,9 @@ function UpperDoor({ cabinet }: { readonly cabinet: (typeof upperCabinets)[numbe
   if (cabinet.kind === "glass") {
     return (
       <group position={[cabinet.center, KITCHEN_CEILING_MOUNT_OFFSET, 0.25]}>
-        <GlazedUpperDoor width={cabinet.width} position={[0, 1.35, 0.235]} />
+        <GlazedUpperDoor width={cabinet.width - 0.006} position={[0, 1.35, 0.235]} />
         <BrassCabinetHandle
-          position={[cabinet.handleSide * (cabinet.width / 2 - 0.055), 1.13, 0.285]}
+          position={[cabinet.handleSide * (cabinet.width / 2 - 0.017), 1.13, 0.303]}
           vertical
         />
       </group>
@@ -149,9 +136,9 @@ function UpperDoor({ cabinet }: { readonly cabinet: (typeof upperCabinets)[numbe
   }
   return (
     <group position={[cabinet.center, KITCHEN_CEILING_MOUNT_OFFSET, 0.25]}>
-      <KitchenPanel width={cabinet.width} height={0.64} position={[0, 1.35, 0.211]} />
+      <KitchenPanel width={cabinet.width - 0.006} height={0.64} position={[0, 1.35, 0.211]} />
       <BrassCabinetHandle
-        position={[(cabinet.center < 2.8 ? 1 : -1) * (cabinet.width / 2 - 0.055), 1.13, 0.255]}
+        position={[(cabinet.center < 2.8 ? 1 : -1) * (cabinet.width / 2 - 0.055), 1.13, 0.251]}
         vertical
       />
     </group>
@@ -162,20 +149,16 @@ export function KitchenCabinetry() {
   return (
     <group name="custom-kitchen-cabinetry">
       <TallPantry />
-      <KitchenBox size={[2.93, 0.79, 0.56]} position={[2.245, 0.415, 0.31]} color={KITCHEN_CREAM} />
+      <KitchenBox size={[2.91, 0.095, 0.45]} position={[2.245, 0.0475, 0.265]} color="#94877a" />
+      <KitchenBox size={[2.93, 0.635, 0.56]} position={[2.245, 0.41, 0.31]} color={KITCHEN_CREAM} />
+      <KitchenBox size={[1.5, 0.108, 0.56]} position={[1.53, 0.78, 0.31]} color={KITCHEN_CREAM} />
+      <KitchenBox size={[0.9, 0.108, 0.56]} position={[3.26, 0.78, 0.31]} color={KITCHEN_CREAM} />
+      <KitchenBox size={[0.53, 0.108, 0.06]} position={[2.545, 0.78, 0.56]} color={KITCHEN_CREAM} />
       {baseCabinets
         .filter((cabinet) => cabinet.kind === "door")
         .map((cabinet) => (
-          <BaseDoor key={cabinet.center} center={cabinet.center} width={cabinet.width} />
+          <BaseDoor key={cabinet.center} center={cabinet.center} width={cabinet.width - 0.006} />
         ))}
-      {[1.38, 2.04, 2.7, 3.36].map((jointX) => (
-        <CabinetJoint
-          key={jointX}
-          from={[jointX, 0.035, 0.614]}
-          to={[jointX, 0.805, 0.614]}
-          color="#aaa298"
-        />
-      ))}
       <KitchenBox
         size={[3.04, UPPER_CABINET_HEIGHT, 0.4]}
         position={[2.3, UPPER_CABINET_CENTER_Y, 0.25]}
@@ -184,46 +167,12 @@ export function KitchenCabinetry() {
       {upperCabinets.map((cabinet) => (
         <UpperDoor key={cabinet.center} cabinet={cabinet} />
       ))}
-      {[1.45, 1.83, 2.39, 2.73, 3.07, 3.33, 3.59].map((jointX) => (
-        <CabinetJoint
-          key={jointX}
-          from={[jointX, 1.03 + KITCHEN_CEILING_MOUNT_OFFSET, 0.474]}
-          to={[jointX, 1.67 + KITCHEN_CEILING_MOUNT_OFFSET, 0.474]}
-          color="#aaa298"
-        />
-      ))}
-      <KitchenBox
-        size={[2.98, 0.085, 0.64]}
-        position={[2.27, 0.875, 0.33]}
-        color={KITCHEN_STONE}
-        outline="#81776b"
-        receiveShadow
-      />
+      <KitchenWorktop />
       <KitchenBox
         size={[2.98, 0.19, 0.035]}
         position={[2.27, 1.005, 0.035]}
         color={KITCHEN_STONE}
         outline="#94897d"
-      />
-      <StoneVein
-        points={[
-          [1.43, 0.923, 0.08],
-          [1.57, 0.925, 0.17],
-          [1.7, 0.924, 0.31],
-          [1.91, 0.927, 0.4],
-          [2.1, 0.926, 0.56],
-        ]}
-        width={0.007}
-      />
-      <StoneVein
-        points={[
-          [2.86, 0.925, 0.09],
-          [3.01, 0.927, 0.17],
-          [3.09, 0.924, 0.31],
-          [3.3, 0.927, 0.38],
-          [3.5, 0.926, 0.52],
-        ]}
-        width={0.006}
       />
     </group>
   );

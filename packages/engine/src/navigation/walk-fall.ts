@@ -1,3 +1,5 @@
+import { elevationAreas, localSurfaceAt, terrainLocalHeight } from "../elevation/surfaces";
+import { createTerrainSurface } from "../terrain/terrain-surface";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { worldPointToPlan } from "../geometry";
 import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
@@ -25,13 +27,38 @@ export function resolveWalkFall(
   const floor = building.floors.find((entry) => entry.id === candidate.floorId);
   const ground = building.floors.find((entry) => !entry.belowGround);
   if (!floor || !ground) return { kind: "blocked" };
+  if (candidate.stairId) return { kind: "supported" };
+  const plan = worldPointToPlan(candidate, building.coordinates);
+  const terrain = createTerrainSurface(building.home?.terrain, building.floors);
+  const surface = localSurfaceAt(
+    floor,
+    plan,
+    terrainLocalHeight(floor, terrain ? (x, z) => terrain.offsetAt(x, z) : undefined),
+  );
+  if (surface.id !== floor.id || pointOnFloorSupport(plan, floor)) {
+    const elevation =
+      deriveFloorLevels(building.floors).find((level) => level.floorId === floor.id)!
+        .elevationMeters + surface.elevation;
+    if (elevation > feetElevation + WALK_MAX_STEP_METERS) return { kind: "blocked" };
+    if (Math.abs(candidate.elevation - elevation) > 1e-8)
+      return {
+        kind: "fall",
+        point: { ...candidate, elevation },
+        jumpHeight: Math.max(0, feetElevation - elevation),
+      };
+    return { kind: "supported" };
+  }
   if (
     terrainHeight &&
     !pointOnFloorSupport(worldPointToPlan(candidate, building.coordinates), floor)
   ) {
     const height = terrainHeight(candidate);
     if (height === null) return { kind: "blocked" };
-    const elevation = height - GROUND_ELEVATION_METERS;
+    const elevation =
+      height -
+      (building.floors.some((floor) => elevationAreas(floor).length > 0)
+        ? 0
+        : GROUND_ELEVATION_METERS);
     if (elevation > feetElevation + WALK_MAX_STEP_METERS) return { kind: "blocked" };
     return {
       kind: "fall",

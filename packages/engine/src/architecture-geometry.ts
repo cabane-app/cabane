@@ -1,3 +1,8 @@
+import {
+  appendPassageHead,
+  type PassageHead,
+  type WallTriangle,
+} from "./architecture-geometry/passage-head";
 import { DEFAULT_WALL_COLORS } from "./wall-colors";
 import { wallCapFinishRegions } from "./architecture-geometry/wall-cap-finishes";
 import { wallStructuralHeight } from "./architecture-geometry/wall-structural-height";
@@ -17,7 +22,7 @@ import { BufferGeometry, Color, Float32BufferAttribute, ShapeUtils, Vector2 } fr
 
 import { GROUND_ELEVATION_METERS } from "./ground-elevation";
 
-import { worldPointToPlan } from "./geometry";
+import { pointInsidePolygon, worldPointToPlan } from "./geometry";
 
 import { differenceClippingGeometry } from "./architecture-geometry/architecture-clipping";
 import { EPSILON, Horizontal } from "./architecture-geometry/architecture-geometry-contract";
@@ -36,6 +41,7 @@ import {
 import { leanPositions } from "./architecture-geometry/wall-lean";
 import type { FloorSpec, WallSpec, WallSurfaceFinish } from "./types";
 import { wallSurfaceRepeatHeight } from "./wall-types";
+import type { WallContacts } from "./architecture-geometry/wall-contact";
 
 /** Generalized version of the original house-wide occupied-grid wall union. */
 export function buildArchitecturalWallGeometries(
@@ -43,7 +49,14 @@ export function buildArchitecturalWallGeometries(
   interiorColor: string = DEFAULT_WALL_COLORS.interior,
   exteriorColor: string = DEFAULT_WALL_COLORS.exterior,
   baseElevationMeters = GROUND_ELEVATION_METERS,
-  neighbors: { below?: FloorSpec; above?: FloorSpec } = {},
+  options: {
+    below?: FloorSpec;
+    above?: FloorSpec;
+    passageHeads?: ReadonlyMap<string, PassageHead> | undefined;
+    sectionEdges?: boolean;
+    skirting?: boolean;
+    contact?: WallContacts | null;
+  } = {},
 ): ArchitecturalWallGeometryGroup[] {
   const sourceFloor = physicalFloor(requestedFloor);
   // Continue exterior finish across the structural slab between ceiling and next level.
@@ -51,14 +64,14 @@ export function buildArchitecturalWallGeometries(
   // follows the sloped ceiling above them and is drawn after the bands.
   const gables = wallGablesForFloor(sourceFloor);
   const floor =
-    neighbors.above || gables.size
+    options.above || gables.size
       ? {
           ...sourceFloor,
           walls: sourceFloor.walls.map((wall) => ({
             ...wall,
             heightMeters:
               gables.get(wall.id)?.bandTop ??
-              (neighbors.above
+              (options.above
                 ? wallStructuralHeight(wall, sourceFloor)
                 : (wall.heightMeters ?? sourceFloor.defaultWallHeightMeters)),
           })),
@@ -81,6 +94,7 @@ export function buildArchitecturalWallGeometries(
     colors: number[];
     indices: number[];
     uvs: number[];
+    contactUvs: number[];
     finish?: WallSurfaceFinish;
   };
   const bands = wallSolidBands(floor, wallGableCornerBands(floor, gables));
@@ -106,7 +120,15 @@ export function buildArchitecturalWallGeometries(
   ) => {
     let buffers = buffersByDirection.get(key);
     if (!buffers) {
-      buffers = { outwardNormal, fadeNormals: [], positions: [], colors: [], indices: [], uvs: [] };
+      buffers = {
+        outwardNormal,
+        fadeNormals: [],
+        positions: [],
+        colors: [],
+        indices: [],
+        uvs: [],
+        contactUvs: [],
+      };
       buffersByDirection.set(key, buffers);
     }
     for (const normal of fadeNormals) {
@@ -150,6 +172,7 @@ export function buildArchitecturalWallGeometries(
     color: Color,
     frame?: ReturnType<typeof wallFrame>,
     side: "left" | "right" = "left",
+    wallId?: string,
   ) => {
     const offset = buffers.positions.length / 3;
     // Extend only floor-level vertices to terrain; preserve opening heads,
@@ -157,6 +180,8 @@ export function buildArchitecturalWallGeometries(
     for (const point of [a, b, c]) {
       const y = point[1] === 0 ? baseElevationMeters : point[1];
       buffers.positions.push(point[0], y, point[2]);
+      if (options.contact)
+        buffers.contactUvs.push(...options.contact.uv(wallId, side, point[0], y, point[2]));
       buffers.uvs.push(
         frame ? wallSurfaceU([point[0], point[2]], frame, buffers.finish, side) : 0,
         y / wallSurfaceRepeatHeight(buffers.finish),
@@ -246,12 +271,22 @@ export function buildArchitecturalWallGeometries(
           ),
       finish,
       side,
+      wall: owner.wall,
       frame: wallData.get(owner.wall)!.frame,
     };
   };
 
-  const belowContact = wallLevelContact(neighbors.below, "top");
-  const aboveContact = wallLevelContact(neighbors.above, "bottom");
+  const sampleBesideFace = (x: number, z: number, nx: number, nz: number) =>
+    worldPointToPlan({ x: x + nx * 0.08, z: z + nz * 0.08 }, floor.coordinates);
+
+  const belowContact = wallLevelContact(options.below, "top");
+  const aboveContact = wallLevelContact(options.above, "bottom");
+  const trimTone = new Color();
+  const skirtingRooms = options.skirting
+    ? floor.rooms.filter(
+        (room) => !room.isSolid && !room.floorZones?.some((zone) => zone.elevation),
+      )
+    : [];
   bands.forEach((band, bandIndex) => {
     const previous = bands[bandIndex - 1]?.footprint ?? [];
     const next = bands[bandIndex + 1]?.footprint ?? [];
@@ -311,10 +346,7 @@ export function buildArchitecturalWallGeometries(
             // closed into a hole above their lintels, exposing the green ground.
             const candidate = normalize([edge[1], -edge[0]]);
             const center: Horizontal = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-            const planSample = worldPointToPlan(
-              { x: center[0] + candidate[0] * 0.08, z: center[1] + candidate[1] * 0.08 },
-              floor.coordinates,
-            );
+            const planSample = sampleBesideFace(center[0], center[1], candidate[0], candidate[1]);
             const outside = !pointInsideFloorFootprint(planSample, floor);
             const face = wallFaceSurface(
               center,
@@ -325,41 +357,121 @@ export function buildArchitecturalWallGeometries(
               outside ? outsideColor : insideColor,
             );
             const fadeNormal = fadeNormalAt(center, band.activeWalls);
-            const buffers = buffersForFace(fadeNormal, face.finish);
-            const aBottom = [a[0], band.bottom, a[1]] as const;
-            const bBottom = [b[0], band.bottom, b[1]] as const;
-            const aTop = [a[0], band.top, a[1]] as const;
-            const bTop = [b[0], band.top, b[1]] as const;
-            addTriangle(buffers, aBottom, bTop, bBottom, face.color, face.frame, face.side);
-            addTriangle(buffers, aBottom, aTop, bTop, face.color, face.frame, face.side);
+            const faceStrip = (
+              bottom: number,
+              top: number,
+              color: Color,
+              finish?: WallSurfaceFinish,
+              wallId?: string,
+            ) => {
+              if (top - bottom <= EPSILON) return;
+              const buffers = buffersForFace(fadeNormal, finish);
+              const aBottom = [a[0], bottom, a[1]] as const;
+              const bBottom = [b[0], bottom, b[1]] as const;
+              const aTop = [a[0], top, a[1]] as const;
+              const bTop = [b[0], top, b[1]] as const;
+              addTriangle(buffers, aBottom, bTop, bBottom, color, face.frame, face.side, wallId);
+              addTriangle(buffers, aBottom, aTop, bTop, color, face.frame, face.side, wallId);
+            };
+            // Return the section finish over the cut edge of the displayed storey.
+            // Split the existing surface so adjacent plaster and trim never overlap.
+            const wall = face.wall;
+            const height = wall?.heightMeters ?? floor.defaultWallHeightMeters;
+            let bottom = band.bottom;
+            // A flush painted board, top bead and recessed shadow line share the
+            // wall footprint. Door jambs and patterned faces keep their own finishes.
+            if (
+              wall &&
+              !outside &&
+              !face.finish &&
+              height >= 0.4 &&
+              bottom < 0.106 &&
+              band.top > 0 &&
+              skirtingRooms.some((room) => pointInsidePolygon(planSample, room.polygon))
+            ) {
+              faceStrip(
+                bottom,
+                Math.min(0.092, band.top),
+                trimTone.copy(face.color).multiplyScalar(0.73),
+              );
+              faceStrip(
+                Math.max(bottom, 0.092),
+                Math.min(0.099, band.top),
+                trimTone.copy(face.color).multiplyScalar(0.95),
+              );
+              faceStrip(
+                Math.max(bottom, 0.099),
+                Math.min(0.106, band.top),
+                trimTone.copy(face.color).multiplyScalar(0.54),
+              );
+              bottom = Math.max(bottom, 0.106);
+            }
+            const lip = wall ? Math.min(0.045, wall.thicknessMeters * 0.28, height * 0.1) : 0;
+            const base = height - lip;
+            if (!options.sectionEdges || !wall || gables.has(wall.id) || band.top <= base) {
+              faceStrip(bottom, band.top, face.color, face.finish, wall?.id);
+              continue;
+            }
+            const edgeColor = customColor(wallEdgeFinish(wall, interiorColor));
+            const grooveTop = base + lip * 0.15;
+            faceStrip(bottom, Math.min(base, band.top), face.color, face.finish, wall.id);
+            faceStrip(
+              Math.max(base, bottom),
+              Math.min(grooveTop, band.top),
+              trimTone.copy(edgeColor).multiplyScalar(0.66),
+            );
+            faceStrip(Math.max(grooveTop, bottom), band.top, edgeColor);
           }
         }
       }),
     );
   });
 
+  const headsByWall = new Map<string, PassageHead[]>();
+  for (const head of options.passageHeads?.values() ?? []) {
+    const heads = headsByWall.get(head.opening.wallId);
+    if (heads) heads.push(head);
+    else headsByWall.set(head.opening.wallId, [head]);
+  }
   for (const wall of floor.walls) {
     const shapes = gables.get(wall.id);
-    if (!shapes) continue;
+    const heads = headsByWall.get(wall.id);
+    if (!shapes && !heads) continue;
     const exteriorNormal = wallData.get(wall)!.exteriorNormal;
     const buffers = buffersFor(exteriorNormal);
     const frame = wallData.get(wall)!.frame;
-    const outside = (face: "left" | "right") =>
-      exteriorNormal !== null &&
-      exteriorNormal[0] * frame.normal[0] + exteriorNormal[1] * frame.normal[1] > 0 ===
-        (face === "left");
-    extrudeWallPlaneShapes(shapes.solid, wall, floor, wall.thicknessMeters, (a, b, c, face) => {
+    const emitWallFace: WallTriangle = (a, b, c, face) => {
       if (face === "edge") {
         addTriangle(buffers, a, b, c, customColor(wallEdgeFinish(wall, interiorColor)));
         return;
       }
       const finish = wall.faceFinishes?.[face];
-      const isOutside = outside(face);
+      const sign = face === "left" ? 1 : -1;
+      const sample = sampleBesideFace(
+        (a[0] + b[0] + c[0]) / 3,
+        (a[2] + b[2] + c[2]) / 3,
+        sign * frame.normal[0],
+        sign * frame.normal[1],
+      );
+      const isOutside = !pointInsideFloorFootprint(sample, floor);
       const color = finish
         ? "white"
         : wallFaceFinish(wall, face, isOutside, isOutside ? exteriorColor : interiorColor);
-      addTriangle(buffersForFace(exteriorNormal, finish), a, b, c, customColor(color), frame, face);
-    });
+      const surface = buffersForFace(exteriorNormal, finish);
+      addTriangle(surface, a, b, c, customColor(color), frame, face, wall.id);
+    };
+    for (const head of heads ?? [])
+      appendPassageHead(
+        head,
+        wall,
+        floor,
+        emitWallFace,
+        shapes?.solid,
+        aboveContact,
+        (surface, height) => addHorizontalSurface(surface, height, true, [wall]),
+      );
+    if (!shapes) continue;
+    extrudeWallPlaneShapes(shapes.solid, wall, floor, wall.thicknessMeters, emitWallFace);
     if (wall.gable?.fill !== "glass") continue;
     const frameColor = customColor(wall.gable.frameColor ?? DEFAULT_GABLE_FRAME_COLOR);
     extrudeWallPlaneShapes(
@@ -378,6 +490,8 @@ export function buildArchitecturalWallGeometries(
     geometry.setAttribute("position", new Float32BufferAttribute(buffers.positions, 3));
     geometry.setAttribute("color", new Float32BufferAttribute(buffers.colors, 3));
     geometry.setAttribute("uv", new Float32BufferAttribute(buffers.uvs, 2));
+    if (options.contact)
+      geometry.setAttribute("uv1", new Float32BufferAttribute(buffers.contactUvs, 2));
     geometry.setIndex(buffers.indices);
     geometry.computeVertexNormals();
     geometry.computeBoundingBox();
@@ -395,33 +509,7 @@ export function buildArchitecturalWallGeometries(
     };
   });
 }
-/** The glass of every glass gable on a floor, grouped by the facade it fades with. */
-export function buildWallGableGlass(floor: FloorSpec) {
-  const groups = new Map<string, { outwardNormal: Horizontal | null; positions: number[] }>();
-  const gables = wallGablesForFloor(floor);
-  if (!gables.size) return [];
-  for (const wall of floor.walls) {
-    const shapes = gables.get(wall.id);
-    if (!shapes?.glass.length) continue;
-    const outwardNormal = wallExteriorNormal(wall, floor);
-    const key = outwardNormal
-      ? `${outwardNormal[0].toFixed(4)}:${outwardNormal[1].toFixed(4)}`
-      : "interior";
-    const group = groups.get(key) ?? { outwardNormal, positions: [] };
-    groups.set(key, group);
-    extrudeWallPlaneShapes(shapes.glass, wall, floor, 0.024, (a, b, c, face) => {
-      if (face !== "edge") group.positions.push(...a, ...b, ...c);
-    });
-  }
-  return [...groups.values()].map(({ outwardNormal, positions }) => {
-    leanPositions(positions, floor);
-    const geometry = new BufferGeometry();
-    geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
-    geometry.computeVertexNormals();
-    geometry.computeBoundingSphere();
-    return { geometry, outwardNormal };
-  });
-}
+export { buildWallGableGlass } from "./architecture-geometry/wall-gable-geometry";
 export { JUNCTION_SEAM_OVERLAP_METERS } from "./architecture-geometry/architecture-geometry-contract";
 export { buildContinuousWallGeometry } from "./architecture-geometry/continuous-wall-geometry";
 export { roomInteriorAreaSquareMeters } from "./architecture-geometry/room-interior-area";

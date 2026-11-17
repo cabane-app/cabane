@@ -1,5 +1,5 @@
 import { Outlines, ToonMaterial, type SceneItemSize } from "@cabane/engine";
-import { Vector2 } from "three";
+import { LatheGeometry, Vector2 } from "three";
 
 export const FREESTANDING_BATHTUB_SIZE = [1.7, 0.6, 0.78] as const;
 
@@ -7,9 +7,12 @@ export const FREESTANDING_BATHTUB_SIZE = [1.7, 0.6, 0.78] as const;
 // The elliptical sweep keeps the ceramic continuous, including the rounded ends.
 const SHELL_PROFILE = [
   [0, 0],
-  [0.235, 0],
-  [0.26, 0.008],
-  [0.278, 0.028],
+  [0.211, 0],
+  [0.218, 0.008],
+  [0.218, 0.019],
+  [0.243, 0.02],
+  [0.26, 0.024],
+  [0.278, 0.04],
   [0.29, 0.065],
   [0.31, 0.15],
   [0.337, 0.27],
@@ -32,6 +35,19 @@ const SHELL_PROFILE = [
   [0, 0.13],
 ].map(([radius, height]) => new Vector2(radius, height));
 
+// A slipper backrest rises above the lower entry side. The last few
+// centimetres of each rim sweep stay level at the head and foot.
+const ceramic = new LatheGeometry(SHELL_PROFILE, 64);
+const vertices = ceramic.attributes.position;
+for (let i = 0; i < vertices.count; i++) {
+  const x = vertices.getX(i),
+    y = vertices.getY(i);
+  const fromHead = Math.min(1, Math.max(0, (x / 0.39 + 0.86) / 1.72));
+  const entry = fromHead * fromHead * (3 - 2 * fromHead);
+  vertices.setY(i, y - 0.087 * entry * Math.max(0, (y - 0.18) / 0.42) ** 2);
+}
+ceramic.computeVertexNormals();
+
 /** Seamless oval soaking bath with a rolled rim and recessed basin. */
 export function FreestandingBathtub({
   size = FREESTANDING_BATHTUB_SIZE,
@@ -44,8 +60,14 @@ export function FreestandingBathtub({
       scale={[size[0] / 1.7, size[1] / 0.6, size[2] / 0.78]}
       userData={{ walkCollider: true }}
     >
-      <mesh name="bathtub-ceramic-shell" scale={[0.85 / 0.39, 1, 1]} castShadow receiveShadow>
-        <latheGeometry args={[SHELL_PROFILE, 64]} />
+      <mesh
+        name="bathtub-ceramic-shell"
+        geometry={ceramic}
+        dispose={null}
+        scale={[0.85 / 0.39, 1, 1]}
+        castShadow
+        receiveShadow
+      >
         <ToonMaterial color="#f3f0e9" />
         <Outlines color="#a7aaa5" thickness={0.0015} screenspace={false} />
       </mesh>
@@ -59,7 +81,7 @@ export function FreestandingBathtub({
       </mesh>
       <mesh
         name="bathtub-overflow"
-        position={[0, 0.51, -0.336]}
+        position={[0, 0.483, -0.336]}
         rotation={[Math.PI / 2 - 0.165, 0, 0]}
         scale={[1, 1, 0.3]}
       >

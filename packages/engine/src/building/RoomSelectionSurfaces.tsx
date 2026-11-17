@@ -1,3 +1,4 @@
+import type { Texture } from "three";
 import { createContext, useContext } from "react";
 import { FloorFinishSurfaces } from "../floor-finishes/FloorFinishSurfaces";
 import { HomeAssistantSceneLighting } from "../HomeAssistantSceneLighting";
@@ -18,9 +19,10 @@ type RoomSelectionSurfacesProps = Pick<
   | "walkMode"
   | "onSelectRoom"
   | "sceneLightingEnabled"
-> & { floor: FloorSpec; outsideRoomId: string };
+> & { floor: FloorSpec; outsideRoomId: string; wallContact: Texture | null };
 
 export function RoomSelectionSurfaces({
+  wallContact,
   sourceFloor,
   floor,
   outsideRoomId,
@@ -45,6 +47,7 @@ export function RoomSelectionSurfaces({
         enabled={sceneLightingEnabled}
       />
       <FloorFinishSurfaces
+        wallContact={wallContact}
         floor={floor}
         variant="scene"
         selectedRoomId={selectedRoomId}

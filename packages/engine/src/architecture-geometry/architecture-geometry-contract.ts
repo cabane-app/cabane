@@ -19,6 +19,8 @@ export const EPSILON = 1e-6;
 // far below any visible or authored measurement precision.
 export const CLIPPING_GRID_METERS = 1e-7;
 
+export const OPENING_CUT_MARGIN_METERS = 0.001;
+
 export const JUNCTION_SEAM_OVERLAP_METERS = 0.012;
 
 export type ClippingGeometry = ClippingPolygon | MultiPolygon;

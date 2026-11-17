@@ -2,6 +2,7 @@ export { SceneActivityPulse } from "./SceneActivityPulse";
 export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";
 export * from "./types";
+export { RoomDashboardSettings } from "./room-dashboards/RoomDashboardSettings";
 export { isAuxiliaryEntitySlot } from "./entity-slot-roles";
 export * from "./walk-tools";
 export * from "./action-bar/action-bar-config";
@@ -21,9 +22,12 @@ export * from "./floor-finishes";
 export * from "./opening-orientation";
 export * from "./architecture-geometry";
 export { physicalFloor } from "./architecture-geometry/physical-floor";
+export { ArchitecturalGlass } from "./architecture-scene/ArchitecturalGlass";
+export { JoineryMaterial, useDetailedJoinery } from "./architecture-scene/JoineryMaterial";
 export * from "./architecture-models";
 export * from "./lighting";
 export * from "./SceneLighting";
+export * from "./graphics-features";
 export * from "./HomeAssistantSceneLighting";
 export * from "./navigation";
 export * from "./performance";
@@ -104,12 +108,14 @@ export { createSetupRecord, loadSetupRecord, saveSetupRecord } from "./setup-pro
 export { RoundedBox } from "./rounded-box/RoundedBox";
 
 export { ScenePreviewContext } from "./ScenePreview";
+export { DashboardSceneReadyContext } from "./DashboardSceneReady";
 
 export { deviceMappingRooms, outsideRoomGroupId } from "./outside-room-devices";
 
 export { BUILD_TUTORIAL_STEPS, createBuildTutorialState } from "./onboarding/build-tutorial-state";
 export type { BuildTutorialState, BuildTutorialStep } from "./onboarding/build-tutorial-state";
 export { rollUpDoorGeometry } from "./roll-up-door-geometry";
+export { GARDEN_GATE_VARIANTS, isGardenGate, type GardenGateVariant } from "./garden-gate";
 export {
   DEFAULT_DOOR_CONFIGURATION,
   doorFromConfiguration,
@@ -190,3 +196,4 @@ export {
   ModelLightingStateContext,
   useModelLightingState,
 } from "./model-lighting/ModelLightingSurface";
+export { localSurfaceAt, transitionOutline } from "./elevation/surfaces";

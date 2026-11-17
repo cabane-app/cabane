@@ -178,6 +178,65 @@ await withModules(async (load) => {
     assert.deepEqual(closed.state, emptyFloorZoneDrawing);
   });
 
+  test("wall starts defer area ownership, including undo and shared room boundaries", () => {
+    const floor = {
+      footprint: [
+        [0, 0],
+        [4, 0],
+        [4, 4],
+        [0, 4],
+      ],
+      rooms: [
+        {
+          id: "left",
+          name: "Left",
+          polygon: [
+            [0, 0],
+            [2, 0],
+            [2, 4],
+            [0, 4],
+          ],
+        },
+        {
+          id: "right",
+          name: "Right",
+          polygon: [
+            [2, 0],
+            [4, 0],
+            [4, 4],
+            [2, 4],
+          ],
+        },
+      ],
+    };
+    const place = (state, point) => advanceFloorZoneDrawing(state, { type: "point", point }, floor);
+    for (const [start, next, third, owner] of [
+      [[0, 1], [1, 1], [1, 2], "left"],
+      [[0, 1], [-1, 1], [-1, 2], null],
+      [[2, 1], [1, 1], [1, 2], "left"],
+      [[2, 1], [3, 1], [3, 2], "right"],
+    ]) {
+      let state = place(emptyFloorZoneDrawing, start).state;
+      assert.equal(state.roomId, null);
+      state = place(state, next).state;
+      assert.equal(state.error, null);
+      state = place(state, third).state;
+      assert.equal(place(state, start).completed.roomId, owner);
+    }
+    let state = place(emptyFloorZoneDrawing, [0, 1]).state;
+    state = place(state, [0, 2]).state;
+    assert.equal(state.roomId, null);
+    state = place(state, [1, 2]).state;
+    assert.equal(state.roomId, "left");
+    state = advanceFloorZoneDrawing(state, { type: "undo" }, floor).state;
+    assert.equal(state.roomId, null);
+    const redone = advanceFloorZoneDrawing(state, { type: "redo" }, floor).state;
+    assert.equal(redone.roomId, "left");
+    state = place(state, [-1, 2]).state;
+    assert.equal(state.error, null);
+    assert.equal(place(state, [0, 1]).completed.roomId, null);
+  });
+
   test("custom-area drawing keeps invalid outlines recoverable", () => {
     const floor = baseFloor();
     let state = advanceFloorZoneDrawing(

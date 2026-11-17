@@ -1,3 +1,4 @@
+import { useGraphicsFeature } from "./graphics-features";
 import { MAX_ORTHOGRAPHIC_ZOOM } from "./navigation/camera-zoom";
 import {
   readOrbitView,
@@ -16,6 +17,8 @@ import { Spherical, Vector3, type OrthographicCamera as ThreeOrthographicCamera 
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState, type Ref } from "react";
 
+import { planPointToWorld } from "./geometry";
+import { frameOrbitPoints } from "./room-navigation/room-camera-framing";
 import { worldBoundsForFloorScene } from "./pools/pool-footprint";
 
 import type { FloorSpec, RoomSpec } from "./types";
@@ -192,6 +195,7 @@ function OrbitCameraRig({
     manual.current = false;
   }, [stopTouchGlide]);
   const { width, height } = useThree((state) => state.size);
+  const houseFraming = useGraphicsFeature("framing");
   const defaultFraming = useMemo(() => {
     const bounds = worldBoundsForFloorScene(floor);
     if (buildingFloors?.length) {
@@ -224,7 +228,7 @@ function OrbitCameraRig({
       stacked ? { width: bounds.width, depth: bounds.depth + buildingHeight * 0.75 } : bounds,
       false,
     );
-    return {
+    const site = {
       position: [
         bounds.centerX + span * 0.82,
         span * 1.16 + 2.8 + targetHeight,
@@ -233,14 +237,40 @@ function OrbitCameraRig({
       target: [bounds.centerX, targetHeight, bounds.centerZ] as const,
       zoom,
     };
-  }, [buildingFloors, elevation, floor, height, showRoof, width]);
+    if (!houseFraming || stacked || !floor.rooms.length)
+      return { ...site, site, minZoom: zoom * 0.7 };
+    // Compose the single-storey cutaway around its architecture. Remote landscape
+    // features still set the orbit distance and the range available to zoom out.
+    const footprint = (floor.footprintRegions ?? [floor.footprint]).flat();
+    if (!footprint.length) return { ...site, site, minZoom: zoom * 0.7 };
+    const wallHeight = Math.max(
+      floor.defaultWallHeightMeters,
+      ...floor.walls.map((w) => w.heightMeters ?? 0),
+    );
+    const points = footprint.flatMap((point) => {
+      const [x, z] = planPointToWorld(point, floor.coordinates);
+      return [elevation, elevation + wallHeight].map((y) => new Vector3(x, y, z));
+    });
+    const pose = frameOrbitPoints(points, { width, height }, { left: 0, top: 0, width, height });
+    const houseZoom = Math.min(pose.zoom, 115);
+    const offset = new Vector3()
+      .setFromSpherical(pose.offset)
+      .setLength(new Vector3(...site.position).distanceTo(new Vector3(...site.target)));
+    return {
+      position: offset.add(pose.target).toArray(),
+      target: pose.target.toArray(),
+      zoom: houseZoom,
+      minZoom: Math.min(zoom, houseZoom) * 0.7,
+      site,
+    };
+  }, [buildingFloors, elevation, floor, height, showRoof, width, houseFraming]);
   // Orthographic magnification comes from zoom, not the orbit radius. Keep the
   // camera behind the scene so the near plane cannot slice foreground geometry.
   const minDistance = Math.hypot(
     ...defaultFraming.position.map((value, index) => value - defaultFraming.target[index]),
   );
   // Keep the home legible: manual zoom-out stops just beyond its fitted overview.
-  const minZoom = defaultFraming.zoom * 0.7;
+  const minZoom = defaultFraming.minZoom;
   // Read once per home/floor mount. Metadata updates never reset a user view.
   const [framing] = useState<SavedOrbitView & { restored?: boolean }>(() => {
     const fallback: SavedOrbitView = {
@@ -261,27 +291,54 @@ function OrbitCameraRig({
       ? { ...adapted, restored: true }
       : fallback;
   });
-  const remembered = useRef<SavedOrbitView | null>(null);
+  const manualView = useRef<SavedOrbitView | null>(null);
+  const comparisonView = useRef<SavedOrbitView | null>(null);
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previousFraming = useRef(houseFraming);
+  useEffect(() => {
+    if (previousFraming.current === houseFraming) return;
+    previousFraming.current = houseFraming;
+    const controls = orbitRef.current;
+    if (!controls || locked) return;
+    const pose = {
+      position: defaultFraming.position,
+      target: defaultFraming.target,
+      zoom: defaultFraming.zoom,
+      viewport: [width, height] as const,
+    };
+    comparisonView.current = pose;
+    automaticNavigation();
+    if (room) return;
+    controls.enableDamping = false;
+    controls.update();
+    controls.target.set(...pose.target);
+    controls.object.position.set(...pose.position);
+    (controls.object as ThreeOrthographicCamera).zoom = pose.zoom;
+    controls.object.updateProjectionMatrix();
+    controls.update();
+    controls.enableDamping = true;
+  }, [houseFraming, defaultFraming, automaticNavigation, locked, room, width, height]);
+
   const save = useCallback(() => {
     const controls = orbitRef.current;
     if (!manual.current || !controls) return;
-    remembered.current = {
+    comparisonView.current = null;
+    manualView.current = {
       position: controls.object.position.toArray() as [number, number, number],
       target: controls.target.toArray() as [number, number, number],
       zoom: (controls.object as ThreeOrthographicCamera).zoom,
       viewport: [Math.max(1, width), Math.max(1, height)],
     };
-    if (viewKey) writeOrbitView(viewKey, { pose: remembered.current }, false);
+    if (viewKey) writeOrbitView(viewKey, { pose: manualView.current }, false);
     if (pending.current) clearTimeout(pending.current);
     pending.current = setTimeout(() => {
-      if (viewKey && remembered.current) writeOrbitView(viewKey, { pose: remembered.current });
+      if (viewKey && manualView.current) writeOrbitView(viewKey, { pose: manualView.current });
     }, 150);
   }, [viewKey, width, height]);
   useEffect(() => {
     const flush = () => {
       if (pending.current) clearTimeout(pending.current);
-      if (viewKey && remembered.current) writeOrbitView(viewKey, { pose: remembered.current });
+      if (viewKey && manualView.current) writeOrbitView(viewKey, { pose: manualView.current });
     };
     if (typeof window !== "undefined") window.addEventListener("pagehide", flush);
     return () => {
@@ -290,7 +347,7 @@ function OrbitCameraRig({
     };
   }, [viewKey]);
   const getOverviewPose = () => {
-    const source = remembered.current ?? framing;
+    const source = comparisonView.current ?? manualView.current ?? framing;
     const pose = fitSavedOrbitView(source, width, height);
     const target = new Vector3(...pose.target);
     return {
@@ -307,15 +364,12 @@ function OrbitCameraRig({
       interruptNavigation();
       controls.enableDamping = false;
       controls.update();
-      controls.target.set(...defaultFraming.target);
-      controls.object.position.set(...defaultFraming.position);
+      const view = topDown ? defaultFraming.site : defaultFraming;
+      controls.target.set(...view.target);
+      controls.object.position.set(...view.position);
       if (topDown)
-        controls.object.position.set(
-          defaultFraming.target[0],
-          defaultFraming.position[1],
-          defaultFraming.target[2] + 0.00001,
-        );
-      (controls.object as ThreeOrthographicCamera).zoom = defaultFraming.zoom;
+        controls.object.position.set(view.target[0], view.position[1], view.target[2] + 0.00001);
+      (controls.object as ThreeOrthographicCamera).zoom = view.zoom;
       (controls.object as ThreeOrthographicCamera).updateProjectionMatrix();
       controls.update();
       controls.enableDamping = true;
@@ -350,7 +404,7 @@ function OrbitCameraRig({
     const controls = orbitRef.current;
     if (!controls || (previous.width === width && previous.height === height)) return;
     const camera = controls.object as ThreeOrthographicCamera;
-    const source = remembered.current ?? framing;
+    const source = comparisonView.current ?? manualView.current ?? framing;
     const scale =
       fitSavedOrbitView(source, width, height).zoom /
       fitSavedOrbitView(source, previous.width, previous.height).zoom;

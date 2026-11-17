@@ -1,7 +1,9 @@
 import { framedHingedDoorMount } from "./framed-hinged-door-mount";
-import { omitUndefinedProperties } from "@cabane/engine";
+import { omitUndefinedProperties, useDetailedJoinery } from "@cabane/engine";
+import { SlidingGlassTrack } from "./sliding-glass-track";
 import { RollUpDoorModel } from "./roll-up-door-model";
 import {
+  isGardenGate,
   openingWorldPlacement,
   resolveOpeningOrientation,
   wallLengthPlanUnits,
@@ -13,6 +15,12 @@ import { DoorLeaf } from "./door-leaf";
 import type { OpeningModelProps } from "../opening-model-props";
 import { PlankDoorRail } from "./plank-door-rail";
 import { PLANK_DOOR_LEAF_DEPTH_METERS } from "./plank-door-leaf";
+import {
+  GARDEN_GATE_HINGE_OFFSET_METERS,
+  GARDEN_GATE_SWEEP_DEPTH_METERS,
+} from "./garden-gate-leaf";
+import { gardenGateColor } from "../../../door-presets";
+import { DOOR_FRAME_EXTRA_DEPTH_METERS } from "./door-frame-dimensions";
 
 const PLANK_DOOR_WALL_GAP_METERS = 0.004;
 
@@ -23,6 +31,7 @@ export function DoorModel({
   position,
   reducedMotion,
 }: OpeningModelProps<DoorSpec>) {
+  const detailed = useDetailedJoinery();
   if (opening.operation === "roll-up")
     return (
       <RollUpDoorModel
@@ -36,6 +45,10 @@ export function DoorModel({
   const placement = openingWorldPlacement(wall, opening, floor.coordinates);
   const orientation = resolveOpeningOrientation(opening);
   const paired = opening.leafCount === 2;
+  const variant = opening.variant;
+  const gate = isGardenGate(variant);
+  const wallFrameDepth = wall.thicknessMeters + DOOR_FRAME_EXTRA_DEPTH_METERS;
+  const frameDepth = gate ? Math.min(0.09, wallFrameDepth) : wallFrameDepth;
   // Opposing door leaves meet at the center instead of each losing clearance.
   const concealed = opening.variant === "concealed";
   const frontSign =
@@ -71,14 +84,20 @@ export function DoorModel({
     ? framedHingedDoorMount(
         placement.widthMeters,
         opening.leafCount,
-        wall.thicknessMeters,
+        frameDepth,
         opening.variant === "panel" || opening.variant === "panel-white-lever"
           ? 0.05
           : opening.variant === "plank"
             ? 0.151 * plankDepthScale
-            : 0.065,
+            : gate
+              ? GARDEN_GATE_SWEEP_DEPTH_METERS
+              : 0.065,
         orientation.sideSign,
-        opening.variant === "plank" ? 0.1185 * plankDepthScale : undefined,
+        opening.variant === "plank"
+          ? 0.1185 * plankDepthScale
+          : gate
+            ? GARDEN_GATE_HINGE_OFFSET_METERS
+            : undefined,
       )
     : null;
   const leafWidth =
@@ -99,15 +118,26 @@ export function DoorModel({
       position={[placement.start[0], opening.sillHeightMeters, placement.start[1]]}
       rotation={[0, placement.rotationY, 0]}
     >
+      {detailed && opening.variant === "full-glass" && opening.operation === "sliding" && (
+        <SlidingGlassTrack
+          width={placement.widthMeters}
+          height={opening.openingHeightMeters}
+          color={opening.color ?? (opening.finish === "white" ? "#d8d2c6" : "#9c6b49")}
+        />
+      )}
       {opening.variant !== "full-glass" &&
         opening.variant !== "steel-arched" &&
         !flush &&
         !concealed && (
           <DoorFrame
-            {...omitUndefinedProperties({ color: opening.color })}
-            wall={wall}
+            {...omitUndefinedProperties({
+              color: opening.color ?? (gate ? gardenGateColor(variant, opening.finish) : undefined),
+            })}
+            depth={frameDepth}
+            finish={opening.finish}
             width={placement.widthMeters}
             height={opening.openingHeightMeters}
+            openTop={gate}
           />
         )}
       {opening.operation === "sliding" && opening.variant === "plank" && (

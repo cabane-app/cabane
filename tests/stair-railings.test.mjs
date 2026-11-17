@@ -5,6 +5,73 @@ await withModules(async (load) => {
   const { deriveStairFlight } = await load("/packages/engine/src/stairs/flight-geometry.ts");
   const { deriveStairGuardSegments } = await load("/packages/engine/src/stairs/guard-geometry.ts");
   const { makeStairProject } = await load("/tests/fixtures/multiple-floors.ts");
+  test("straight handrails have a supporting post at both ends on each enabled side", () => {
+    const project = makeStairProject();
+    for (const rotationYRadians of [0, 0.73])
+      for (const railings of ["both", "left", "right"]) {
+        const flight = deriveStairFlight(project, {
+          ...project.stairs[0],
+          rotationYRadians,
+          railings,
+        });
+        const guards = deriveStairGuardSegments(flight, project.coordinates);
+        for (const side of [-1, 1]) {
+          if (railings === (side === -1 ? "right" : "left")) continue;
+          for (const end of [flight.path[0], flight.path.at(-1)]) {
+            const x = end.x + (side * flight.widthMeters * flight.side[0]) / 2;
+            const z = end.z + (side * flight.widthMeters * flight.side[1]) / 2;
+            assert.ok(
+              guards.some(
+                ({ from, to }) =>
+                  Math.abs(from[0] - x) < 1e-8 &&
+                  Math.abs(to[0] - x) < 1e-8 &&
+                  Math.abs(from[2] - z) < 1e-8 &&
+                  Math.abs(to[2] - z) < 1e-8 &&
+                  Math.abs(from[1] - end.elevation) < 1e-8 &&
+                  Math.abs(to[1] - end.elevation - 0.95) < 1e-8,
+              ),
+              `Missing post: ${railings}, side ${side}, height ${end.elevation}`,
+            );
+          }
+        }
+      }
+  });
+  test("same-floor guards stay on the high ground instead of floating over the lowered terrace", () => {
+    const project = makeStairProject();
+    project.floors = [project.floors[0]];
+    const floor = project.floors[0];
+    floor.outdoorPlatforms = [
+      {
+        id: "lower-terrace",
+        polygon: [
+          [-2, -4.5],
+          [1, -4.5],
+          [1, -1.7],
+          [-2, -1.7],
+        ],
+        elevation: { offsetMeters: -2, edges: [0, 1, 2, 3].map((i) => ({ id: `edge-${i}` })) },
+      },
+    ];
+    const stair = {
+      id: "terrace-stair",
+      terrain: { floorId: floor.id, end: "upper", surfaces: true },
+      at: [-0.5, -2.7],
+      widthMeters: 1,
+      runMeters: 2,
+      rotationYRadians: 0,
+    };
+    const flight = deriveStairFlight(project, stair);
+    assert.ok(flight);
+    const guards = deriveStairGuardSegments(flight, project.coordinates, true);
+    assert.ok(guards.length > 0, "protect the upper ground beside the stair cutout");
+    for (const rail of guards)
+      for (const point of [rail.from, rail.to])
+        assert.ok(point[2] >= -1.7 - 1e-8, "no upper guard floats over the lower terrace");
+    assert.ok(
+      guards.some((rail) => Math.abs(rail.from[2] + 1.7) < 1e-8),
+      "start at the actual ground edge",
+    );
+  });
   test("upper opening guards do not float where the upper floor is absent", () => {
     const project = makeStairProject();
     project.floors[1].footprint = [

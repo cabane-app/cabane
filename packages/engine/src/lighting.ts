@@ -35,13 +35,13 @@ const FULL_DAY_ELEVATION = 7.7;
 const FULL_NIGHT_ELEVATION = -2.5;
 const MAX_SUN_INTENSITY = 2.8;
 const NIGHT_BACKGROUND: RgbColor = [32, 45, 67];
-const DAY_BACKGROUND: RgbColor = [220, 232, 234];
+const DAY_BACKGROUND: RgbColor = [232, 224, 207];
 const NIGHT_SKY: RgbColor = [194, 204, 212];
 const DAY_SKY: RgbColor = [236, 244, 255];
 const NIGHT_GROUND: RgbColor = [89, 99, 107];
-const DAY_GROUND: RgbColor = [118, 139, 147];
+const DAY_GROUND: RgbColor = [161, 145, 122];
 const HORIZON_SUN: RgbColor = [255, 174, 112];
-const DAY_SUN: RgbColor = [255, 241, 218];
+const DAY_SUN: RgbColor = [255, 231, 197];
 
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(maximum, Math.max(minimum, value));
@@ -78,13 +78,17 @@ export const deriveSolarLighting = (
   sunState: SunEntityState | undefined,
   mode: SolarLightingMode = "live",
   northAngleDegrees = 0,
+  studioDaylight = true,
 ): SolarLightingState => {
   const effective =
     mode === "live"
       ? sunState
       : {
           state: mode === "day" ? "above_horizon" : "below_horizon",
-          attributes: { azimuth: 180, elevation: mode === "day" ? 35 : -8 },
+          attributes: {
+            azimuth: studioDaylight ? 228 : 180,
+            elevation: mode === "day" ? (studioDaylight ? 42 : 35) : -8,
+          },
         };
   const azimuth = finiteNumber(effective?.attributes.azimuth);
   const elevation = finiteNumber(effective?.attributes.elevation);
@@ -108,10 +112,18 @@ export const deriveSolarLighting = (
       -horizontalDistance * Math.cos(azimuthRadians),
     ],
     sunIntensity: MAX_SUN_INTENSITY * sunlightProgress,
-    sunColor: mixColor(HORIZON_SUN, DAY_SUN, sunlightProgress),
-    backgroundColor: mixColor(NIGHT_BACKGROUND, DAY_BACKGROUND, dayProgress),
+    sunColor: mixColor(HORIZON_SUN, studioDaylight ? DAY_SUN : [255, 241, 218], sunlightProgress),
+    backgroundColor: mixColor(
+      NIGHT_BACKGROUND,
+      studioDaylight ? DAY_BACKGROUND : [220, 232, 234],
+      dayProgress,
+    ),
     hemisphereSkyColor: mixColor(NIGHT_SKY, DAY_SKY, dayProgress),
-    hemisphereGroundColor: mixColor(NIGHT_GROUND, DAY_GROUND, dayProgress),
+    hemisphereGroundColor: mixColor(
+      NIGHT_GROUND,
+      studioDaylight ? DAY_GROUND : [118, 139, 147],
+      dayProgress,
+    ),
     hemisphereIntensity: mix(0.78, 1.05, dayProgress),
   };
 };

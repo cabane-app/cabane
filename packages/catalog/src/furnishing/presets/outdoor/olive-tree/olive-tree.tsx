@@ -34,12 +34,12 @@ export function OliveTree({ size = OLIVE_TREE_SIZE }: { size?: SceneItemSize }) 
         receiveShadow
         userData={{ walkCollider: true }}
       >
-        <ToonMaterial color="#92816a" />
-        <Outlines color="#514a3d" thickness={0.0015} />
+        <ToonMaterial vertexColors />
+        <Outlines color="#514a3d" thickness={0.0015} screenspace={false} />
       </mesh>
       <mesh name="olive-sculpted-boughs" geometry={geometry.boughs} castShadow receiveShadow>
-        <ToonMaterial color="#92816a" />
-        <Outlines color="#514a3d" thickness={0.0015} />
+        <ToonMaterial vertexColors />
+        <Outlines color="#514a3d" thickness={0.0015} screenspace={false} />
       </mesh>
       <mesh name="olive-rounded-leaf-sprays" geometry={geometry.leaves} castShadow receiveShadow>
         <ToonMaterial vertexColors side={DoubleSide} />

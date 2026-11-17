@@ -51,7 +51,8 @@ export function createRoofGableSpans(floor: FloorSpec, elevationMeters: number) 
             const point: Point = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t];
             return Math.abs(heightAt(point) - ceilingOffset - height) <= TOLERANCE_METERS;
           };
-          if (matches(start) && matches(end)) spans.push({ start, end, wall, frame });
+          if (matches(start) && matches(end))
+            spans.push({ start, end, wall, frame, elevation: elevationMeters });
         }
       }
     }

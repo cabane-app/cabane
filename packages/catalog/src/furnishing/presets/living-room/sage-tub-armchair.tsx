@@ -1,5 +1,7 @@
-import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
-import { RoundedFurniturePanel } from "../construction";
+import { type SceneItemSize } from "@cabane/engine";
+import { TubChairShell } from "./tub-chair-shell";
+import { BoxedCushion } from "./sofa-upholstery/boxed-cushion";
+import { TurnedSeatFoot } from "./sofa-upholstery/turned-seat-foot";
 export const SAGE_TUB_ARMCHAIR_SIZE = [0.78, 0.86, 0.8] as const;
 /** Generic proportions inferred from reference appearance, not manufacturer measurements. */
 export function SageTubArmchair({
@@ -18,42 +20,30 @@ export function SageTubArmchair({
     >
       {[-0.27, 0.27].flatMap((x) =>
         [-0.28, 0.28].map((z) => (
-          <mesh key={`${x}-${z}`} position={[x, 0.06, z]}>
-            <boxGeometry args={[0.055, 0.12, 0.055]} />
-            <ToonMaterial color="#bb976d" />
-          </mesh>
+          <TurnedSeatFoot
+            key={`${x}-${z}`}
+            x={x}
+            z={z}
+            height={0.18}
+            radius={0.04}
+            name="tub-chair-foot"
+            color="#bb976d"
+          />
         )),
       )}
-      <RoundedFurniturePanel
-        size={[0.65, 0.24, 0.7]}
-        position={[0, 0.24, 0.03]}
+      <BoxedCushion
+        name="upholstered-base"
+        size={[0.67, 0.25, 0.71]}
+        position={[0, 0.257, 0.022]}
         color={color ?? "#748e81"}
-        radius={0.065}
-        outlineColor="#526e61"
       />
-      <RoundedFurniturePanel
-        size={[0.53, 0.15, 0.65]}
-        position={[0, 0.435, 0.075]}
+      <TubChairShell color={color ?? "#789486"} />
+      <BoxedCushion
+        name="tub-seat"
+        size={[0.549, 0.168, 0.659]}
+        position={[0, 0.434, 0.0705]}
         color={color ?? "#819b8d"}
-        radius={0.07}
-        outlineColor="#617d6e"
-      />
-      {[-0.305, 0.305].map((x) => (
-        <RoundedFurniturePanel
-          key={x}
-          size={[0.17, 0.58, 0.7]}
-          position={[x, 0.57, 0]}
-          color={color ?? "#789486"}
-          radius={0.08}
-          outlineColor="#617d6e"
-        />
-      ))}
-      <RoundedFurniturePanel
-        size={[0.63, 0.64, 0.18]}
-        position={[0, 0.54, -0.31]}
-        color={color ?? "#789486"}
-        radius={0.085}
-        outlineColor="#617d6e"
+        outlineColor="#687f72"
       />
     </group>
   );

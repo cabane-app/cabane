@@ -9,8 +9,18 @@ export function sceneLightState(
   mode: DeviceItemSpec["lightState"],
   connected: EntityStateSnapshot | undefined,
   night = false,
+  modelId?: string,
 ): EntityStateSnapshot | undefined {
-  if (!mode || mode === "connected") return connected;
+  if (!mode || mode === "connected") {
+    if (
+      modelId === "fireplace" &&
+      connected?.entityId.startsWith("climate.") &&
+      !["off", "unknown", "unavailable"].includes(connected.state)
+    ) {
+      return { ...connected, state: connected.attributes.hvac_action === "heating" ? "on" : "off" };
+    }
+    return connected;
+  }
   return {
     entityId: connected?.entityId ?? "light.scene",
     state: mode === "always-on" || (mode === "night-only" && night) ? "on" : "off",

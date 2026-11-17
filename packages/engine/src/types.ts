@@ -12,6 +12,7 @@ import type { ActionBarConfiguration } from "./action-bar/action-bar-config";
 import type { HomeDeviceModelProps } from "./device-model-props";
 export type { DeviceModelReading, HomeDeviceModelProps } from "./device-model-props";
 import type { FloorFinishSpec } from "./floor-finishes/types";
+import type { GardenGateVariant } from "./garden-gate";
 export {
   FLOOR_PATTERN_PRESET_IDS,
   type FloorFinishSpec,
@@ -116,7 +117,18 @@ export interface DeviceSlotSpec {
   placement: DevicePlacement;
 }
 
+export interface ElevationSettings {
+  offsetMeters: number;
+  /** Local headroom override; omission preserves the existing ceiling. */
+  ceilingHeightMeters?: number;
+  edges: readonly {
+    id: string;
+    transition?: { kind: "sharp" } | { kind: "sloped"; widthMeters: number };
+  }[];
+}
+
 export interface FloorFinishZoneSpec {
+  elevation?: ElevationSettings;
   id: string;
   polygon: Polygon;
   finish: FloorFinishSpec;
@@ -165,7 +177,8 @@ export type DoorVariant =
   | "concealed"
   | "flush-knob"
   | "flush"
-  | "plank";
+  | "plank"
+  | GardenGateVariant;
 export type DoorFinish = "wood" | "white";
 
 /** Relative to the owning wall's from → to direction, never the camera. */
@@ -206,7 +219,7 @@ export type DoorSpec = DoorBaseSpec &
       }
     | {
         operation: "sliding";
-        variant: DoorVariant;
+        variant: Exclude<DoorVariant, GardenGateVariant>;
         leafCount: 1 | 2;
         hingeSide?: never;
         slideDirection?: "start" | "end";
@@ -328,6 +341,7 @@ export interface OutdoorPlatformEdgeSpec {
   configuration?: OutdoorPlatformEdgeConfiguration;
 }
 export interface OutdoorPlatformSpec {
+  elevation?: ElevationSettings;
   id: string;
   /** Opt-in room identity for Connect and dashboard use; never adds indoor geometry. */
   useAsRoom?: boolean;
@@ -576,7 +590,11 @@ export type ArchitectureModelComponent<Opening extends OpeningSpec = OpeningSpec
 export interface ArchitectureModelRegistry {
   door: ArchitectureModelComponent<DoorSpec>;
   window: ArchitectureModelComponent<WindowSpec>;
-  passage: ArchitectureModelComponent<PassageSpec>;
+  passage: ArchitectureModelComponent<PassageSpec> & {
+    /** Lower outline of a masonry head in metres from the left jamb and sill.
+     * The host wall renders this outline in place of the standalone model. */
+    wallHeadProfile?: (opening: PassageSpec, widthMeters: number) => readonly PlanPoint[] | null;
+  };
 }
 
 export type HomeOpeningModelProps = ArchitectureModelProps;
@@ -747,6 +765,9 @@ export type LegacyHomeManifest = Omit<
 };
 
 export interface RuntimeBindingProfile {
+  roomDashboards?: Readonly<
+    Record<string, import("./room-dashboards/room-dashboard").RoomDashboardSettings>
+  >;
   weatherSource?: import("./weather/weather-state").WeatherSource;
   schemaVersion: 1;
   homeId: string;

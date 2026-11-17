@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { Color } from "three";
+import { createElement } from "react";
+import { create } from "@react-three/test-renderer";
+import { Color, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
+  const { BuildingRoof } = await load("/packages/engine/src/roof/BuildingRoof.tsx");
   const { deriveRoofRegions } = await load("/packages/engine/src/roof/roof-coverage.ts");
   const { buildRoofGeometries } = await load("/packages/engine/src/roof/roof-geometry.ts");
   const { DEFAULT_ROOF_SETTINGS } = await load("/packages/engine/src/roof/roof-settings.ts");
@@ -97,6 +101,141 @@ await withModules(async (load) => {
   };
   const near = (actual, expected) =>
     assert.ok(Math.abs(actual - expected) < 0.001, `${actual} ≠ ${expected}`);
+
+  function roofRimHits(geometry, x, y, z) {
+    const material = new MeshBasicMaterial({ side: DoubleSide });
+    const ray = new Raycaster(new Vector3(x, y, z - 0.01), new Vector3(0, 0, 1), 0, 0.02);
+    const hits = ["infill", "edges"].filter(
+      (face) => ray.intersectObject(new Mesh(geometry[face], material)).length > 0,
+    );
+    material.dispose();
+    return hits;
+  }
+
+  test("Larch continues plaster into the eave and sloping gable up to its thin roof trim", async () => {
+    const larch = JSON.parse(
+      readFileSync(
+        new URL("../home/dev-workspaces/larch-observatory.project.json", import.meta.url),
+      ),
+    );
+    const renderer = await create(createElement(BuildingRoof, { manifest: larch }));
+    try {
+      const infill = renderer.scene.findByProps({ name: "roof-wall-infill" }).instance;
+      const trim = renderer.scene.findByProps({ name: "roof-edges" }).instance;
+      assert.ok(infill.material.isMeshStandardMaterial && infill.receiveShadow);
+      assert.equal(trim.material.color.getHexString(), larch.home.roof.edgeColor.slice(1));
+      for (const [origin, direction, u] of [
+        [[12, 3.1, 3.9], [0, 0, 1], -12],
+        [[16.7, 2.55, 6.7], [-1, 0, 0], -6.7],
+      ]) {
+        const [hit] = new Raycaster(
+          new Vector3(...origin),
+          new Vector3(...direction),
+        ).intersectObject(infill);
+        near(hit.uv.x, u);
+        near(hit.uv.y, origin[1]);
+        assert.equal(
+          new Color()
+            .fromBufferAttribute(infill.geometry.attributes.color, hit.face.a)
+            .getHexString(),
+          "e8dfcd",
+        );
+      }
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
+  test("an upper-storey wall image continues in its authored direction, aspect and floor-relative phase", async () => {
+    const image = JSON.parse(readFileSync(new URL("./fixtures/wall-image.json", import.meta.url)));
+    const lower = makeFloor([rectangle(0, 0, 8, 6)]);
+    const upper = makeFloor([rectangle(0, 0, 8, 6)], "upper");
+    const finish = { pattern: "custom-image", color: "#ffffff", repeatMeters: 2, image };
+    upper.walls = upper.footprint.map((from, i) => ({
+      id: `upper-${i}`,
+      from,
+      to: upper.footprint[(i + 1) % 4],
+      classification: "exterior",
+      thicknessMeters: 0.2,
+      ...(i === 0 ? { faceFinishes: { right: finish } } : {}),
+    }));
+    const renderer = await create(
+      createElement(BuildingRoof, {
+        manifest: {
+          floors: [lower, upper],
+          home: {
+            roof: { ...DEFAULT_ROOF_SETTINGS, direction: "flat" },
+            palette: { exterior: "#334455", interior: "#abcdef" },
+          },
+        },
+      }),
+    );
+    try {
+      const mesh = renderer.scene.findByProps({ name: "roof-wall-infill" }).instance;
+      const [hit] = new Raycaster(new Vector3(3, 5.6, -1), new Vector3(0, 0, 1)).intersectObject(
+        mesh,
+      );
+      const slot = hit.face.materialIndex;
+      assert.equal(mesh.geometry.surfaces[slot].finish, finish);
+      assert.ok(mesh.material[slot].isMeshStandardMaterial);
+      near(hit.uv.x, -3 / finish.repeatMeters);
+      near(hit.uv.y, 2.6 / ((finish.repeatMeters * image.height) / image.width));
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
+  test("the Sun terrace façade is a single wall face above and below the balcony", () => {
+    const larch = JSON.parse(
+      readFileSync(
+        new URL("../home/dev-workspaces/larch-observatory.project.json", import.meta.url),
+      ),
+    );
+    const geometry = buildRoofGeometries(larch.floors, larch.home.roof);
+    try {
+      for (const [faceZ, heights] of [
+        [-0.12, [2.52, 2.68]],
+        [3.88, [5.55, 5.66]],
+      ]) {
+        for (const y of heights)
+          assert.deepEqual(
+            roofRimHits(geometry, -3.7, y, faceZ),
+            [],
+            `roof overlaps wall at y=${y}`,
+          );
+      }
+    } finally {
+      Object.values(geometry).forEach((part) => part.dispose());
+    }
+  });
+
+  test("a pitched roof retains only the part of its fascia above an upper-storey parapet", () => {
+    const ground = makeFloor([rectangle(0, 0, 8, 6)]);
+    const upper = makeFloor([rectangle(0, 0, 8, 6)], "upper");
+    upper.walls = [
+      {
+        id: "parapet",
+        from: [0, 0],
+        to: [8, 0],
+        classification: "exterior",
+        thicknessMeters: 0.2,
+        heightMeters: 3.2,
+      },
+    ];
+    const geometry = buildRoofGeometries([ground, upper], {
+      ...DEFAULT_ROOF_SETTINGS,
+      direction: "front-back",
+    });
+    try {
+      const at = (x, y) => roofRimHits(geometry, x, 3 + y, -0.1);
+      assert.deepEqual(at(0.5, 2.9), []);
+      assert.deepEqual(at(1.1, 3.19), []);
+      assert.deepEqual(at(1.1, 3.22), ["edges"]);
+      assert.deepEqual(at(2.5, 3.35), ["infill"]);
+    } finally {
+      Object.values(geometry).forEach((part) => part.dispose());
+    }
+  });
 
   test("merges adjacent rooms into one roof with gable directions or a level flat surface", () => {
     const floor = makeFloor([rectangle(0, 0, 5, 6), rectangle(5, 0, 5, 6)]);
@@ -370,6 +509,85 @@ await withModules(async (load) => {
       geometry.top.dispose();
       geometry.edges.dispose();
       geometry.infill.dispose();
+    }
+  });
+
+  test("flat roof infill follows leaning walls, their finish split and the extended corner", () => {
+    // Rotate off the clipping grid and translate away from the world origin.
+    const axis = new Vector3(0, 1, 0);
+    const offset = new Vector3(1.3145, 0, 0.7732);
+    const world = (x, y, z) => new Vector3(x, y, z).applyAxisAngle(axis, -0.31).add(offset);
+    const inPlan = ([x, z]) => {
+      const p = world(x, 0, z);
+      return [p.x, p.z];
+    };
+    const floor = makeFloor([rectangle(0, 0, 8, 6).map(inPlan)]);
+    const points = [
+      [0, 0],
+      [4, 0],
+      [8, 0],
+      [8, 6],
+      [0, 6],
+    ].map(inPlan);
+    const tiles = ["#b58572", "#97a894", "#758c9b"].map((color) => ({
+      pattern: "square-tile",
+      color,
+      repeatMeters: 0.8,
+    }));
+    floor.walls = points.map((from, i) => ({
+      id: `wall-${i}`,
+      from,
+      to: points[(i + 1) % points.length],
+      classification: "exterior",
+      thicknessMeters: 0.2,
+      exteriorColor: "#476685",
+      ...(i < 2 ? { leanMeters: 0.6, faceFinishes: { right: tiles[i] } } : {}),
+      ...(i === 4 ? { faceFinishes: { right: tiles[2] } } : {}),
+    }));
+    floor.wallJunctions = points.map((at, i) => ({
+      id: `junction-${i}`,
+      at,
+      wallIds: [floor.walls[i].id, floor.walls.at(i - 1).id],
+    }));
+    const geometry = buildRoofGeometries(
+      [floor],
+      { ...DEFAULT_ROOF_SETTINGS, direction: "flat" },
+      "#ff0000",
+    );
+    const materials = geometry.infill.surfaces.map(
+      () => new MeshBasicMaterial({ side: DoubleSide }),
+    );
+    const mesh = new Mesh(geometry.infill, materials);
+    try {
+      for (const [x, i] of [
+        [3.95, 0],
+        [4.05, 1],
+      ]) {
+        const [hit] = new Raycaster(
+          world(x, 2.6, -1),
+          new Vector3(0, 0, 1).applyAxisAngle(axis, -0.31),
+        ).intersectObject(mesh);
+        near(hit.distance, 0.3);
+        assert.equal(geometry.infill.surfaces[hit.face.materialIndex].finish, tiles[i]);
+        near(hit.uv.x, (x - 4 * i) / 0.8);
+        near(hit.uv.y, 2.6 / 0.8);
+      }
+      // The adjoining wall stretches from 6 m to 6.6 m; its miters translate.
+      for (const [z, originalAlong] of [
+        [-0.65, 6.05],
+        [-0.45, (6.45 * 6) / 6.6],
+        [1.5, (4.5 * 6) / 6.6],
+      ]) {
+        const [corner] = new Raycaster(
+          world(-1, 2.6, z),
+          new Vector3(1, 0, 0).applyAxisAngle(axis, -0.31),
+        ).intersectObject(mesh);
+        assert.equal(geometry.infill.surfaces[corner.face.materialIndex].finish, tiles[2]);
+        near(corner.uv.x, originalAlong / 0.8);
+      }
+    } finally {
+      Object.values(geometry).forEach((g) => g.dispose());
+      materials.forEach((m) => m.dispose());
     }
   });
 

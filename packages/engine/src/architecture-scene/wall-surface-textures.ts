@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from "three";
 import { paintFloorPattern } from "../floor-finishes/presets";
+import { useScannedFinish } from "../scanned-finishes";
 import type { WallSurfaceFinish } from "../types";
 
 type Surface = { finish?: WallSurfaceFinish | undefined };
@@ -93,7 +94,7 @@ function createWallSurfaceTextures(notify: () => void) {
   };
 }
 
-export function useWallSurfaceTextures(surfaces: readonly Surface[]) {
+export function useWallFaceTexture(surfaces: readonly Surface[]) {
   const [, setRevision] = useState(0);
   const textures = useMemo(
     () => createWallSurfaceTextures(() => setRevision((value) => value + 1)),
@@ -101,5 +102,9 @@ export function useWallSurfaceTextures(surfaces: readonly Surface[]) {
   );
   useEffect(() => () => textures.dispose(), [textures]);
   useEffect(() => textures.retain(surfaces), [surfaces, textures]);
-  return textures;
+  const plaster = useScannedFinish(
+    surfaces.some(({ finish }) => !finish) ? "painted-plaster" : undefined,
+  );
+  return (finish: WallSurfaceFinish | undefined) =>
+    finish ? textures.get(finish) : (plaster ?? null);
 }
