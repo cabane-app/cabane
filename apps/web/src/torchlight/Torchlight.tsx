@@ -1,4 +1,5 @@
 import type { WalkToolProps } from "@cabane/engine";
+import { BlasterGlove } from "@cabane/walk-laser";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { Group, PerspectiveCamera, Scene } from "three";
@@ -34,9 +35,18 @@ export default function Torchlight({ enabled }: WalkToolProps) {
   }, 2);
 
   return createPortal(
-    <group ref={grip}>
-      <TorchlightModel />
-    </group>,
+    <>
+      <ambientLight intensity={1.1} />
+      <directionalLight position={[-2, 4, 3]} intensity={2.2} />
+      <group ref={grip}>
+        <TorchlightModel />
+        <group rotation={[-0.48, 0.25, -0.08]} scale={0.85}>
+          <group position={[0, 0.17, -0.13]}>
+            <BlasterGlove />
+          </group>
+        </group>
+      </group>
+    </>,
     overlay,
   );
 }
