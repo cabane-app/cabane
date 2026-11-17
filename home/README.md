@@ -4,7 +4,9 @@ New `/welcome` and `/demo` workspaces use **Larch Observatory** from
 `dev-workspaces/larch-observatory.project.json`. `src/showcase.ts` parses the same
 portable design with a separate demo identity, leaving the development workspace
 independent. The welcome tour walks through its Cathedral hall; demo controls
-simulate its existing device slots.
+simulate its existing device slots. Each indoor room has an air-quality monitor.
+The pool pavilion and sun terrace have weather consoles. Temperature, relative
+humidity and air-quality index update once per minute in the demo.
 
 Existing browser workspaces keep their saved contents. The original seed below
 remains available for legacy connection migration and compatibility fixtures.

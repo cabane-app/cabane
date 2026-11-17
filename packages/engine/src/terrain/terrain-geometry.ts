@@ -15,6 +15,7 @@ interface Vertex {
   b: number;
 }
 type Axis = "x" | "y";
+const gridTolerance = 1e-8;
 
 function clip(vertices: Vertex[], axis: Axis, boundary: number, lower: boolean): Vertex[] {
   const result: Vertex[] = [];
@@ -47,7 +48,10 @@ function clip(vertices: Vertex[], axis: Axis, boundary: number, lower: boolean):
 function splitAt(polygons: Vertex[][], axis: Axis, boundary: number): Vertex[][] {
   return polygons.flatMap((polygon) => {
     const values = polygon.map((point) => point[axis]);
-    if (Math.min(...values) >= boundary - 1e-8 || Math.max(...values) <= boundary + 1e-8)
+    if (
+      Math.min(...values) >= boundary - gridTolerance ||
+      Math.max(...values) <= boundary + gridTolerance
+    )
       return [polygon];
     return [clip(polygon, axis, boundary, true), clip(polygon, axis, boundary, false)];
   });
@@ -90,8 +94,20 @@ export function conformToTerrain(
       b: color?.getZ(id) ?? 0,
     }));
     let polygons = [triangle];
-    for (const boundary of surface.gridX) polygons = splitAt(polygons, "x", boundary);
-    for (const boundary of surface.gridZ) polygons = splitAt(polygons, "y", -boundary);
+    const [p, q, r] = triangle;
+    const minX = Math.min(p.x, q.x, r.x),
+      maxX = Math.max(p.x, q.x, r.x);
+    const minY = Math.min(p.y, q.y, r.y),
+      maxY = Math.max(p.y, q.y, r.y);
+    for (const x of surface.gridX) {
+      if (minX < x - gridTolerance && maxX > x + gridTolerance)
+        polygons = splitAt(polygons, "x", x);
+    }
+    for (const z of surface.gridZ) {
+      const y = -z;
+      if (minY < y - gridTolerance && maxY > y + gridTolerance)
+        polygons = splitAt(polygons, "y", y);
+    }
     for (const polygon of polygons)
       for (let j = 1; j < polygon.length - 1; j++) {
         const vertices = [polygon[0], polygon[j], polygon[j + 1]];

@@ -27,6 +27,13 @@ export function SpiralStairModel({
       <StairPolygonSurface
         polygon={flight.upperLanding.map((p) => planPointToWorld(p, coordinates))}
         elevation={flight.riseMeters}
+        finish={
+          flight.style === "concrete"
+            ? "painted-plaster"
+            : flight.style === "stone"
+              ? "limestone"
+              : "light-oak"
+        }
         color={
           flight.style === "concrete" ? "#b7b8b1" : flight.style === "stone" ? "#d1c5ae" : "#cbb99a"
         }

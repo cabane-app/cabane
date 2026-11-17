@@ -20,7 +20,8 @@ const shapeAttributes = ["position", "normal"];
 const tintedShapeAttributes = [...shapeAttributes, "color"];
 
 function hasBatchableTransform(mesh: Mesh): boolean {
-  if (mesh.matrixWorld.determinant() <= 0) return false;
+  const determinant = mesh.matrixWorld.determinant();
+  if (!Number.isFinite(determinant) || determinant === 0) return false;
   // Three's batching normal transform supports scale/rotation, not shear.
   const e = mesh.matrixWorld.elements;
   for (const [a, b] of basisPairs) {

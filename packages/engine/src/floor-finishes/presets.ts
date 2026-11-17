@@ -17,33 +17,73 @@ export interface FloorFinishPreset {
   label: string;
   representativeColor: string;
   repeatMeters: number;
+  roughness: number;
   configurableColor?: boolean;
 }
 
 export const FLOOR_FINISH_PRESETS: readonly FloorFinishPreset[] = [
-  { id: "light-oak", label: "Light oak", representativeColor: "#c9a97e", repeatMeters: 3.6 },
+  {
+    id: "light-oak",
+    label: "Light oak",
+    representativeColor: "#c9a97e",
+    repeatMeters: 3.6,
+    roughness: 0.45,
+  },
   {
     id: "light-oak-horizontal",
     label: "Light oak 2",
     representativeColor: "#c9a97e",
     repeatMeters: 3.6,
+    roughness: 0.45,
   },
   {
     id: "oak-herringbone",
     label: "Oak herringbone",
     representativeColor: "#c29a67",
     repeatMeters: 0.8,
+    roughness: 0.43,
   },
-  { id: "travertine", label: "Travertine", representativeColor: "#e0d2b9", repeatMeters: 1.2 },
-  { id: "terracotta-tile", label: "Terracotta", representativeColor: "#bd7756", repeatMeters: 0.8 },
-  { id: "terrazzo", label: "Terrazzo", representativeColor: "#cabfa9", repeatMeters: 0.7 },
-  { id: "dark-walnut", label: "Dark walnut", representativeColor: "#77583f", repeatMeters: 3.6 },
-  { id: "limestone", label: "Limestone", representativeColor: "#cbc3ad", repeatMeters: 1.2 },
+  {
+    id: "travertine",
+    label: "Travertine",
+    representativeColor: "#e0d2b9",
+    repeatMeters: 1.2,
+    roughness: 0.66,
+  },
+  {
+    id: "terracotta-tile",
+    label: "Terracotta",
+    representativeColor: "#bd7756",
+    repeatMeters: 0.8,
+    roughness: 0.8,
+  },
+  {
+    id: "terrazzo",
+    label: "Terrazzo",
+    representativeColor: "#cabfa9",
+    repeatMeters: 0.7,
+    roughness: 0.36,
+  },
+  {
+    id: "dark-walnut",
+    label: "Dark walnut",
+    representativeColor: "#77583f",
+    repeatMeters: 3.6,
+    roughness: 0.4,
+  },
+  {
+    id: "limestone",
+    label: "Limestone",
+    representativeColor: "#cbc3ad",
+    repeatMeters: 1.2,
+    roughness: 0.73,
+  },
   {
     id: "square-tile",
     label: "Square tile",
     representativeColor: "#dedbd2",
     repeatMeters: 1.2,
+    roughness: 0.27,
     configurableColor: true,
   },
   {
@@ -51,6 +91,7 @@ export const FLOOR_FINISH_PRESETS: readonly FloorFinishPreset[] = [
     label: "Rectangular tile",
     representativeColor: "#c5d4cd",
     repeatMeters: 1.2,
+    roughness: 0.27,
     configurableColor: true,
   },
   {
@@ -58,6 +99,7 @@ export const FLOOR_FINISH_PRESETS: readonly FloorFinishPreset[] = [
     label: "Checkerboard tile",
     representativeColor: "#545e68",
     repeatMeters: 1.2,
+    roughness: 0.27,
     configurableColor: true,
   },
   {
@@ -65,37 +107,72 @@ export const FLOOR_FINISH_PRESETS: readonly FloorFinishPreset[] = [
     label: "Encaustic tile",
     representativeColor: "#c7ad86",
     repeatMeters: 0.6,
+    roughness: 0.65,
   },
   {
     id: "black-white-patchwork",
     label: "Black & white patchwork",
     representativeColor: "#b4b3aa",
     repeatMeters: 0.8,
+    roughness: 0.39,
   },
   {
     id: "blue-quatrefoil-tile",
     label: "Blue quatrefoil tile",
     representativeColor: "#b7c1bd",
     repeatMeters: 0.4,
+    roughness: 0.34,
   },
-  { id: "sand", label: "Sand", representativeColor: "#d7c28f", repeatMeters: 1.4 },
-  { id: "gravel", label: "Gravel", representativeColor: "#aaa38f", repeatMeters: 0.72 },
-  { id: "light-dirt", label: "Light dirt", representativeColor: "#ab8962", repeatMeters: 1.2 },
-  { id: "dark-dirt", label: "Dark dirt", representativeColor: "#65503d", repeatMeters: 1.2 },
-  { id: "pine-bark", label: "Pine bark", representativeColor: "#79503a", repeatMeters: 0.8 },
+  { id: "sand", label: "Sand", representativeColor: "#d7c28f", repeatMeters: 1.4, roughness: 0.98 },
+  {
+    id: "gravel",
+    label: "Gravel",
+    representativeColor: "#aaa38f",
+    repeatMeters: 0.72,
+    roughness: 0.91,
+  },
+  {
+    id: "light-dirt",
+    label: "Light dirt",
+    representativeColor: "#ab8962",
+    repeatMeters: 1.2,
+    roughness: 0.97,
+  },
+  {
+    id: "dark-dirt",
+    label: "Dark dirt",
+    representativeColor: "#65503d",
+    repeatMeters: 1.2,
+    roughness: 0.97,
+  },
+  {
+    id: "pine-bark",
+    label: "Pine bark",
+    representativeColor: "#79503a",
+    repeatMeters: 0.8,
+    roughness: 0.94,
+  },
   {
     id: "tomettes",
     label: "Hexagonal terracotta",
     representativeColor: "#b66b4b",
     repeatMeters: 0.9,
+    roughness: 0.78,
   },
   {
     id: "stepping-stones",
     label: "Stepping stones",
     representativeColor: DEFAULT_TERRAIN_GRASS_COLOR,
     repeatMeters: 1.8,
+    roughness: 0.88,
   },
-  { id: "pebbles", label: "River pebbles", representativeColor: "#aaa698", repeatMeters: 0.6 },
+  {
+    id: "pebbles",
+    label: "River pebbles",
+    representativeColor: "#aaa698",
+    repeatMeters: 0.6,
+    roughness: 0.74,
+  },
 ];
 
 const presetById = new Map(FLOOR_FINISH_PRESETS.map((preset) => [preset.id, preset]));

@@ -315,6 +315,18 @@ await withModules(async (load) => {
         2,
       );
       const scene = renderer.scene.instance;
+      const lawn = scene.getObjectByName("diorama-ground").geometry;
+      await renderer.update(
+        React.createElement(ArchitectureScene, {
+          ...props,
+          manifest: api.composeHomeManifest(structuredClone(project), emptyExtensions),
+        }),
+      );
+      assert.equal(
+        scene.getObjectByName("diorama-ground").geometry,
+        lawn,
+        "recomposing the same grade preserves the ground receiver during Arrange",
+      );
       const heightAt = createTerrainHeightQuery(scene, 0);
       const ray = new Raycaster();
       scene.updateMatrixWorld(true);

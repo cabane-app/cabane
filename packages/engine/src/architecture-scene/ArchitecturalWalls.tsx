@@ -1,11 +1,19 @@
-import { splitWallSurfaceGeometry } from "../architecture-geometry/wall-surface-geometry";
-import { useWallSurfaceTextures } from "./wall-surface-textures";
+import {
+  projectPaintedWallUVs,
+  splitWallSurfaceGeometry,
+} from "../architecture-geometry/wall-surface-geometry";
+import { useWallFaceTexture } from "./wall-surface-textures";
+import type { PassageHead } from "../architecture-geometry/passage-head";
 import { wallFrame } from "../architecture-geometry/wall-coordinate-frame";
 import { wallFaceFinish, wallEdgeFinish } from "../architecture-geometry/wall-face-finish";
 import { BufferGeometry, Color, Float32BufferAttribute } from "three";
 
-import { useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { useWallRoomSelection } from "./useWallRoomSelection";
+import { ArchitecturalGlass } from "./ArchitecturalGlass";
+import { useGraphicsFeature } from "../graphics-features";
+import { SceneStyleContext } from "../scene-style";
+import { bakeWallContacts, type WallContacts } from "../architecture-geometry/wall-contact";
 import { RoomWallEmphasis } from "../room-navigation/RoomWallEmphasis";
 
 import {
@@ -15,9 +23,47 @@ import {
   wallExteriorNormal,
 } from "../architecture-geometry";
 
-import { CameraFacingFade, ToonMaterial } from "../rendering";
+import { CameraFacingFade } from "../rendering";
 
+import { ArchitecturalMaterial } from "./ArchitecturalMaterial";
 import type { FloorSpec, OpeningSpec, WallSpec } from "../types";
+
+function useWallContacts(floor: FloorSpec, allowed: boolean, wall?: WallSpec) {
+  const enabled = useGraphicsFeature("contact");
+  const style = useContext(SceneStyleContext);
+  const contact = useMemo(
+    () => (allowed && enabled && style === "default" ? bakeWallContacts(floor, wall) : null),
+    [allowed, enabled, style, floor, wall],
+  );
+  useEffect(() => () => contact?.map.dispose(), [contact]);
+  return contact;
+}
+
+function projectSingleWallContacts(
+  geometry: BufferGeometry,
+  wall: WallSpec,
+  floor: FloorSpec,
+  contact: WallContacts,
+) {
+  const positions = geometry.getAttribute("position"),
+    normals = geometry.getAttribute("normal");
+  const normal = wallFrame(wall, floor).normal;
+  const uvs = new Float32BufferAttribute(new Float32Array(positions.count * 2), 2);
+  for (let i = 0; i < positions.count; i++) {
+    const alignment = normals.getX(i) * normal[0] + normals.getZ(i) * normal[1];
+    uvs.setXY(
+      i,
+      ...contact.uv(
+        Math.abs(alignment) > 0.999 ? wall.id : undefined,
+        alignment > 0 ? "left" : "right",
+        positions.getX(i),
+        positions.getY(i),
+        positions.getZ(i),
+      ),
+    );
+  }
+  geometry.setAttribute("uv1", uvs);
+}
 
 const splitArchitectureGeometry = (source: BufferGeometry) => {
   const sourcePositions = source.getAttribute("position");
@@ -55,6 +101,7 @@ export function ArchitecturalWall({
   exteriorColor,
   fade,
   reducedMotion,
+  allowContact = true,
 }: {
   wall: WallSpec;
   floor: FloorSpec;
@@ -63,7 +110,9 @@ export function ArchitecturalWall({
   exteriorColor: string;
   fade: boolean;
   reducedMotion: boolean;
+  allowContact?: boolean;
 }) {
+  const contact = useWallContacts(floor, allowContact, wall);
   const geometry = useMemo(() => {
     const result = splitArchitectureGeometry(buildContinuousWallGeometry(wall, floor, openings));
     const frame = wallFrame(wall, floor);
@@ -88,7 +137,7 @@ export function ArchitecturalWall({
       }
       geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
     }
-    return [
+    const surfaces = [
       ...[result.interior, result.exterior].flatMap((geometry, index) =>
         geometry
           ? splitWallSurfaceGeometry(geometry, wall, floor).map((surface, part) => ({
@@ -98,8 +147,14 @@ export function ArchitecturalWall({
           : [],
       ),
     ];
-  }, [floor, openings, wall, interiorColor, exteriorColor]);
-  const textures = useWallSurfaceTextures(geometry);
+    for (const surface of surfaces) {
+      if (!surface.finish) projectPaintedWallUVs(surface.geometry);
+      if (contact) projectSingleWallContacts(surface.geometry, wall, floor, contact);
+    }
+    return surfaces;
+  }, [floor, openings, wall, interiorColor, exteriorColor, contact]);
+  const faceTexture = useWallFaceTexture(geometry);
+  const receiveSun = useGraphicsFeature("lighting");
   useEffect(() => () => geometry.forEach((surface) => surface.geometry.dispose()), [geometry]);
   const normal = wallExteriorNormal(wall, floor) ?? ([0, 0] as const);
   return (
@@ -110,13 +165,14 @@ export function ArchitecturalWall({
       reducedMotion={reducedMotion}
     >
       {geometry.map(({ geometry, name, finish }) => {
-        const texture = finish ? textures.get(finish) : null;
+        const texture = faceTexture(finish);
         return (
-          <mesh key={name} name={name} geometry={geometry} castShadow>
-            <ToonMaterial
-              key={texture ? "pattern" : "solid"}
+          <mesh key={name} name={name} geometry={geometry} castShadow receiveShadow={receiveSun}>
+            <ArchitecturalMaterial
+              key={`${texture ? "pattern" : "solid"}-${contact ? "contact" : "flat"}`}
               color={texture ? "white" : (finish?.color ?? "white")}
               map={texture}
+              aoMap={contact?.map ?? null}
               vertexColors
             />
           </mesh>
@@ -128,6 +184,9 @@ export function ArchitecturalWall({
 
 export function ArchitecturalWalls({
   floor,
+  passageHeads,
+  sectionEdges = false,
+  allowContact = true,
   interiorColor,
   exteriorColor,
   fade,
@@ -138,6 +197,9 @@ export function ArchitecturalWalls({
   onSelectRoom,
 }: {
   floor: FloorSpec;
+  passageHeads?: ReadonlyMap<string, PassageHead>;
+  sectionEdges?: boolean;
+  allowContact?: boolean;
   onSelectRoom?: ((roomId: string) => void) | undefined;
   baseElevationMeters?: number | undefined;
   below?: FloorSpec | undefined;
@@ -148,15 +210,41 @@ export function ArchitecturalWalls({
   reducedMotion: boolean;
 }) {
   const selectionHandlers = useWallRoomSelection(floor, onSelectRoom);
-  const groups = useMemo(
-    () =>
-      buildArchitecturalWallGeometries(floor, interiorColor, exteriorColor, baseElevationMeters, {
+  const joinery = useGraphicsFeature("joinery");
+  const contact = useWallContacts(floor, allowContact);
+  const groups = useMemo(() => {
+    const surfaces = buildArchitecturalWallGeometries(
+      floor,
+      interiorColor,
+      exteriorColor,
+      baseElevationMeters,
+      {
+        sectionEdges: joinery && sectionEdges,
+        skirting: joinery,
+        passageHeads,
+        contact,
         ...(below === undefined ? {} : { below: below }),
         ...(above === undefined ? {} : { above: above }),
-      }),
-    [exteriorColor, floor, interiorColor, baseElevationMeters, below, above],
-  );
-  const textures = useWallSurfaceTextures(groups);
+      },
+    );
+    for (const surface of surfaces) {
+      if (!surface.finish) projectPaintedWallUVs(surface.geometry);
+    }
+    return surfaces;
+  }, [
+    exteriorColor,
+    floor,
+    interiorColor,
+    baseElevationMeters,
+    below,
+    above,
+    sectionEdges,
+    passageHeads,
+    joinery,
+    contact,
+  ]);
+  const faceTexture = useWallFaceTexture(groups);
+  const receiveSun = useGraphicsFeature("lighting");
   useEffect(() => () => groups.forEach(({ geometry }) => geometry.dispose()), [groups]);
   const gableGlass = useMemo(() => buildWallGableGlass(floor), [floor]);
   useEffect(() => () => gableGlass.forEach(({ geometry }) => geometry.dispose()), [gableGlass]);
@@ -169,28 +257,32 @@ export function ArchitecturalWalls({
           normals={outwardNormal ? [outwardNormal] : []}
           reducedMotion={reducedMotion}
         >
-          {/* The same tint as window glass. */}
           <mesh geometry={geometry} receiveShadow>
-            <ToonMaterial color="#9bcbd2" transparent opacity={0.48} depthWrite={false} />
+            <ArchitecturalGlass />
           </mesh>
         </CameraFacingFade>
       ))}
       {groups.map(({ geometry, outwardNormal, fadeNormals, finish }, index) => {
-        const texture = finish ? textures.get(finish) : null;
+        const texture = faceTexture(finish);
         const wall = (
-          <mesh key={`mesh-${index}`} geometry={geometry} castShadow {...selectionHandlers}>
-            <ToonMaterial
-              key={texture ? "pattern" : "solid"}
+          <mesh
+            key={`mesh-${index}`}
+            name="structural-wall-surface"
+            geometry={geometry}
+            castShadow
+            receiveShadow={receiveSun}
+            {...selectionHandlers}
+          >
+            <ArchitecturalMaterial
+              key={`${texture ? "pattern" : "solid"}-${contact ? "contact" : "flat"}`}
               color={texture ? "white" : (finish?.color ?? "white")}
               map={texture}
+              aoMap={contact?.map ?? null}
               vertexColors
             />
-            <RoomWallEmphasis
-              geometry={geometry}
-              floor={floor}
-              enabled={Boolean(onSelectRoom)}
-              reducedMotion={reducedMotion}
-            />
+            {onSelectRoom && (
+              <RoomWallEmphasis geometry={geometry} floor={floor} reducedMotion={reducedMotion} />
+            )}
           </mesh>
         );
         const normals = fadeNormals.length ? fadeNormals : outwardNormal ? [outwardNormal] : [];

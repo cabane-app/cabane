@@ -1,6 +1,7 @@
 import {
   Material,
   Mesh,
+  MeshStandardMaterial,
   Object3D,
   VSMShadowMap,
   type BufferAttribute,
@@ -16,6 +17,10 @@ import {
 import { sceneLightMaterialHooks } from "./scene-light-wall-mask";
 
 const positionAttribute = ["position"];
+// Physical materials and custom standard-derived materials can add depth behavior.
+const hasStockDepth = (material: Material): material is MeshToonMaterial | MeshStandardMaterial =>
+  (material as MeshToonMaterial).isMeshToonMaterial ||
+  material.constructor === MeshStandardMaterial;
 
 function hasUpdatingShadowLight(object: Object3D, camera: Camera): boolean {
   if (!object.visible) return false;
@@ -140,16 +145,16 @@ export class ShadowMapCache {
       s.add(geometry.index?.version);
       s.add(geometry.drawRange.start);
       s.add(geometry.drawRange.count);
-      const toon = mesh.material as MeshToonMaterial;
-      // A single toon material without alpha clipping or displacement only
+      const single = mesh.material;
+      // A single stock material without alpha clipping or displacement only
       // needs positions and indices for its silhouette.
       const simpleDepth =
-        !Array.isArray(mesh.material) &&
-        toon.isMeshToonMaterial &&
-        !(toon.alphaTest > 0) &&
-        !toon.alphaHash &&
-        !toon.alphaToCoverage &&
-        !toon.displacementMap;
+        !Array.isArray(single) &&
+        hasStockDepth(single) &&
+        !(single.alphaTest > 0) &&
+        !single.alphaHash &&
+        !single.alphaToCoverage &&
+        !single.displacementMap;
       for (const name of simpleDepth ? positionAttribute : Object.keys(geometry.attributes)) {
         const a = geometry.attributes[name];
         s.add(name);
@@ -183,7 +188,6 @@ export class ShadowMapCache {
           s.add(plane.constant);
         }
         const m = material as Material & {
-          isMeshToonMaterial?: boolean;
           wireframe?: boolean;
           wireframeLinewidth?: number;
           map?: Texture;
@@ -194,9 +198,12 @@ export class ShadowMapCache {
         };
         s.add(m.wireframe);
         s.add(m.wireframeLinewidth);
+        const hooks = sceneLightMaterialHooks(m);
         if (
-          !m.isMeshToonMaterial ||
-          sceneLightMaterialHooks(m).onBeforeCompile !== Material.prototype.onBeforeCompile
+          !hasStockDepth(m) ||
+          hooks.onBeforeCompile !== Material.prototype.onBeforeCompile ||
+          hooks.onBeforeRender !== Material.prototype.onBeforeRender ||
+          hooks.customProgramCacheKey !== Material.prototype.customProgramCacheKey
         )
           untracked = true;
         if (material.alphaTest > 0 || material.alphaHash || material.alphaToCoverage) {

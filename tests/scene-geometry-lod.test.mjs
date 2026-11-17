@@ -184,6 +184,33 @@ await withModules(async (load) => {
     assert.equal(preparations, 1);
     lod.dispose();
   });
+  test("LOD shares the current world transforms with batching and restores automatic updates", () => {
+    const lod = new SceneGeometryLod(() => {});
+    const scene = new Scene();
+    const mesh = new Mesh(new SphereGeometry(1, 6, 4));
+    const camera = new OrthographicCamera();
+    scene.add(mesh);
+    try {
+      mesh.position.x = 3;
+      assert.throws(
+        () =>
+          lod.render(scene, camera, 100, () => {
+            assert.equal(scene.matrixWorldAutoUpdate, false);
+            assert.equal(mesh.matrixWorld.elements[12], 3);
+            throw Error("render interrupted");
+          }),
+        /render interrupted/,
+      );
+      assert.equal(scene.matrixWorldAutoUpdate, true);
+      mesh.position.x = 5;
+      lod.render(scene, camera, 100, () => assert.equal(mesh.matrixWorld.elements[12], 5));
+      scene.matrixWorldAutoUpdate = false;
+      lod.render(scene, camera, 100, () => {});
+      assert.equal(scene.matrixWorldAutoUpdate, false);
+    } finally {
+      lod.dispose();
+    }
+  });
   test("LOD prepares once, selects by projected error, restores geometry and cancels cleanly", async () => {
     let invalidations = 0;
     const lod = new SceneGeometryLod(() => invalidations++, createGeometryLods),

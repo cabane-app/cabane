@@ -1,4 +1,4 @@
-import { RoundedBox, ToonMaterial, Outlines } from "@cabane/engine";
+import { RoundedBox, JoineryMaterial, Outlines } from "@cabane/engine";
 
 /** Compact unbranded white lever hardware; its rosette meets the50mm leaf face. */
 export function WhiteLeverDoorHandles({ width, side }: { width: number; side: -1 | 1 }) {
@@ -19,7 +19,7 @@ export function WhiteLeverDoorHandles({ width, side }: { width: number; side: -1
             castShadow
           >
             <cylinderGeometry args={[radius, radius, 0.01, 16]} />
-            <ToonMaterial color="#f1f0eb" />
+            <JoineryMaterial color="#f1f0eb" />
           </mesh>
           <mesh
             name="white-lever-neck"
@@ -28,7 +28,7 @@ export function WhiteLeverDoorHandles({ width, side }: { width: number; side: -1
             castShadow
           >
             <cylinderGeometry args={[0.011, 0.011, 0.02, 12]} />
-            <ToonMaterial color="#f1f0eb" />
+            <JoineryMaterial color="#f1f0eb" />
           </mesh>
           <RoundedBox
             name="white-lever-arm"
@@ -38,7 +38,7 @@ export function WhiteLeverDoorHandles({ width, side }: { width: number; side: -1
             smoothness={2}
             castShadow
           >
-            <ToonMaterial color="#f1f0eb" />
+            <JoineryMaterial color="#f1f0eb" />
             <Outlines thickness={0.0015} color="#b9b7af" screenspace={false} />
           </RoundedBox>
         </group>

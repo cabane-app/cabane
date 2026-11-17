@@ -2,47 +2,33 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import {
-  Box3,
-  CylinderGeometry,
-  IcosahedronGeometry,
-  Matrix4,
-  Object3D,
-  Raycaster,
-  SphereGeometry,
-  Vector3,
-} from "three";
+import { Box3, Raycaster, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
   const { ClippedHedge } = await load("/packages/engine/src/hedges/ClippedHedge.tsx");
-  const { BushyHedge } = await load("/packages/engine/src/hedges/BushyHedge.tsx");
-  const { RoundedHedge } = await load("/packages/engine/src/hedges/RoundedHedge.tsx");
-  const compare = (mesh, index, geometry, transform) => {
-    for (const attribute of ["position", "normal", "uv"])
-      assert.deepEqual(
-        mesh.geometry.attributes[attribute].array,
-        geometry.attributes[attribute].array,
-      );
-    assert.deepEqual(mesh.geometry.index?.array, geometry.index?.array);
-    const matrix = new Matrix4();
-    mesh.getMatrixAt(index, matrix);
-    transform.updateMatrix();
-    matrix.elements.forEach((v, i) =>
-      assert.ok(
-        Math.abs(v - transform.matrix.elements[i]) < 1e-6,
-        "instance preserves local transform within float32 precision",
-      ),
+  const { HedgeModel } = await load("/packages/engine/src/hedges/HedgeModel.tsx");
+  test("the natural clipped hedge fits the declared envelope as one continuous opaque canopy", async () => {
+    const renderer = await create(
+      createElement(HedgeModel, { style: "clipped", length: 18, height: 1.35, width: 0.65 }),
     );
-    const bounds = new Box3()
-      .setFromBufferAttribute(geometry.attributes.position)
-      .applyMatrix4(matrix);
-    assert.ok(
-      mesh.boundingBox.clone().expandByScalar(1e-6).containsBox(bounds),
-      "batch bounds cover every instance",
-    );
-  };
-  test("clipped hedge cap owns the visible top and upper sides without coplanar body faces", async () => {
+    try {
+      const meshes = renderer.scene.findAll((node) => node.instance.isMesh);
+      assert.equal(meshes.length, 1);
+      const mesh = meshes[0].instance;
+      assert.equal(mesh.name, "boxwood-canopy");
+      assert.equal(mesh.material.transparent, false);
+      const box = new Box3().setFromObject(mesh);
+      assert.ok(box.min.distanceTo(new Vector3(-9, 0, -0.325)) < 1e-6);
+      assert.ok(box.max.distanceTo(new Vector3(9, 1.35, 0.325)) < 1e-6);
+      const uv = mesh.geometry.getAttribute("uv");
+      const u = Array.from({ length: uv.count }, (_, i) => uv.getX(i));
+      assert.equal(Math.max(...u) - Math.min(...u), 18, "leaf scale stays in world metres");
+    } finally {
+      await renderer.unmount();
+    }
+  });
+  test("stylized clipped hedge cap owns the visible top and upper sides without coplanar body faces", async () => {
     const renderer = await create(
       createElement(ClippedHedge, { length: 6, height: 1.4, width: 0.65 }),
     );
@@ -81,71 +67,70 @@ await withModules(async (load) => {
       await renderer.unmount();
     }
   });
-  test("bushy hedges preserve all original solids, colors, transforms and shadows, including resizing", async () => {
-    const renderer = await create(
-      createElement(BushyHedge, { length: 3, height: 1.4, width: 0.6 }),
-    );
-    try {
-      for (const [length, height, width] of [
-        [3, 1.4, 0.6],
-        [0.1, 0.8, 1],
-        [8, 2.2, 0.4],
-      ]) {
-        await renderer.update(createElement(BushyHedge, { length, height, width }));
-        const meshes = renderer.scene
+  for (const [style, expectedShoots] of [
+    ["rounded", ["privet-sprays"]],
+    ["bushy", ["hazel-sprays"]],
+    ["mixed", ["laurel-sprays", "oleander-sprays", "blossom-sprays"]],
+  ]) {
+    test(`${style} hedges keep a continuous pickable canopy, fitted instanced shoots and a bounded long run`, async () => {
+      const dimensions = { length: 5.5, width: 0.8, height: 1.6 };
+      const renderer = await create(createElement(HedgeModel, { style, ...dimensions }));
+      try {
+        const original = renderer.scene
           .findAll((n) => n.instance.isInstancedMesh)
           .map((n) => n.instance);
-        const count = Math.min(180, Math.max(2, Math.ceil(length / (width * 0.3))));
-        assert.equal(meshes.length, 4);
-        assert.equal(
-          meshes.reduce((sum, m) => sum + m.count, 0),
-          count * 2,
+        assert.deepEqual(
+          original.map((mesh) => mesh.name),
+          expectedShoots,
         );
-        for (let i = 0; i < count; i++) {
-          const t = new Object3D(),
-            x = -length / 2 + ((i + 0.5) * length) / count;
-          t.position.set(x, height * 0.22, 0);
-          compare(meshes[0], i, new CylinderGeometry(0.025, 0.045, height * 0.44, 5), t);
-          t.position.set(x, height * 0.52, Math.sin(i * 2.4) * width * 0.08);
-          t.rotation.y = i * 1.7;
-          t.scale.set(
-            Math.min(width * 0.6, length / 2),
-            height * 0.48 * (0.86 + Math.sin(i * 7.31) * 0.12),
-            width * 0.42,
+        const sprig = original[0].geometry;
+        for (const [length, height, width] of [
+          [5.5, 1.6, 0.8],
+          [0.1, 0.2, 3],
+          [1.5, 5, 0.2],
+          [80, 2.5, 1.3],
+        ]) {
+          await renderer.update(createElement(HedgeModel, { style, length, height, width }));
+          const meshes = renderer.scene.findAll((n) => n.instance.isMesh).map((n) => n.instance);
+          const canopy = meshes.find((mesh) => mesh.name === "continuous-foliage");
+          canopy.updateMatrixWorld(true);
+          assert.ok(
+            meshes.every(
+              (mesh) => mesh.castShadow && mesh.receiveShadow && !mesh.material.transparent,
+            ),
           );
-          const leaf = meshes[1 + (i % 3)];
-          compare(leaf, Math.floor(i / 3), new IcosahedronGeometry(1, 1), t);
-          assert.equal(leaf.material.color.getHexString(), ["76934a", "4f773e", "628443"][i % 3]);
-          assert.equal(leaf.receiveShadow, true);
+          const expected = new Box3(
+            new Vector3(-length / 2, 0, -width / 2),
+            new Vector3(length / 2, height, width / 2),
+          ).expandByScalar(1e-5);
+          for (const mesh of meshes) {
+            assert.ok(
+              expected.containsBox(new Box3().setFromObject(mesh)),
+              `${mesh.name} fits ${length} × ${height} × ${width}`,
+            );
+          }
+          for (const along of [-0.45, 0, 0.45]) {
+            const hits = new Raycaster(
+              new Vector3(length * along, height * 0.45, width / 2 + 1),
+              new Vector3(0, 0, -1),
+            ).intersectObject(canopy);
+            assert.ok(hits.length, "solid leaf mass remains pickable between stems");
+          }
+          const batch = meshes.find((mesh) => mesh.name === expectedShoots[0]);
+          if (batch) assert.equal(batch.geometry, sprig, "resizing reuses the sprig geometry");
+          const triangles = meshes.reduce(
+            (total, mesh) =>
+              total + (mesh.geometry.index.count / 3) * (mesh.isInstancedMesh ? mesh.count : 1),
+            0,
+          );
+          assert.ok(
+            meshes.length <= 4 && triangles < 42000,
+            `bounded running cost: ${meshes.length} meshes, ${triangles} triangles`,
+          );
         }
-        assert.ok(meshes.every((m) => m.castShadow));
+      } finally {
+        await renderer.unmount();
       }
-    } finally {
-      await renderer.unmount();
-    }
-  });
-  test("rounded hedge retains sphere detail and raycast occlusion after batching", async () => {
-    const length = 3,
-      height = 1.4,
-      width = 0.6;
-    const renderer = await create(createElement(RoundedHedge, { length, height, width }));
-    try {
-      const mesh = renderer.scene.find((n) => n.instance.isInstancedMesh).instance;
-      const count = Math.min(160, Math.max(1, Math.ceil(length / (width * 0.45))));
-      assert.equal(mesh.count, count);
-      for (let i = 0; i < count; i++) {
-        const t = new Object3D();
-        t.position.set(-length / 2 + ((i + 0.5) * length) / count, height / 2, 0);
-        t.scale.set(Math.min(width * 0.65, length / 2), height / 2, width / 2);
-        compare(mesh, i, new SphereGeometry(1, 10, 8), t);
-      }
-      mesh.updateMatrixWorld(true);
-      assert.ok(
-        new Raycaster(new Vector3(0, height / 2, 3), new Vector3(0, 0, -1)).intersectObject(mesh)
-          .length > 0,
-      );
-    } finally {
-      await renderer.unmount();
-    }
-  });
+    });
+  }
 });

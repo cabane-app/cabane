@@ -6,9 +6,15 @@ import {
   enrollBuildTutorial,
   forgetBuildTutorial,
 } from "../editor-onboarding/build-tutorial-storage";
-import { lastOpenedWorkspace, forgetWorkspacePresentation } from "./workspace-presentation";
+import {
+  lastOpenedWorkspace,
+  forgetWorkspacePresentation,
+  isDashboardEntryPath,
+  populatedPublishedHome,
+} from "./workspace-presentation";
+import { homeEntryDetails, HomeEntryScreen } from "./HomeEntryScreen";
 import { useWorkspaceOnboarding } from "./useWorkspaceOnboarding";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import {
   serializeCanonicalJson,
@@ -90,6 +96,35 @@ export function WorkspaceApplication() {
     },
     [refresh, navigate],
   );
+  const isDemoRoute = location.pathname === "/welcome" || location.pathname === "/demo";
+  const isBuildRoute = location.pathname === "/build";
+  const id = isDemoRoute
+    ? onboarding.state?.demoWorkspaceId
+    : isBuildRoute
+      ? onboarding.state?.destinations.build
+      : workspaceIdForPath(location.pathname);
+  const isCallback =
+    !hostSession &&
+    location.pathname !== "/workspaces" &&
+    new URLSearchParams(location.search).has("auth_callback");
+  const awaitingDashboard = useMemo(
+    () =>
+      isDashboardEntryPath(location.pathname) &&
+      !isCallback &&
+      (Boolean(hostSession) || !readEditorReturn(id ?? undefined)),
+    [location.pathname, isCallback, hostSession, id],
+  );
+  const knownHome = awaitingDashboard
+    ? populatedPublishedHome(entries?.find((entry) => entry.metadata.id === id)?.record)
+    : null;
+  const pendingDashboard = knownHome ? (
+    <HomeEntryScreen {...homeEntryDetails(knownHome)} />
+  ) : awaitingDashboard && location.pathname === "/demo" && !onboarding.loaded ? (
+    <HomeEntryScreen />
+  ) : null;
+  const pendingHome = pendingDashboard ?? (
+    <main className="direction-project-loading">Loading your home…</main>
+  );
   if (error)
     return (
       <main className="direction-project-loading is-error">
@@ -99,13 +134,13 @@ export function WorkspaceApplication() {
       </main>
     );
   if (!repository || !entries)
-    return <main className="direction-project-loading">Loading your workspaces…</main>;
+    return (
+      pendingDashboard ?? (
+        <main className="direction-project-loading">Loading your workspaces…</main>
+      )
+    );
   if (location.pathname.startsWith("/open/"))
     return <WorkspaceOpenPage repository={repository} onOpened={openedRemote} />;
-  const isCallback =
-    !hostSession &&
-    location.pathname !== "/workspaces" &&
-    new URLSearchParams(location.search).has("auth_callback");
   const callback = isCallback ? callbackRequest : null;
   if (isCallback) {
     if (!callback || !entries.some((entry) => entry.metadata.id === callback.workspaceId)) {
@@ -127,8 +162,7 @@ export function WorkspaceApplication() {
   }
   if (location.pathname === "/") {
     if (startupDestination) return <Navigate to={startupDestination} replace />;
-    if (!onboarding.loaded)
-      return <main className="direction-project-loading">Loading your home…</main>;
+    if (!onboarding.loaded) return pendingHome;
     if (
       hostSession &&
       onboarding.state &&
@@ -175,10 +209,7 @@ export function WorkspaceApplication() {
       />
     );
   }
-  const isDemoRoute = location.pathname === "/welcome" || location.pathname === "/demo";
-  const isBuildRoute = location.pathname === "/build";
-  if ((isDemoRoute || isBuildRoute) && !onboarding.loaded)
-    return <main className="direction-project-loading">Loading your home…</main>;
+  if ((isDemoRoute || isBuildRoute) && !onboarding.loaded) return pendingHome;
   if (
     isDemoRoute &&
     !entries.some((entry) => entry.metadata.id === onboarding.state?.demoWorkspaceId)
@@ -192,11 +223,6 @@ export function WorkspaceApplication() {
   }
   if (isBuildRoute && !onboarding.state?.destinations.build)
     return <BuildWorkspaceEntry onboarding={onboarding} />;
-  const id = isDemoRoute
-    ? onboarding.state?.demoWorkspaceId
-    : isBuildRoute
-      ? onboarding.state?.destinations.build
-      : workspaceIdForPath(location.pathname);
   if (id)
     return (
       <>
@@ -218,9 +244,15 @@ export function WorkspaceApplication() {
           </div>
         )}
         {onboarding.loaded ? (
-          <WorkspaceHost key={id} id={id} repository={repository} onboarding={onboarding} />
+          <WorkspaceHost
+            key={id}
+            id={id}
+            repository={repository}
+            onboarding={onboarding}
+            pendingHome={pendingHome}
+          />
         ) : (
-          <main className="direction-project-loading">Loading your home…</main>
+          pendingHome
         )}
       </>
     );

@@ -1,33 +1,24 @@
-import { LibraryBlock } from "./cabinet-parts";
+import { BookRow } from "../living-room/book-row";
 
-const COLORS = ["#b7a382", "#556861", "#9e6955", "#d2c6aa", "#646a73", "#967b59"];
+const shelves = [
+  { x: -0.26, width: 0.48, height: 0.3, depth: 0.22 },
+  { x: 0.22, width: 0.44, height: 0.26, depth: 0.19 },
+  { x: -0.22, width: 0.53, height: 0.32, depth: 0.24 },
+  { x: 0.13, width: 0.46, height: 0.28, depth: 0.21 },
+] as const;
 
-/** Small editorial groups leave breathing room rather than filling every shelf. */
-export function LibraryBooks({ shelf, alternate = false }: { shelf: number; alternate?: boolean }) {
-  const start = alternate ? 0.06 : -0.45;
+export function LibraryBooks({ shelf, index }: { shelf: number; index: number }) {
+  const { x, width, height, depth } = shelves[index]!;
   return (
-    <group>
-      {COLORS.map((color, index) => {
-        const height = 0.23 + [0.025, 0.055, 0, 0.04, 0.015, 0.06][index]!;
-        return (
-          <LibraryBlock
-            key={color}
-            size={[0.045, height, 0.18]}
-            at={[start + index * 0.051, shelf + height / 2, 0.055]}
-            color={color}
-          />
-        );
-      })}
-      <LibraryBlock
-        size={[0.2, 0.035, 0.15]}
-        at={[alternate ? -0.31 : 0.31, shelf + 0.0175, 0.05]}
-        color="#c9b99a"
-      />
-      <LibraryBlock
-        size={[0.17, 0.028, 0.14]}
-        at={[alternate ? -0.3 : 0.3, shelf + 0.049, 0.05]}
-        color="#7a897a"
-      />
+    <group position={[0, shelf, 0.034]}>
+      <group position-x={x} scale-x={index % 2 ? -1 : 1}>
+        <BookRow size={[width, height, depth]} />
+      </group>
+      {index === 1 && (
+        <group position={[-0.17, 0.09, 0.01]} rotation-z={Math.PI / 2}>
+          <BookRow size={[0.18, 0.25, 0.19]} />
+        </group>
+      )}
     </group>
   );
 }

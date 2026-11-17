@@ -3,7 +3,15 @@ import test from "node:test";
 import { act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { create } from "@react-three/test-renderer";
-import { BoxGeometry, Mesh, MeshToonMaterial, OrthographicCamera, Vector3 } from "three";
+import {
+  BoxGeometry,
+  DynamicDrawUsage,
+  Mesh,
+  MeshToonMaterial,
+  OrthographicCamera,
+  StaticDrawUsage,
+  Vector3,
+} from "three";
 import { withModules } from "./test-server.mjs";
 import { withStorageDom } from "./dom-test-environment.mjs";
 
@@ -24,6 +32,9 @@ await withModules(async (load) => {
   );
   const { RoomWallEmphasis } = await load(
     "/packages/engine/src/room-navigation/RoomWallEmphasis.tsx",
+  );
+  const { ArchitecturalWalls } = await load(
+    "/packages/engine/src/architecture-scene/ArchitecturalWalls.tsx",
   );
   const { SceneRoomSelection } = await load(
     "/packages/engine/src/building/RoomSelectionSurfaces.tsx",
@@ -249,6 +260,39 @@ await withModules(async (load) => {
     }
   });
 
+  test("structural wall colors stay static outside room selection and restore after leaving it", async () => {
+    const tree = (onSelectRoom) =>
+      createElement(ArchitecturalWalls, {
+        floor,
+        interiorColor: "#d1c1b1",
+        exteriorColor: "#d5c9b2",
+        allowContact: false,
+        fade: false,
+        reducedMotion: true,
+        onSelectRoom,
+      });
+    const renderer = await create(tree(undefined), options);
+    try {
+      const colors = renderer.scene
+        .findAllByProps({ name: "structural-wall-surface" })[0]
+        .instance.geometry.getAttribute("color");
+      const original = colors.array.slice();
+      const version = colors.version;
+      await tick(renderer, 2);
+      assert.equal(colors.usage, StaticDrawUsage);
+      assert.equal(colors.version, version, "no uploads while interaction is disabled");
+      await renderer.update(tree(() => undefined));
+      await tick(renderer, 2);
+      assert.equal(colors.usage, DynamicDrawUsage);
+      assert.notDeepEqual(colors.array, original);
+      await renderer.update(tree(undefined));
+      assert.equal(colors.usage, StaticDrawUsage);
+      assert.deepEqual(colors.array, original);
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("room focus animates submitted wall colors without repacking static batches every frame", async () => {
     const groups = buildArchitecturalWallGeometries(floor);
     const walls = groups.map(
@@ -273,7 +317,6 @@ await withModules(async (load) => {
             createElement(RoomWallEmphasis, {
               geometry: mesh.geometry,
               floor,
-              enabled: true,
               reducedMotion: false,
             }),
           ),

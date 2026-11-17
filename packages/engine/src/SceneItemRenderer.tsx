@@ -192,6 +192,7 @@ function DeviceSceneItem({
       scale={scale}
       userData={{
         walkCollider: item.modelId.startsWith("custom:") && item.placement.kind === "absolute",
+        itemContactCaster: item.placement.kind === "absolute" && item.modelId !== "robot-vacuum",
         deviceBindingId: item.id,
         deviceModel: item.modelId,
         visualState,
@@ -316,6 +317,7 @@ export const SceneItemRenderer = memo(function SceneItemRenderer({
       <group
         name={`scene-item-${item.id}`}
         userData={{
+          itemContactCaster: !!definition && item.placement.kind === "absolute",
           walkCollider: item.modelId.startsWith("custom:") && item.placement.kind === "absolute",
         }}
         position={transform.position}

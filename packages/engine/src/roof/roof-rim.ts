@@ -1,4 +1,4 @@
-import type { RoofWallSupport } from "./roof-wall-finish";
+import type { RoofWallFace, RoofWallSupport } from "./roof-wall-finish";
 
 type Point = [number, number];
 const TOLERANCE_METERS = 1e-6;
@@ -8,8 +8,9 @@ export interface RoofRimSegment {
   to: Point;
   seam: boolean;
   gabled: boolean;
-  finish: string;
+  face: RoofWallFace;
   support?: RoofWallSupport | undefined;
+  wallTop?: number | undefined;
   offset?: Point | undefined;
 }
 
@@ -93,6 +94,32 @@ export function alignRoofRim(rim: RoofRimSegment[]): RoofRimSegment[] {
     const nextFrom = corners[nextIndex] ?? next.from;
     if (Math.hypot(to[0] - nextFrom[0], to[1] - nextFrom[1]) < TOLERANCE_METERS) return [aligned];
     const border = part.offset ? part : next;
-    return [aligned, { ...border, from: to, to: nextFrom, seam: false, support: undefined }];
+    return [
+      aligned,
+      { ...border, from: to, to: nextFrom, seam: false, support: undefined, wallTop: undefined },
+    ];
   });
+}
+
+/** A taller facade can conceal all, or just the low end, of a sloping fascia. */
+export function appendRimFace(target: number[], quad: number[][], wallTop = -Infinity) {
+  if (quad.every((p) => p[1] <= wallTop)) return;
+  const visible: number[][] = [];
+  let previous = quad[quad.length - 1];
+  for (const point of quad) {
+    const from = previous[1] - wallTop;
+    const to = point[1] - wallTop;
+    if ((from < 0 && to > 0) || (from > 0 && to < 0)) {
+      const t = from / (from - to);
+      visible.push([
+        previous[0] + t * (point[0] - previous[0]),
+        wallTop,
+        previous[2] + t * (point[2] - previous[2]),
+      ]);
+    }
+    if (to >= 0) visible.push(point);
+    previous = point;
+  }
+  for (let i = 2; i < visible.length; i++)
+    target.push(...visible[0], ...visible[i - 1], ...visible[i]);
 }

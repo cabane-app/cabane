@@ -1,5 +1,13 @@
 import { DOOR_FRAME_JAMB_WIDTH_METERS } from "./door-frame-dimensions";
-import { Outlines, ToonMaterial } from "@cabane/engine";
+import { useMemo, useEffect } from "react";
+import {
+  JoineryMaterial,
+  Outlines,
+  ToonMaterial,
+  useDetailedJoinery,
+  type DoorFinish,
+} from "@cabane/engine";
+import { casedFrameGeometry } from "./cased-jamb-geometry";
 
 export function DoorFrame({
   width,
@@ -7,13 +15,27 @@ export function DoorFrame({
   depth,
   color = "#d8d2c6",
   openTop = false,
+  finish = "white",
 }: {
   width: number;
   height: number;
   depth: number;
   color?: string;
   openTop?: boolean;
+  finish?: DoorFinish;
 }) {
+  const detailed = useDetailedJoinery();
+  const casing = useMemo(
+    () => (detailed && !openTop ? casedFrameGeometry(width, height, depth) : null),
+    [detailed, openTop, width, height, depth],
+  );
+  useEffect(() => () => casing?.dispose(), [casing]);
+  if (casing)
+    return (
+      <mesh name="opening-door-frame-casing" geometry={casing} castShadow receiveShadow>
+        <JoineryMaterial color={color} finish={finish === "wood" ? "wood" : "paint"} vertexColors />
+      </mesh>
+    );
   const jambHeight = openTop ? height : height + 0.08;
   return (
     <>

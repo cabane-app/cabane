@@ -7,6 +7,8 @@ import {
   InstancedMesh,
   Matrix4,
   Mesh,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
   MeshToonMaterial,
   PerspectiveCamera,
   Scene,
@@ -19,11 +21,11 @@ await withModules(async (load) => {
   const { ShadowMapCache } = await load("/packages/engine/src/shadow-map-cache.ts");
   const { applyCameraFadeToMesh } = await load("/packages/engine/src/rendering.tsx");
   const { SceneLightWallMask } = await load("/packages/engine/src/scene-light-wall-mask.ts");
-  const fixture = () => {
+  const fixture = (CasterMaterial = MeshToonMaterial) => {
     const scene = new Scene(),
       camera = new PerspectiveCamera(),
       cache = new ShadowMapCache();
-    const caster = new Mesh(new BoxGeometry(), new MeshToonMaterial());
+    const caster = new Mesh(new BoxGeometry(), new CasterMaterial());
     caster.castShadow = true;
     const effect = new Mesh(new BoxGeometry(), new MeshToonMaterial({ transparent: true }));
     const light = new DirectionalLight();
@@ -128,29 +130,49 @@ await withModules(async (load) => {
     assert.equal(f.dirty(), true);
     assert.equal(f.dirty(), false);
   });
-  test("opaque toon depth tracks positions and indices, with full inputs for textured silhouettes", () => {
-    const f = fixture();
-    const { geometry, material } = f.caster;
-    geometry.attributes.normal.needsUpdate = true;
-    geometry.clearGroups();
-    assert.equal(f.dirty(), false, "single opaque materials do not use normal data or groups");
-    geometry.attributes.position.needsUpdate = true;
-    assert.equal(f.dirty(), true);
-    assert.equal(f.dirty(), false);
-    geometry.index.needsUpdate = true;
-    assert.equal(f.dirty(), true);
-    material.displacementMap = new Texture();
-    assert.equal(f.dirty(), true);
-    assert.equal(f.dirty(), false);
-    geometry.attributes.normal.needsUpdate = true;
-    assert.equal(f.dirty(), true, "displacement uses normals in the depth shader");
-    geometry.attributes.uv.needsUpdate = true;
-    assert.equal(f.dirty(), true, "displacement uses texture coordinates");
-    material.displacementMap.dispose();
-  });
+  for (const CasterMaterial of [MeshToonMaterial, MeshStandardMaterial]) {
+    test(`${CasterMaterial.name} tracks moving and texture-dependent silhouettes`, () => {
+      const f = fixture(CasterMaterial);
+      const { geometry, material } = f.caster;
+      geometry.attributes.normal.needsUpdate = true;
+      geometry.clearGroups();
+      assert.equal(f.dirty(), false, "single opaque materials do not use normal data or groups");
+      geometry.attributes.position.needsUpdate = true;
+      assert.equal(f.dirty(), true);
+      assert.equal(f.dirty(), false);
+      geometry.index.needsUpdate = true;
+      assert.equal(f.dirty(), true);
+      material.displacementMap = new Texture();
+      assert.equal(f.dirty(), true);
+      assert.equal(f.dirty(), false);
+      geometry.attributes.normal.needsUpdate = true;
+      assert.equal(f.dirty(), true, "displacement uses normals in the depth shader");
+      geometry.attributes.uv.needsUpdate = true;
+      assert.equal(f.dirty(), true, "displacement uses texture coordinates");
+      material.displacementMap.dispose();
+      material.displacementMap = null;
+      material.alphaTest = 0.4;
+      material.alphaMap = new Texture();
+      assert.equal(f.dirty(), true);
+      assert.equal(f.dirty(), false);
+      material.alphaMap.offset.x = 0.25;
+      assert.equal(f.dirty(), true, "texture transforms move cutout shadows");
+      geometry.attributes.uv.needsUpdate = true;
+      assert.equal(f.dirty(), true);
+      assert.equal(f.dirty(), false);
+      f.caster.position.x++;
+      assert.equal(f.dirty(), true);
+      assert.equal(f.dirty(), false);
+      material.onBeforeCompile = () => {};
+      assert.equal(f.dirty(), true);
+      assert.equal(f.dirty(), true);
+      material.alphaMap.dispose();
+    });
+  }
   test("custom shader, deformation and render hooks conservatively redraw on every frame", () => {
     for (const change of [
       (f) => (f.caster.material = new ShaderMaterial()),
+      (f) => (f.caster.material = new MeshPhysicalMaterial()),
       (f) => (f.caster.onBeforeShadow = () => {}),
       (f) => (f.effect.onBeforeRender = () => {}),
       (f) => (f.caster.morphTargetInfluences = [0.1]),

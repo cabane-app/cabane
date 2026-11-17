@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   BoxGeometry,
   InstancedMesh,
+  Matrix3,
   Matrix4,
   Mesh,
   MeshToonMaterial,
@@ -152,10 +153,69 @@ await withModules(async (load) => {
     f.batcher.render(f.renderer, f.scene, f.camera);
     f.batcher.dispose();
   });
-  test("reflections, shear and fade depth/shadow overrides retain their original draw", () => {
+  test("static reflections reverse only their own packed winding at every LOD", () => {
+    for (const rootScale of [1, -1]) {
+      const f = fixture();
+      const source = new SphereGeometry(1, 6, 4);
+      const low = new BoxGeometry().toNonIndexed();
+      const sourceIndices = [...source.index.array];
+      registerGeometryLods(source, [low]);
+      f.scene.scale.x = rootScale;
+      f.a.scale.set(-1.9, 1.3, 0.8);
+      try {
+        for (const geometry of [source, low]) {
+          f.a.geometry = f.b.geometry = geometry;
+          const original =
+            geometry.index?.array ??
+            Array.from({ length: geometry.attributes.position.count }, (_, i) => i);
+          f.batcher.render(f.renderer, f.scene, f.camera, () => {
+            const batch = f.scene.children.find((object) => object.isBatchedMesh);
+            for (const [instance, mesh] of [f.a, f.b].entries()) {
+              assert.ok(batch.getVisibleAt(instance));
+              const range = batch.getGeometryRangeAt(batch.getGeometryIdAt(instance));
+              assert.equal(range.count, original.length);
+              const packed = batch.geometry.index.array;
+              const order = mesh === f.a ? [0, 2, 1] : [0, 1, 2];
+              for (let i = 0; i < original.length; i++) {
+                const triangle = i - (i % 3);
+                assert.equal(
+                  packed[range.start + i] - range.vertexStart,
+                  original[triangle + order[i % 3]],
+                );
+              }
+              const normalMatrix = new Matrix3().getNormalMatrix(mesh.matrix);
+              const normals = geometry.attributes.normal;
+              for (let i = 0; i < normals.count; i++) {
+                const expected = new Vector3()
+                  .fromBufferAttribute(normals, i)
+                  .applyNormalMatrix(normalMatrix);
+                const actual = new Vector3().fromBufferAttribute(
+                  batch.geometry.attributes.normal,
+                  range.vertexStart + i,
+                );
+                assert.ok(expected.distanceTo(actual) < 1e-6);
+              }
+            }
+          });
+        }
+        assert.deepEqual([...source.index.array], sourceIndices);
+        assert.equal(low.index, null);
+        f.a.position.x += 1;
+        f.batcher.render(f.renderer, f.scene, f.camera, () => {
+          assert.ok(f.a.material.visible, "the moved mirror draws at its new position");
+          assert.equal(f.scene.children.find((o) => o.isBatchedMesh).getVisibleAt(0), false);
+        });
+      } finally {
+        f.batcher.dispose();
+        source.dispose();
+        low.dispose();
+      }
+    }
+  });
+  test("singular transforms, shear and fade depth/shadow overrides retain their original draw", () => {
     const mutations = [
       (mesh) => {
-        mesh.scale.x = -1;
+        mesh.scale.x = 0;
       },
       (mesh) => {
         mesh.matrixAutoUpdate = false;

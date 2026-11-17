@@ -1,5 +1,11 @@
 # Home dashboard, controls, and cameras
 
+Opening a published, populated home shows a fullscreen Cabane scene with the
+home’s name, floor and room counts, and a link back to Workspaces. The dashboard
+becomes interactive on its first composited house frame. A validation or WebGL
+failure reveals the recovery screen. Room, floor and camera changes within the
+dashboard keep the current view. Reduced-motion preferences show still artwork.
+
 Rooms can opt into an existing HA dashboard view through Connect → Room controls.
 The native HA panel embeds the selected view at the host's exact origin and hides
 its duplicate navigation. Automatic chooses the room page for the mapped HA area;
@@ -32,7 +38,9 @@ mid-flight. Dragging, pinching, scrolling or using camera buttons interrupts it;
 selecting the same room again refocuses it. Reduced motion applies the destination
 immediately. Returning to Overview, including Escape or Back, smoothly restores
 the last manually chosen orbital view. The floor summary returns to that same view;
-only Reset view restores default framing. Both floor pickers restore the selected
+only Reset view restores default framing. A fresh single-floor cutaway fits the
+building footprint and wall height. Zoom out to see the gardens and pool, or
+choose Top-down view to fit the whole site. Both floor pickers restore the selected
 floor's remembered view, or default framing on its first visit.
 
 The last floor explicitly chosen in either floor picker is remembered locally in

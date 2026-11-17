@@ -1,9 +1,21 @@
+import type { HomeProjectRecord } from "@cabane/engine";
+import { matchPath } from "react-router";
 import { copyWebGLPreview } from "../webgl-preview";
 
 const LAST_OPENED_KEY = "cabane:last-opened-workspace";
 // Discard snapshots from the old GPU copy path, which may retain blue colors (#75).
 const previewKey = (id: string) => `cabane:workspace-preview:rgba:${id}`;
 const legacyPreviewKey = (id: string) => `cabane:workspace-preview:${id}`;
+
+export function isDashboardEntryPath(pathname: string): boolean {
+  return pathname === "/demo" || Boolean(matchPath("/workspaces/:workspaceId", pathname));
+}
+
+export function populatedPublishedHome(record: HomeProjectRecord | undefined) {
+  return record?.publishedAt && record.published.floors.some((floor) => floor.footprint.length >= 3)
+    ? record.published
+    : null;
+}
 
 export function lastOpenedWorkspace(): string | null {
   try {

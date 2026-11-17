@@ -594,6 +594,10 @@ standard proportions rather than verified manufacturer specifications.
 | `refrigerator`              | `RefrigeratorModel`            | 70 × 72 × 185  | `sensor` / `temperature`                   | Kitchen, surface             |
 | `smart-power-strip`         | `SmartPowerStripModel`         | 34 × 6.5 × 5.5 | `switch` / `outlet`                        | Office, surface              |
 
+The `floor-lamp` has a turned wood spindle, stepped brass foot and open pleated
+linen shade. It is 179.6 cm tall with a 65.2 cm shade diameter. Its bulb and
+shade follow the bound light's brightness.
+
 All instances receive a fresh manual primary slot. Lights, including the
 illuminated mirror's perimeter ring, contribute an engine-owned scene light,
 while the connected frames, doorbell, and indoor
@@ -1253,8 +1257,9 @@ height includes its tap. Appliance details are static, with no device bindings.
 
 ## Atelier library
 
-Three matching smoked-oak pieces combine recessed bronze pulls, composed book
-shelves, pale stone and flax upholstery. These generic dimensions are inferred.
+Three matching smoked-oak pieces combine recessed bronze pulls, pale stone and
+flax upholstery. The bookcase holds four upright rows of clothbound books and a
+horizontal stack, all built from the `book-row` preset. These generic dimensions are inferred.
 Find them in Arrange → Living room → Storage (bookcase/credenza) or Seating
 (bench). All axes resize independently; floor-contact Y=0, centered footprints,
 front +Z. The public components are `AtelierLibraryBookcase`,

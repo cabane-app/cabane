@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import { Box3, Matrix4, Triangle } from "three";
+import { Box3, Matrix4, Triangle, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -82,11 +82,15 @@ await withModules(async (load) => {
               const frames = [],
                 moving = [];
               scene.traverse((o) => {
-                if (!o.isMesh || !o.material?.isMeshToonMaterial) return;
+                if (
+                  !o.isMesh ||
+                  !(o.material?.isMeshToonMaterial || o.material?.isMeshStandardMaterial) ||
+                  o.material.transparent
+                )
+                  return;
                 if (o.name.startsWith("opening-door-frame-")) frames.push(o);
                 else moving.push(o);
               });
-              assert.equal(frames.length, engine.isGardenGate(variant) ? 2 : 3);
               assert.ok(
                 moving.length > 0,
                 "door leaves and handles must participate in collision checks",
@@ -99,10 +103,27 @@ await withModules(async (load) => {
               assert.equal(motions.length, leafCount, "every leaf must animate");
               // Geometry is immutable during animation. Reject disjoint transformed
               // bounds before the exact triangle test; never sample fewer frames.
-              const frameBounds = frames.map((frame) => {
-                frame.geometry.computeBoundingBox();
-                return frame.geometry.boundingBox.clone().expandByScalar(-0.00001);
+              const frameMembers = frames.flatMap((mesh) => {
+                const geometry = mesh.geometry;
+                if (mesh.name !== "opening-door-frame-casing") {
+                  geometry.computeBoundingBox();
+                  return [{ mesh, box: geometry.boundingBox.clone().expandByScalar(-0.00001) }];
+                }
+                return geometry.groups.map(({ start, count }) => {
+                  const box = new Box3();
+                  const point = new Vector3();
+                  for (let i = start; i < start + count; i++) {
+                    box.expandByPoint(
+                      point.fromBufferAttribute(
+                        geometry.attributes.position,
+                        geometry.index.getX(i),
+                      ),
+                    );
+                  }
+                  return { mesh, box: box.expandByScalar(-0.00001) };
+                });
               });
+              assert.equal(frameMembers.length, engine.isGardenGate(variant) ? 2 : 3);
               for (const mesh of moving) mesh.geometry.computeBoundingBox();
               const meshBounds = new Box3();
               const triangle = new Triangle();
@@ -113,8 +134,7 @@ await withModules(async (load) => {
                   await renderer.advanceFrames(1, 0.016);
                 } else if (step) await renderer.advanceFrames(1, 0.016);
                 scene.updateMatrixWorld(true);
-                for (const [frameIndex, frame] of frames.entries()) {
-                  const box = frameBounds[frameIndex];
+                for (const { mesh: frame, box } of frameMembers) {
                   const inverse = frame.matrixWorld.clone().invert();
                   for (const mesh of moving) {
                     transform.multiplyMatrices(inverse, mesh.matrixWorld);

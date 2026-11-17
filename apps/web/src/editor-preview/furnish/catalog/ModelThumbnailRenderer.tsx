@@ -106,7 +106,8 @@ function ThumbnailScene({
     if (drawn.current) return;
     let loading = false;
     scene.traverse((object) => {
-      if (object.name === "loading-imported-model") loading = true;
+      if (object.name === "loading-imported-model" || object.userData.thumbnailPending === true)
+        loading = true;
     });
     if (loading) return;
     // Canvas measures its resized container asynchronously. Keep the request alive

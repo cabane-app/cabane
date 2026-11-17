@@ -1,19 +1,23 @@
 import { useMemo } from "react";
 import { Shape } from "three";
-import { ToonMaterial } from "@cabane/engine";
+import { JoineryMaterial, ToonMaterial, useDetailedJoinery } from "@cabane/engine";
 import { FramedGlassPanel } from "../windows/framed-glass-panel";
 /** Rectangular steel glazing with a continuous decorative arch, not an arched wall cut. */
 export function ArchedSteelGlassPanel({
   width,
   height,
   privacy = false,
+  door = false,
   frameColor = "#292e2d",
 }: {
   width: number;
   height: number;
   privacy?: boolean;
+  door?: boolean;
   frameColor?: string;
 }) {
+  const joinery = useDetailedJoinery();
+  const detailed = door && joinery;
   const arch = useMemo(() => {
     const radius = width * 0.4,
       stroke = Math.min(0.022, width * 0.055),
@@ -41,10 +45,32 @@ export function ArchedSteelGlassPanel({
         privacy={privacy}
         frameDepth={0.045}
         frameColor={frameColor}
+        {...(detailed && { doorFinish: "metal" as const })}
       />
-      <mesh name="steel-arch" position={[0, 0, -0.018]} castShadow>
-        <extrudeGeometry args={[arch, { depth: 0.036, bevelEnabled: false, curveSegments: 32 }]} />
-        <ToonMaterial color={frameColor} />
+      <mesh
+        key={detailed ? "bevelled" : "plain"}
+        name="steel-arch"
+        position-z={detailed ? -0.0165 : -0.018}
+        castShadow
+      >
+        <extrudeGeometry
+          args={[
+            arch,
+            {
+              depth: detailed ? 0.033 : 0.036,
+              bevelEnabled: detailed,
+              bevelThickness: 0.0015,
+              bevelSize: 0.0015,
+              bevelSegments: 1,
+              curveSegments: 32,
+            },
+          ]}
+        />
+        {detailed ? (
+          <JoineryMaterial color={frameColor} finish="metal" />
+        ) : (
+          <ToonMaterial color={frameColor} />
+        )}
       </mesh>
     </group>
   );

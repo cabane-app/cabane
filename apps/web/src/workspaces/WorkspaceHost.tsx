@@ -1,7 +1,7 @@
 import { rememberWorkspace, saveWorkspacePreview } from "./workspace-presentation";
 import type { useWorkspaceOnboarding } from "./useWorkspaceOnboarding";
 import { onboardingLinks } from "../onboarding-config";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
   ScenePreviewContext,
@@ -19,10 +19,12 @@ export function WorkspaceHost({
   id,
   repository,
   onboarding,
+  pendingHome,
 }: {
   id: string;
   repository: WorkspaceRepository;
   onboarding: ReturnType<typeof useWorkspaceOnboarding>;
+  pendingHome: ReactElement;
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -100,7 +102,7 @@ export function WorkspaceHost({
         <Link to="/workspaces">Workspaces</Link>
       </main>
     );
-  if (!loaded) return <main className="direction-project-loading">Loading your home…</main>;
+  if (!loaded) return pendingHome;
   return (
     <ScenePreviewContext.Provider value={capturePreview}>
       <HomeAssistantRuntimeProvider

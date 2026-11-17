@@ -3,12 +3,28 @@ import { createHash } from "node:crypto";
 import test from "node:test";
 import { createElement } from "react";
 import { create } from "@react-three/test-renderer";
-import { CanvasTexture } from "three";
+import {
+  BoxGeometry,
+  CanvasTexture,
+  Group,
+  InstancedMesh,
+  Mesh,
+  MeshStandardMaterial,
+} from "three";
 import { withModules } from "./test-server.mjs";
 
 await withModules(async (load) => {
   const engine = await load("/packages/engine/src/index.ts");
   const { layoutFloorFromEditorFloor } = await load("/apps/web/src/editor-preview/project-sync.ts");
+  const { createWallContactMap } = await load(
+    "/packages/engine/src/floor-finishes/wall-contact-map.ts",
+  );
+  const { createContactReceiverResolver } = await load(
+    "/packages/engine/src/item-contacts/contact-receivers.ts",
+  );
+  const { contactReceiverGroup, floorContactSources } = await load(
+    "/packages/engine/src/item-contacts/contact-sources.ts",
+  );
   const registries = { furnishingModels: {}, deviceModels: {} };
   const project = () =>
     engine.defineHomeProject({
@@ -22,6 +38,103 @@ await withModules(async (load) => {
       shortcuts: [],
       assumptions: [],
     });
+
+  test("floor contact follows real walls and leaves doorways and virtual boundaries open", () => {
+    const floor = project().floors[0];
+    const footprint = [
+      [10, 20],
+      [26, 20],
+      [26, 28],
+      [10, 28],
+    ];
+    const wall = {
+      ...floor.walls[0],
+      id: "back",
+      from: footprint[0],
+      to: footprint[1],
+      thicknessMeters: 0.2,
+    };
+    const map = createWallContactMap({
+      ...floor,
+      coordinates: { origin: [10, 20], metersPerPlanUnit: 0.5 },
+      footprint,
+      footprintRegions: [footprint],
+      walls: [
+        wall,
+        { ...wall, id: "divider", from: footprint[3], to: footprint[2], virtual: true },
+      ],
+      openings: [
+        {
+          wallId: wall.id,
+          sillHeightMeters: 0,
+          offsetFromWallStartPlanUnits: 6,
+          widthPlanUnits: 4,
+        },
+      ],
+    });
+    const { data, width, height } = map.image;
+    const texel = (uv, size) => Math.max(0, Math.min(size - 1, Math.floor(uv * size)));
+    const sample = (x, z) =>
+      data[
+        texel(z * map.repeat.y + map.offset.y, height) * width +
+          texel(x * map.repeat.x + map.offset.x, width)
+      ];
+    try {
+      assert.ok(sample(1.5, 0.15) < sample(1.5, 0.55));
+      assert.equal(sample(1.5, 1), 255);
+      assert.equal(sample(4, 0.15), 255);
+      assert.equal(sample(4, 3.85), 255);
+    } finally {
+      map.dispose();
+    }
+  });
+
+  test("item contact finds the actual support at each foot and clips overhanging edges", () => {
+    const floor = new Group();
+    floor.position.set(3, 8, -4);
+    floor.rotation.y = 0.72;
+    const material = new MeshStandardMaterial();
+    const box = (width, thickness, depth, top) => {
+      const mesh = new Mesh(new BoxGeometry(width, thickness, depth), material);
+      mesh.position.y = top - thickness / 2;
+      return mesh;
+    };
+    const room = box(4, 0.01, 4, 0.012);
+    room.name = "room-library";
+    const table = new Group();
+    table.name = "scene-item-table";
+    table.add(box(1, 0.05, 0.6, 0.75));
+    const wire = box(1, 0.05, 0.6, 0.9);
+    wire.material = new MeshStandardMaterial({ wireframe: true });
+    const scatter = new InstancedMesh(wire.geometry, material, 513);
+    scatter.position.y = 1.2;
+    table.add(wire, scatter);
+    const vase = new Group();
+    vase.name = "scene-item-vase";
+    vase.add(box(0.08, 0.04, 0.08, 0.82));
+    floor.add(room, table, vase);
+    const { items, ground } = floorContactSources(floor);
+    const resolve = createContactReceiverResolver([
+      ...Array.from(ground, (mesh) => contactReceiverGroup(floor, mesh, false)),
+      ...Array.from(items.keys(), (root) => contactReceiverGroup(floor, root, true)),
+    ]);
+    const patch = (x) => [
+      [x - 0.03, -0.02],
+      [x + 0.03, -0.02],
+      [x + 0.03, 0.02],
+      [x - 0.03, 0.02],
+    ];
+    const resolveAt = (x, y) => resolve(vase, patch(x), y, 0.12);
+    const edge = resolveAt(0.515, 0.751);
+    assert.ok(Math.abs(edge.y - 0.75) < 1e-6);
+    assert.ok(edge.triangles.flat().every(([x]) => x <= 0.500001));
+    assert.equal(resolveAt(0.54, 0.751), null);
+    assert.equal(resolveAt(0, 0.82), null);
+    assert.equal(resolveAt(0, 0.9), null);
+    assert.equal(resolveAt(0, 1.225), null);
+    assert.ok(Math.abs(resolveAt(0, 0).y - 0.012) < 1e-6);
+    assert.equal(resolveAt(3, 0), null);
+  });
 
   test("strict schema accepts canonical finishes and ordered zones", () => {
     const input = project();

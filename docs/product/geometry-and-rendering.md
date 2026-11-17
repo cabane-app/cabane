@@ -3,16 +3,20 @@
 ## Visual styles
 
 Settings → Orbital view offers Default and Sims styles, saved per
-browser origin on this device. Default preserves the existing renderer. Sims
+browser origin on this device. Default uses physically lit architectural surfaces
+and a bundled studio environment for reflected light. Sims
 uses a continuous diffuse ramp, flat face normals, a stronger 24-hue material
 palette, no drawn contours, and a stronger directional light with less ambient
 fill. These model material changes apply inside the shared stylized scene and
-retain batching. Arrange uses the same materials with its editor lighting;
-Construct keeps its technical rendering. Geometry, authored materials, imported
-GLB assets, connections, and project data are unchanged. Imported materials retain
-their original shading and receive only the final color grade. The style adds no
-render pass or assets, and does not reproduce the original game's assets or fixed
-camera.
+retain batching. Arrange uses the same materials with its editor lighting.
+Construct's plan keeps its technical rendering. Imported models retain their
+authored materials.
+
+Local development builds expose **Graphics** at the lower left of the demo and
+3D editor. **Original** and **Updated** switch the whole scene. Individual controls
+compare lighting and reflections, contact shadows, finishes, glazing and trim,
+grounds, and camera framing. A changed switch takes effect immediately and persists
+on the local browser origin. Production uses the updated settings.
 
 ## Visual assets
 
@@ -29,9 +33,11 @@ Hosted and bundled textures and 3D models are allowed in product, catalog and
 home-local renderers. Prefer version-pinned HTTPS asset URLs and retain required
 license attribution. Isolate loading failures so the home remains usable.
 Hosted assets require network availability and CORS support. Asset requests must
-never contain HA credentials or household data. Scene lighting stays engine-owned;
-authored geometry retains the toon vocabulary, while loaded models may retain
-original materials. Engine-owned atmosphere may use soft particle materials.
+never contain HA credentials or household data. The engine supplies scene lighting
+and shared toon materials for procedural furnishings and devices. Its architectural
+materials also supply Default-style finishes for walls, floors, glazing and
+joinery, including catalog openings. Loaded models can retain their original
+materials. Engine-owned atmosphere may use soft particle materials.
 Personal user-uploaded GLBs retain their self-contained validation; this asset
 policy does not broaden the accepted upload format or allow executable user code.
 
@@ -62,8 +68,22 @@ plant roots. Boundaries on authored floor/platform support and upper floors reta
 their levels. Plan overlays remain flat. Walk follows
 rendered terrain and crosses near-level basement entrances with ordinary wall
 and pool collision. Tool relocation retains conservative ground-level support.
-All-zero or omitted heights preserve existing rendering. Apartment shells keep
-their existing decorative ground and suspend custom terrain.
+All-zero or omitted heights produce level terrain. Apartment shells use
+decorative ground and suspend custom terrain.
+
+Default Orbit fits a rectangular display board around the building, garden
+features, stairs and placed models, with a 90 cm margin. Custom terrain keeps
+its authored extent. Projects with free-form components or leaning walls use
+the larger square ground, as do Walk and editor previews. The terrain takes
+the home's ground color over a 2.5 m turf scan. A pale mineral edge and a
+feathered contact shadow surround the base. Clipped box hedges use a single
+opaque canopy with a rounded shoulder and a metre-scaled boxwood leaf pattern.
+Rounded and bushy hedges carry modeled leaf tips over a continuous canopy.
+Tall mixed hedges combine broad laurel leaves with narrow oleander shoots and
+flower clusters. Ivy climbs and trails over a capped wall. Low masonry
+boundaries use staggered limestone courses, recessed mortar and individual
+coping stones. The Construct picker renders previews from these same models.
+
 Footprint/room polygons, straight walls, explicit wall junctions, and wall-owned
 openings define architecture. Junction/opening clearance uses the finite spans of
 adjoining walls: a shallow-angle continuation extending away from an opening
@@ -95,6 +115,8 @@ Paired hinged and sliding door leaves meet at the center in the same depth plane
 The engine constructs continuous walls and junction assemblies with interior and
 exterior material groups. Wall face finishes retain each wall’s boundaries,
 including continuous bands above doors and windows and each side of a corner.
+Each face above a standard arched passage continues the surrounding wall paint or
+pattern. The curved underside uses the same edge finish as the two jambs.
 Polygon clipping and numerical normalization prevent
 near-coincident seams from destabilizing geometry. Opening cuts extend 1 mm
 past both wall faces so diagonal walls cannot leave opaque slivers across the aperture.
@@ -132,7 +154,8 @@ authored sloped ceiling planes retain their slope. Roof faces split at the ridge
 before triangulation. The default pitch is 25 degrees, limited to a 2 m rise and
 lowered where needed below taller neighboring ceiling tiers. Edges are flush with
 the derived coverage, with an 8 cm roof skin. Infill below the roof continues
-the supporting exterior wall finish, including per-wall and face-color overrides,
+the supporting exterior wall finish, including per-wall paint, directional face
+colors, and patterned or image finishes at the wall's texture scale and alignment,
 down across the slab depth. Corner infill uses the supporting wall’s junction
 geometry rather than a fixed endpoint-distance cutoff. Batched walls, standalone
 walls, and roof infill share face-override/exterior-override/palette precedence. Only the thin roof edge and underside use the trim
@@ -154,15 +177,21 @@ Procedural wood retains its deterministic grain, palette and joints while
 uploading the completed pixel buffer once per texture. Per-pixel canvas draw
 commands must not block editor startup on software-rendered browsers.
 
-Native and repository-generated home content uses procedural geometry, toon materials, and restrained
-outlines. Engine-owned in-memory floor finish textures remain part of the stable
-product. Shared lighting, fading, and outline behavior stay engine-owned.
+In the Default style, procedural walls and floors in native and generated homes
+use light-responsive materials. Plain wall faces take
+their authored paint color over a subtle plaster texture. Pine bark and gravel
+use metre-scaled photographs and matching normal maps so the individual chips
+and stones catch the garden light. The engine shares
+local finish textures across rooms, releases them after the last user leaves,
+and can draw each floor from its authored color or procedural pattern while
+loading or when a scan is unavailable. Shared lighting, fading, and outline
+behavior stay engine-owned.
 Personal GLB instances preserve original materials and embedded textures; their
 foreground pixels are excluded from compulsory contours. Imported resources are
 owned, shared, and disposed by the dedicated import module and use ordinary
-draws. Floor imports add a simple envelope collider. The exception does not
-permit asset loading in native models or generated home extensions. See
-[personal models](personal-models.md).
+draws. The visual-asset contract above covers shared scans and authored model
+assets. Uploaded GLBs follow the [personal model import contract](personal-models.md),
+including its rules for floor collision.
 Physical lights render only on the active floor. Room, dashboard and device
 emissions share the [bounded model-lighting execution policy](model-lighting.md#rendering),
 which preserves authored declarations and total brightness within 64 physical
@@ -183,12 +212,22 @@ remain unrestricted. Moving across the near-wall threshold changes a uniform,
 without changing the light type or shader light count. This avoids lighting
 through the wall without allocating point-light shadow maps. The nearest-plane
 mask remains an approximation rather than full shadow or finite-wall ray tracing.
-Explore and Arrange use four flat toon bands, warm key light and cool sky fill.
+Explore and Arrange light toon-shaded items with four flat bands, warm key light and cool sky fill.
 The shared in-memory gradient repeats each band across 64 texels and linearly
 filters only the narrow boundaries. This keeps stationary surfaces from flashing
 between brightness bands when camera rotation perturbs a view-space light dot
 product at a threshold; broad band interiors retain their original levels. A single multisampled HDR scene render supplies color and depth
-for camera-dependent, approximately one-CSS-pixel occlusion contours. The pass
+for camera-dependent, approximately one-CSS-pixel occlusion contours. In the
+Default style, contact shading follows the building geometry. A small per-floor
+texture softens indirect light where solid walls meet room floors and level
+grounds, leaving doorways open. Interior wall faces have their own shading
+along the floor and at adjoining walls, following the height of each junction
+and its openings. Placed objects also shade the level surface beneath each
+opaque foot or base. These soft shadows fade within a few centimetres, clip
+to the edges of the supporting surface, and follow edits in Arrange. Moving a
+table updates the shadows of objects at its old and new positions. The floor
+keeps displaying its last complete set of shadows while it updates the affected
+contacts. The contour pass
 subtracts the opposite depth slope to suppress lines on continuous slanted
 surfaces; it does not detect normal, material or triangle edges. Transparent
 surfaces retain their existing depth-write behavior. Decorative mesh shells are
@@ -345,6 +384,12 @@ floors cover their actual indoor and outdoor support footprints. Explicit low
 exterior walls retain their height when another floor exists, while full-height
 facades continue across the real inter-floor slab.
 
+In the Default style, open stair treads and landings use photographed oak grain
+aligned with each tread. Stone caps use the limestone floor finish, and concrete
+risers use a fine mineral texture. The **Surface finishes** graphics switch also
+controls these stair materials. On closed stairs, **Contact shadows** softens
+the light along the joint where a tread meets the riser above it.
+
 Stair `railings` optionally selects `both`, `left`, `right`, or `none`, relative to ascent; omission preserves both sides. `none` removes flight, landing, and upper-opening guards. Spiral stairs retain their central support and apply side selection to the outer rail and exit bridge. When enabled, upper-opening guards are clipped to actual floor/platform support outside the opening, including partial and disconnected floor regions; exterior flights never acquire floating opening guards. All stair shapes share this guard geometry.
 
 Solar lighting reads Home Assistant's available, fresh `sun.sun` azimuth and elevation.
@@ -364,6 +409,24 @@ rendering share this rule. Shared horizontal junction surfaces use the general
 finish when their participating walls disagree, without changing geometry,
 collision, shadows or fade ownership.
 
+On the selected cutaway storey, the cap finish wraps down the faces of ordinary
+walls by up to 45 mm, with a narrow reveal at its base. The band is part of the
+wall mesh and follows its opening cuts and facade fade. Painted faces inside
+level rooms have a 10 cm flush skirting in a darker shade of the wall paint.
+It stops at openings and leaves custom wall finishes intact. Glazed gables, windows,
+and glazed doors use the scene environment for reflections. Clear panes become
+more reflective at glancing angles; privacy glass has a softer reflection and a
+denser tint. The window sash has a mitred profile and a recessed glazing bead.
+
+In the Default style, panel doors have bevelled, recessed fields on both faces
+and mitred casings. Timber grain follows each panel, rail and stile, tinted by
+its Construct color. Glazed sliders have a deeper bottom rail, threshold,
+overhead guide and through-bolted pulls. Arched steel doors have bevelled
+metalwork. The roll-up garage door has pressed slats, a folded hood and a lift
+handle. Garden gates have timber or metal profiles and separate hinge and latch
+hardware. The “Doors, glazing & wall trim” development switch compares these
+finishes with the original models.
+
 An optional `WallSpec.virtual` wall divides rooms without being built: it adds no
 geometry, collision, shadow, lighting plane, roof seam, or opening host, and junctions
 keep only their physical walls (dropped below two). Rooms and ceilings are unchanged.
@@ -379,7 +442,7 @@ Checkerboard tile. Their Tile color picker changes the ceramic color while keepi
 neutral grout (and the checkerboard’s cream alternate tiles). Reset color restores
 the preset default. Optional six-digit hex `color` on these preset finishes survives
 history, draft reload, Save, duplication, and import/export; omitted color preserves
-existing projects. Patterns are generated in memory and rendered with toon materials.
+existing projects. Ceramic patterns are generated in memory.
 
 Horizontal caps are partitioned by finish ownership before triangulation so adjacent
 wall colors do not bleed across their boundary. Overlapping junction ownership
@@ -393,9 +456,10 @@ Interior walls ignore any stale exteriorColor metadata when resolving Auto edges
 matching face colors still extend onto caps, while differing colors use the
 home interior palette. Explicit edgeColor continues to take precedence.
 
-Dark walnut and both light-oak directions use a 3.6 m repeating procedural pattern with 22.5 cm boards,
-staggered end joints, restrained species-specific tone variation and fine lengthwise grain.
-Each 512 px in-memory canvas retains the existing toon lighting and shadow behavior.
+Dark walnut and both light-oak directions use staggered 18 cm planks with scanned
+veneer grain and a 3.6 m repeat in the Default style. Parquet, limestone and
+travertine also use scaled scans. The plan, Sims and procedural fallback retain
+the generated patterns.
 
 Weather in Home adds Drei textured particle clouds and instanced shader-driven
 rain, snow, hail, exterior mist and wind wisps. It applies after solar resolution:

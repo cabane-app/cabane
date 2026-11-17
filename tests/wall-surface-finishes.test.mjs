@@ -25,6 +25,9 @@ await withModules(async (load) => {
     "/packages/engine/src/architecture-scene/ArchitecturalWalls.tsx",
   );
   const { WALL_FADE_MIN_OPACITY } = await load("/packages/engine/src/wall-fade.ts");
+  const { bakeWallContacts } = await load(
+    "/packages/engine/src/architecture-geometry/wall-contact.ts",
+  );
   const finish = { pattern: "subway-tile", color: "#237a91", repeatMeters: 1.2 };
   const wallpaper = { pattern: "striped-wallpaper", color: "#a15d72", repeatMeters: 0.8 };
   const custom = { pattern: "custom-image", color: "#ffffff", repeatMeters: 8, image };
@@ -41,6 +44,169 @@ await withModules(async (load) => {
       assumptions: [],
     });
 
+  test("wall contact follows the indoor floor level and stops at a neighbor's opening and top", async () => {
+    const floor = structuredClone(e.neutralDemoManifest.floors[0]);
+    floor.coordinates = { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" };
+    floor.footprint = [
+      [0, 0],
+      [4, 0],
+      [4, 3],
+      [0, 3],
+    ];
+    floor.rooms = [
+      {
+        ...floor.rooms[0],
+        polygon: floor.footprint,
+        floorZones: [
+          {
+            id: "sunken",
+            polygon: [
+              [2, 0],
+              [4, 0],
+              [4, 3],
+              [2, 3],
+            ],
+            elevation: { offsetMeters: -0.35, edges: [0, 1, 2, 3].map((i) => ({ id: String(i) })) },
+          },
+        ],
+      },
+    ];
+    const wall = {
+      id: "wall",
+      from: [0, 0],
+      to: [4, 0],
+      classification: "exterior",
+      thicknessMeters: 0.2,
+      heightMeters: 2.6,
+    };
+    const side = { ...wall, id: "return", to: [0, 3], heightMeters: 0.9 };
+    floor.walls = [wall, side];
+    floor.wallJunctions = [{ id: "joint", at: [0, 0], wallIds: ["wall", "return"] }];
+    floor.openings = [
+      {
+        id: "window",
+        wallId: "return",
+        kind: "window",
+        offsetFromWallStartPlanUnits: 0.02,
+        widthPlanUnits: 0.32,
+        sillHeightMeters: 0.4,
+        openingHeightMeters: 0.3,
+      },
+    ];
+    const contact = bakeWallContacts(floor);
+    assert.ok(contact);
+    const { map } = contact;
+    const sample = (owner, x, y, face = "left") => {
+      const [u, v] = contact.uv(owner, face, x, y, 0);
+      return map.image.data[
+        Math.floor(v * map.image.height) * map.image.width + Math.floor(u * map.image.width)
+      ];
+    };
+    assert.ok(sample("wall", 1, 0.01) < 202);
+    assert.equal(sample("wall", 1, 0.55), 255);
+    assert.ok(sample("wall", 3, -0.34) < 202);
+    assert.equal(sample("wall", 3, 0.2), 255);
+    assert.equal(sample("wall", 1, 0.01, "right"), 255);
+    assert.ok(sample("wall", 0.12, 0.32) < 220);
+    assert.equal(sample("wall", 0.12, 0.56), 255);
+    assert.equal(sample("wall", 0.12, 1.2), 255);
+    assert.equal(sample(undefined, 0, 0), 255);
+    const degenerate = { ...wall, id: "degenerate", to: wall.from, gable: { fill: "solid" } };
+    for (const empty of [
+      { ...floor, rooms: [] },
+      { ...floor, walls: [] },
+      { ...floor, walls: [degenerate] },
+    ])
+      assert.equal(bakeWallContacts(empty), null);
+    const mixed = bakeWallContacts({ ...floor, walls: [...floor.walls, degenerate] });
+    assert.ok(mixed.uv(degenerate.id, "left", 0, 0, 0).every(Number.isFinite));
+    mixed.map.dispose();
+    map.dispose();
+    const common = {
+      wall,
+      floor,
+      openings: floor.openings,
+      fade: false,
+      reducedMotion: true,
+      interiorColor: "#eeeeee",
+      exteriorColor: "#cccccc",
+    };
+    for (const Component of [ArchitecturalWall, ArchitecturalWalls]) {
+      const renderer = await create(createElement(Component, common));
+      const contacts = () => renderer.scene.findAll((node) => !!node.instance?.material?.aoMap);
+      try {
+        assert.ok(contacts().length);
+        for (const node of contacts()) {
+          const { geometry, material } = node.instance;
+          const uv = geometry.getAttribute("uv1"),
+            norm = geometry.getAttribute("normal"),
+            image = material.aoMap.image;
+          assert.equal(uv.count, norm.count);
+          for (let i = 0; i < norm.count; i++) {
+            if (Math.abs(norm.getY(i)) < 0.9) continue;
+            assert.equal(
+              image.data[
+                Math.floor(uv.getY(i) * image.height) * image.width +
+                  Math.floor(uv.getX(i) * image.width)
+              ],
+              255,
+              "cap stays neutral",
+            );
+          }
+        }
+        const walls = contacts().map((node) => node.instance);
+        for (const allowContact of [false, true, false]) {
+          const previous = walls.map(({ material }) => ({ material, version: material.version }));
+          await renderer.update(createElement(Component, { ...common, allowContact }));
+          for (const [index, mesh] of walls.entries()) {
+            assert.equal(!!mesh.material.aoMap, allowContact);
+            const before = previous[index];
+            assert.ok(
+              mesh.material !== before.material || mesh.material.version > before.version,
+              "notify Three.js that the AO shader variant changed",
+            );
+          }
+        }
+      } finally {
+        await renderer.unmount();
+      }
+    }
+  });
+  test("merged section returns and skirting use the neutral wall contact texel", () => {
+    const floor = structuredClone(e.neutralDemoManifest.floors[0]);
+    const contact = bakeWallContacts(floor);
+    const neutral = contact.uv(undefined, "left", 0, 0, 0);
+    const groups = e.buildArchitecturalWallGeometries(floor, undefined, undefined, 0, {
+      contact,
+      skirting: true,
+      sectionEdges: true,
+    });
+    let boards = 0,
+      returns = 0;
+    for (const { geometry } of groups) {
+      const p = geometry.attributes.position,
+        uv = geometry.attributes.uv1,
+        n = geometry.attributes.normal;
+      for (let i = 0; i < p.count; i += 3) {
+        if (Math.abs(n.getY(i)) > 0.1) continue;
+        const ys = [p.getY(i), p.getY(i + 1), p.getY(i + 2)];
+        if (Math.abs(Math.max(...ys) - 0.092) < 1e-5) boards++;
+        else if (
+          Math.abs(Math.max(...ys) - floor.defaultWallHeightMeters) < 1e-5 &&
+          Math.max(...ys) - Math.min(...ys) < 0.06
+        )
+          returns++;
+        else continue;
+        for (let j = i; j < i + 3; j++) {
+          assert.ok(Math.abs(uv.getX(j) - neutral[0]) < 1e-7);
+          assert.ok(Math.abs(uv.getY(j) - neutral[1]) < 1e-7);
+        }
+      }
+      geometry.dispose();
+    }
+    assert.ok(boards > 0 && returns > 0);
+    contact.map.dispose();
+  });
   test("wall pattern schema round trips supported finishes and rejects unsafe or unknown input", () => {
     for (const pattern of e.WALL_SURFACE_PATTERNS) {
       const p = project();

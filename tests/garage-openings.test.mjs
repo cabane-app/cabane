@@ -237,12 +237,13 @@ await withModules(async (load) => {
       await renderer.update(render(0.5));
       assert.ok(slats().length > 0);
       const first = slats()[0].instance;
-      assert.ok(first.position.y - first.geometry.parameters.height / 2 > 1);
+      first.geometry.computeBoundingBox();
+      assert.ok(first.position.y + first.geometry.boundingBox.min.y * first.scale.y > 1);
       await renderer.update(render(1));
       assert.equal(slats().length, 0);
       assert.ok(new Box3().setFromObject(frame().instance).equals(bounds));
       for (const mesh of renderer.scene.findAll((node) => node.type === "Mesh"))
-        assert.equal(mesh.instance.material.type, "MeshToonMaterial");
+        assert.equal(mesh.instance.material.type, "MeshStandardMaterial");
       await renderer.unmount();
     }
   });
@@ -255,15 +256,16 @@ await withModules(async (load) => {
       const group = renderer.scene.findByProps({ name: "roll-up-door-slats" }).instance;
       const panel = group.children[0];
       const geometry = panel.geometry;
-      const bottom = () => panel.position.y - (geometry.parameters.height * panel.scale.y) / 2;
+      geometry.computeBoundingBox();
+      const bottom = () => panel.position.y + geometry.boundingBox.min.y * panel.scale.y;
       const clearHeight = engine.rollUpDoorGeometry(
         garage.widthPlanUnits,
         garage.openingHeightMeters,
         1,
       ).clearHeight;
-      assert.equal(bottom(), 0);
+      assert.ok(Math.abs(bottom()) < 1e-7);
       await renderer.update(render(1));
-      assert.equal(bottom(), 0, "a new target must not jump the panels");
+      assert.ok(Math.abs(bottom()) < 1e-7, "a new target must not jump the panels");
       await renderer.advanceFrames(1, 1 / 60);
       assert.ok(bottom() > 0 && bottom() < clearHeight / 5);
       await renderer.advanceFrames(12, 1 / 60);
@@ -273,10 +275,10 @@ await withModules(async (load) => {
       await renderer.advanceFrames(1, 1 / 60);
       assert.ok(bottom() > 0 && bottom() < midOpening);
       await renderer.advanceFrames(150, 1 / 60);
-      assert.equal(bottom(), 0);
+      assert.ok(Math.abs(bottom()) < 1e-7);
       await renderer.update(render(0.5));
       await renderer.advanceFrames(150, 1 / 60);
-      assert.equal(bottom(), clearHeight / 2);
+      assert.ok(Math.abs(bottom() - clearHeight / 2) < 1e-7);
       await renderer.update(render(1));
       await renderer.advanceFrames(150, 1 / 60);
       assert.ok(group.children.every((part) => !part.visible));
@@ -284,7 +286,7 @@ await withModules(async (load) => {
       await renderer.advanceFrames(1, 5);
       assert.ok(panel.visible && bottom() > clearHeight * 0.5, "idle frames must not snap shut");
       await renderer.update(render(0.25, true));
-      assert.equal(bottom(), clearHeight / 4, "reduced motion settles immediately");
+      assert.ok(Math.abs(bottom() - clearHeight / 4) < 1e-7, "reduced motion settles immediately");
       assert.equal(panel.geometry, geometry, "frames reuse the existing geometry");
     } finally {
       await renderer.unmount();

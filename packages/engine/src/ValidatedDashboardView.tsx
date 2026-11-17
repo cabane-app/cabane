@@ -18,9 +18,18 @@ import { FloorPicker, deriveFloorLevels } from "./building";
 import { StylizedScene } from "./StylizedScene";
 import { PerformanceMonitor } from "@react-three/drei";
 
-import { Canvas } from "@react-three/fiber";
+import { DashboardCanvas } from "./DashboardCanvas";
+import { DashboardSceneReadyContext } from "./DashboardSceneReady";
 
-import { Suspense, useMemo, useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  Suspense,
+  useMemo,
+  useEffect,
+  useContext,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import { ArchitectureScene } from "./ArchitectureScene";
 
@@ -56,6 +65,7 @@ import { useDashboardController } from "./useDashboardController";
 
 export function ValidatedDashboardView(props: Parameters<typeof useDashboardController>[0]) {
   const dom = useCabaneDom();
+  const onSceneReady = useContext(DashboardSceneReadyContext);
   const toolNavigationRef = useRef<WalkToolNavigation | null>(null);
   const roomFocus = useRoomFocusFrame();
   const [overlayPreferences] = useState(loadOverlayPreferences);
@@ -261,16 +271,16 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
             }}
           >
             <Suspense fallback={<div className="scene-loading">Preparing the house…</div>}>
-              <Canvas
+              <DashboardCanvas
                 events={dashboardCanvasEvents}
                 shadows="percentage"
                 dpr={canvasDpr}
                 frameloop={!documentVisible ? "never" : walkMode ? "always" : "demand"}
-                gl={{ antialias: quality.antialias }}
+                antialias={quality.antialias}
               >
                 <SceneOverlayLayout>
                   <RoomHoverProvider scope={`${floor.id}-${mode}`}>
-                    <StylizedScene antialias={quality.antialias}>
+                    <StylizedScene antialias={quality.antialias} onFirstFrame={onSceneReady}>
                       <ScenePreview enabled={!walkMode && !selectedRoomId} />
                       <SolarLighting
                         weather={weather.appearance}
@@ -331,6 +341,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                       )}
                       <SceneNightContext.Provider value={nightLighting}>
                         <ArchitectureScene
+                          fitGroundToSite
                           activeFloorId={floor.id}
                           floorView={wholeBuilding ? "whole" : "cutaway"}
 
@@ -404,7 +415,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                     </StylizedScene>
                   </RoomHoverProvider>
                 </SceneOverlayLayout>
-              </Canvas>
+              </DashboardCanvas>
             </Suspense>
           </div>
 
