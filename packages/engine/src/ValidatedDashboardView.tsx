@@ -6,6 +6,7 @@ import { WeatherScene } from "./weather/WeatherScene";
 import { deriveSolarLighting } from "./lighting";
 import { filterOverlayStatuses, loadOverlayPreferences } from "./room-status/overlay-preferences";
 import { resolveDashboardActionTargets } from "./action-bar/dashboard-action-targets";
+import { renderWorldLighting } from "./walk-tools/world-lighting";
 import type { WalkToolNavigation } from "./walk-tools";
 import { activateWalkTarget, canActivateWalkTarget } from "./walk-tools/activate-walk-target";
 import { dashboardCanvasEvents } from "./connected-canvas-events";
@@ -163,10 +164,8 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
   const outsideCameraRoom =
     cameraRoom && cameraRoom.outsideFloorId !== undefined ? cameraRoom.room : undefined;
   const orbitView = useDashboardOrbitView(manifest.home.id, floor.id);
-  const equippedTool =
-    walkMode && !walkthrough
-      ? props.walkTools?.find((tool) => tool.id === equippedToolId)
-      : undefined;
+  const equippedId = walkMode && !walkthrough ? equippedToolId : null;
+  const equippedTool = props.walkTools?.find((tool) => tool.id === equippedId);
   const sceneControlsBlocked = setupOpen || mappingOpen || deviceOverlay || Boolean(selectedCamera);
   const toolInputEnabled = documentVisible && !sceneControlsBlocked;
   const actionBarItems = resolvePublishedActionBarItems(manifest.actionBar, props.walkTools);
@@ -363,6 +362,8 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                           liveMediaByEntityId={liveMediaByEntityId}
                         />
                       </SceneNightContext.Provider>
+                      {!walkthrough &&
+                        renderWorldLighting(props.walkTools, equippedTool, toolInputEnabled)}
                       {equippedTool && (
                         <Suspense fallback={null}>
                           <equippedTool.Scene

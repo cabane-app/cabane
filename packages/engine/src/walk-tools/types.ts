@@ -40,5 +40,7 @@ export interface WalkToolDefinition {
   /** Optional non-movement key, active only when this shortcut is on the bar. */
   shortcutKey?: string;
   Icon: ComponentType;
+  /** Persistent world lighting keeps shader variants stable across equip changes. */
+  WorldLighting?: ComponentType<{ active: boolean }>;
   Scene: ComponentType<WalkToolProps>;
 }

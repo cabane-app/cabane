@@ -1,6 +1,7 @@
 import type { WalkToolDefinition } from "@cabane/engine";
 import { laserWalkTool } from "@cabane/walk-laser";
 import { createElement, lazy } from "react";
+import { TorchlightBeam } from "./torchlight/TorchlightBeam";
 import torchlightIcon from "./torchlight/icon.svg";
 
 const torchlight: WalkToolDefinition = {
@@ -9,6 +10,7 @@ const torchlight: WalkToolDefinition = {
   defaultShortcut: true,
   shortcutKey: "T",
   Icon: () => createElement("img", { src: torchlightIcon, alt: "", draggable: false }),
+  WorldLighting: TorchlightBeam,
   Scene: lazy(() => import("./torchlight/Torchlight")),
 };
 
