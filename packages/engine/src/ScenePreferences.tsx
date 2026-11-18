@@ -1,3 +1,4 @@
+import { LandscapePicker } from "./landscapes/LandscapePicker";
 import { useState } from "react";
 import { useSceneStyle, setSceneStyle } from "./scene-style";
 import { useMeasurementUnits, setMeasurementUnits } from "./measurement-units";
@@ -22,9 +23,11 @@ import "./walk-preferences.css";
 
 export function ScenePreferences({
   section,
+  homeId,
   profile,
   onWeatherSourceChange,
 }: {
+  homeId?: string;
   section: "orbital-view" | "editor" | "explore";
   profile?: RuntimeBindingProfile;
   onWeatherSourceChange?: ((source: WeatherSource) => Promise<void>) | undefined;
@@ -63,6 +66,11 @@ export function ScenePreferences({
     <div className="scene-preferences">
       {section === "orbital-view" && (
         <>
+          {homeId && (
+            <div className="walk-preferences__group">
+              <LandscapePicker home={homeId} />
+            </div>
+          )}
           <div className="walk-preferences__group">
             <h3>Visual style</h3>
             <fieldset className="walk-preferences__choices">

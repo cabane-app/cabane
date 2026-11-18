@@ -9,6 +9,9 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Color, Object3D, Vector3, type DirectionalLight, type HemisphereLight } from "three";
 import { transitionSolarDirection } from "./solar-direction-transition";
+import { HomeLandscape } from "./landscapes/HomeLandscape";
+import { useLandscape } from "./landscapes/landscape-preference";
+import type { HomeManifest } from "./types";
 import { WalkSky } from "./WalkSky";
 import { deriveSolarLighting, type SolarLightingMode, type SunEntityState } from "./lighting";
 
@@ -28,6 +31,7 @@ export function SolarLighting({
   shadowMapSize,
   sunState,
   walkMode = false,
+  manifest,
   northAngleDegrees = 0,
   floors = EMPTY_FLOORS,
 }: {
@@ -37,9 +41,11 @@ export function SolarLighting({
   shadowMapSize: 1024 | 2048;
   sunState?: SunEntityState;
   walkMode?: boolean;
+  manifest?: HomeManifest;
   northAngleDegrees?: number;
   floors?: readonly RenderableFloorSpec[];
 }) {
+  const landscape = useLandscape(manifest?.home.id ?? "");
   const style = useSceneStyle();
   const studioDaylight = useGraphicsFeature("lighting");
   const solar = useMemo(
@@ -138,6 +144,15 @@ export function SolarLighting({
           daylight={solar.daylight}
           overcast={weather.darkness}
           reducedMotion={reducedMotion}
+        />
+      )}
+      {manifest && landscape !== "none" && (
+        <HomeLandscape
+          landscape={landscape}
+          manifest={manifest}
+          daylight={solar.daylight}
+          overcast={weather.darkness}
+          sunRef={sunRef}
         />
       )}
       <color attach="background" args={[initial.current.backgroundColor]} />

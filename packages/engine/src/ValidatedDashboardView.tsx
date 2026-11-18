@@ -42,6 +42,7 @@ import { RoomDashboardPanel } from "./HomeAssistantDashboards";
 
 import { HomeAssistantMappingScreen } from "./HomeAssistantMappingScreen";
 
+import { LandscapePicker } from "./landscapes/LandscapePicker";
 import { SolarLighting } from "./SceneLighting";
 import { SceneNightContext } from "./scene-light-state";
 
@@ -282,6 +283,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                     <StylizedScene antialias={quality.antialias} onFirstFrame={onSceneReady}>
                       <ScenePreview enabled={!walkMode && !selectedRoomId} />
                       <SolarLighting
+                        manifest={manifest}
                         weather={weather.appearance}
                         reducedMotion={reducedMotion}
                         walkMode={walkMode}
@@ -517,6 +519,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                         <span>Retry connection</span>
                       </button>
                     )}
+                    <LandscapePicker home={manifest.home.id} />
                     {settingsMenuItem}
                     <ProjectSupportMenuItems />
                     {!demoSession &&

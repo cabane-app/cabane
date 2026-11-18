@@ -117,6 +117,7 @@ export function EditorSettings({
           ) : (
             <>
               <ScenePreferences
+                homeId={snapshot.project.home.id}
                 section={section}
                 profile={connect.profile}
                 onWeatherSourceChange={changeWeatherSource}

@@ -18,6 +18,15 @@ compare lighting and reflections, contact shadows, finishes, glazing and trim,
 grounds, and camera framing. A changed switch takes effect immediately and persists
 on the local browser origin. Production uses the updated settings.
 
+## Home landscapes
+
+Orbit and Walk share a landscape picker in More options and in Settings → Orbital view.
+Each browser remembers the choice separately for each home. Homes start with None.
+Countryside adds rolling fields and hedgerows. New York adds brick streets, rooftop
+water tanks and a distant skyline with illuminated windows after dark. Both follow
+the scene lighting. The scenery is decorative and does not participate in picking,
+walking collisions or the home shadow map.
+
 ## Visual assets
 
 Catalog and workspace previews copy the rendered WebGL drawing buffer through

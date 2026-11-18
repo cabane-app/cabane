@@ -34,7 +34,7 @@ const emptyScan = { snapshot: noTexture, subscribe: () => () => {} };
 
 // Each source is shared by all its rooms and floors. The final subscriber releases
 // its GPU texture, including when the user closes a home during an image load.
-function scan(
+export function scan(
   url: string,
   repeat = 1,
   colorSpace: ColorSpace = SRGBColorSpace,
