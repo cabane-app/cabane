@@ -154,6 +154,7 @@ export function useDashboardController({
   const walkMode = mode === "walk";
   const walk = useDashboardWalk({
     manifest,
+    deviceModels,
     floor,
     selectedRoomId,
     selectedRoom,
@@ -171,12 +172,7 @@ export function useDashboardController({
     setWalkDeviceTarget,
   });
   const {
-    walkPointerLocked,
-    shellRef,
     walkDevicePanelOpenRef,
-    poseRef,
-    sprintInputRef,
-    jumpRequestRef,
     movementInputRef,
     lookInputRef,
     lookDeltaRef,
@@ -425,6 +421,9 @@ export function useDashboardController({
     return () => dom.events.removeEventListener("keydown", activateEditorShortcut);
   }, [deviceOverlay, mappingOpen, mode, selectedCamera, setupOpen, walkMode, walkthrough, dom]);
   return {
+    walkParcel: walk.parcel,
+    findWalkSpawn: walk.findWalkSpawn,
+    unavailableFloors: walk.unavailableFloors,
     equippedToolId,
     floorNavigation,
     elevation,
@@ -433,7 +432,7 @@ export function useDashboardController({
     cameraStreamRequirements,
     runtime,
     documentVisible,
-    shellRef,
+    shellRef: walk.shellRef,
     mode,
     mappingOpen,
     setupOpen,
@@ -447,10 +446,10 @@ export function useDashboardController({
     solarLighting,
     nightLighting,
     floor,
-    poseRef,
+    poseRef: walk.poseRef,
     movementInputRef,
-    sprintInputRef,
-    jumpRequestRef,
+    sprintInputRef: walk.sprintInputRef,
+    jumpRequestRef: walk.jumpRequestRef,
     lookInputRef,
     lookDeltaRef,
     reducedMotion,
@@ -505,7 +504,7 @@ export function useDashboardController({
     setMode,
     walkDeviceTarget,
     openWalkDevice,
-    walkPointerLocked,
+    walkPointerLocked: walk.walkPointerLocked,
     allLightsCall,
     allLightsBusy,
     runAction,

@@ -1,3 +1,4 @@
+import type { WalkParcel } from "./walk-parcel";
 import {
   planPointToWorld,
   pointInsidePolygon,
@@ -14,12 +15,14 @@ export const safeSpawnPoseForRoom = (
   floor: FloorSpec,
   colliders: readonly WalkCollider[],
   radius = WALK_PLAYER_RADIUS,
+  parcel?: WalkParcel,
 ): WalkPose | null => {
   const centroid = polygonCentroid(room.polygon);
   const [centroidX, centroidZ] = planPointToWorld(centroid, floor.coordinates);
   const centroidCandidate = { x: centroidX, z: centroidZ };
   if (
     pointInsidePolygon(centroid, room.polygon) &&
+    (!parcel || parcel.contains(centroidCandidate)) &&
     isWalkPointClear(centroidCandidate, colliders, radius)
   ) {
     return { ...centroidCandidate, yaw: Math.PI, pitch: 0 };
@@ -49,6 +52,7 @@ export const safeSpawnPoseForRoom = (
       const planCandidate = worldPointToPlan(candidate, floor.coordinates);
       if (
         !pointInsidePolygon(planCandidate, room.polygon) ||
+        (parcel && !parcel.contains(candidate)) ||
         !isWalkPointClear(candidate, colliders, radius)
       )
         continue;

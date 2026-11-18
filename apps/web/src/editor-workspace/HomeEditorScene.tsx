@@ -5,6 +5,7 @@ import { editorCanvasEvents } from "./editor-canvas-events";
 import { ConstructionPlatformLayer } from "../editor-preview/construct/ConstructionPlatformLayer";
 import { useReferenceCanvas } from "../editor-reference-plan/ReferenceCanvasLayers";
 import type { ReferencePlanController } from "../editor-reference-plan/useReferencePlan";
+import { GroundBorderLayer } from "../editor-preview/construct/GroundBorderLayer";
 import { ConstructionGrid } from "../editor-preview/construct/ConstructionGrid";
 import { WalkStartPointer } from "../editor-preview/construct/WalkStartPointer";
 import { EditableStair } from "../editor-floors/EditableStair";
@@ -21,6 +22,7 @@ import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
 import {
   type ManifestIssue,
   deriveFloorLevels,
+  homeGroundFrame,
   useGraphicsFeature,
   stairFloorIds,
   StylizedScene,
@@ -200,6 +202,10 @@ export function HomeEditorScene({
     constructEditor.previewFloor,
     constructPlan,
   );
+  const groundFrame = useMemo(
+    () => (constructPlan ? homeGroundFrame(visualManifest, deviceModels) : null),
+    [constructPlan, visualManifest, deviceModels],
+  );
   const levels = deriveFloorLevels(visualManifest.floors);
   const activeLevel = levels.find((level) => level.floorId === activeFloorId)?.elevationMeters ?? 0;
   return (
@@ -288,6 +294,23 @@ export function HomeEditorScene({
                 />
               )}
               {constructPlan && !referenceCanvas.visible && <ConstructionGrid />}
+              {groundFrame &&
+                constructEditor.tool === "select" &&
+                !reference.adjusting &&
+                !northOrientation.active &&
+                !placingWalkStart &&
+                !stairPlacement &&
+                !editingLocked && (
+                  <GroundBorderLayer
+                    frame={groundFrame}
+                    onCommit={(groundMargins) =>
+                      executeProjectAction({
+                        type: "update-home-settings",
+                        changes: { groundMargins },
+                      })
+                    }
+                  />
+                )}
               <PreviewCamera
                 key={cameraReturn?.key}
                 initialPose={cameraReturn?.pose}
@@ -295,6 +318,7 @@ export function HomeEditorScene({
                 northOrientation={northOrientation.active}
                 planWheelNavigation={mode === "construct" || mode === "furnish"}
                 view={cameraView}
+                groundFrame={groundFrame}
                 resetKey={cameraResetKey}
                 floor={constructEditor.previewFloor}
                 controlsEnabled={!dragging && !placingWalkStart && !northOrientation.active}

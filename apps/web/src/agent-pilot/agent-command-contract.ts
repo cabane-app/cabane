@@ -187,8 +187,8 @@ export const AGENT_ACTIONS = [
   floorAction("remove-floor", "Remove a floor when the engine allows it.", "floorId?: string"),
   floorAction(
     "update-home-settings",
-    "Update roof, terrain, north or apartment floor settings.",
-    "changes: {roof?: RoofSpec; northAngleDegrees?: number; apartmentFloor?: number; terrain?: TerrainSettings}",
+    "Update roof, terrain, map borders, north or apartment floor settings.",
+    "changes: {roof?: RoofSpec; northAngleDegrees?: number; apartmentFloor?: number; terrain?: TerrainSettings; groundMargins?: {left: number; right: number; top: number; bottom: number} | null}",
   ),
   floorAction(
     "set-walk-start",

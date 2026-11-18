@@ -13,6 +13,7 @@ import {
   type ValidationRule,
 } from "./core";
 import { validateFloors } from "./floor-rules";
+import { isGroundMargins } from "../terrain/ground-margins";
 import { isTerrainSettings } from "../terrain/terrain-settings";
 
 const SHORTCUTS = new Set<BuiltInShortcutId>([
@@ -37,6 +38,14 @@ const validateHeader: ValidationRule<RawObject> = (input) => {
   if (!isObject(input.home)) {
     issues.push(issue("home.type", "home", "Home metadata must be an object."));
   } else {
+    if (input.home.groundMargins !== undefined && !isGroundMargins(input.home.groundMargins))
+      issues.push(
+        issue(
+          "home.ground-margins",
+          "home.groundMargins",
+          "Each map border needs a finite, nonnegative distance in metres.",
+        ),
+      );
     if (input.home.terrain !== undefined && !isTerrainSettings(input.home.terrain))
       issues.push(
         issue(

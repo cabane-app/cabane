@@ -11,7 +11,7 @@ import { Color, Object3D, Vector3, type DirectionalLight, type HemisphereLight }
 import { transitionSolarDirection } from "./solar-direction-transition";
 import { HomeLandscape } from "./landscapes/HomeLandscape";
 import { useLandscape } from "./landscapes/landscape-preference";
-import type { HomeManifest } from "./types";
+import type { DeviceModelRegistry, HomeManifest } from "./types";
 import { WalkSky } from "./WalkSky";
 import { deriveSolarLighting, type SolarLightingMode, type SunEntityState } from "./lighting";
 
@@ -32,6 +32,7 @@ export function SolarLighting({
   sunState,
   walkMode = false,
   manifest,
+  devices = manifest?.extensions.deviceModels,
   northAngleDegrees = manifest?.home.northAngleDegrees ?? 0,
   floors = manifest?.floors ?? EMPTY_FLOORS,
 }: {
@@ -42,6 +43,7 @@ export function SolarLighting({
   sunState?: SunEntityState;
   walkMode?: boolean;
   manifest?: HomeManifest;
+  devices?: DeviceModelRegistry;
   northAngleDegrees?: number;
   floors?: readonly RenderableFloorSpec[];
 }) {
@@ -146,9 +148,12 @@ export function SolarLighting({
           reducedMotion={reducedMotion}
         />
       )}
-      {manifest && landscape !== "none" && (
+      {manifest && devices && landscape !== "none" && (
         <HomeLandscape
           landscape={landscape}
+          reducedMotion={reducedMotion}
+          devices={devices}
+          walkMode={walkMode}
           manifest={manifest}
           daylight={solar.daylight}
           overcast={weather.darkness}

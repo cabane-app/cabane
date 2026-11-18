@@ -14,7 +14,6 @@ import { ScenePreview } from "./ScenePreview";
 import { RoomHoverProvider } from "./room-status/RoomHover";
 import { OrbitNavigation } from "./OrbitNavigation";
 import { DashboardLocation, useRoomFocusFrame } from "./room-navigation";
-import { safeBuildingSpawn } from "./stairs/stair-navigation";
 import { FloorPicker, deriveFloorLevels } from "./building";
 import { StylizedScene } from "./StylizedScene";
 import { PerformanceMonitor } from "@react-three/drei";
@@ -42,6 +41,8 @@ import { RoomDashboardPanel } from "./HomeAssistantDashboards";
 
 import { HomeAssistantMappingScreen } from "./HomeAssistantMappingScreen";
 
+import { CountryLawnContext } from "./landscapes/CountryTurf";
+import { useLandscape } from "./landscapes/landscape-preference";
 import { LandscapePicker } from "./landscapes/LandscapePicker";
 import { SolarLighting } from "./SceneLighting";
 import { SceneNightContext } from "./scene-light-state";
@@ -164,6 +165,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
   const cameraRoom = selectedCamera && resolvedBindings.rooms[selectedCamera.roomId];
   const outsideCameraRoom =
     cameraRoom && cameraRoom.outsideFloorId !== undefined ? cameraRoom.room : undefined;
+  const countryside = useLandscape(manifest.home.id) === "countryside";
   const orbitView = useDashboardOrbitView(manifest.home.id, floor.id);
   const equippedId = walkMode && !walkthrough ? equippedToolId : null;
   const equippedTool = props.walkTools?.find((tool) => tool.id === equippedId);
@@ -231,20 +233,12 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
             )}
             <FloorPicker
               disabled={sceneControlsBlocked}
-              unavailable={
-                walkMode
-                  ? Object.fromEntries(
-                      manifest.floors
-                        .filter((f) => !safeBuildingSpawn(manifest, f.id))
-                        .map((f) => [f.id, "No clear walking entry"]),
-                    )
-                  : undefined
-              }
+              unavailable={dashboard.unavailableFloors}
               floors={manifest.floors}
               selectedId={floor.id}
               onSelect={(id) => {
                 if (walkMode) {
-                  const spawn = safeBuildingSpawn(manifest, id);
+                  const spawn = dashboard.findWalkSpawn(id);
                   if (!spawn) return;
                   poseRef.current = spawn;
                 }
@@ -283,6 +277,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                     <StylizedScene antialias={quality.antialias} onFirstFrame={onSceneReady}>
                       <ScenePreview enabled={!walkMode && !selectedRoomId} />
                       <SolarLighting
+                        devices={deviceModels}
                         manifest={manifest}
                         weather={weather.appearance}
                         reducedMotion={reducedMotion}
@@ -304,6 +299,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                       )}
                       {walkMode ? (
                         <WalkCameraController
+                          parcel={dashboard.walkParcel}
                           building={manifest}
                           registries={manifest.extensions}
                           elevation={elevation}
@@ -338,30 +334,32 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                           reducedMotion={reducedMotion}
                         />
                       )}
-                      <SceneNightContext.Provider value={nightLighting}>
-                        <ArchitectureScene
-                          fitGroundToSite
-                          activeFloorId={floor.id}
-                          floorView={wholeBuilding ? "whole" : "cutaway"}
+                      <CountryLawnContext.Provider value={countryside}>
+                        <SceneNightContext.Provider value={nightLighting}>
+                          <ArchitectureScene
+                            fitGroundToSite
+                            activeFloorId={floor.id}
+                            floorView={wholeBuilding ? "whole" : "cutaway"}
 
-                          manifest={manifest}
-                          architectureModels={architectureModels}
-                          selectedRoomId={selectedRoomId}
-                          walkMode={walkMode}
-                          wallFadeEnabled={wallFadeEnabled && !wholeBuilding}
-                          reducedMotion={reducedMotion}
-                          resolvedBindings={resolvedBindings}
-                          deviceModels={deviceModels}
-                          openingPositions={openingPositions}
-                          interactionMode={!walkMode && wholeBuilding ? "editor" : "runtime"}
-                          onSelectRoom={wholeBuilding ? undefined : selectRoom}
-                          onInteract={handleExtensionInteraction}
-                          onWalkDeviceTargetChange={
-                            walkthrough || equippedTool ? undefined : setWalkDeviceTarget
-                          }
-                          liveMediaByEntityId={liveMediaByEntityId}
-                        />
-                      </SceneNightContext.Provider>
+                            manifest={manifest}
+                            architectureModels={architectureModels}
+                            selectedRoomId={selectedRoomId}
+                            walkMode={walkMode}
+                            wallFadeEnabled={wallFadeEnabled && !wholeBuilding}
+                            reducedMotion={reducedMotion}
+                            resolvedBindings={resolvedBindings}
+                            deviceModels={deviceModels}
+                            openingPositions={openingPositions}
+                            interactionMode={!walkMode && wholeBuilding ? "editor" : "runtime"}
+                            onSelectRoom={wholeBuilding ? undefined : selectRoom}
+                            onInteract={handleExtensionInteraction}
+                            onWalkDeviceTargetChange={
+                              walkthrough || equippedTool ? undefined : setWalkDeviceTarget
+                            }
+                            liveMediaByEntityId={liveMediaByEntityId}
+                          />
+                        </SceneNightContext.Provider>
+                      </CountryLawnContext.Provider>
                       {!walkthrough &&
                         renderWorldLighting(props.walkTools, equippedTool, toolInputEnabled)}
                       {equippedTool && (

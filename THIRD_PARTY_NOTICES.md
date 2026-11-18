@@ -136,3 +136,24 @@ retrieved on 17 November 2026 under [CC0 1.0](https://polyhaven.com/license).
 The architectural reflection probe is a 256 × 128 linear-light reduction of
 Sergej Majboroda’s [Studio Small 09](https://polyhaven.com/a/studio_small_09),
 bundled under [CC0](https://polyhaven.com/license).
+
+## Countryside landscape
+
+The fields and hedgerows derive from IGN BD ORTHO® aerial imagery and IGN LiDAR
+HD ground and surface elevations, retrieved on 18 November 2026. The 384 m and
+1,536 m survey tiles share a centre at 421438 E, 6875407 N in Lambert-93.
+Cabane grades and compresses the imagery, quantizes the elevations and derives
+stem locations and individual foliage positions from canopy heights.
+[IGN BD ORTHO](https://www.data.gouv.fr/datasets/bd-ortho-r) ·
+[IGN LiDAR HD terrain](https://www.data.gouv.fr/datasets/mnt-lidar-hd) ·
+[IGN LiDAR HD surface](https://www.data.gouv.fr/datasets/mns-lidar-hd) ·
+[Licence Ouverte 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence/)
+
+The leaf sprays use leaf samples from Rico Cilliers’ Shrub 04. The lawn and field
+edges share Charlotte Baglioni’s Leafy Grass scan. The sky textures use the celestial
+portions of Kloppenheim 06 (Pure Sky) by Greg Zaal and Jarod Guest, and Rogland
+Clear Night by Greg Zaal. All four Poly Haven assets were retrieved on 18 November
+2026 and converted to WebP. [Shrub 04](https://polyhaven.com/a/shrub_04) ·
+[Leafy Grass](https://polyhaven.com/a/leafy_grass) ·
+[Kloppenheim 06 (Pure Sky)](https://polyhaven.com/a/kloppenheim_06_puresky) ·
+[Rogland Clear Night](https://polyhaven.com/a/rogland_clear_night) · [CC0](https://polyhaven.com/license)

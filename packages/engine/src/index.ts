@@ -7,6 +7,8 @@ export { isAuxiliaryEntitySlot } from "./entity-slot-roles";
 export * from "./walk-tools";
 export * from "./action-bar/action-bar-config";
 export * from "./action-bar/ha-action-shortcuts";
+export { homeGroundFrame } from "./architecture-scene/diorama-frame";
+export { GROUND_EDGES, type GroundMargins } from "./terrain/ground-margins";
 export { DEFAULT_ROOF_SETTINGS, type RoofSettings } from "./roof/roof-settings";
 export {
   DEFAULT_TERRAIN_GRASS_COLOR,

@@ -1,3 +1,4 @@
+import type { WalkParcel } from "../navigation/walk-parcel";
 import { elevationWalkable } from "../elevation/walk-support";
 import { localSurfaceAt, terrainLocalHeight } from "../elevation/surfaces";
 import { createTerrainSurface } from "../terrain/terrain-surface";
@@ -145,6 +146,7 @@ export const moveBuildingWalker = (
   prepared?: ReturnType<typeof prepareBuildingWalk>,
   registries: StairModelRegistries = {},
   options: {
+    parcel?: WalkParcel;
     verticalRange?: WalkVerticalRange;
     allowUnsupported?: boolean;
     terrainHeight?: (point: WalkPoint) => number | null;
@@ -207,6 +209,9 @@ export const moveBuildingWalker = (
         : floorColliders,
       verticalRange,
     ),
+    WALK_PLAYER_RADIUS,
+    undefined,
+    options.parcel,
   );
   const candidate = { ...pose, ...next };
   const plan = worldPointToPlan(next, building.coordinates);
@@ -389,6 +394,7 @@ export const safeBuildingSpawn = (
   start?: import("../types").PlanPoint,
   supportsTerrain?: (point: WalkPoint) => boolean,
   itemColliders?: readonly BoxWalkCollider[],
+  parcel?: WalkParcel,
 ) => {
   const floor = building.floors.find((f) => f.id === floorId);
   if (!floor || floor.footprint.length < 3) return null;
@@ -429,6 +435,7 @@ export const safeBuildingSpawn = (
   ];
   if (start) {
     const [x, z] = planPointToWorld(start, building.coordinates);
+    if (parcel && !parcel.contains({ x, z })) return null;
     const supported =
       pointOnFloorSupport(start, floor) ||
       (floor.id === building.floors.find((candidate) => !candidate.belowGround)?.id &&
@@ -458,7 +465,7 @@ export const safeBuildingSpawn = (
     })),
   ];
   for (const room of spawnRegions) {
-    const pose = safeSpawnPoseForRoom(room, floor, colliders, WALK_PLAYER_RADIUS);
+    const pose = safeSpawnPoseForRoom(room, floor, colliders, WALK_PLAYER_RADIUS, parcel);
     if (
       !pose ||
       !isWalkPointClear(pose, colliders) ||

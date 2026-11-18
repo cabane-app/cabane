@@ -22,10 +22,12 @@ on the local browser origin. Production uses the updated settings.
 
 Orbit and Walk share a landscape picker in More options and in Settings → Orbital view.
 Each browser remembers the choice separately for each home. Homes start with None.
-Countryside adds rolling fields and hedgerows. New York adds brick streets, rooftop
-water tanks and a distant skyline with illuminated windows after dark. Both follow
-the scene lighting. The scenery is decorative and does not participate in picking,
-walking collisions or the home shadow map.
+Countryside renders the same 3D fields, hills, trunks and hedgerows in both views.
+The yard and surrounding ground share a world-space grass finish, and the
+exterior follows the authored grade at the parcel edge. Daylight and night
+illuminate the ground and foliage. New York adds brick streets, rooftop water
+tanks and a skyline with illuminated windows after dark. Both landscapes are
+scenery. Walk movement stays within the home’s parcel.
 
 ## Visual assets
 

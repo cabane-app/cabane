@@ -81,6 +81,13 @@ history, autosave, export/import, and Apply flow. After Apply, Home's Show roof
 action displays the result. Pitch, thickness, and flush overhang are automatic;
 per-section controls and roof drawing are not exposed.
 
+Select a map border in the 2D plan and drag it to resize the ground on that side.
+Each border can move up to the modeled site, including detached outdoor items.
+The arrow keys move a focused border by 10 cm, or 1 m with Shift. Escape cancels
+a drag. The margins follow the site as the home changes and apply in Orbit and
+Walk. The Walk player can follow the edge and stays inside it when running or jumping.
+Terrain → Reset map borders restores automatic sizing.
+
 The Terrain disclosure sets four corner heights around the home's ground and
 basement footprint in the unrotated 2D plan. Negative heights lower a side to a
 garage or basement entrance; heights blend across the home and stay level beyond

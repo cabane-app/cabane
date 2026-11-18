@@ -16,6 +16,7 @@ import type {
 import type { StairSpec } from "../stairs/types";
 import type { RoofSettings } from "../roof/roof-settings";
 import type { ActionBarConfiguration } from "../action-bar/action-bar-config";
+import type { GroundMargins } from "../terrain/ground-margins";
 import type { TerrainSettings } from "../terrain/terrain-settings";
 import { migrateLegacyProject } from "./migrations";
 
@@ -123,6 +124,7 @@ export interface HomeProject {
   seedRevision: string;
   home: {
     terrain?: TerrainSettings;
+    groundMargins?: GroundMargins;
     /** Decorative storeys below the modeled home; zero preserves the original appearance. */
     apartmentFloor?: number;
     walkStart?: { floorId: string; at: PlanPoint };

@@ -37,9 +37,7 @@ void main() {
 export const landscapeFragment = /* glsl */ `
 uniform sampler2D leaves;
 uniform sampler2D brick;
-uniform sampler2D ground;
 uniform sampler2D shadeMap;
-uniform bool hasGround;
 uniform bool hasBrick;
 uniform vec3 sun;
 uniform float daylight;
@@ -81,18 +79,6 @@ void main() {
       albedo *= 1.0 + pane.x * pane.y * (variation-0.5)*0.68;
     }
     emission = vec3(0.95,0.57,0.24) * pane.x * pane.y * step(0.76, variation) * pow(1.0-daylight, 1.5) * (0.46 + 0.4 * variation);
-  } else if (abs(kind-1.0) < 0.1) {
-    if (hasGround) {
-      float grain = dot(texture2D(ground,local.xz / 3.7).rgb,vec3(0.24,0.62,0.14));
-      albedo *= 0.38 + 0.80 * grain;
-    }
-    // A winding farm lane crossing the patchwork, with two worn wheel tracks.
-    float lane = abs(local.z + 18.0 - 4.2*sin(local.x/26.0) - 0.08*local.x);
-    float track = 1.0-smoothstep(0.18,0.46,abs(lane-0.64));
-    albedo = mix(albedo,vec3(0.43,0.34,0.21),0.68*track);
-    float row = local.x * 3.1 + local.z * 0.16 + sin(local.z * 0.09) * 1.4;
-    float detail = 1.0-smoothstep(0.6, 3.0, fwidth(row));
-    albedo *= 1.0 + 0.048 * cos(row) * detail + 0.045 * sin(local.x*0.17 + local.z*0.23);
   } else if (abs(kind-5.0)<0.1 && n.y>0.9) {
     vec2 square = abs(fract(local.xz / 1.65)-0.5);
     albedo *= 1.0 - 0.09 * smoothstep(0.466, 0.5, max(square.x,square.y)) * (1.0-smoothstep(0.08,0.28,fwidth(local.x)));
@@ -118,7 +104,7 @@ void main() {
   float sky = n.y * 0.5 + 0.5;
   vec3 lighting = mix(vec3(0.10,0.15,0.23),vec3(0.60,0.70,0.74),daylight) * (0.58 + sky * 0.42);
   lighting += vec3(0.93,0.80,0.60) * key * daylight * (1.0 - 0.74 * overcast);
-  if ((abs(kind-1.0)<0.1 || abs(kind-4.0)<0.1 || abs(kind-5.0)<0.1) && n.y > 0.5) {
+  if ((abs(kind-4.0)<0.1 || abs(kind-5.0)<0.1) && n.y > 0.5) {
     float shade = texture2D(shadeMap,local.xz / ${shadeExtent.toFixed(1)} + 0.5).r;
     lighting *= 1.0 - shade * 0.43;
   }

@@ -1,3 +1,5 @@
+import { groundEdgeProfile } from "../terrain/ground-margins";
+import { CountryLawnContext, CountryTurf } from "../landscapes/CountryTurf";
 import { removeElevationCutWalls } from "../elevation/cut-wall-geometry";
 import { elevationCutouts } from "../elevation/surfaces";
 import { cutStairGroundOpenings } from "../stairs/ground-apertures";
@@ -20,12 +22,13 @@ import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 
 import type { FloorSpec } from "../types";
 
-/** Optional presentation bounds for a stand-alone diorama. Terrain keeps its authored extent. */
+/** An authored frame also sizes sloped ground, keeping the grade anchored to the house. */
 export const DioramaFrameContext = createContext<{
   width: number;
   depth: number;
   centerX?: number;
   centerZ?: number;
+  margins?: import("../terrain/ground-margins").GroundMargins;
 } | null>(null);
 
 export const DioramaGround = memo(function DioramaGround({
@@ -44,18 +47,21 @@ export const DioramaGround = memo(function DioramaGround({
   wallContact?: Texture | null;
 }) {
   const terrain = useTerrainSurface();
+  const countryside = useContext(CountryLawnContext);
   const frame = useContext(DioramaFrameContext);
-  const centerX = terrain?.centerX ?? frame?.centerX ?? requestedCenterX;
-  const centerZ = terrain?.centerZ ?? frame?.centerZ ?? requestedCenterZ;
-  const width = terrain?.size ?? frame?.width ?? requestedSize;
-  const depth = terrain?.size ?? frame?.depth ?? requestedSize;
+  const authored = frame?.margins ? frame : null;
+  const centerX = authored?.centerX ?? terrain?.centerX ?? frame?.centerX ?? requestedCenterX;
+  const centerZ = authored?.centerZ ?? terrain?.centerZ ?? frame?.centerZ ?? requestedCenterZ;
+  const width = authored?.width ?? terrain?.size ?? frame?.width ?? requestedSize;
+  const depth = authored?.depth ?? terrain?.size ?? frame?.depth ?? requestedSize;
+  const { inset, radius, lawnRadius } = groundEdgeProfile(width, depth, authored?.margins);
   const grounds = useGraphicsFeature("grounds");
   const natural = useContext(SceneStyleContext) === "default" && grounds;
   const turf = useScannedFinish("ground-cover", "grounds");
   const plinth = useScannedFinish("painted-plaster", "grounds");
   const shadow = useMemo(
-    () => (natural ? plinthContactShadow(width, depth) : null),
-    [natural, width, depth],
+    () => (natural ? plinthContactShadow(width, depth, radius) : null),
+    [natural, width, depth, radius],
   );
   useEffect(() => () => shadow?.dispose(), [shadow]);
   const apertures = useStairSurfaceApertures("floor");
@@ -63,7 +69,7 @@ export const DioramaGround = memo(function DioramaGround({
   const baseShape = useMemo(
     () =>
       cutStairGroundOpenings(
-        cutPoolOpenings(roundedDioramaShape(centerX, centerZ, width, depth, 0.42), floor),
+        cutPoolOpenings(roundedDioramaShape(centerX, centerZ, width, depth, radius), floor),
         floor.coordinates,
         [
           ...apertures,
@@ -72,13 +78,13 @@ export const DioramaGround = memo(function DioramaGround({
           ...elevationCutouts(floor),
         ],
       ),
-    [centerX, centerZ, width, depth, floor, apertures, terrainApertures, terrain],
+    [centerX, centerZ, width, depth, radius, floor, apertures, terrainApertures, terrain],
   );
   const grassShape = useMemo(
     () =>
       cutStairGroundOpenings(
         cutPoolOpenings(
-          roundedDioramaShape(centerX, centerZ, width - 0.1, depth - 0.1, 0.36),
+          roundedDioramaShape(centerX, centerZ, width - 2 * inset, depth - 2 * inset, lawnRadius),
           floor,
         ),
         floor.coordinates,
@@ -89,7 +95,18 @@ export const DioramaGround = memo(function DioramaGround({
           ...elevationCutouts(floor),
         ],
       ),
-    [centerX, centerZ, width, depth, floor, apertures, terrainApertures, terrain],
+    [
+      centerX,
+      centerZ,
+      width,
+      depth,
+      inset,
+      lawnRadius,
+      floor,
+      apertures,
+      terrainApertures,
+      terrain,
+    ],
   );
   const topY = GROUND_ELEVATION_METERS;
   const grassThickness = 0.1;
@@ -172,14 +189,18 @@ export const DioramaGround = memo(function DioramaGround({
         rotation={[-Math.PI / 2, 0, 0]}
         receiveShadow
       >
-        <ArchitecturalMaterial
-          key={`${turf ? "turf" : "plain"}-${groundContact ? "contact" : "flat"}`}
-          feature="grounds"
-          color={color}
-          map={turf ?? null}
-          roughness={1}
-          aoMap={groundContact}
-        />
+        {countryside ? (
+          <CountryTurf color={color} aoMap={groundContact} />
+        ) : (
+          <ArchitecturalMaterial
+            key={`${turf ? "turf" : "plain"}-${groundContact ? "contact" : "flat"}`}
+            feature="grounds"
+            color={color}
+            map={turf ?? null}
+            roughness={1}
+            aoMap={groundContact}
+          />
+        )}
       </mesh>
     </group>
   );

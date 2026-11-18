@@ -31,6 +31,7 @@ interface PreviewCameraProps {
   view: EditorCameraState["view"];
   resetKey: number;
   floor: FloorSpec;
+  groundFrame?: { centerX: number; centerZ: number; width: number; depth: number } | null;
   controlsEnabled: boolean;
   focusPoint: PlanPoint | null;
   focusRoomId?: (string | null) | undefined;
@@ -86,6 +87,7 @@ export function PreviewCamera(props: PreviewCameraProps) {
 function PreviewCameraRig({
   view,
   floor,
+  groundFrame,
   controlsEnabled,
   focusPoint,
   focusRoomId,
@@ -207,21 +209,39 @@ function PreviewCameraRig({
       return { ...restored, view, position };
     }
     const focusRoom = !northOrientation && floor.rooms.find((room) => room.id === focusRoomId);
+    const fitGround = !northOrientation && !focusPoint && !focusRoom && groundFrame;
     const bounds = focusRoom
       ? worldBoundsForPolygon(focusRoom.polygon, floor.coordinates)
-      : worldBoundsForFloorScene(floor);
+      : fitGround || worldBoundsForFloorScene(floor);
     const span = Math.max(bounds.width, bounds.depth, 2);
+    // The inspector overlays the canvas. Keep all four borders in its visible portion on fit.
+    const rightInset = fitGround
+      ? parseFloat(
+          canvas.ownerDocument.defaultView
+            ?.getComputedStyle(canvas)
+            .getPropertyValue("--editor-properties-clearance") ?? "",
+        ) || 0
+      : 0;
     const zoom = northOrientation
       ? Math.max(
           0.1,
           (Math.min(width - 48, height - 162) * 0.68) /
             Math.max(2, Math.hypot(bounds.width, bounds.depth)),
         )
-      : Math.max(8, Math.min(110, width / (bounds.width * 1.48), height / (bounds.depth * 1.58)));
+      : fitGround
+        ? Math.max(
+            MIN_EDITOR_ZOOM,
+            Math.min(
+              110,
+              (width - rightInset) / (bounds.width * 1.2),
+              height / (bounds.depth * 1.42),
+            ),
+          )
+        : Math.max(8, Math.min(110, width / (bounds.width * 1.48), height / (bounds.depth * 1.58)));
     const focusX =
       !northOrientation && focusPoint
         ? (focusPoint[0] - floor.coordinates.origin[0]) * floor.coordinates.metersPerPlanUnit
-        : bounds.centerX;
+        : bounds.centerX + rightInset / (2 * zoom);
     const focusZ =
       !northOrientation && focusPoint
         ? (focusPoint[1] - floor.coordinates.origin[1]) * floor.coordinates.metersPerPlanUnit

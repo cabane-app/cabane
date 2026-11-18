@@ -271,6 +271,60 @@ await withModules(async (load) => {
     near(surface.offsetAt(-4, -24), 0);
   });
 
+  test("independent map borders survive import and resize the walkable ground on slopes and flat sites", async () => {
+    const project = projectWithGarage();
+    const margins = { left: 0, right: 3, top: 0.5, bottom: 2 };
+    const edited = editProject(
+      { project, bindings: {} },
+      { type: "update-home-settings", changes: { groundMargins: margins } },
+    );
+    const parsed = api.parseHomeProject(api.serializeHomeProject(edited.project));
+    assert.equal(parsed.valid, true, JSON.stringify(parsed.issues));
+    assert.deepEqual(parsed.project.home.groundMargins, margins);
+    assert.equal(
+      editProject(edited, { type: "update-home-settings", changes: { groundMargins: null } })
+        .project.home.groundMargins,
+      undefined,
+    );
+    assert.throws(() =>
+      editProject(edited, {
+        type: "update-home-settings",
+        changes: { groundMargins: { ...margins, left: -1 } },
+      }),
+    );
+    const flat = api.composeHomeManifest(parsed.project, emptyExtensions);
+    for (const sloped of [false, true]) {
+      const manifest = sloped ? { ...flat, home: { ...flat.home, terrain } } : flat;
+      const frame = api.homeGroundFrame(manifest, {});
+      const x = frame.centerX + frame.width / 2;
+      for (const walkMode of [false, true]) {
+        const renderer = await create(
+          React.createElement(ArchitectureScene, {
+            manifest,
+            floorView: "whole",
+            fitGroundToSite: true,
+            walkMode,
+            selectedRoomId: null,
+            wallFadeEnabled: false,
+            reducedMotion: true,
+            resolvedBindings: { rooms: {}, openings: {} },
+            architectureModels: stableArchitectureModelRegistry,
+            deviceModels: {},
+            openingPositions: {},
+            onInteract() {},
+          }),
+        );
+        try {
+          const height = createTerrainHeightQuery(renderer.scene.instance, 0);
+          assert.equal(typeof height({ x: x - 0.2, z: frame.centerZ }), "number");
+          assert.equal(height({ x: x + 0.2, z: frame.centerZ }), null);
+        } finally {
+          await renderer.unmount();
+        }
+      }
+    }
+  });
+
   test("the exterior reveals the garage while terrain, paths and soil retain indoor, pool and stair cutouts", async () => {
     const project = projectWithGarage();
     project.home.terrain = terrain;

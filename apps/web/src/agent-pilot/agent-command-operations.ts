@@ -73,10 +73,15 @@ export async function executeFloorOperation(
     if (
       !Object.keys(changes).length ||
       Object.keys(changes).some(
-        (key) => !["roof", "northAngleDegrees", "apartmentFloor", "terrain"].includes(key),
+        (key) =>
+          !["roof", "northAngleDegrees", "apartmentFloor", "terrain", "groundMargins"].includes(
+            key,
+          ),
       )
     )
-      throw new Error("changes must contain roof, northAngleDegrees, apartmentFloor or terrain.");
+      throw new Error(
+        "changes must contain roof, northAngleDegrees, apartmentFloor, terrain or groundMargins.",
+      );
     edit = { type, changes };
   } else if (type === "set-walk-start")
     edit = {

@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { homeGroundFrame } from "./architecture-scene/diorama-frame";
+import { createWalkParcel } from "./navigation/walk-parcel";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCabaneDom } from "./CabaneDom";
 import { useFloorNavigation } from "./building";
 import { pointInsidePolygon, worldPointToPlan } from "./geometry";
@@ -9,12 +11,13 @@ import { spawnPoseForRoom, type StickVector, type WalkPose } from "./navigation"
 
 import { useDesktopWalkInput } from "./SceneControls";
 
-import type { ExtensionInteractionTarget, SceneMode } from "./types";
+import type { ExtensionInteractionTarget, PlanPoint, SceneMode } from "./types";
 
 import { ValidatedDashboardProps } from "./validated-dashboard-contract";
 
 type Options = {
   manifest: ValidatedDashboardProps["manifest"];
+  deviceModels: ValidatedDashboardProps["deviceModels"];
   floor: ValidatedDashboardProps["manifest"]["floors"][number];
   selectedRoomId: string | null;
   selectedRoom: ValidatedDashboardProps["manifest"]["floors"][number]["rooms"][number] | undefined;
@@ -33,6 +36,7 @@ type Options = {
 };
 export function useDashboardWalk({
   manifest,
+  deviceModels,
   floor,
   selectedRoomId,
   selectedRoom,
@@ -50,6 +54,26 @@ export function useDashboardWalk({
   setWalkDeviceTarget,
 }: Options) {
   const dom = useCabaneDom();
+  const parcel = useMemo(() => {
+    const frame = homeGroundFrame(manifest, deviceModels, "walk");
+    return frame ? createWalkParcel(frame) : undefined;
+  }, [manifest, deviceModels]);
+  const findWalkSpawn = useCallback(
+    (floorId: string, at?: PlanPoint) =>
+      safeBuildingSpawn(manifest, floorId, at, undefined, undefined, parcel),
+    [manifest, parcel],
+  );
+  const unavailableFloors = useMemo(
+    () =>
+      walkMode
+        ? Object.fromEntries(
+            manifest.floors
+              .filter((floor) => !findWalkSpawn(floor.id))
+              .map((floor) => [floor.id, "No clear walking entry"]),
+          )
+        : undefined,
+    [walkMode, manifest.floors, findWalkSpawn],
+  );
   const onExitWalkthrough = walkthrough?.onExit;
   const walkthroughStarted = useRef(false);
   const [walkPointerLocked, setWalkPointerLocked] = useState(false);
@@ -141,7 +165,7 @@ export function useDashboardWalk({
     walkDevicePanelOpenRef.current = false;
     walkPointerLockPendingRef.current = false;
     const start = manifest.home.walkStart;
-    const safeSpawn = safeBuildingSpawn(manifest, start?.floorId ?? floor.id, start?.at);
+    const safeSpawn = findWalkSpawn(start?.floorId ?? floor.id, start?.at);
     if (!safeSpawn) {
       setSceneActionError(
         "The walk starting area is blocked or unavailable. Move the starting point in Construct or clear a walking area in Arrange.",
@@ -162,6 +186,7 @@ export function useDashboardWalk({
     setSceneActionError(null);
     setMode("walk");
   }, [
+    findWalkSpawn,
     floor.id,
     floorNavigationSelectFloor,
     manifest,
@@ -261,6 +286,9 @@ export function useDashboardWalk({
   }, [coarsePointer, enterWalkMode, onExitWalkthrough, requestMobileLandscape]);
 
   return {
+    findWalkSpawn,
+    unavailableFloors,
+    parcel,
     walkPointerLocked,
     shellRef,
     walkDevicePanelOpenRef,

@@ -79,6 +79,15 @@ export function EditorConstructionSettings({
         />
         <TerrainSettingsEditor
           value={home.terrain}
+          onResetBorders={
+            home.groundMargins
+              ? () =>
+                  executeProjectAction({
+                    type: "update-home-settings",
+                    changes: { groundMargins: null },
+                  })
+              : undefined
+          }
           disabled={(home.apartmentFloor ?? 0) > 0}
           onChange={(terrain) =>
             executeProjectAction({ type: "update-home-settings", changes: { terrain } })
