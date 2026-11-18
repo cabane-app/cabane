@@ -1,90 +1,52 @@
-import { ToonMaterial } from "@cabane/engine";
-import { RoundedSuitePanel } from "../construction/rounded-suite-panel";
+import {
+  CabinetPiece,
+  cabinetBoard,
+  horizontalTimber,
+  joinCabinetParts,
+} from "../construction/cabinet-joinery";
+import { oakGrainTexture } from "../construction/oak-grain-texture";
+import { DresserTelevision } from "./dresser-television";
+
+const back = cabinetBoard(1.121, 0.65, 0.459, 0, 0.42, -0.005);
+const ends = joinCabinetParts(
+  [-1, 1].map((side) => cabinetBoard(0.062, 0.677, 0.497, side * 0.591, 0.4345, -0.004, 0.008)),
+);
+const feet = joinCabinetParts(
+  [-1, 1].flatMap((side) =>
+    [-1, 1].map((end) => cabinetBoard(0.081, 0.109, 0.079, side * 0.576, 0.0545, end * 0.197)),
+  ),
+);
+const apron = cabinetBoard(1.119, 0.073, 0.433, 0, 0.126, -0.004);
+const top = horizontalTimber(cabinetBoard(1.32, 0.062, 0.55, 0, 0.829, 0, 0.013));
+const lip = cabinetBoard(1.264, 0.045, 0.508, 0, 0.781, 0, 0.007);
+const drawers = horizontalTimber(
+  joinCabinetParts(
+    [0.301, 0.603].map((y) => cabinetBoard(1.111, 0.286, 0.051, 0, y, 0.246, 0.008)),
+  ),
+);
+const topEdges = joinCabinetParts(
+  [0.301, 0.603].map((y) => cabinetBoard(1.064, 0.014, 0.006, 0, y + 0.12, 0.272, 0.003)),
+);
+const pulls = joinCabinetParts(
+  [0.301, 0.603].flatMap((y) => [
+    ...[-0.191, 0.191].map((x) => cabinetBoard(0.027, 0.041, 0.041, x, y + 0.023, 0.289)),
+    cabinetBoard(0.415, 0.029, 0.025, 0, y + 0.023, 0.3075, 0.007),
+  ]),
+);
 
 export function DresserWithTv() {
-  const wood = "#b78a5d";
-  const woodLight = "#c79a69";
-  const woodShade = "#936942";
-  const woodOutline = "#5f432f";
-  const hardware = "#242526";
   return (
     <group name="commode-pin-et-television-parentale-custom" userData={{ walkCollider: true }}>
-      <RoundedSuitePanel
-        size={[1.05, 0.72, 0.49]}
-        position={[0, 0.42, 0]}
-        color={wood}
-        outline={woodOutline}
-      />
-      {[-1, 1].map((side) => (
-        <RoundedSuitePanel
-          key={side}
-          size={[0.095, 0.82, 0.52]}
-          position={[side * (1.24 / 2 - 0.0475), 0.41, 0]}
-          color={woodLight}
-          outline={woodOutline}
-        />
-      ))}
-      <RoundedSuitePanel
-        size={[1.32, 0.11, 0.55]}
-        position={[0, 0.805, 0]}
-        color={woodLight}
-        outline={woodOutline}
-      />
-      {[0.25, 0.59].map((drawerY) => (
-        <group key={drawerY} position={[0, drawerY, 0.257]}>
-          <RoundedSuitePanel
-            size={[1.1, 0.285, 0.035]}
-            position={[0, 0, 0]}
-            color={woodLight}
-            outline={woodOutline}
-          />
-          <RoundedSuitePanel
-            size={[0.48, 0.035, 0.035]}
-            position={[0, 0.055, 0.045]}
-            color={hardware}
-            outline="#111213"
-          />
-        </group>
-      ))}
-      {[-0.48, 0.48].map((x) => (
-        <RoundedSuitePanel
-          key={x}
-          size={[0.16, 0.08, 0.39]}
-          position={[x, 0.04, -0.015]}
-          color={woodShade}
-          outline={woodOutline}
-        />
-      ))}
-      <group name="television-parentale-custom" position={[0, 0.86, 0.035]}>
-        <RoundedSuitePanel
-          size={[0.48, 0.035, 0.2]}
-          position={[0, 0.0175, 0]}
-          color={hardware}
-          outline="#0f1113"
-        />
-        <RoundedSuitePanel
-          size={[0.075, 0.17, 0.075]}
-          position={[0, 0.105, 0]}
-          color="#303235"
-          outline="#0f1113"
-        />
-        <RoundedSuitePanel
-          size={[0.9, 0.54, 0.055]}
-          position={[0, 0.39, 0]}
-          color="#1b1d20"
-          outline="#090a0c"
-        />
-        <RoundedSuitePanel
-          size={[0.842, 0.476, 0.006]}
-          position={[0, 0.4, 0.0325]}
-          color="#17232d"
-          outline="#0b1117"
-        />
-      </group>
-      <mesh position={[0, 0.985, 0.0765]}>
-        <boxGeometry args={[0.075, 0.018, 0.008]} />
-        <ToonMaterial color="#aeb4b7" />
-      </mesh>
+      <CabinetPiece geometry={back} color="#b78a5d" />
+      <CabinetPiece geometry={ends} color="#c79a69" outline="#8e6847" />
+      <CabinetPiece geometry={feet} color="#936942" />
+      <CabinetPiece geometry={apron} color="#ac8054" />
+      <CabinetPiece geometry={top} color="#c79a69" map={oakGrainTexture} outline="#886448" />
+      <CabinetPiece geometry={lip} color="#aa7d54" />
+      <CabinetPiece geometry={drawers} color="#c79a69" map={oakGrainTexture} />
+      <CabinetPiece geometry={topEdges} color="#d0a577" />
+      <CabinetPiece geometry={pulls} color="#323132" />
+      <DresserTelevision />
     </group>
   );
 }

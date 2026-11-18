@@ -1,9 +1,40 @@
-import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
-import { RoundedFurniturePanel } from "../construction";
+import type { SceneItemSize } from "@cabane/engine";
+import {
+  cabinetBoard,
+  CabinetPiece,
+  horizontalTimber,
+  joinCabinetParts,
+} from "../construction/cabinet-joinery";
+import { oakGrainTexture } from "../construction/oak-grain-texture";
 
 export const OAK_BOOKSHELF_SIZE = [0.8, 1.9, 0.3] as const;
 
-/** Five usable shelf levels, including the bottom shelf, below a separate top. */
+const plinth = horizontalTimber(cabinetBoard(0.746, 0.069, 0.245, 0, 0.0345, -0.008));
+const sides = joinCabinetParts(
+  [-1, 1].map((side) =>
+    horizontalTimber(cabinetBoard(1.85, 0.025, 0.3, 0, 0, 0, 0.003))
+      .rotateZ(Math.PI / 2)
+      .translate(side * 0.3875, 0.975, 0),
+  ),
+);
+// Two inset back panels meet in a fine vertical reveal behind the shelf boards.
+const backs = joinCabinetParts(
+  [-1, 1].map((side) =>
+    horizontalTimber(cabinetBoard(1.825, 0.376, 0.012, 0, 0, 0, 0.0015))
+      .rotateZ(Math.PI / 2)
+      .translate(side * 0.1885, 0.968, -0.142),
+  ),
+);
+// Seat each end 3 mm into its upright. The solid front lippings stand proud of the core.
+const levels = [0.08, 0.44, 0.8, 1.16, 1.52, 1.885];
+const shelves = joinCabinetParts(
+  levels.map((y) => horizontalTimber(cabinetBoard(0.756, 0.026, 0.271, 0, y, -0.006, 0.003))),
+);
+const lippings = joinCabinetParts(
+  levels.map((y) => horizontalTimber(cabinetBoard(0.753, 0.03, 0.019, 0, y, 0.136, 0.004))),
+);
+
+/** Five usable shelf levels below the top board. */
 export function OakBookshelf({ size = OAK_BOOKSHELF_SIZE }: { size?: SceneItemSize }) {
   return (
     <group
@@ -11,41 +42,25 @@ export function OakBookshelf({ size = OAK_BOOKSHELF_SIZE }: { size?: SceneItemSi
       scale={[size[0] / 0.8, size[1] / 1.9, size[2] / 0.3]}
       userData={{ walkCollider: true }}
     >
-      <mesh position={[0, 0.0325, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.73, 0.065, 0.25]} />
-        <ToonMaterial color="#b28f5f" />
-      </mesh>
-      {[-0.3875, 0.3875].map((x) => (
-        <RoundedFurniturePanel
-          key={x}
-          size={[0.025, 1.85, 0.3]}
-          position={[x, 0.975, 0]}
-          color="#d1ae7c"
-          radius={0.004}
-        />
-      ))}
-      <RoundedFurniturePanel
-        size={[0.75, 1.8, 0.012]}
-        position={[0, 0.968, -0.144]}
-        color="#b99768"
-        radius={0.003}
-        outline={false}
+      <CabinetPiece geometry={plinth} color="#b28f5f" />
+      <CabinetPiece
+        name="bookshelf-uprights"
+        geometry={sides}
+        color="#d1ae7c"
+        map={oakGrainTexture}
       />
-      {[0.08, 0.44, 0.8, 1.16, 1.52].map((y) => (
-        <RoundedFurniturePanel
-          key={y}
-          name="bookshelf-shelf"
-          size={[0.75, 0.026, 0.28]}
-          position={[0, y, 0]}
-          color="#dabc8e"
-          radius={0.004}
-        />
-      ))}
-      <RoundedFurniturePanel
-        size={[0.8, 0.026, 0.28]}
-        position={[0, 1.887, 0]}
+      <CabinetPiece geometry={backs} color="#b99768" map={oakGrainTexture} />
+      <CabinetPiece
+        name="bookshelf-shelf"
+        geometry={shelves}
         color="#dabc8e"
-        radius={0.004}
+        map={oakGrainTexture}
+      />
+      <CabinetPiece
+        name="bookshelf-lippings"
+        geometry={lippings}
+        color="#d1ae7c"
+        map={oakGrainTexture}
       />
     </group>
   );

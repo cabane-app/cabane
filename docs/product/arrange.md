@@ -15,7 +15,9 @@ delete and, for devices with slots, Connect actions. On desktop, selection autom
 the shared right Properties inspector while the catalog remains available on the
 left. On phones, selection enables Properties in the compact bottom dock. Add items
 and Properties open the full-screen panel only on request; a successful catalog
-placement closes it so the newly added object is visible on the canvas. Properties edit
+placement closes it so the newly added object is visible on the canvas. New toilets
+face forward on the floor. Snapping either toilet to a wall places its back against
+the selected face and points the bowl into the room. Properties edit
 dimensions and placement. In 3D, a matching elevation button beside the rotation
 controls raises or lowers the selected item while dragged vertically. Release
 commits one undo step; Escape, pointer cancellation, or focus loss restores its

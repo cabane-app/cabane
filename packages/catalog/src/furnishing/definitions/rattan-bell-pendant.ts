@@ -12,5 +12,5 @@ export const rattanBellPendantDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "ceiling",
   outlineContact: true,
-  complexity: { visibleMeshes: 10, triangles: 40_000 },
+  complexity: { visibleMeshes: 10, triangles: 21_500 },
 });

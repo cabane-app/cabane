@@ -133,6 +133,60 @@ await withModules(async (load) => {
     }
   });
 
+  test("toilet bowls face forward on addition and away from either snapped wall face", () => {
+    const wall = { ...floor.walls[0], from: [0, 0], to: [4, 0], thicknessMeters: 0.1 };
+    const testFloor = {
+      ...floor,
+      coordinates: { ...floor.coordinates, origin: [0, 0], metersPerPlanUnit: 1 },
+      walls: [wall],
+      wallJunctions: [],
+    };
+    for (const [modelId, frontX, frontZ, backDistance] of [
+      ["compact-toilet", 0, -1, 0.3],
+      ["concealed-cistern-toilet", 1, 0, 0.01],
+    ]) {
+      const entry = get(modelId);
+      const start = catalogStartPlacement(entry, floor, [2, 2]).placement;
+      assert.equal(start.kind, "absolute");
+      const forwardZ = (yaw) => -frontX * Math.sin(yaw) + frontZ * Math.cos(yaw);
+      assert.ok(forwardZ(start.rotationYRadians) > 0.999);
+      const original = createCatalogItem(entry, start, []);
+      const item = { ...original, size: original.size.map((n) => n * 1.5) };
+      for (const side of [-1, 1]) {
+        const world = { x: 2, z: side * 0.25 };
+        const mount = placementCandidate(entry, testFloor, {
+          kind: "wall",
+          at: [world.x, world.z],
+          elevation: 0,
+          raw: true,
+        }).placement;
+        assert.equal(mount.kind, "wall");
+        assert.ok(
+          side * forwardZ(engine.resolveItemTransform(mount, testFloor).rotationYRadians) > 0.999,
+        );
+        assert.ok(Math.abs(mount.depthOffsetMeters - backDistance - 0.003) < 1e-7);
+        const drag = (item) =>
+          placementForWorldDrag({
+            world,
+            item,
+            definition: entry.definition,
+            floor: testFloor,
+            raw: false,
+          });
+        const snapped = drag(item);
+        assert.equal(snapped.kind, "wall");
+        const pose = engine.resolveItemTransform(snapped, testFloor);
+        assert.ok(side * forwardZ(pose.rotationYRadians) > 0.999);
+        assert.ok(
+          Math.abs(Math.abs(pose.position[2]) - wall.thicknessMeters / 2 - backDistance * 1.5) <
+            1e-7,
+        );
+        const edited = { ...snapped, rotationOffsetRadians: 0.47, depthOffsetMeters: 0.75 };
+        assert.deepEqual(drag({ ...item, placement: edited }), edited);
+      }
+    }
+  });
+
   test("ceiling items dragged into the garden become free-standing placements", () => {
     const entry = get("terracotta-pendant");
     const placement = placementCandidate(entry, floor, { at: [2, 2], kind: "ceiling" }).placement;

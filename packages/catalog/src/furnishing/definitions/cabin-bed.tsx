@@ -1,8 +1,9 @@
 import { defineFurnishingModel } from "@cabane/engine";
 import { CabinBed } from "../presets/children-bedroom/cabin-bed";
+import { CANOPY_CORAL } from "../presets/children-bedroom/cabin-bed/cabin-bed-finish";
 
 export const cabinBedDefinition = defineFurnishingModel({
-  defaultColor: "#edc9c4",
+  defaultColor: CANOPY_CORAL,
   defaultRoomType: "bedroom",
   component: ({ size, color }) => (
     <group scale={[size[0] / 1.183, size[1] / 1.696, size[2] / 2.432]}>
@@ -16,5 +17,5 @@ export const cabinBedDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 50, triangles: 9_000 },
+  complexity: { visibleMeshes: 32, triangles: 21_000 },
 });

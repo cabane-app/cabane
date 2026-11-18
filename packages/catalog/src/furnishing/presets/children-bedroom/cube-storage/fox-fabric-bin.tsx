@@ -1,21 +1,23 @@
-import { Outlines, ToonMaterial } from "@cabane/engine";
+import { RoundedFurniturePanel } from "../../construction";
+import { ToonMaterial } from "@cabane/engine";
 
 export function FoxFabricBin({ color }: { color?: string | undefined } = {}) {
   return (
     <group position={[-0.195, 0.565, 0.04]}>
-      <mesh castShadow>
-        <boxGeometry args={[0.31, 0.27, 0.285]} />
-        <ToonMaterial color={color ?? "#a95f59"} />
-        <Outlines color="#6e4645" thickness={0.004} screenspace={false} />
-      </mesh>
+      <RoundedFurniturePanel
+        size={[0.31, 0.28, 0.285]}
+        color={color ?? "#a95f59"}
+        radius={0.017}
+        outlineColor="#85554f"
+      />
       {[-0.095, 0.095].map((x) => (
-        <mesh key={x} position={[x, 0.17, 0.12]} rotation={[0, 0, x < 0 ? -0.22 : 0.22]}>
-          <coneGeometry args={[0.06, 0.13, 4]} />
+        <mesh key={x} position={[x, 0.102, 0.134]} rotation={[0, 0, x < 0 ? -0.22 : 0.22]}>
+          <coneGeometry args={[0.049, 0.093, 4]} />
           <ToonMaterial color={color ?? "#a95f59"} />
         </mesh>
       ))}
       {[-0.065, 0.065].map((x) => (
-        <mesh key={x} position={[x, 0.045, 0.153]}>
+        <mesh key={x} position={[x, 0.045, 0.15]}>
           <sphereGeometry args={[0.014, 10, 6]} />
           <ToonMaterial color="#3f3634" />
         </mesh>

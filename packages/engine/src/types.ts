@@ -664,6 +664,8 @@ export interface SceneModelEditorDescriptor {
   resizePolicy: ResizePolicy;
   /** Starting support for catalog additions; instances may use any placement kind. */
   preferredPlacement: "absolute" | "wall" | "ceiling";
+  /** Yaw that points the model forward (+Z) for new placements and wall snaps. */
+  defaultRotationYRadians?: number;
   /** Outdoor-only models stay outside; indoor-outdoor models may also belong to a room. */
   placementEnvironment?: "outdoor" | "indoor-outdoor";
   /** Window/opening alignment uses the closed covering's width/height within the full envelope. */

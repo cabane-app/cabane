@@ -1,8 +1,28 @@
 import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
-import { RoundedFurniturePanel } from "../construction";
+import { CabinetPiece, cabinetBoard, joinCabinetParts } from "../construction/cabinet-joinery";
+import { linenWeaveTexture } from "../construction/linen-weave-texture";
 import { OfficeChairBase } from "./office-chair-base";
+import { chairBackPanel, chairSeat } from "./office-chair-upholstery";
 
 export const ERGONOMIC_OFFICE_CHAIR_SIZE = [0.68, 1.04, 0.68] as const;
+
+const seat = chairSeat();
+const shell = chairBackPanel(0.465, 0.473, 0.028, 0.567, -0.286);
+const upholstery = chairBackPanel(0.422, 0.434, 0.038, 0.586, -0.264);
+const lumbar = cabinetBoard(0.304, 0.068, 0.059, 0, 0.657, -0.231, 0.025);
+const carriage = cabinetBoard(0.422, 0.056, 0.434, 0, 0.439, -0.005, 0.022);
+const spine = cabinetBoard(0.065, 0.316, 0.039, 0, 0, 0, 0.016)
+  .rotateX(-0.28)
+  .translate(0, 0.565, -0.249);
+const arms = joinCabinetParts(
+  [-1, 1].flatMap((side) => [
+    cabinetBoard(0.118, 0.03, 0.048, side * 0.253, 0.449, 0.008),
+    cabinetBoard(0.031, 0.224, 0.045, side * 0.301, 0.553, 0.008, 0.009),
+  ]),
+);
+const rests = joinCabinetParts(
+  [-1, 1].map((side) => cabinetBoard(0.075, 0.042, 0.265, side * 0.3025, 0.673, 0.035, 0.02)),
+);
 
 export function ErgonomicOfficeChair({
   size = ERGONOMIC_OFFICE_CHAIR_SIZE,
@@ -18,78 +38,35 @@ export function ErgonomicOfficeChair({
       userData={{ walkCollider: true }}
     >
       <OfficeChairBase />
-      <RoundedFurniturePanel
-        size={[0.43, 0.045, 0.43]}
-        position={[0, 0.4375, 0.015]}
-        color="#646b64"
-        radius={0.02}
-        outline={false}
-      />
-      <RoundedFurniturePanel
-        name="office-chair-seat"
-        size={[0.51, 0.085, 0.49]}
-        position={[0, 0.5, 0.025]}
-        color={color ?? "#ddd4c2"}
-        radius={0.039}
-      />
-      <RoundedFurniturePanel
-        size={[0.075, 0.27, 0.048]}
-        position={[0, 0.59, -0.23]}
-        rotation={[-0.12, 0, 0]}
-        color="#61685f"
-        radius={0.014}
-        outline={false}
-      />
-      <RoundedFurniturePanel
+      <CabinetPiece geometry={carriage} color="#646b64" />
+      <CabinetPiece geometry={spine} color="#61685f" />
+      <CabinetPiece
         name="office-chair-back-shell"
-        size={[0.465, 0.47, 0.057]}
-        position={[0, 0.8033, -0.2813]}
-        rotation={[-0.13, 0, 0]}
+        geometry={shell}
         color="#899086"
-        radius={0.025}
+        outline="#647065"
       />
-      <RoundedFurniturePanel
+      <CabinetPiece
         name="office-chair-padded-back"
-        size={[0.423, 0.428, 0.065]}
-        position={[0, 0.8093, -0.2413]}
-        rotation={[-0.13, 0, 0]}
+        geometry={upholstery}
         color={color ?? "#e0d8c8"}
-        radius={0.03}
+        map={linenWeaveTexture}
       />
-      <RoundedFurniturePanel
+      <CabinetPiece
         name="office-chair-lumbar-pad"
-        size={[0.34, 0.09, 0.045]}
-        position={[0, 0.6543, -0.1973]}
+        geometry={lumbar}
         color={color ?? "#c9c1ae"}
-        radius={0.019}
-        outline={false}
+        map={linenWeaveTexture}
       />
-      {[-0.3025, 0.3025].map((x) => (
-        <group key={x}>
-          <mesh
-            name="office-chair-arm-bracket"
-            position={[Math.sign(x) * 0.26, 0.458, 0.005]}
-            castShadow
-          >
-            <boxGeometry args={[0.115, 0.035, 0.04]} />
-            <ToonMaterial color="#787f75" />
-          </mesh>
-          <RoundedFurniturePanel
-            size={[0.032, 0.21, 0.036]}
-            position={[x, 0.56, 0.005]}
-            color="#787f75"
-            radius={0.01}
-            outline={false}
-          />
-          <RoundedFurniturePanel
-            name="office-chair-armrest"
-            size={[0.075, 0.04, 0.265]}
-            position={[x, 0.67, 0.035]}
-            color="#555d54"
-            radius={0.017}
-          />
-        </group>
-      ))}
+      <CabinetPiece
+        name="office-chair-seat"
+        geometry={seat}
+        color={color ?? "#ddd4c2"}
+        map={linenWeaveTexture}
+        outline="#908b7c"
+      />
+      <CabinetPiece name="office-chair-arm-bracket" geometry={arms} color="#787f75" />
+      <CabinetPiece name="office-chair-armrest" geometry={rests} color="#555d54" />
       <mesh
         name="office-chair-height-lever"
         position={[0.23, 0.423, -0.04]}

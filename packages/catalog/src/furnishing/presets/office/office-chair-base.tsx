@@ -1,40 +1,49 @@
-import { ToonMaterial } from "@cabane/engine";
-import { RoundedFurniturePanel } from "../construction";
+import { CylinderGeometry } from "three";
+import { CabinetPiece, cabinetBoard, joinCabinetParts } from "../construction/cabinet-joinery";
 
-/** Five spokes, paired casters, and the central gas lift. Wheels meet Y=0. */
+const lift = new CylinderGeometry(0.022, 0.027, 0.29, 12).translate(0, 0.285, 0);
+const hub = new CylinderGeometry(0.045, 0.057, 0.12, 12).translate(0, 0.175, 0);
+const angles = Array.from({ length: 5 }, (_, i) => (i * 2 * Math.PI) / 5);
+const spokes = joinCabinetParts(
+  angles.map((angle) =>
+    cabinetBoard(0.044, 0.035, 0.31, 0, 0, 0, 0.009)
+      .rotateX(0.16)
+      .translate(0, 0.115, 0.155)
+      .rotateY(angle),
+  ),
+);
+const forks = joinCabinetParts(
+  angles.map((angle) => cabinetBoard(0.019, 0.072, 0.032, 0, 0.064, 0.308).rotateY(angle)),
+);
+const wheels = joinCabinetParts(
+  angles.flatMap((angle) =>
+    [-1, 1].map((side) =>
+      new CylinderGeometry(0.032, 0.032, 0.022, 16)
+        .rotateZ(Math.PI / 2)
+        .translate(side * 0.021, 0.032, 0.308)
+        .rotateY(angle),
+    ),
+  ),
+);
+const axles = joinCabinetParts(
+  angles.map((angle) =>
+    new CylinderGeometry(0.014, 0.014, 0.068, 12)
+      .rotateZ(Math.PI / 2)
+      .translate(0, 0.032, 0.308)
+      .rotateY(angle),
+  ),
+);
+
+/** Five swivel forks and paired floor-contact wheels. */
 export function OfficeChairBase() {
   return (
     <group name="office-chair-base">
-      <mesh position={[0, 0.285, 0]} castShadow>
-        <cylinderGeometry args={[0.022, 0.027, 0.29, 12]} />
-        <ToonMaterial color="#777a76" />
-      </mesh>
-      <mesh position={[0, 0.175, 0]} castShadow>
-        <cylinderGeometry args={[0.045, 0.057, 0.12, 12]} />
-        <ToonMaterial color="#444944" />
-      </mesh>
-      {Array.from({ length: 5 }, (_, index) => (
-        <group key={index} rotation={[0, (index * Math.PI * 2) / 5, 0]}>
-          <RoundedFurniturePanel
-            size={[0.044, 0.04, 0.306]}
-            position={[0, 0.119, 0.153]}
-            rotation={[0.12, 0, 0]}
-            color="#50564f"
-            radius={0.012}
-            outline={false}
-          />
-          <mesh position={[0, 0.074, 0.308]} castShadow>
-            <boxGeometry args={[0.032, 0.054, 0.027]} />
-            <ToonMaterial color="#555b53" />
-          </mesh>
-          {[-0.022, 0.022].map((x) => (
-            <mesh key={x} position={[x, 0.032, 0.308]} rotation={[0, 0, Math.PI / 2]} castShadow>
-              <cylinderGeometry args={[0.032, 0.032, 0.024, 12]} />
-              <ToonMaterial color="#343934" />
-            </mesh>
-          ))}
-        </group>
-      ))}
+      <CabinetPiece geometry={lift} color="#777a76" />
+      <CabinetPiece geometry={hub} color="#444944" />
+      <CabinetPiece geometry={spokes} color="#50564f" />
+      <CabinetPiece geometry={forks} color="#555b53" />
+      <CabinetPiece name="wheel" geometry={wheels} color="#343934" />
+      <CabinetPiece geometry={axles} color="#777a76" />
     </group>
   );
 }

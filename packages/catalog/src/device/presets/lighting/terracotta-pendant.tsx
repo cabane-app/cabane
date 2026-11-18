@@ -1,6 +1,83 @@
-import { lightBrightnessRatio, Outlines, ToonMaterial } from "@cabane/engine";
+import { lightBrightnessRatio, ToonMaterial } from "@cabane/engine";
 import type { HomeDeviceModelProps } from "@cabane/engine";
 import { StatusBeacon } from "../../visuals/device-visual-state";
+
+import { lampProfile } from "./shade-frame";
+import { spunSlip } from "./shade-finishes";
+
+const shell = lampProfile([
+  [0.311, 0.102],
+  [0.304, 0.111],
+  [0.296, 0.12],
+  [0.259, 0.157],
+  [0.21, 0.198],
+  [0.155, 0.245],
+  [0.111, 0.289],
+  [0.081, 0.325],
+  [0.067, 0.35],
+  [0.06, 0.371],
+  [0.046, 0.38],
+  [0.032, 0.381],
+]);
+const oxideSkirt = lampProfile([
+  [0.326, 0.056],
+  [0.33, 0.062],
+  [0.328, 0.075],
+  [0.322, 0.087],
+  [0.319, 0.092],
+]);
+const ochreBand = lampProfile([
+  [0.319, 0.092],
+  [0.316, 0.096],
+  [0.311, 0.102],
+]);
+const lining = lampProfile([
+  [0.032, 0.369],
+  [0.052, 0.362],
+  [0.06, 0.345],
+  [0.073, 0.321],
+  [0.101, 0.282],
+  [0.146, 0.235],
+  [0.201, 0.187],
+  [0.251, 0.146],
+  [0.288, 0.11],
+  [0.309, 0.085],
+  [0.317, 0.065],
+  [0.317, 0.056],
+]);
+const lip = lampProfile([
+  [0.317, 0.056],
+  [0.317, 0.051],
+  [0.32, 0.047],
+  [0.324, 0.047],
+  [0.327, 0.051],
+  [0.326, 0.056],
+]);
+const canopy = lampProfile([
+  [0.005, 0.568],
+  [0.016, 0.571],
+  [0.018, 0.584],
+  [0.05, 0.594],
+  [0.067, 0.606],
+  [0.075, 0.625],
+  [0.075, 0.637],
+  [0.071, 0.64],
+  [0, 0.64],
+]);
+const holder = lampProfile([
+  [0.025, 0.111],
+  [0.034, 0.12],
+  [0.034, 0.145],
+  [0.022, 0.157],
+  [0.013, 0.165],
+  [0.013, 0.364],
+  [0.042, 0.37],
+  [0.043, 0.381],
+  [0.025, 0.393],
+  [0.016, 0.41],
+  [0.016, 0.417],
+  [0.005, 0.418],
+]);
 
 const TERRACOTTA = "#ad5436";
 const TERRACOTTA_LIGHT = "#c86a46";
@@ -25,45 +102,47 @@ export function TerracottaPendantModel({ state, visualState }: HomeDeviceModelPr
 
   return (
     <group name="catalog-terracotta-pendant">
-      <mesh castShadow position={[0, 0.608, 0]}>
-        <cylinderGeometry args={[0.055, 0.075, 0.064, 24]} />
+      <mesh castShadow>
+        <latheGeometry args={[canopy, 28]} />
         <ToonMaterial color={TERRACOTTA_DARK} />
-        <Outlines color="#43251d" thickness={0.005} screenspace={false} />
       </mesh>
-      <mesh castShadow position={[0, 0.49, 0]}>
-        <cylinderGeometry args={[0.007, 0.007, 0.19, 10]} />
+      <mesh position={[0, 0.494, 0]} castShadow>
+        <cylinderGeometry args={[0.006, 0.006, 0.17, 10]} />
         <ToonMaterial color="#574b44" />
       </mesh>
-      <mesh castShadow position={[0, 0.375, 0]}>
-        <cylinderGeometry args={[0.055, 0.072, 0.1, 28]} />
-        <ToonMaterial color={TERRACOTTA_DARK} />
+      <mesh castShadow>
+        <latheGeometry args={[holder, 24]} />
+        <ToonMaterial color="#766151" />
       </mesh>
-      <mesh castShadow position={[0, 0.3, 0]}>
-        <cylinderGeometry args={[0.072, 0.19, 0.1, 32, 1, true]} />
-        <ToonMaterial color={TERRACOTTA_LIGHT} side={2} />
+      <mesh name="thrown-ceramic-shade" castShadow>
+        <latheGeometry args={[shell, 40]} />
+        <ToonMaterial color={TERRACOTTA} map={spunSlip} />
       </mesh>
-      <mesh castShadow position={[0, 0.175, 0]}>
-        <cylinderGeometry args={[0.19, 0.315, 0.2, 36, 1, true]} />
-        <ToonMaterial color={TERRACOTTA} side={2} />
-        <Outlines color={TERRACOTTA_DARK} thickness={0.008} screenspace={false} />
+      <mesh name="iron-oxide-skirt" castShadow>
+        <latheGeometry args={[oxideSkirt, 40]} />
+        <ToonMaterial color="#93442f" map={spunSlip} />
       </mesh>
-      <mesh castShadow position={[0, 0.068, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.298, 0.021, 10, 36]} />
-        <ToonMaterial color={TERRACOTTA_DARK} />
+      <mesh name="ochre-slip-band" castShadow>
+        <latheGeometry args={[ochreBand, 40]} />
+        <ToonMaterial color="#dcaa73" />
       </mesh>
-      <mesh position={[0, 0.135, 0]}>
-        <cylinderGeometry args={[0.026, 0.035, 0.105, 18]} />
-        <ToonMaterial color="#6f5c49" />
+      <mesh name="slip-glazed-interior">
+        <latheGeometry args={[lining, 40]} />
+        <ToonMaterial color="#efd4ad" />
+      </mesh>
+      <mesh name="painted-ceramic-hem" castShadow>
+        <latheGeometry args={[lip, 40]} />
+        <ToonMaterial color={TERRACOTTA_LIGHT} />
       </mesh>
       <mesh name="terracotta-pendant-emitter" position={[0, 0.065, 0]}>
-        <sphereGeometry args={[0.066, 20, 14]} />
+        <sphereGeometry args={[0.065, 20, 14]} />
         <ToonMaterial
           color={bulb.color}
           emissive={bulb.emissive}
           emissiveIntensity={bulb.intensity * brightness}
         />
       </mesh>
-      <StatusBeacon visualState={visualState} position={[0.07, 0.515, 0]} scale={0.6} />
+      <StatusBeacon visualState={visualState} position={[0.062, 0.616, 0]} scale={0.6} />
     </group>
   );
 }

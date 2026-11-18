@@ -9,6 +9,7 @@ import {
   type PlanPoint,
   type SceneModelEditorDescriptor,
 } from "@cabane/engine";
+import { defaultWallFit } from "./wall-fit";
 import { insetWallPlacementIntoRoom } from "./wall-room-inset";
 
 export interface PlacementInput {
@@ -84,8 +85,8 @@ export function placementCandidate(
   if (kind === "wall") {
     if (!near || (!input.wallId && near.distance > 0.55))
       return invalid("Choose a wall to place this item.");
-    const halfWidth =
-      Math.max(Math.abs(definition.bounds.min[0]), Math.abs(definition.bounds.max[0])) / scale;
+    const fit = defaultWallFit(definition);
+    const halfWidth = fit.halfWidth / scale;
     const offset =
       input.offset ?? Math.max(halfWidth, Math.min(near.length - halfWidth, near.offset));
     if (!Number.isFinite(offset) || offset < halfWidth || offset + halfWidth > near.length)
@@ -104,8 +105,8 @@ export function placementCandidate(
       face: input.face ?? near.face,
       offsetFromWallStartPlanUnits: offset,
       elevationMeters: elevation,
-      depthOffsetMeters: Math.max(0, -definition.bounds.min[2]) + 0.003,
-      rotationOffsetRadians: 0,
+      depthOffsetMeters: fit.depthOffset + 0.003,
+      rotationOffsetRadians: fit.yaw,
     };
   } else {
     const rooms = floor.rooms.filter((room) => pointInsidePolygon(at, room.polygon));
@@ -141,7 +142,7 @@ export function placementCandidate(
         kind,
         at,
         elevationMeters: elevation,
-        rotationYRadians: 0,
+        rotationYRadians: definition.defaultRotationYRadians ?? 0,
         surfaceRelative: true,
       };
     }

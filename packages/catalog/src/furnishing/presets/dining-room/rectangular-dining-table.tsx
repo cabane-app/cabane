@@ -1,7 +1,11 @@
 import type { SceneItemSize } from "@cabane/engine";
 import { FourLegOakTable } from "../construction";
+import { apronJoinery, easedWorktop } from "../construction/oak-table-joinery";
 
 export const RECTANGULAR_DINING_TABLE_SIZE = [1.8, 0.75, 0.9] as const;
+
+const top = easedWorktop(1.8, 0.75, 0.9, 0.037, 0.065);
+const frame = apronJoinery(0.78, 0.345, 0.714, 0.038, true);
 
 export function RectangularDiningTable({
   size = RECTANGULAR_DINING_TABLE_SIZE,
@@ -16,14 +20,7 @@ export function RectangularDiningTable({
       scale={[size[0] / 1.8, size[1] / 0.75, size[2] / 0.9]}
       userData={{ walkCollider: true }}
     >
-      <FourLegOakTable
-        topColor={variant === "pale-stone" ? "#eceae5" : "#d9b987"}
-        width={1.8}
-        height={0.75}
-        depth={0.9}
-        topThickness={0.035}
-        legWidth={0.055}
-      />
+      <FourLegOakTable worktop={top} frame={frame} stone={variant === "pale-stone"} />
     </group>
   );
 }

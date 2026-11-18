@@ -242,6 +242,8 @@ const isSceneModelDefinition = (value: unknown): value is RawObject => {
     !isRoomType(value.defaultRoomType) ||
     !isPositiveSize(value.defaultSize) ||
     !PLACEMENT_KINDS.has(String(value.preferredPlacement)) ||
+    (value.defaultRotationYRadians !== undefined &&
+      !isFiniteNumber(value.defaultRotationYRadians)) ||
     (value.placementEnvironment !== undefined &&
       value.placementEnvironment !== "outdoor" &&
       value.placementEnvironment !== "indoor-outdoor") ||

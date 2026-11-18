@@ -15,5 +15,5 @@ export const roundWallDisplayDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "wall",
   outlineContact: true,
-  complexity: { visibleMeshes: 4, triangles: 1_200 },
+  complexity: { visibleMeshes: 6, triangles: 3_250 },
 });

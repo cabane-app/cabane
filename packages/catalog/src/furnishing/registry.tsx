@@ -661,7 +661,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 9, triangles: 700 },
+    complexity: { visibleMeshes: 4, triangles: 550 },
   }),
   "oak-dining-chair": defineFurnishingModel({
     defaultColor: "#e3d7c2",
@@ -710,7 +710,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 9, triangles: 700 },
+    complexity: { visibleMeshes: 4, triangles: 550 },
   }),
   "ergonomic-office-chair": defineFurnishingModel({
     defaultColor: "#ddd4c2",
@@ -723,7 +723,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 35, triangles: 7_000 },
+    complexity: { visibleMeshes: 15, triangles: 6_200 },
   }),
   "oak-bookshelf": defineFurnishingModel({
     component: OakBookshelf,
@@ -735,7 +735,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: true,
-    complexity: { visibleMeshes: 10, triangles: 5_000 },
+    complexity: { visibleMeshes: 5, triangles: 1_900 },
   }),
   "single-bed": defineFurnishingModel({
     defaultColor: "#e3d8c4",
@@ -990,7 +990,7 @@ const stableFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "wall",
     outlineContact: true,
-    complexity: { visibleMeshes: 6, triangles: 2_500 },
+    complexity: { visibleMeshes: 4, triangles: 450 },
   }),
   "wooden-crib": defineFurnishingModel({
     defaultColor: "#d8d3bd",
@@ -1046,6 +1046,7 @@ const stableFurnishingDefinitions = {
     category: "Bathroom",
     defaultSize: [0.728, 1.16, 0.58],
     bounds: { min: [-0.01, 0, -0.29], max: [0.718, 1.16, 0.29] },
+    defaultRotationYRadians: -Math.PI / 2,
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: false,

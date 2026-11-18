@@ -1,60 +1,40 @@
-import { ToonMaterial } from "@cabane/engine";
-import { RoundedFurniturePanel } from "./rounded-furniture-panel";
+import type { BufferGeometry } from "three";
+import { CabinetPiece } from "./cabinet-joinery";
+import { oakGrainTexture } from "./oak-grain-texture";
+import type { apronJoinery } from "./oak-table-joinery";
 
-/** Thin oak top, recessed aprons, and four straight square legs. */
+/** Shared finish and lighting targets for a worktop on four joined oak legs. */
 export function FourLegOakTable({
-  width,
-  height,
-  depth,
-  topThickness,
-  legWidth,
-  topColor = "#d9b987",
+  worktop,
+  frame,
+  stone = false,
 }: {
-  width: number;
-  height: number;
-  depth: number;
-  topThickness: number;
-  legWidth: number;
-  topColor?: string;
+  worktop: BufferGeometry;
+  frame: ReturnType<typeof apronJoinery>;
+  stone?: boolean;
 }) {
-  const legHeight = height - topThickness;
-  const x = width / 2 - legWidth / 2 - 0.065;
-  const z = depth / 2 - legWidth / 2 - 0.065;
   return (
-    <group>
-      <RoundedFurniturePanel
+    <>
+      <CabinetPiece
         name="oak-table-top"
-        size={[width, topThickness, depth]}
-        position={[0, height - topThickness / 2, 0]}
-        color={topColor}
-        radius={0.008}
+        geometry={worktop}
+        color={stone ? "#eceae5" : "#d9b987"}
+        {...(stone ? {} : { map: oakGrainTexture })}
+        outline={stone ? "#aba89f" : "#a08861"}
       />
-      {[-x, x].flatMap((legX) =>
-        [-z, z].map((legZ) => (
-          <mesh
-            key={`${legX}-${legZ}`}
-            name="oak-table-leg"
-            position={[legX, legHeight / 2, legZ]}
-            castShadow
-            receiveShadow
-          >
-            <boxGeometry args={[legWidth, legHeight, legWidth]} />
-            <ToonMaterial color="#c8a675" />
-          </mesh>
-        )),
-      )}
-      {[-z, z].map((railZ) => (
-        <mesh key={railZ} position={[0, legHeight - 0.035, railZ]} castShadow>
-          <boxGeometry args={[2 * x - legWidth, 0.07, 0.025]} />
-          <ToonMaterial color="#c6a372" />
-        </mesh>
-      ))}
-      {[-x, x].map((railX) => (
-        <mesh key={railX} position={[railX, legHeight - 0.035, 0]} castShadow>
-          <boxGeometry args={[0.025, 0.07, 2 * z - legWidth]} />
-          <ToonMaterial color="#c6a372" />
-        </mesh>
-      ))}
-    </group>
+      <CabinetPiece
+        name="oak-table-leg"
+        geometry={frame.posts}
+        color="#c8a675"
+        map={oakGrainTexture}
+      />
+      <CabinetPiece
+        name="oak-table-aprons"
+        geometry={frame.rails}
+        color="#c6a372"
+        map={oakGrainTexture}
+      />
+      <CabinetPiece name="oak-table-joint-pegs" geometry={frame.pegs} color="#a88659" />
+    </>
   );
 }

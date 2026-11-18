@@ -20,5 +20,5 @@ export const terracottaPendantDefinition = defineDeviceModel({
     distance: 5,
   },
   interaction,
-  complexity: { visibleMeshes: 8, triangles: 2_200 },
+  complexity: { visibleMeshes: 11, triangles: 4_450 },
 });

@@ -1,52 +1,92 @@
-import { Vector2 } from "three";
-import { Outlines, ToonMaterial } from "@cabane/engine";
+import { LatheGeometry, TubeGeometry, Curve, Vector2, Vector3 } from "three";
+import { CabinetPiece, joinCabinetParts } from "../construction/cabinet-joinery";
+import { tintableFinishTexture } from "../../../materials/tintable-finish-texture";
 
-const WICKER = "#b78958";
-const WICKER_LIGHT = "#d2a66f";
-const WICKER_DARK = "#6d4c31";
+// Wide reeds pass over and under their neighbours. The darker edges separate
+// strips while slight lengthwise ridges follow the fibres of each reed.
+const rushWeave = tintableFinishTexture(128, "children-basket-rush", (u, v) => {
+  const x = u * 4,
+    y = v * 4;
+  const warp = (Math.floor(x) + Math.floor(y)) % 2 === 0;
+  const across = warp ? x : y,
+    along = warp ? y : x;
+  const crown = Math.sin(Math.PI * (across % 1)) ** 0.5;
+  const fibre = Math.cos(8 * Math.PI * across);
+  return 0.77 + 0.16 * crown + 0.035 * Math.sin(Math.PI * (along % 1)) + 0.012 * fibre;
+});
 
-// Continuous outer wall, rolled rim, inner wall, and recessed floor. No lid.
-const BASKET_PROFILE = [
+function turned(profile: number[][]) {
+  return new LatheGeometry(
+    profile.map(([r, y]) => new Vector2(r, y)),
+    40,
+  );
+}
+
+const body = turned([
   [0, 0],
-  [0.34, 0],
-  [0.29, 0.48],
-  [0.305, 0.495],
-  [0.305, 0.505],
-  [0.298, 0.512],
-  [0.28, 0.512],
-  [0.273, 0.505],
-  [0.273, 0.485],
-  [0.313, 0.03],
+  [0.301, 0],
+  [0.326, 0.006],
+  [0.338, 0.021],
+  [0.34, 0.046],
+  [0.336, 0.113],
+  [0.321, 0.25],
+  [0.299, 0.403],
+  [0.296, 0.449],
+  [0.28, 0.449],
+  [0.281, 0.417],
+  [0.309, 0.207],
+  [0.321, 0.061],
+  [0.315, 0.036],
+  [0.302, 0.03],
   [0, 0.03],
-].map(([radius, height]) => new Vector2(radius, height));
+]);
+const uv = body.getAttribute("uv");
+const vertices = body.getAttribute("position");
+for (let i = 0; i < uv.count; i++) {
+  uv.setXY(i, uv.getX(i) * 22, vertices.getY(i) * 11.5);
+}
+
+const rim = turned([
+  [0.29, 0.428],
+  [0.3, 0.432],
+  [0.304, 0.441],
+  [0.303, 0.449],
+  [0.297, 0.455],
+  [0.287, 0.457],
+  [0.28, 0.454],
+  [0.276, 0.445],
+  [0.278, 0.435],
+  [0.286, 0.429],
+  [0.29, 0.428],
+]);
+
+// Bent rush loops follow the circular wall and embed their ends in the binding.
+class CarryLoop extends Curve<Vector3> {
+  constructor(private side: number) {
+    super();
+  }
+  override getPoint(t: number, target = new Vector3()) {
+    const angle = Math.PI * t;
+    const x = 0.082 * Math.cos(angle);
+    return target.set(x, 0.44 + 0.064 * Math.sin(angle), this.side * Math.sqrt(0.29 ** 2 - x ** 2));
+  }
+}
+const handles = joinCabinetParts(
+  [-1, 1].map((side) => new TubeGeometry(new CarryLoop(side), 22, 0.008, 8, false)),
+);
 
 export function ChildrenBedroomWovenFloorBasket() {
   return (
     <group name="panier-de-sol-tresse-photo">
-      <mesh name="basket-hollow-shell" castShadow receiveShadow>
-        <latheGeometry args={[BASKET_PROFILE, 32]} />
-        <ToonMaterial color={WICKER} />
-        <Outlines color={WICKER_DARK} thickness={0.006} screenspace={false} />
-      </mesh>
-      {Array.from({ length: 12 }, (_, index) => {
-        const angle = (index / 12) * Math.PI * 2;
-        return (
-          <mesh
-            key={angle}
-            position={[Math.cos(angle) * 0.312, 0.2, Math.sin(angle) * 0.312]}
-            rotation={[0, -angle, Math.sin(angle) * 0.04]}
-          >
-            <cylinderGeometry args={[0.006, 0.008, 0.36, 6]} />
-            <ToonMaterial color={index % 2 === 0 ? WICKER_LIGHT : "#c4935f"} />
-          </mesh>
-        );
-      })}
-      {[0.06, 0.13, 0.2, 0.27, 0.34].map((y, index) => (
-        <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.327 - index * 0.009, 0.009, 6, 32]} />
-          <ToonMaterial color={index % 2 === 0 ? WICKER_LIGHT : WICKER_DARK} />
-        </mesh>
-      ))}
+      <CabinetPiece
+        name="basket-hollow-shell"
+        geometry={body}
+        color="#bd976f"
+        map={rushWeave}
+        outline="#897059"
+      />
+      <CabinetPiece geometry={rim} color="#c69f74" />
+      <CabinetPiece geometry={handles} color="#b48b62" />
     </group>
   );
 }

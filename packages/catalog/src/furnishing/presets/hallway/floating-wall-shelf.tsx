@@ -1,38 +1,55 @@
-import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
-import { RoundedFurniturePanel } from "../construction";
+import type { SceneItemSize } from "@cabane/engine";
+import { ExtrudeGeometry, Shape } from "three";
+import {
+  cabinetBoard,
+  CabinetPiece,
+  horizontalTimber,
+  joinCabinetParts,
+} from "../construction/cabinet-joinery";
+import { oakGrainTexture } from "../construction/oak-grain-texture";
 
 export const FLOATING_WALL_SHELF_SIZE = [0.8, 0.22, 0.25] as const;
 
-/** Wall shelf with a low back lip and two visible brackets. */
+// A stepped front edge exposes a recessed shadow line under the shelf.
+const board = horizontalTimber(cabinetBoard(0.8, 0.044, 0.245, 0, 0.198, 0.1275, 0.007));
+const rebate = horizontalTimber(cabinetBoard(0.784, 0.021, 0.223, 0, 0.1695, 0.1185, 0.004));
+const back = horizontalTimber(cabinetBoard(0.776, 0.082, 0.024, 0, 0.12, 0.023, 0.003));
+
+function foldedBracket(x: number) {
+  // Side elevation, drawn from the wall foot to the underside bearing surface.
+  const profile = new Shape();
+  profile.moveTo(0, 0);
+  profile.lineTo(0.012, 0);
+  profile.lineTo(0.012, 0.069);
+  profile.quadraticCurveTo(0.026, 0.133, 0.122, 0.148);
+  profile.lineTo(0.198, 0.148);
+  profile.lineTo(0.198, 0.161);
+  profile.lineTo(0, 0.161);
+  profile.closePath();
+  return new ExtrudeGeometry(profile, { depth: 0.023, bevelEnabled: false, curveSegments: 6 })
+    .rotateY(-Math.PI / 2)
+    .translate(x + 0.0115, 0, 0);
+}
+const brackets = joinCabinetParts([-0.27, 0.27].map(foldedBracket));
+
 export function FloatingWallShelf({ size = FLOATING_WALL_SHELF_SIZE }: { size?: SceneItemSize }) {
   return (
     <group name="floating-wall-shelf" scale={[size[0] / 0.8, size[1] / 0.22, size[2] / 0.25]}>
-      <RoundedFurniturePanel
+      <CabinetPiece
         name="floating-shelf-board"
-        size={[0.8, 0.06, 0.25]}
-        position={[0, 0.19, 0.125]}
+        geometry={board}
         color="#d4af7a"
-        radius={0.008}
+        map={oakGrainTexture}
+        outline="#a68a63"
       />
-      <RoundedFurniturePanel
+      <CabinetPiece geometry={rebate} color="#c49a68" map={oakGrainTexture} />
+      <CabinetPiece
         name="floating-shelf-back-lip"
-        size={[0.78, 0.13, 0.035]}
-        position={[0, 0.15, 0.0175]}
+        geometry={back}
         color="#c49a68"
-        radius={0.006}
+        map={oakGrainTexture}
       />
-      {[-0.27, 0.27].map((x) => (
-        <group key={x}>
-          <mesh name="shelf-wall-bracket" position={[x, 0.09, 0.025]}>
-            <boxGeometry args={[0.03, 0.18, 0.05]} />
-            <ToonMaterial color="#747a75" />
-          </mesh>
-          <mesh name="shelf-depth-bracket" position={[x, 0.075, 0.115]}>
-            <boxGeometry args={[0.03, 0.035, 0.18]} />
-            <ToonMaterial color="#747a75" />
-          </mesh>
-        </group>
-      ))}
+      <CabinetPiece name="shelf-wall-bracket" geometry={brackets} color="#747a75" />
     </group>
   );
 }

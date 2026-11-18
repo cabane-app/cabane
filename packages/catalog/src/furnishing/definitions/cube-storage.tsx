@@ -16,5 +16,5 @@ export const cubeStorageDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 24, triangles: 4_500 },
+  complexity: { visibleMeshes: 16, triangles: 6_400 },
 });
