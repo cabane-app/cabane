@@ -13,24 +13,28 @@ const profile = new CatmullRomCurve3([
 ]);
 
 export function createWovenBellGeometry() {
-  const bundles: BufferGeometry[][] = [[], [], []];
-  for (let strand = 0; strand < 80; strand++) {
-    const angle = (strand / 80) * Math.PI * 2;
-    const points = Array.from({ length: 33 }, (_, i) => {
-      const t = i / 32;
+  const bundles: BufferGeometry[][] = [[], [], [], []];
+  for (let strand = 0; strand < 44; strand++) {
+    const angle = (strand / 44) * Math.PI * 2;
+    const points = Array.from({ length: 25 }, (_, i) => {
+      const t = i / 24;
       const p = profile.getPoint(t);
       // Subtle over/under motion gives the cane real depth without dark drawn lines.
-      const radius = p.x + Math.sin(t * Math.PI * 24 + strand * Math.PI) * 0.001;
-      return new Vector3(Math.cos(angle) * radius, p.y, Math.sin(angle) * radius);
+      const radius = Math.min(
+        0.24745,
+        p.x + Math.cos(t * Math.PI * 12 + strand * Math.PI) * 0.0025,
+      );
+      const twist = angle + 0.21 * Math.sin(t * Math.PI);
+      return new Vector3(Math.cos(twist) * radius, p.y, Math.sin(twist) * radius);
     });
-    bundles[strand % 3].push(new TubeGeometry(new CatmullRomCurve3(points), 40, 0.0022, 4, false));
+    bundles[strand % 3].push(new TubeGeometry(new CatmullRomCurve3(points), 26, 0.0024, 5, false));
   }
   for (let ring = 0; ring <= 12; ring++) {
     const p = profile.getPoint(ring / 12);
-    const geometry = new TorusGeometry(p.x, ring === 0 ? 0.004 : 0.0026, 6, 80);
+    const geometry = new TorusGeometry(p.x, ring === 0 ? 0.004 : 0.0026, ring === 0 ? 8 : 6, 52);
     geometry.rotateX(Math.PI / 2);
     geometry.translate(0, p.y, 0);
-    bundles[ring % 3].push(geometry);
+    bundles[ring === 0 || ring >= 10 ? 3 : 1].push(geometry);
   }
   return bundles.map((parts) => {
     const merged = mergeGeometries(parts)!;

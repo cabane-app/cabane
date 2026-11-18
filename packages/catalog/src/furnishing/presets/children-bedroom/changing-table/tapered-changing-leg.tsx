@@ -10,7 +10,7 @@ export function TaperedChangingLeg({ x, z }: { readonly x: number; readonly z: n
     >
       <cylinderGeometry args={[0.022, 0.034, 0.2, 10]} />
       <ToonMaterial color={WOOD} />
-      <Outlines color="#6e513b" thickness={0.004} screenspace={false} />
+      <Outlines color="#6e513b" thickness={0.0012} screenspace={false} />
     </mesh>
   );
 }

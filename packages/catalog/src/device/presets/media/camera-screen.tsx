@@ -1,8 +1,14 @@
-import { RoundedBox } from "@cabane/engine";
 import { useFrame, useThree } from "@react-three/fiber";
-import { LiveCameraSurface, ToonMaterial, type HomeDeviceModelProps } from "@cabane/engine";
-import { useEffect, useRef, type ReactNode } from "react";
+import {
+  LiveCameraSurface,
+  RoundedBox,
+  ToonMaterial,
+  type HomeDeviceModelProps,
+} from "@cabane/engine";
+import { useEffect, useRef } from "react";
 import type { Group } from "three";
+import { CameraProjector } from "./camera-projector";
+import { CameraReticle } from "./camera-reticle";
 import {
   CAMERA_SCREEN_ANIMATION_FPS,
   CAMERA_SCREEN_DEPTH,
@@ -19,43 +25,9 @@ const VIDEO_WIDTH = 0.78;
 const VIDEO_HEIGHT = (VIDEO_WIDTH * 9) / 16;
 const PANEL_CENTER_Y = 0.31;
 const PANEL_CENTER_Z = CAMERA_SCREEN_FLOAT_GAP + CAMERA_SCREEN_DEPTH / 2;
-const FRAME_Z = CAMERA_SCREEN_DEPTH / 2 + 0.004;
-const VIDEO_Z = FRAME_Z + 0.004;
-const HUD_Z = VIDEO_Z + 0.004;
-
-function HologramSegment({
-  position,
-  size,
-}: {
-  position: readonly [number, number, number];
-  size: readonly [number, number, number];
-}) {
-  return (
-    <mesh position={position} renderOrder={12}>
-      <boxGeometry args={size} />
-      <ToonMaterial
-        color="#78fff5"
-        emissive="#2de1d7"
-        emissiveIntensity={0.8}
-        transparent
-        opacity={0.7}
-        depthWrite={false}
-        toneMapped={false}
-      />
-    </mesh>
-  );
-}
-
-const corners: ReactNode[] = [
-  <HologramSegment key="tl-h" position={[-0.405, 0.252, HUD_Z]} size={[0.055, 0.003, 0.002]} />,
-  <HologramSegment key="tl-v" position={[-0.432, 0.212, HUD_Z]} size={[0.003, 0.06, 0.002]} />,
-  <HologramSegment key="tr-h" position={[0.405, 0.252, HUD_Z]} size={[0.055, 0.003, 0.002]} />,
-  <HologramSegment key="tr-v" position={[0.432, 0.212, HUD_Z]} size={[0.003, 0.06, 0.002]} />,
-  <HologramSegment key="bl-h" position={[-0.405, -0.252, HUD_Z]} size={[0.055, 0.003, 0.002]} />,
-  <HologramSegment key="bl-v" position={[-0.432, -0.212, HUD_Z]} size={[0.003, 0.06, 0.002]} />,
-  <HologramSegment key="br-h" position={[0.405, -0.252, HUD_Z]} size={[0.055, 0.003, 0.002]} />,
-  <HologramSegment key="br-v" position={[0.432, -0.212, HUD_Z]} size={[0.003, 0.06, 0.002]} />,
-];
+const FRAME_Z = CAMERA_SCREEN_DEPTH / 2;
+const VIDEO_Z = FRAME_Z + 0.003;
+const HUD_Z = VIDEO_Z + 0.0015;
 
 export function CameraScreenModel({ liveMedia, visualState, reducedMotion }: HomeDeviceModelProps) {
   const displayRef = useRef<Group>(null);
@@ -96,6 +68,7 @@ export function CameraScreenModel({ liveMedia, visualState, reducedMotion }: Hom
   return (
     <group name="catalog-camera-screen">
       <group name={`device-state-${visualState}`}>
+        <CameraProjector />
         <mesh position={[0, PANEL_CENTER_Y, -0.001]} renderOrder={2}>
           <planeGeometry args={[CAMERA_SCREEN_VISUAL_WIDTH, 0.62]} />
           <ToonMaterial
@@ -112,7 +85,7 @@ export function CameraScreenModel({ liveMedia, visualState, reducedMotion }: Hom
         <group ref={displayRef} position={[0, 0, PANEL_CENTER_Z]}>
           <RoundedBox
             args={[CAMERA_SCREEN_WIDTH, CAMERA_SCREEN_HEIGHT, CAMERA_SCREEN_DEPTH]}
-            radius={0.012}
+            radius={0.005}
             smoothness={2}
             position={[0, PANEL_CENTER_Y, 0]}
             renderOrder={5}
@@ -130,7 +103,7 @@ export function CameraScreenModel({ liveMedia, visualState, reducedMotion }: Hom
 
           <RoundedBox
             args={[VIDEO_WIDTH + 0.028, VIDEO_HEIGHT + 0.028, 0.004]}
-            radius={0.016}
+            radius={0.0018}
             smoothness={1}
             position={[0, PANEL_CENTER_Y, FRAME_Z]}
             renderOrder={7}
@@ -156,26 +129,7 @@ export function CameraScreenModel({ liveMedia, visualState, reducedMotion }: Hom
           </group>
 
           <group name="camera-screen-holographic-reticle" position={[0, PANEL_CENTER_Y, 0]}>
-            {corners}
-            {/* Edge-only optics leave the full video aperture unobstructed. */}
-            <HologramSegment position={[0.06, 0.268, HUD_Z]} size={[0.48, 0.0015, 0.001]} />
-            <HologramSegment position={[-0.08, -0.268, HUD_Z]} size={[0.55, 0.0015, 0.001]} />
-            <HologramSegment position={[-0.449, 0, HUD_Z]} size={[0.0015, 0.28, 0.001]} />
-            <HologramSegment position={[0.449, 0.035, HUD_Z]} size={[0.0015, 0.21, 0.001]} />
-            {Array.from({ length: 7 }, (_, index) => (
-              <HologramSegment
-                key={index}
-                position={[-0.415, -0.09 + index * 0.025, HUD_Z]}
-                size={[index % 3 === 0 ? 0.014 : 0.007, 0.0015, 0.001]}
-              />
-            ))}
-            {[0.025, 0.012, 0.006].map((width, index) => (
-              <HologramSegment
-                key={index}
-                position={[-0.3 + index * 0.035, -0.249, HUD_Z]}
-                size={[width, 0.003, 0.001]}
-              />
-            ))}
+            <CameraReticle z={HUD_Z} />
           </group>
 
           <mesh position={[-0.19, PANEL_CENTER_Y + 0.253, HUD_Z]} renderOrder={12}>
@@ -191,7 +145,7 @@ export function CameraScreenModel({ liveMedia, visualState, reducedMotion }: Hom
             />
           </mesh>
 
-          <mesh position={[0.425, PANEL_CENTER_Y - 0.247, HUD_Z + 0.003]} renderOrder={13}>
+          <mesh position={[0.425, PANEL_CENTER_Y - 0.247, HUD_Z + 0.0008]} renderOrder={13}>
             <ringGeometry args={[0.012, 0.014, 32]} />
             <ToonMaterial
               color={statusColor}

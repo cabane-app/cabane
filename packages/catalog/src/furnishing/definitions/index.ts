@@ -94,6 +94,7 @@ import { compactToiletDefinition } from "./compact-toilet";
 import { changingTableDefinition } from "./changing-table";
 import { cubeStorageDefinition } from "./cube-storage";
 import { cabinBedDefinition } from "./cabin-bed";
+import { storybookDaybedDefinition } from "./storybook-daybed";
 import { twoTierWallShelvesDefinition } from "./two-tier-wall-shelves";
 import { roundWallDisplayDefinition } from "./round-wall-display";
 import { threeTierWallShelvesDefinition } from "./three-tier-wall-shelves";
@@ -192,6 +193,7 @@ export const furnishingPresetDefinitions = {
   "changing-table": changingTableDefinition,
   "cube-storage": cubeStorageDefinition,
   "cabin-bed": cabinBedDefinition,
+  "storybook-daybed": storybookDaybedDefinition,
   "two-tier-wall-shelves": twoTierWallShelvesDefinition,
   "round-wall-display": roundWallDisplayDefinition,
   "three-tier-wall-shelves": threeTierWallShelvesDefinition,

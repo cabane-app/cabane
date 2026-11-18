@@ -15,5 +15,5 @@ export const bathScreenDefinition = defineFurnishingModel({
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
   outlineContact: false,
-  complexity: { visibleMeshes: 3, triangles: 36 },
+  complexity: { visibleMeshes: 3, triangles: 116 },
 });

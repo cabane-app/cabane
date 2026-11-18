@@ -24,5 +24,5 @@ export const rattanBellPendantDeviceDefinition = defineDeviceModel({
     distance: 3,
   },
   interaction: { target: "device-dashboard", tapTolerancePixels: 10 },
-  complexity: { visibleMeshes: 10, triangles: 40_000 },
+  complexity: { visibleMeshes: 10, triangles: 21_500 },
 });

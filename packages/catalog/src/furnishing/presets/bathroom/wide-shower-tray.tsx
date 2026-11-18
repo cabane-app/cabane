@@ -1,12 +1,14 @@
 import { Outlines, ToonMaterial } from "@cabane/engine";
 import { BufferGeometry, Float32BufferAttribute } from "three";
 
+export const SHOWER_TRAY_WIDTH = 2;
+
 // All contours run clockwise as seen from above. The floor pitches gently into
 // the drain; the rounded perimeter and inner return belong to the same casting.
 const rings = [
   [0.98, 0.425, 0, 0, 0],
   [0.999, 0.444, 0.005, 0, 0],
-  [1, 0.445, 0.039, 0, 0],
+  [SHOWER_TRAY_WIDTH / 2, 0.445, 0.039, 0, 0],
   [0.996, 0.441, 0.045, 0, 0],
   [0.967, 0.412, 0.045, 0, 0],
   [0.956, 0.401, 0.036, 0, 0],

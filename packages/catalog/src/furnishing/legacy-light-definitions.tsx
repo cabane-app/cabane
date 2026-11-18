@@ -22,7 +22,7 @@ export const legacyLightFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "absolute",
     outlineContact: false,
-    complexity: { visibleMeshes: 4, triangles: 2_000 },
+    complexity: { visibleMeshes: 7, triangles: 3_200 },
   }),
   "woven-pendant": defineFurnishingModel({
     legacyOnly: true,
@@ -39,7 +39,7 @@ export const legacyLightFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "ceiling",
     outlineContact: false,
-    complexity: { visibleMeshes: 22, triangles: 5_800 },
+    complexity: { visibleMeshes: 7, triangles: 4_800 },
   }),
   "children-pendant": defineFurnishingModel({
     legacyOnly: true,
@@ -56,6 +56,6 @@ export const legacyLightFurnishingDefinitions = {
     resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
     preferredPlacement: "ceiling",
     outlineContact: false,
-    complexity: { visibleMeshes: 40, triangles: 8_000 },
+    complexity: { visibleMeshes: 9, triangles: 3_000 },
   }),
 };

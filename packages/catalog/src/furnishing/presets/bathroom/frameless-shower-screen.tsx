@@ -1,12 +1,13 @@
 import { ToonMaterial } from "@cabane/engine";
+import { SHOWER_TRAY_WIDTH } from "./wide-shower-tray";
 
 export function FramelessShowerScreen() {
   const railWidth = 0.035;
   const clampWidth = 0.06;
   return (
     <group name="frameless-walk-in-shower-screen">
-      <mesh position={[0.41, 1.095, 0.002]}>
-        <planeGeometry args={[1.18, 2.1]} />
+      <mesh name="fixed-shower-glass" position={[0, 1.095, -0.006]}>
+        <planeGeometry args={[SHOWER_TRAY_WIDTH, 2.1]} />
         <ToonMaterial color="#c6e0e3" transparent opacity={0.16} depthWrite={false} side={2} />
       </mesh>
       <mesh position={[1, 1.095, 0]} castShadow>

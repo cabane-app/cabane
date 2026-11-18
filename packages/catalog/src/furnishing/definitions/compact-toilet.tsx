@@ -14,6 +14,7 @@ export const compactToiletDefinition = defineFurnishingModel({
   bounds: { min: [-0.195, 0.02, -0.3], max: [0.195, 0.744, 0.3] },
   resizePolicy: { kind: "axes", axes: ["width", "height", "depth"] },
   preferredPlacement: "absolute",
+  defaultRotationYRadians: Math.PI,
   outlineContact: false,
   complexity: { visibleMeshes: 10, triangles: 3400 },
 });

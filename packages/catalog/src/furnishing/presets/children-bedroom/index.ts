@@ -5,6 +5,7 @@ export { ChildrenBedroomToddlerTableSet } from "./toddler-table-set";
 export { ChildrenBedroomWovenFloorBasket } from "./woven-floor-basket";
 export { WoodenCrib, WOODEN_CRIB_SIZE } from "./wooden-crib";
 export { CabinBed } from "./cabin-bed";
+export { StorybookDaybed } from "./storybook-daybed";
 export { ChangingTable } from "./changing-table";
 export { CubeStorage } from "./cube-storage";
 export { RoundWallDisplay } from "./round-wall-display";

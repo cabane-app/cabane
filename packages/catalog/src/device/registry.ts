@@ -142,7 +142,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.316, 0, -0.295], max: [0.316, 0.865, 0.335] },
     outlineContact: false,
     interaction,
-    complexity: { visibleMeshes: 11, triangles: 936 },
+    complexity: { visibleMeshes: 13, triangles: 1_900 },
   }),
   "tumble-dryer": defineDeviceModel({
     defaultRoomType: "laundry",
@@ -204,7 +204,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.286, 0, -0.206], max: [0.286, 1.456, 0.224] },
     outlineContact: true,
     interaction,
-    complexity: { visibleMeshes: 13, triangles: 1750 },
+    complexity: { visibleMeshes: 13, triangles: 2_450 },
   }),
   speaker: defineDeviceModel({
     defaultRoomType: "living-room",
@@ -219,7 +219,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.13, 0, -0.13], max: [0.13, 0.39, 0.13] },
     outlineContact: false,
     interaction,
-    complexity: { visibleMeshes: 9, triangles: 1_200 },
+    complexity: { visibleMeshes: 13, triangles: 2_700 },
   }),
   television: defineDeviceModel({
     defaultRoomType: "living-room",
@@ -336,7 +336,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     outlineContact: false,
     sceneLight: { position: [0, 0.174, 0], color: "#ffd28c", maxIntensity: 1.4, distance: 2.5 },
     interaction,
-    complexity: { visibleMeshes: 14, triangles: 700 },
+    complexity: { visibleMeshes: 4, triangles: 800 },
   }),
   "pergola-string-lights": defineDeviceModel({
     component: PergolaStringLightsModel,
@@ -357,7 +357,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     outlineContact: false,
     sceneLight: { position: [0, 2.2, 0], color: "#ffd28c", maxIntensity: 9, distance: 5 },
     interaction,
-    complexity: { visibleMeshes: 17, triangles: 28_000 },
+    complexity: { visibleMeshes: 12, triangles: 16_500 },
   }),
   "garden-lantern-pole": defineDeviceModel({
     defaultRoomType: "outdoor",
@@ -406,7 +406,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     outlineContact: false,
     sceneLight: { position: [0, 0.42, 0], color: "#f2d69a", maxIntensity: 1.8, distance: 2.5 },
     interaction,
-    complexity: { visibleMeshes: 4, triangles: 2_000 },
+    complexity: { visibleMeshes: 7, triangles: 3_200 },
   }),
   "woven-pendant": defineDeviceModel({
     defaultRoomType: "dining-room",
@@ -422,7 +422,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     outlineContact: false,
     sceneLight: { position: [0, -0.5, 0], color: "#f2d69a", maxIntensity: 4, distance: 4 },
     interaction,
-    complexity: { visibleMeshes: 7, triangles: 2_000 },
+    complexity: { visibleMeshes: 7, triangles: 4_800 },
   }),
   "children-pendant": defineDeviceModel({
     defaultRoomType: "bedroom",
@@ -438,7 +438,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     outlineContact: false,
     sceneLight: { position: [0, -0.37, 0], color: "#f1d59b", maxIntensity: 3.5, distance: 3.5 },
     interaction,
-    complexity: { visibleMeshes: 7, triangles: 4_000 },
+    complexity: { visibleMeshes: 9, triangles: 3_000 },
   }),
   "wall-switch": defineDeviceModel({
     defaultRoomType: "entryway",
@@ -471,7 +471,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.075, 0, -0.001], max: [0.075, 0.112, 0.045] },
     outlineContact: true,
     interaction,
-    complexity: { visibleMeshes: 6, triangles: 380 },
+    complexity: { visibleMeshes: 8, triangles: 1700 },
   }),
   thermometer: defineDeviceModel({
     defaultRoomType: "bedroom",
@@ -487,7 +487,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.08, 0, -0.001], max: [0.08, 0.16, 0.055] },
     outlineContact: true,
     interaction,
-    complexity: { visibleMeshes: 7, triangles: 900 },
+    complexity: { visibleMeshes: 8, triangles: 2850 },
   }),
   "motion-sensor": defineDeviceModel({
     defaultRoomType: "hallway",
@@ -505,7 +505,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.07, 0, -0.001], max: [0.07, 0.135, 0.08] },
     outlineContact: true,
     interaction,
-    complexity: { visibleMeshes: 6, triangles: 900 },
+    complexity: { visibleMeshes: 6, triangles: 2800 },
   }),
   "motorized-blind": defineDeviceModel({
     defaultColor: "#d9d4c6",
@@ -565,7 +565,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.1, 0, -0.1], max: [0.1, 0.14, 0.1] },
     outlineContact: false,
     interaction,
-    complexity: { visibleMeshes: 6, triangles: 920 },
+    complexity: { visibleMeshes: 6, triangles: 2400 },
   }),
   "computer-fan": computerFanDefinition,
   "ventilation-fan": ventilationFanDefinition,
@@ -691,7 +691,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     outlineContact: false,
     sceneLight: { position: [0, 0.005, 0], color: "#ffe7aa", maxIntensity: 4, distance: 3.5 },
     interaction,
-    complexity: { visibleMeshes: 4, triangles: 900 },
+    complexity: { visibleMeshes: 5, triangles: 1_050 },
   }),
   "wall-sconce": defineDeviceModel({
     defaultRoomType: "bedroom",
@@ -707,7 +707,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     outlineContact: true,
     sceneLight: { position: [0, 0.16, 0.15], color: "#ffdda0", maxIntensity: 3, distance: 3 },
     interaction,
-    complexity: { visibleMeshes: 5, triangles: 1_800 },
+    complexity: { visibleMeshes: 6, triangles: 3_000 },
   }),
   "illuminated-round-mirror": defineDeviceModel({
     defaultRoomType: "bathroom",
@@ -728,7 +728,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
       distance: 3.5,
     },
     interaction,
-    complexity: { visibleMeshes: 5, triangles: 1_500 },
+    complexity: { visibleMeshes: 5, triangles: 1_800 },
   }),
   "motorized-curtain": defineDeviceModel({
     defaultRoomType: "living-room",
@@ -957,7 +957,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.175, 0, -0.175], max: [0.175, 0.09, 0.175] },
     outlineContact: false,
     interaction,
-    complexity: { visibleMeshes: 14, triangles: 3200 },
+    complexity: { visibleMeshes: 16, triangles: 4_900 },
   }),
   "smart-lock": defineDeviceModel({
     defaultRoomType: "entryway",
@@ -1052,7 +1052,7 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     bounds: { min: [-0.07, 0, -0.07], max: [0.07, 0.182, 0.07] },
     outlineContact: true,
     interaction,
-    complexity: { visibleMeshes: 68, triangles: 3_500 },
+    complexity: { visibleMeshes: 69, triangles: 3_500 },
   }),
   "motorized-valve": defineDeviceModel({
     defaultRoomType: "laundry",

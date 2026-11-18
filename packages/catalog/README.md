@@ -17,6 +17,19 @@ The existing variants remain available through Arrange → Details → Variant.
 Fine repeated details use restrained surface colors rather than individual
 outline shells.
 
+## Household material details
+
+Timber and fabric on selected household presets use small procedural grain and
+weave maps with mipmaps. The maps tint through the existing toon material, and
+their UVs follow the direction of the board or cloth. Repeated slats, reed strips,
+and joinery can share geometry by finish so their detail stays readable without
+a separate draw for each part. Profiled edges and hardware carry the silhouette
+in Walk, with fine surface detail becoming visible closer to the object.
+
+The **Storybook daybed** (`storybook-daybed`) appears in Arrange → Bedroom.
+It measures 118.3 × 169.6 × 243.2 cm and resizes independently on all three
+axes. Its color control tints the gathered curtains around the bentwood hood.
+
 ## Larch Observatory first-floor furniture
 
 The Gallery & suites level uses 33 furnishing models. Their geometry refinements

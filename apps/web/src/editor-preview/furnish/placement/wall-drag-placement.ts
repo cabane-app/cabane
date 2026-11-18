@@ -9,6 +9,7 @@ import {
   type SceneItemSpec,
   type SceneModelEditorDescriptor,
 } from "@cabane/engine";
+import { defaultWallFit } from "./wall-fit";
 import { insetWallPlacementIntoRoom } from "./wall-room-inset";
 
 type FloorWall = FloorSpec["walls"][number];
@@ -134,11 +135,13 @@ const wallPlacement = (
   floor: FloorSpec,
 ): WallPlacement => {
   const face = faceForPoint(rawAt, candidate);
-  const sameSupport =
+  const previousMount =
     item.placement.kind === "wall" &&
     item.placement.wallId === candidate.wall.id &&
-    item.placement.face === face;
-  const bounds = scaledBounds(item, definition);
+    item.placement.face === face
+      ? item.placement
+      : null;
+  const fit = defaultWallFit(definition, item.size);
   return insetWallPlacementIntoRoom(
     {
       kind: "wall",
@@ -146,13 +149,10 @@ const wallPlacement = (
       face,
       offsetFromWallStartPlanUnits: Number(candidate.offsetPlanUnits.toFixed(4)),
       elevationMeters: resolveItemTransform(item.placement, floor).position[1],
-      depthOffsetMeters: sameSupport
-        ? item.placement.kind === "wall"
-          ? item.placement.depthOffsetMeters
-          : Math.max(0, -bounds.minZ)
-        : Math.max(definition.windowFit?.depthOffsetMeters ?? 0, -bounds.minZ),
-      rotationOffsetRadians:
-        sameSupport && item.placement.kind === "wall" ? item.placement.rotationOffsetRadians : 0,
+      depthOffsetMeters:
+        previousMount?.depthOffsetMeters ??
+        Math.max(definition.windowFit?.depthOffsetMeters ?? 0, fit.depthOffset),
+      rotationOffsetRadians: previousMount?.rotationOffsetRadians ?? fit.yaw,
     },
     floor,
   );

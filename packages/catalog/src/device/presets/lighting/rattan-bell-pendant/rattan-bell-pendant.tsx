@@ -1,10 +1,38 @@
 import { useEffect, useMemo } from "react";
-import { Outlines, ToonMaterial, type SceneItemSize } from "@cabane/engine";
+import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
+import { lampProfile, ShadeFrame } from "../shade-frame";
 import { RATTAN_BELL_BULB_POSITION } from "./bulb-position";
 import { createWovenBellGeometry } from "./woven-bell-geometry";
 
+const rose = lampProfile([
+  [0.0025, 1.157],
+  [0.014, 1.158],
+  [0.016, 1.164],
+  [0.015, 1.17],
+  [0.04, 1.175],
+  [0.051, 1.182],
+  [0.055, 1.19],
+  [0.055, 1.198],
+  [0.052, 1.2],
+  [0, 1.2],
+]);
+const ferrule = lampProfile([
+  [0.005, 0.445],
+  [0.013, 0.446],
+  [0.014, 0.452],
+  [0.011, 0.463],
+  [0.009, 0.476],
+  [0.006, 0.483],
+]);
+const support = lampProfile([
+  [0.005, 0.455],
+  [0.017, 0.457],
+  [0.026, 0.466],
+  [0.037, 0.473],
+]);
+
 export const RATTAN_BELL_PENDANT_SIZE = [0.5, 1.2, 0.5] as const;
-const CANE_COLORS = ["#bc9461", "#cba574", "#c29c69"] as const;
+const CANE_COLORS = ["#b28a58", "#d4ae79", "#c79a64", "#92704e"] as const;
 
 export function RattanBellPendant({
   size = RATTAN_BELL_PENDANT_SIZE,
@@ -22,10 +50,9 @@ export function RattanBellPendant({
           <ToonMaterial color={CANE_COLORS[index]} />
         </mesh>
       ))}
-      <mesh name="white-ceiling-rose" position={[0, 1.185, 0]} castShadow>
-        <cylinderGeometry args={[0.055, 0.04, 0.03, 32]} />
+      <mesh name="white-ceiling-rose" castShadow>
+        <latheGeometry args={[rose, 28]} />
         <ToonMaterial color="#eeeae2" />
-        <Outlines color="#bab3a8" thickness={0.001} screenspace={false} />
       </mesh>
       <mesh name="white-pendant-cord" position={[0, 0.7375, 0]}>
         <cylinderGeometry args={[0.003, 0.003, 0.875, 8]} />
@@ -39,17 +66,11 @@ export function RattanBellPendant({
         <sphereGeometry args={[0.034, 20, 12]} />
         <ToonMaterial color="#f4ead4" emissive="#ffe1a3" emissiveIntensity={brightness} />
       </mesh>
-      {[0, 1, 2].map((index) => (
-        <mesh
-          key={index}
-          name="shade-support-spoke"
-          position={[0, 0.455, 0]}
-          rotation={[0, (index * Math.PI * 2) / 3, 0]}
-        >
-          <boxGeometry args={[0.074, 0.003, 0.003]} />
-          <ToonMaterial color="#c7b899" />
-        </mesh>
-      ))}
+      <mesh name="cane-neck-ferrule" castShadow>
+        <latheGeometry args={[ferrule, 20]} />
+        <ToonMaterial color="#ad9067" />
+      </mesh>
+      <ShadeFrame name="shade-support-spoke" path={support} gauge={0.0023} color="#c7b899" />
     </group>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { CatmullRomCurve3, TubeGeometry, Vector3 } from "three";
 import { ToonMaterial } from "@cabane/engine";
 import { RoundedFurniturePanel } from "../construction";
-import { CozyBedCover } from "./cozy-bed-cover";
+import { SingleBedQuilt } from "./single-bed-quilt";
 
 export function CozySingleHeadboard() {
   const rail = useMemo(
@@ -67,28 +67,7 @@ export function CozySingleBedding({
   const rose = variant === "rose";
   return (
     <group>
-      <CozyBedCover
-        soft
-        name="single-linen-duvet"
-        back={-0.55}
-        front={1.047}
-        mattressWidth={0.9}
-        mattressFront={1.03}
-        lift={0}
-        thickness={0.04}
-        color={color ?? (rose ? "#dcb5a9" : "#9ba888")}
-      />
-      <CozyBedCover
-        soft
-        name="single-clay-foot-throw"
-        back={0.62}
-        front={1.05}
-        mattressWidth={0.9}
-        mattressFront={1.03}
-        lift={0.028}
-        thickness={0.018}
-        color="#b78162"
-      />
+      <SingleBedQuilt color={color ?? (rose ? "#dcb5a9" : "#9ba888")} throwColor="#b78162" />
       <RoundedFurniturePanel
         name="single-ivory-sleeping-pillow"
         size={[0.65, 0.14, 0.38]}
@@ -99,7 +78,7 @@ export function CozySingleBedding({
       <RoundedFurniturePanel
         name="single-layered-ivory-pillow"
         size={[0.51, 0.13, 0.3]}
-        position={[0, 0.8, -0.59]}
+        position={[0, 0.666, -0.65]}
         rotation={[0.65, 0, 0]}
         radius={0.06}
         color="#eee0ca"
@@ -107,7 +86,7 @@ export function CozySingleBedding({
       <RoundedFurniturePanel
         name="single-blush-lumbar-cushion"
         size={[0.36, 0.13, 0.2]}
-        position={[0, 0.775, -0.32]}
+        position={[0, 0.634, -0.43]}
         rotation={[0.5, 0, 0.06]}
         radius={0.05}
         color={rose ? "#c48f7f" : "#c2a57d"}

@@ -1,58 +1,85 @@
-import { Outlines, ToonMaterial } from "@cabane/engine";
+import { ToonMaterial, RoundedBox } from "@cabane/engine";
+import { RoundedFurniturePanel } from "../../construction";
+import { linenWeaveTexture } from "../../construction/linen-weave-texture";
 import { TaperedChangingLeg } from "./tapered-changing-leg";
 import { WickerFront } from "./wicker-front";
 import { CREAM, CREAM_LIGHT, OUTLINE } from "./changing-table-finish";
 
 export function ChangingTable({ color }: { color?: string | undefined } = {}) {
-  const legs = [
-    [-0.31, -0.15],
-    [0.31, -0.15],
-    [-0.31, 0.15],
-    [0.31, 0.15],
-  ] as const;
-
   return (
     <group name="meuble-a-langer-bedroom-two-custom" userData={{ walkCollider: true }}>
-      {legs.map(([x, z]) => (
-        <TaperedChangingLeg key={`${x}-${z}`} x={x} z={z} />
-      ))}
-
-      <mesh position={[0, 0.49, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.74, 0.57, 0.42]} />
-        <ToonMaterial color={CREAM} />
-        <Outlines color={OUTLINE} thickness={0.006} screenspace={false} />
-      </mesh>
-      <mesh position={[0, 0.65, 0.224]}>
-        <boxGeometry args={[0.6, 0.12, 0.02]} />
-        <ToonMaterial color="#e5dfd7" />
-      </mesh>
-      <mesh position={[0, 0.715, 0.229]}>
-        <boxGeometry args={[0.24, 0.018, 0.012]} />
-        <ToonMaterial color="#b4a99d" />
-      </mesh>
+      {[-0.31, 0.31].flatMap((x) =>
+        [-0.15, 0.15].map((z) => <TaperedChangingLeg key={`${x}-${z}`} x={x} z={z} />),
+      )}
+      <RoundedFurniturePanel
+        size={[0.74, 0.57, 0.42]}
+        position={[0, 0.48, 0]}
+        color={CREAM}
+        radius={0.018}
+        outlineColor={OUTLINE}
+      />
+      <RoundedFurniturePanel
+        size={[0.625, 0.13, 0.03]}
+        position={[0, 0.658, 0.215]}
+        color="#dfd8cf"
+        outline={false}
+        radius={0.013}
+      />
+      <RoundedFurniturePanel
+        size={[0.59, 0.105, 0.018]}
+        position={[0, 0.656, 0.231]}
+        color={CREAM_LIGHT}
+        outline={false}
+      />
+      <RoundedFurniturePanel
+        size={[0.14, 0.023, 0.025]}
+        position={[0, 0.668, 0.2495]}
+        color="#ad9478"
+        radius={0.01}
+        outline={false}
+      />
       <WickerFront />
-
-      <mesh position={[0, 0.79, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.81, 0.075, 0.47]} />
-        <ToonMaterial color={CREAM_LIGHT} />
-        <Outlines color={OUTLINE} thickness={0.006} screenspace={false} />
-      </mesh>
-      <mesh position={[0, 0.852, 0.005]} castShadow>
-        <boxGeometry args={[0.67, 0.055, 0.385]} />
-        <ToonMaterial color={color ?? "#dfbbb7"} />
-      </mesh>
-      {[-0.325, 0.325].map((x) => (
-        <mesh key={x} position={[x, 0.91, 0.005]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-          <capsuleGeometry args={[0.034, 0.31, 6, 12]} />
-          <ToonMaterial color={color ?? "#efd7d1"} />
-          <Outlines color="#9d7773" thickness={0.004} screenspace={false} />
-        </mesh>
+      <RoundedFurniturePanel
+        size={[0.81, 0.075, 0.47]}
+        position={[0, 0.79, 0]}
+        color={CREAM_LIGHT}
+        radius={0.018}
+        outlineColor={OUTLINE}
+      />
+      <RoundedBox
+        args={[0.685, 0.066, 0.39]}
+        radius={0.03}
+        smoothness={2}
+        bevelSegments={1}
+        position={[0, 0.854, 0.005]}
+        castShadow
+        receiveShadow
+      >
+        <ToonMaterial color={color ?? "#dfbbb7"} map={linenWeaveTexture} />
+      </RoundedBox>
+      {[-0.313, 0.313].map((x) => (
+        <RoundedBox
+          key={x}
+          args={[0.088, 0.086, 0.384]}
+          radius={0.04}
+          smoothness={2}
+          bevelSegments={1}
+          position={[x, 0.901, 0.005]}
+          castShadow
+          receiveShadow
+        >
+          <ToonMaterial color={color ?? "#efd7d1"} map={linenWeaveTexture} />
+        </RoundedBox>
       ))}
-      {[-0.17, 0.17].map((z) => (
-        <mesh key={z} position={[0, 0.895, z]} rotation={[0, 0, Math.PI / 2]} castShadow>
-          <capsuleGeometry args={[0.025, 0.58, 5, 12]} />
-          <ToonMaterial color={color ?? "#efd7d1"} />
-        </mesh>
+      {[-0.168, 0.178].map((z) => (
+        <RoundedFurniturePanel
+          key={z}
+          size={[0.58, 0.045, 0.046]}
+          position={[0, 0.884, z]}
+          color={color ?? "#efd7d1"}
+          outline={false}
+          radius={0.021}
+        />
       ))}
     </group>
   );
