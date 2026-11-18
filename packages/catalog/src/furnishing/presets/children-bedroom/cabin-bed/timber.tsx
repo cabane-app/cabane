@@ -4,10 +4,10 @@ import { ToonMaterial } from "@cabane/engine";
 import { oakGrainTexture } from "../../construction/oak-grain-texture";
 import { PINE } from "./cabin-bed-finish";
 
-export const frameSides = [-0.567, 0.556] as const;
+const frameSides = [-0.567, 0.556] as const;
 export const eaveZ = 1.172;
 export const eaveHeight = 1.092;
-export const ridgeHeight = 1.619;
+const ridgeHeight = 1.619;
 const timberWidth = 0.06;
 export const roofHeight = (z: number) =>
   ridgeHeight - ((ridgeHeight - eaveHeight) * Math.abs(z)) / eaveZ;
