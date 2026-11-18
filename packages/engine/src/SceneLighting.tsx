@@ -32,8 +32,8 @@ export function SolarLighting({
   sunState,
   walkMode = false,
   manifest,
-  northAngleDegrees = 0,
-  floors = EMPTY_FLOORS,
+  northAngleDegrees = manifest?.home.northAngleDegrees ?? 0,
+  floors = manifest?.floors ?? EMPTY_FLOORS,
 }: {
   weather?: WeatherAppearance;
   reducedMotion?: boolean;

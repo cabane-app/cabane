@@ -288,8 +288,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                         reducedMotion={reducedMotion}
                         walkMode={walkMode}
                         mode={solarLighting.mode}
-                        northAngleDegrees={manifest.home.northAngleDegrees ?? 0}
-                        floors={manifest.floors}
                         shadowMapSize={quality.shadowMapSize}
                         sunState={sunState}
                       />
