@@ -22,7 +22,7 @@ on the local browser origin. Production uses the updated settings.
 
 Orbit and Walk share a landscape picker in More options and in Settings → Orbital view.
 Each browser remembers the choice separately for each home. Homes start with None.
-Countryside renders the same 3D fields, hills, trunks and hedgerows in both views.
+Countryside surrounds the home with a continuous green lawn, gently rolling ground and groups of 3D trees in both views.
 The yard and surrounding ground share a world-space grass finish, and the
 exterior follows the authored grade at the parcel edge. Daylight and night
 illuminate the ground and foliage. New York adds brick streets, rooftop water

@@ -16,7 +16,8 @@ import samplesUrl from "./assets/hedgerow-points.png?url";
 import spraysUrl from "./assets/hedgerow-sprays.webp?url";
 import { canopyFragment, canopyVertex } from "./hedgerow-shaders";
 import { type FieldPlot } from "./country-survey";
-import { localHeights } from "./CountryFields";
+import { localHeights } from "./CountryGround";
+import { canopyShadows } from "./canopy-shadows";
 import { hedgerowWood } from "./hedgerow-wood";
 
 const points = scan(samplesUrl, 1, NoColorSpace, (map) => {
@@ -49,6 +50,8 @@ export function HedgerowCanopies({
     geo.setAttribute("uv", plane.getAttribute("uv"));
     return geo;
   }, []);
+  const shade = useMemo(() => (p && soil ? canopyShadows(plot, p, soil) : null), [plot, p, soil]);
+  useEffect(() => () => shade?.dispose(), [shade]);
   const wood = useMemo(() => hedgerowWood(plot), [plot]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   useEffect(() => () => wood.dispose(), [wood]);
@@ -95,6 +98,17 @@ export function HedgerowCanopies({
       <mesh name="country-trunks" geometry={wood} castShadow receiveShadow raycast={() => {}}>
         <meshStandardMaterial vertexColors roughness={1} />
       </mesh>
+      {shade && leaves && (
+        <mesh name="country-canopy-shadows" geometry={shade} castShadow raycast={() => {}}>
+          <meshBasicMaterial
+            map={leaves}
+            alphaTest={0.3}
+            side={DoubleSide}
+            colorWrite={false}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
       {p && p.image instanceof HTMLImageElement && leaves && soil && (
         <mesh
           name="country-hedgerows"

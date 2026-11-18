@@ -24,6 +24,11 @@ import plasterUrl from "./assets/finishes/painted-plaster.webp?url";
 import travertineUrl from "./assets/finishes/travertine.webp?url";
 import turfFringeMaskUrl from "./assets/finishes/turf-fringe-mask.webp?url";
 import walnutUrl from "./assets/finishes/walnut.webp?url";
+import walnutSurfaceUrl from "./assets/finishes/walnut-surface.webp?url";
+import oakSurfaceUrl from "./assets/finishes/oak-surface.webp?url";
+import limestoneSurfaceUrl from "./assets/finishes/limestone-surface.webp?url";
+import travertineSurfaceUrl from "./assets/finishes/travertine-surface.webp?url";
+import herringboneSurfaceUrl from "./assets/finishes/herringbone-surface.webp?url";
 import { floorFinishPreset } from "./floor-finishes/presets";
 import { useGraphicsFeature } from "./graphics-features";
 import { SceneStyleContext } from "./scene-style";
@@ -96,6 +101,17 @@ export function useNativeHedgeMap(kind: "foliage" | "ivy" = "foliage") {
 }
 const gravelRepeat = floorFinishPreset("gravel").repeatMeters / 2;
 const barkRepeat = floorFinishPreset("pine-bark").repeatMeters / 2;
+const herringboneRepeat = floorFinishPreset("oak-herringbone").repeatMeters / 3.4;
+const limestoneRepeat = floorFinishPreset("limestone").repeatMeters / 1.5;
+const oakSurface = scan(oakSurfaceUrl, 1, NoColorSpace);
+const surfaceSources: Partial<Record<ScanId, ReturnType<typeof scan>>> = {
+  "light-oak": oakSurface,
+  "light-oak-horizontal": oakSurface,
+  "dark-walnut": scan(walnutSurfaceUrl, 1, NoColorSpace),
+  limestone: scan(limestoneSurfaceUrl, limestoneRepeat, NoColorSpace),
+  travertine: scan(travertineSurfaceUrl, 1, NoColorSpace),
+  "oak-herringbone": scan(herringboneSurfaceUrl, herringboneRepeat, NoColorSpace),
+};
 type ScanId =
   | FloorPatternPresetId
   | "painted-plaster"
@@ -109,8 +125,8 @@ const sources: Partial<Record<ScanId, ReturnType<typeof scan>>> = {
   "light-oak-horizontal": oak,
   "dark-walnut": scan(walnutUrl),
   // Floor UVs use the plan preset's repeat; the photographs have a measured span.
-  "oak-herringbone": scan(herringboneUrl, floorFinishPreset("oak-herringbone").repeatMeters / 3.4),
-  limestone: scan(limestoneUrl, floorFinishPreset("limestone").repeatMeters / 1.5),
+  "oak-herringbone": scan(herringboneUrl, herringboneRepeat),
+  limestone: scan(limestoneUrl, limestoneRepeat),
   gravel: scan(gravelUrl, gravelRepeat),
   "gravel-normal": scan(gravelNormalUrl, gravelRepeat, NoColorSpace),
   "pine-bark": scan(pineBarkUrl, barkRepeat),
@@ -125,6 +141,7 @@ const sources: Partial<Record<ScanId, ReturnType<typeof scan>>> = {
 export function useScannedFinish(
   id?: ScanId,
   group: "finishes" | "grounds" | "joinery" = "finishes",
+  channel: "color" | "surface" = "color",
 ) {
   const enabled = useGraphicsFeature(group);
   const style = useContext(SceneStyleContext);
@@ -134,7 +151,7 @@ export function useScannedFinish(
       id &&
       typeof Image !== "undefined" &&
       typeof document !== "undefined" &&
-      sources[id]) ||
+      (channel === "surface" ? surfaceSources[id] : sources[id])) ||
     emptyScan;
   const texture = useSyncExternalStore(source.subscribe, source.snapshot, noTexture);
   // Rotated oak uses the same decoded image and WebGL texture source.

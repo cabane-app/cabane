@@ -79,7 +79,7 @@ export function HomeLandscape({
           )
         : null;
     const span = lot ? Math.max(lot.width, lot.depth) : Math.max(maxX - minX, maxZ - minZ) + 7;
-    // The clearing sits on an open field edge with a long sightline across the valley.
+    // Anchor the treeline to the home so resizing the lawn keeps the scenery in place.
     const surveyScale = Math.max(0.48, (Math.max(maxX - minX, maxZ - minZ) + 5) / 49);
     return {
       span,
