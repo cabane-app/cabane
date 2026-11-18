@@ -9,13 +9,13 @@
   font-size: 12px;
   line-height: 1.4;
   box-sizing: border-box;
-  width: 220px;
-  max-width: calc(100vw - 32px);
+  width: max-content;
+  max-width: min(220px, calc(100vw - 32px));
   pointer-events: none;
 }
 .item-entity-readings > div {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-columns: minmax(0, auto) minmax(0, auto);
   align-items: baseline;
   gap: 10px;
 }
@@ -24,12 +24,9 @@
 }
 .item-entity-readings strong {
   margin-left: auto;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
-}
-
-.item-entity-readings[hidden] {
-  display: none;
 }
 
 .item-entity-readings > .is-event {

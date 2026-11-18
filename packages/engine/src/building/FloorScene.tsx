@@ -326,19 +326,29 @@ export const FloorScene = memo(function FloorScene({
                   )
                 : undefined;
             const rendered = (
-              <SceneItemRenderer
-                item={item}
-                floor={floor}
-                furnishingModels={manifest.extensions.furnishingModels}
-                deviceModels={declarativeDeviceModels}
-                resolvedDevice={resolvedDeviceById[item.id]}
-                entityStatesBySlotId={states}
-                reducedMotion={reducedMotion}
-                walkMode={walkMode}
-                onInteract={onInteract}
-                liveMediaByEntityId={liveMediaByEntityId}
-                outlineColor={manifest.home.palette.accent}
-              />
+              <>
+                <SceneItemRenderer
+                  item={item}
+                  floor={floor}
+                  furnishingModels={manifest.extensions.furnishingModels}
+                  deviceModels={declarativeDeviceModels}
+                  resolvedDevice={resolvedDeviceById[item.id]}
+                  entityStatesBySlotId={states}
+                  reducedMotion={reducedMotion}
+                  walkMode={walkMode}
+                  onInteract={onInteract}
+                  liveMediaByEntityId={liveMediaByEntityId}
+                  outlineColor={manifest.home.palette.accent}
+                />
+                {interactionMode !== "editor" && Boolean(item.entitySlots?.length) && (
+                  <ItemEntityReadings
+                    item={item}
+                    floor={floor}
+                    states={states}
+                    walkMode={walkMode}
+                  />
+                )}
+              </>
             );
             return (
               <Fragment key={item.id}>
@@ -348,9 +358,6 @@ export const FloorScene = memo(function FloorScene({
                   </WallLeanGroup>
                 ) : (
                   rendered
-                )}
-                {!walkMode && interactionMode !== "editor" && (
-                  <ItemEntityReadings item={item} floor={floor} states={states} />
                 )}
               </Fragment>
             );
