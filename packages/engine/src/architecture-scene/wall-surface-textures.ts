@@ -103,7 +103,7 @@ export function useWallFaceTexture(surfaces: readonly Surface[]) {
   useEffect(() => () => textures.dispose(), [textures]);
   useEffect(() => textures.retain(surfaces), [surfaces, textures]);
   const plaster = useScannedFinish(
-    surfaces.some(({ finish }) => !finish) ? "painted-plaster" : undefined,
+    surfaces.some(({ finish }) => !finish) ? "wall-paint" : undefined,
   );
   return (finish: WallSurfaceFinish | undefined) =>
     finish ? textures.get(finish) : (plaster ?? null);
