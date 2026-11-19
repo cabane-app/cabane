@@ -70,19 +70,26 @@ export function HomeLandscape({
         ].elevationMeters;
     const apartment =
       (manifest.home.apartmentFloor ?? 0) * manifest.floors[0].floorToFloorHeightMeters;
+    const walkGround = walkMode || !grounds || style !== "default";
     const lot =
       landscape === "countryside" || manifest.home.groundMargins
-        ? homeGroundFrame(
-            manifest,
-            devices,
-            walkMode || !grounds || style !== "default" ? "walk" : "orbit",
-          )
+        ? homeGroundFrame(manifest, devices, walkGround ? "walk" : "orbit")
         : null;
+    const plantingLot =
+      landscape === "countryside" && !walkGround && !manifest.home.groundMargins
+        ? homeGroundFrame(manifest, devices, "walk")
+        : lot;
     const span = lot ? Math.max(lot.width, lot.depth) : Math.max(maxX - minX, maxZ - minZ) + 7;
     // Anchor the treeline to the home so resizing the lawn keeps the scenery in place.
     const surveyScale = Math.max(0.48, (Math.max(maxX - minX, maxZ - minZ) + 5) / 49);
     return {
       span,
+      plantingLot: plantingLot ?? {
+        centerX: (minX + maxX) / 2,
+        centerZ: (minZ + maxZ) / 2,
+        width: span,
+        depth: span,
+      },
       surveyX: (minX + maxX) / 2,
       surveyZ: (minZ + maxZ) / 2 + 58 * surveyScale,
       surveyScale,

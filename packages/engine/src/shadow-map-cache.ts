@@ -17,6 +17,20 @@ import {
 import { sceneLightMaterialHooks } from "./scene-light-wall-mask";
 
 const positionAttribute = ["position"];
+const stockDepthHooks = new WeakMap<
+  Material,
+  Pick<Material, "onBeforeCompile" | "customProgramCacheKey">
+>();
+
+/** Register a beauty shader that leaves Three's stock shadow pass untouched.
+ * Replacing either hook makes the material conservative again. */
+export function withStockShadowDepth<T extends MeshStandardMaterial>(material: T): T {
+  // Compare the original methods by identity. They are never called without a receiver.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const { onBeforeCompile, customProgramCacheKey } = material;
+  stockDepthHooks.set(material, { onBeforeCompile, customProgramCacheKey });
+  return material;
+}
 // Physical materials and custom standard-derived materials can add depth behavior.
 const hasStockDepth = (material: Material): material is MeshToonMaterial | MeshStandardMaterial =>
   (material as MeshToonMaterial).isMeshToonMaterial ||
@@ -199,11 +213,12 @@ export class ShadowMapCache {
         s.add(m.wireframe);
         s.add(m.wireframeLinewidth);
         const hooks = sceneLightMaterialHooks(m);
+        const depthHooks = stockDepthHooks.get(m) ?? Material.prototype;
         if (
           !hasStockDepth(m) ||
-          hooks.onBeforeCompile !== Material.prototype.onBeforeCompile ||
+          hooks.onBeforeCompile !== depthHooks.onBeforeCompile ||
           hooks.onBeforeRender !== Material.prototype.onBeforeRender ||
-          hooks.customProgramCacheKey !== Material.prototype.customProgramCacheKey
+          hooks.customProgramCacheKey !== depthHooks.customProgramCacheKey
         )
           untracked = true;
         if (material.alphaTest > 0 || material.alphaHash || material.alphaToCoverage) {

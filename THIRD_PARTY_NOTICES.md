@@ -149,9 +149,33 @@ vegetation mask during asset preparation.
 [IGN LiDAR HD surface](https://www.data.gouv.fr/datasets/mns-lidar-hd) ·
 [Licence Ouverte 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence/)
 
-The leaf sprays use leaf samples from Rico Cilliers’ Shrub 04. The lawn uses blade detail and occlusion from [Grass 005](https://ambientcg.com/view?id=Grass005), published by ambientCG under [CC0](https://docs.ambientcg.com/license/). The sky textures use the celestial
-portions of Kloppenheim 06 (Pure Sky) by Greg Zaal and Jarod Guest, and Rogland
-Clear Night by Greg Zaal. These three Poly Haven assets were retrieved on 18 November
-2026 and converted to WebP. [Shrub 04](https://polyhaven.com/a/shrub_04) ·
-[Kloppenheim 06 (Pure Sky)](https://polyhaven.com/a/kloppenheim_06_puresky) ·
-[Rogland Clear Night](https://polyhaven.com/a/rogland_clear_night) · [CC0](https://polyhaven.com/license)
+The lawn uses blade detail and occlusion from ambientCG's [Grass 005](https://ambientcg.com/view?id=Grass005), published under [CC0](https://docs.ambientcg.com/license/).
+The sky uses the celestial portions of Kloppenheim 06 (Pure Sky) by Greg Zaal and Jarod Guest and Rogland Clear Night by Greg Zaal, retrieved on 18 November 2026. [Kloppenheim 06 (Pure Sky)](https://polyhaven.com/a/kloppenheim_06_puresky) · [Rogland Clear Night](https://polyhaven.com/a/rogland_clear_night) · [CC0](https://polyhaven.com/license)
+
+The forest floor, fieldstones and branches use photo textures by Rob Tuytel, retrieved on 19 November 2026. [Forest Leaves 04](https://polyhaven.com/a/forest_leaves_04) · [Mossy Rock](https://polyhaven.com/a/mossy_rock) · [Bark Brown 02](https://polyhaven.com/a/bark_brown_02) · [CC0](https://polyhaven.com/license)
+
+The oak, ash and shrub geometry was generated offline with Daniel Greenheck’s EZ Tree. The bundled meshes include its oak and ash leaf textures. [EZ Tree](https://github.com/dgreenheck/ez-tree)
+
+```text
+MIT License
+
+Copyright (c) 2024 Daniel Greenheck
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

@@ -1,6 +1,5 @@
 import { CountrySky } from "./CountrySky";
 import { CountryGround } from "./CountryGround";
-import { HedgerowCanopies } from "./HedgerowCanopies";
 import type { FieldPlot } from "./country-survey";
 
 export function Countryside({
@@ -19,14 +18,7 @@ export function Countryside({
   return (
     <group name="landscape-countryside" position={[frame.surveyX, frame.y, frame.surveyZ]}>
       {walkMode && <CountrySky daylight={daylight} overcast={overcast} />}
-      <CountryGround plot={frame} daylight={daylight} />
-      <CountryGround plot={frame} daylight={daylight} distant />
-      <HedgerowCanopies
-        plot={frame}
-        daylight={daylight}
-        overcast={overcast}
-        wind={walkMode && !reducedMotion}
-      />
+      <CountryGround plot={frame} daylight={daylight} wind={walkMode && !reducedMotion} />
     </group>
   );
 }

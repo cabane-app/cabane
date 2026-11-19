@@ -11,16 +11,17 @@ export interface FieldPlot {
   surveyZ: number;
   surveyScale: number;
   groundColor: string;
+  plantingLot: { centerX: number; centerZ: number; width: number; depth: number };
   terrain: TerrainSurface | null;
 }
 
-export function distanceToLawn(plot: FieldPlot, x: number, z: number) {
+function distanceToLawn(plot: FieldPlot, x: number, z: number) {
   const dx = Math.abs(x - plot.x) - plot.width / 2,
     dz = Math.abs(z - plot.z) - plot.depth / 2;
   return Math.max(dx, dz);
 }
 
-export function groundHeight(plot: FieldPlot, x: number, z: number, surveyHeight: number) {
+function groundHeight(plot: FieldPlot, x: number, z: number, surveyHeight: number) {
   const t = Math.min(
     1,
     Math.max(0, distanceToLawn(plot, x, z) / Math.max(12, plot.surveyScale * 17)),
@@ -91,3 +92,19 @@ if(distanceToEye>countryFar*.68) {
   vec4 mapped=projectionMatrix*vec4(0.,0.,-d,1.);
   gl_Position.z=gl_Position.w*mapped.z/mapped.w;
 }`;
+
+// Sample the rendered triangles, including the flattened ground beside the lot.
+export function meshHeightAt(grid: PlaneGeometry, x: number, z: number) {
+  const { width, height, widthSegments: cols, heightSegments: rows } = grid.parameters;
+  const u = Math.min(cols, Math.max(0, (x / width + 0.5) * cols));
+  const v = Math.min(rows, Math.max(0, (z / height + 0.5) * rows));
+  const i = Math.min(cols - 1, Math.floor(u)),
+    j = Math.min(rows - 1, Math.floor(v)),
+    tx = u - i,
+    tz = v - j;
+  const pos = grid.getAttribute("position"),
+    a = j * (cols + 1) + i,
+    b = a + cols + 1;
+  if (tx + tz <= 1) return pos.getY(a) * (1 - tx - tz) + pos.getY(a + 1) * tx + pos.getY(b) * tz;
+  return pos.getY(b + 1) * (tx + tz - 1) + pos.getY(a + 1) * (1 - tz) + pos.getY(b) * (1 - tx);
+}

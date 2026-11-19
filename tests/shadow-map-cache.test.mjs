@@ -19,6 +19,7 @@ import {
 import { withModules } from "./test-server.mjs";
 await withModules(async (load) => {
   const { ShadowMapCache } = await load("/packages/engine/src/shadow-map-cache.ts");
+  const { plantMaterial } = await load("/packages/engine/src/landscapes/plant-material.ts");
   const { applyCameraFadeToMesh } = await load("/packages/engine/src/rendering.tsx");
   const { SceneLightWallMask } = await load("/packages/engine/src/scene-light-wall-mask.ts");
   const fixture = (CasterMaterial = MeshToonMaterial) => {
@@ -66,6 +67,23 @@ await withModules(async (load) => {
     } finally {
       mask.dispose();
     }
+  });
+  test("wind in the countryside beauty pass reuses cutout shadows until their inputs change", () => {
+    const f = fixture(MeshStandardMaterial);
+    const uniforms = { breeze: { value: 0 }, air: { value: f.caster.material.color } };
+    const leaves = plantMaterial(f.caster.material, uniforms, true, false);
+    leaves.alphaTest = 0.35;
+    leaves.map = new Texture();
+    f.caster.material = leaves;
+    assert.equal(f.dirty(), true);
+    uniforms.breeze.value = 10;
+    assert.equal(f.dirty(), false);
+    leaves.map.offset.x = 0.2;
+    assert.equal(f.dirty(), true);
+    assert.equal(f.dirty(), false);
+    leaves.onBeforeCompile = () => {};
+    assert.equal(f.dirty(), true);
+    assert.equal(f.dirty(), true);
   });
   test("noncasting animation and opaque tint changes reuse shadows; moving casters and sun refresh immediately", () => {
     const f = fixture();
