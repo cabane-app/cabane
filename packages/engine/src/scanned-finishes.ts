@@ -151,6 +151,11 @@ export function useScannedFinish(
   return rotated ?? texture;
 }
 
+/** Continuous white oak veneer from the same scan as the plank flooring. */
+export function useOakVeneer() {
+  return useScannedFinish("joinery-oak");
+}
+
 // The image is a linear coverage mask. Albedo, contact and coverage each use their own UV set.
 const turfFringeMask = scan(turfFringeMaskUrl, 1, NoColorSpace, (texture) => {
   texture.channel = 2;

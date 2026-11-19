@@ -23,6 +23,7 @@ export * from "./opening-orientation";
 export * from "./architecture-geometry";
 export { physicalFloor } from "./architecture-geometry/physical-floor";
 export { ArchitecturalGlass } from "./architecture-scene/ArchitecturalGlass";
+export { useOakVeneer } from "./scanned-finishes";
 export { JoineryMaterial, useDetailedJoinery } from "./architecture-scene/JoineryMaterial";
 export * from "./architecture-models";
 export * from "./lighting";

@@ -1,3 +1,4 @@
+import { OakVeneerMaterial } from "../construction/oak-veneer";
 import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
 import { Vector2 } from "three";
 import { RoundedFurniturePanel as Panel } from "../construction";
@@ -34,10 +35,11 @@ export function HallwayConsoleTable({
           {[-0.12, 0.12].map((z) => (
             <mesh key={z} position={[0, 0, z]} castShadow>
               <latheGeometry args={[spindle, 12]} />
-              <ToonMaterial color="#b58b59" />
+              <OakVeneerMaterial color="#b58b59" />
             </mesh>
           ))}
           <Panel
+            grain="z"
             size={[0.027, 0.034, 0.24]}
             position={[0, 0.11, 0]}
             color="#b68c5c"
@@ -45,15 +47,29 @@ export function HallwayConsoleTable({
           />
         </group>
       ))}
-      <Panel size={[0.916, 0.028, 0.024]} position={[0, 0.11, 0]} color="#bd9767" outline={false} />
       <Panel
+        grain="x"
+        size={[0.916, 0.028, 0.024]}
+        position={[0, 0.11, 0]}
+        color="#bd9767"
+        outline={false}
+      />
+      <Panel
+        grain="x"
         size={[1.004, 0.15, 0.288]}
         position={[0, 0.68, -0.007]}
         color="#bb9567"
         outline={false}
       />
-      <Panel size={[1.05, 0.018, 0.326]} position={[0, 0.752, 0]} color="#bf9968" outline={false} />
       <Panel
+        grain="x"
+        size={[1.05, 0.018, 0.326]}
+        position={[0, 0.752, 0]}
+        color="#bf9968"
+        outline={false}
+      />
+      <Panel
+        grain="x"
         size={[1.1, 0.045, 0.35]}
         position={[0, 0.7775, 0]}
         color="#d5b27d"
@@ -63,7 +79,9 @@ export function HallwayConsoleTable({
       {[-0.243, 0.243].map((x) => (
         <group key={x} position={[x, 0.682, 0]}>
           <Panel
+            grain="x"
             name="console-drawer"
+            grainOffset={x}
             size={[0.477, 0.117, 0.026]}
             position={[0, 0, 0.144]}
             color="#ddc092"

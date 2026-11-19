@@ -1,3 +1,4 @@
+import { useOakVeneer } from "@cabane/engine";
 import type { BufferGeometry } from "three";
 import { CabinetPiece } from "./cabinet-joinery";
 import { oakGrainTexture } from "./oak-grain-texture";
@@ -13,27 +14,18 @@ export function FourLegOakTable({
   frame: ReturnType<typeof apronJoinery>;
   stone?: boolean;
 }) {
+  const veneer = useOakVeneer() ?? oakGrainTexture;
   return (
     <>
       <CabinetPiece
         name="oak-table-top"
         geometry={worktop}
         color={stone ? "#eceae5" : "#d9b987"}
-        {...(stone ? {} : { map: oakGrainTexture })}
+        {...(stone ? {} : { map: veneer })}
         outline={stone ? "#aba89f" : "#a08861"}
       />
-      <CabinetPiece
-        name="oak-table-leg"
-        geometry={frame.posts}
-        color="#c8a675"
-        map={oakGrainTexture}
-      />
-      <CabinetPiece
-        name="oak-table-aprons"
-        geometry={frame.rails}
-        color="#c6a372"
-        map={oakGrainTexture}
-      />
+      <CabinetPiece name="oak-table-leg" geometry={frame.posts} color="#c8a675" map={veneer} />
+      <CabinetPiece name="oak-table-aprons" geometry={frame.rails} color="#c6a372" map={veneer} />
       <CabinetPiece name="oak-table-joint-pegs" geometry={frame.pegs} color="#a88659" />
     </>
   );

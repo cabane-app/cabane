@@ -1,3 +1,4 @@
+import { OakVeneerMaterial } from "../construction/oak-veneer";
 import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
 import { RoundedFurniturePanel as Panel } from "../construction";
 
@@ -20,23 +21,26 @@ export function ThreeDoorSideboard({ size = THREE_DOOR_SIDEBOARD_SIZE }: { size?
             castShadow
           >
             <cylinderGeometry args={[0.054, 0.034, 0.15, 4, 1, false, Math.PI / 4]} />
-            <ToonMaterial color="#a67d50" />
+            <OakVeneerMaterial color="#a67d50" />
           </mesh>
         )),
       )}
       <Panel
+        grain="x"
         size={[1.51, 0.605, 0.378]}
         position={[0, 0.4485, -0.02]}
         color="#b08b5f"
         outline={false}
       />
       <Panel
+        grain="x"
         size={[1.53, 0.036, 0.406]}
         position={[0, 0.151, -0.004]}
         color="#c69f70"
         outline={false}
       />
       <Panel
+        grain="x"
         size={[1.53, 0.028, 0.41]}
         position={[0, 0.758, -0.004]}
         color="#b89869"
@@ -45,7 +49,9 @@ export function ThreeDoorSideboard({ size = THREE_DOOR_SIDEBOARD_SIZE }: { size?
       {[-0.495, 0, 0.495].map((x) => (
         <group key={x} position={[x, 0.46, 0]}>
           <Panel
+            grain="y"
             name="sideboard-door"
+            grainOffset={x}
             size={[0.485, 0.558, 0.028]}
             position={[0, 0, 0.178]}
             color="#cda975"
@@ -54,12 +60,14 @@ export function ThreeDoorSideboard({ size = THREE_DOOR_SIDEBOARD_SIZE }: { size?
           {[-1, 1].map((s) => (
             <group key={s}>
               <Panel
+                grain="y"
                 size={[0.036, 0.558, 0.022]}
                 position={[s * 0.2245, 0, 0.196]}
                 color="#d9b987"
                 outline={false}
               />
               <Panel
+                grain="x"
                 size={[0.413, 0.038, 0.022]}
                 position={[0, s * 0.26, 0.196]}
                 color="#d9b987"
@@ -82,6 +90,7 @@ export function ThreeDoorSideboard({ size = THREE_DOOR_SIDEBOARD_SIZE }: { size?
         </group>
       ))}
       <Panel
+        grain="x"
         size={[1.6, 0.05, 0.45]}
         position={[0, 0.795, 0]}
         color="#d8b47e"

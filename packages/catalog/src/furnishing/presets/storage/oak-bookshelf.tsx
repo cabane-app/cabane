@@ -1,4 +1,4 @@
-import type { SceneItemSize } from "@cabane/engine";
+import { useOakVeneer, type SceneItemSize } from "@cabane/engine";
 import {
   cabinetBoard,
   CabinetPiece,
@@ -36,32 +36,18 @@ const lippings = joinCabinetParts(
 
 /** Five usable shelf levels below the top board. */
 export function OakBookshelf({ size = OAK_BOOKSHELF_SIZE }: { size?: SceneItemSize }) {
+  const veneer = useOakVeneer() ?? oakGrainTexture;
   return (
     <group
       name="oak-bookshelf"
       scale={[size[0] / 0.8, size[1] / 1.9, size[2] / 0.3]}
       userData={{ walkCollider: true }}
     >
-      <CabinetPiece geometry={plinth} color="#b28f5f" />
-      <CabinetPiece
-        name="bookshelf-uprights"
-        geometry={sides}
-        color="#d1ae7c"
-        map={oakGrainTexture}
-      />
-      <CabinetPiece geometry={backs} color="#b99768" map={oakGrainTexture} />
-      <CabinetPiece
-        name="bookshelf-shelf"
-        geometry={shelves}
-        color="#dabc8e"
-        map={oakGrainTexture}
-      />
-      <CabinetPiece
-        name="bookshelf-lippings"
-        geometry={lippings}
-        color="#d1ae7c"
-        map={oakGrainTexture}
-      />
+      <CabinetPiece geometry={plinth} color="#b28f5f" map={veneer} />
+      <CabinetPiece name="bookshelf-uprights" geometry={sides} color="#d1ae7c" map={veneer} />
+      <CabinetPiece geometry={backs} color="#b99768" map={veneer} />
+      <CabinetPiece name="bookshelf-shelf" geometry={shelves} color="#dabc8e" map={veneer} />
+      <CabinetPiece name="bookshelf-lippings" geometry={lippings} color="#d1ae7c" map={veneer} />
     </group>
   );
 }
