@@ -17,7 +17,7 @@ export function Countryside({
 }) {
   return (
     <group name="landscape-countryside" position={[frame.surveyX, frame.y, frame.surveyZ]}>
-      {walkMode && <CountrySky daylight={daylight} overcast={overcast} />}
+      <CountrySky daylight={daylight} overcast={overcast} orbit={!walkMode} />
       <CountryGround plot={frame} daylight={daylight} wind={walkMode && !reducedMotion} />
     </group>
   );

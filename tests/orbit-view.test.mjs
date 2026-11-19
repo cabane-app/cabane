@@ -329,6 +329,33 @@ await withModules(async (load) => {
     }
   });
 
+  test("landscape zoom and rotation keep the original home pivot and recover a saved planet pivot", async () => {
+    const props = { floor, resetKey: 0, reducedMotion: true };
+    const renderer = await create(createElement(OrbitCamera, props), options);
+    try {
+      const home = controlsFor(renderer).target.toArray();
+      const normalZoom = controlsFor(renderer).minZoom;
+      const viewKey = orbitViewKey("home-pivot", floor.id);
+      writeOrbitView(
+        viewKey,
+        { pose: { target: [12, -70, 19], position: [60, 34, 85], zoom: 4, viewport: [1200, 900] } },
+        false,
+      );
+      await renderer.update(
+        createElement(OrbitCamera, { ...props, viewKey, landscapeRadius: 100 }),
+      );
+      const controls = controlsFor(renderer);
+      close(controls.target.toArray(), home);
+      assert.ok(controls.minZoom < normalZoom);
+      controls.object.zoom = controls.minZoom;
+      controls.object.updateProjectionMatrix();
+      controls.setAzimuthalAngle(controls.getAzimuthalAngle() + Math.PI / 2);
+      controls.update();
+      close(controls.target.toArray(), home);
+    } finally {
+      await renderer.unmount();
+    }
+  });
   test("dashboard bindings follow replacement controls and persist lock per floor", async () => {
     let binding;
     function DashboardCamera({ floorId }) {

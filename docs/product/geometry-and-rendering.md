@@ -23,6 +23,7 @@ on the local browser origin. Production uses the updated settings.
 Orbit and Walk share a landscape picker in More options and in Settings → Orbital view.
 Each browser remembers the choice separately for each home. Homes start with None.
 Countryside keeps the lawn open around the home. Groups of oak and ash frame all four sides at different depths. Ferns, sedges, fallen branches and mossy stones follow the terrain outside the parcel. Both views share the same planting positions and patches of leaf litter. Distant trees retain their silhouettes with simpler meshes. Fine ground cover thins as it shrinks on screen, and idle Orbit renders on demand.
+The countryside wraps around a finite planet. The editable parcel retains its authored grade, and woods beyond its edges follow the curve into rocky shores. Zooming out in Orbit reveals the globe while rotation stays anchored to the home.
 The yard and surrounding ground share a world-space grass finish, and the
 exterior follows the authored grade at the parcel edge. Daylight and night
 illuminate the ground and foliage. New York adds brick streets, rooftop water

@@ -109,7 +109,7 @@ export function groundcoverSpecimen(kind: Cover) {
       }
     }
   } else if (kind === "grasses") {
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 17; i++) {
       const angle = random() * tau,
         dx = Math.cos(angle),
         dz = Math.sin(angle),
@@ -145,8 +145,8 @@ export function groundcoverSpecimen(kind: Cover) {
       const tint = blade.clone().lerp(straw, 0.2 + random() * 0.6);
       let lastL = 0,
         lastR = 0;
-      for (let k = 0; k <= 4; k++) {
-        const v = k / 4;
+      for (let k = 0; k <= 3; k++) {
+        const v = k / 3;
         const mid = root
           .clone()
           .add(new Vector3(dx * bend * v * v, height * (v - 0.22 * v * v), dz * bend * v * v));

@@ -140,7 +140,7 @@ bundled under [CC0](https://polyhaven.com/license).
 ## Countryside landscape
 
 The ground and trees derive from IGN LiDAR HD ground and surface elevations,
-retrieved on 18 November 2026. The 384 m and 1,536 m survey tiles share a centre at
+retrieved on 18 November 2026. The 384 m survey tile is centred at
 421438 E, 6875407 N in Lambert-93. Cabane quantizes the elevations and derives
 stems, canopy positions and soft ground shade. IGN BD ORTHO® informed the
 vegetation mask during asset preparation.

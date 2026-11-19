@@ -12,8 +12,9 @@ import {
   Sphere,
   Vector3,
   type BufferGeometry,
-  type MeshStandardMaterial,
+  type Material,
 } from "three";
+import type { CountryPlanet } from "./country-planet";
 import type { Plant } from "./garden-layout";
 
 type Sample = (x: number, z: number) => number;
@@ -23,7 +24,7 @@ type Cell = { start: number; count: number; bounds: Sphere; visible: number };
 /** Pack spatial neighbours contiguously. A visible cell can be copied with two typed-array writes. */
 function plantCells(
   plants: Plant[],
-  height: Sample,
+  planet: CountryPlanet,
   shelter: Sample,
   lieFlat: boolean,
   distant: boolean,
@@ -41,6 +42,10 @@ function plantCells(
   const model = new Object3D(),
     up = new Vector3(0, 1, 0),
     normal = new Vector3(),
+    cover = new Vector3(),
+    stepX = new Vector3(),
+    stepZ = new Vector3(),
+    tangent = new Vector3(),
     tint = new Color();
   const cells: Cell[] = [];
   let i = 0;
@@ -51,19 +56,14 @@ function plantCells(
     // A stable, shuffled prefix reduces fine ground cover evenly as its blades shrink on screen.
     group.sort((a, b) => ((a.tone * 31.7) % 1) - ((b.tone * 31.7) % 1));
     for (const { x, z, angle, size, width, tone } of group) {
-      model.position.set(x, height(x, z), z);
-      model.rotation.set(0, angle, 0);
+      planet.point(x, z, model.position, normal, cover);
       if (lieFlat) {
-        normal
-          .set(
-            height(x - 0.25, z) - height(x + 0.25, z),
-            0.5,
-            height(x, z - 0.25) - height(x, z + 0.25),
-          )
-          .normalize();
-        model.quaternion.setFromUnitVectors(up, normal);
-        model.rotateY(angle);
+        planet.point(x + 0.12, z, stepX, tangent, cover);
+        planet.point(x, z + 0.12, stepZ, tangent, cover);
+        normal.crossVectors(stepZ.sub(model.position), stepX.sub(model.position)).normalize();
       }
+      model.quaternion.setFromUnitVectors(up, normal);
+      model.rotateY(angle);
       model.scale.set(size * width, size, size * width * (0.92 + 0.16 * tone));
       model.updateMatrix();
       model.matrix.toArray(transforms, i * 16);
@@ -90,7 +90,7 @@ export function PlantInstances({
   name,
   geometry,
   plants,
-  height,
+  planet,
   material,
   children,
   lieFlat = false,
@@ -102,8 +102,8 @@ export function PlantInstances({
   name: string;
   geometry: BufferGeometry;
   plants: Plant[];
-  height: Sample;
-  material?: MeshStandardMaterial | undefined;
+  planet: CountryPlanet;
+  material?: Material | undefined;
   children?: ReactNode;
   lieFlat?: boolean;
   castShadow?: boolean;
@@ -114,8 +114,8 @@ export function PlantInstances({
   const mesh = useRef<InstancedMesh>(null),
     shelter = useContext(Shelter);
   const data = useMemo(
-    () => plantCells(plants, height, shelter, lieFlat, distant),
-    [plants, height, shelter, lieFlat, distant],
+    () => plantCells(plants, planet, shelter, lieFlat, distant),
+    [plants, planet, shelter, lieFlat, distant],
   );
   const scratch = useMemo(
     () => ({
@@ -124,6 +124,8 @@ export function PlantInstances({
       previous: new Matrix4(),
       frustum: new Frustum(),
       center: new Vector3(),
+      core: new Vector3(),
+      sight: new Vector3(),
       pixels: 0,
       first: true,
     }),
@@ -157,6 +159,7 @@ export function PlantInstances({
     scratch.previous.copy(scratch.clip);
     scratch.frustum.setFromProjectionMatrix(scratch.clip);
     const perspective = camera.projectionMatrix.elements[15] === 0;
+    scratch.core.set(planet.cx, -planet.centerDepth, planet.cz).applyMatrix4(scratch.view);
     let changed = false,
       total = 0;
     for (const cell of data.cells) {
@@ -170,11 +173,25 @@ export function PlantInstances({
         )
       )
         visible = 0;
-      else if (detailPixels || lod) {
+      else if (distant) {
+        // Reject a whole cell only when its sight lines pass through solid ground.
+        const eye = scratch.center.copy(center).applyMatrix4(scratch.view);
+        const sight = scratch.sight;
+        if (perspective) sight.copy(eye).normalize();
+        else sight.set(0, 0, -1);
+        const along = eye.dot(sight) - scratch.core.dot(sight);
+        const safeRadius = planet.radius * 0.87 - radius;
+        if (
+          along > radius &&
+          safeRadius > 0 &&
+          eye.sub(scratch.core).addScaledVector(sight, -along).lengthSq() < safeRadius * safeRadius
+        )
+          visible = 0;
+      } else if (detailPixels || lod) {
         const z = -scratch.center.copy(center).applyMatrix4(scratch.view).z;
         const scale = perspective ? pixels / Math.max(1, z - radius * 0.55) : pixels;
         if (lod) {
-          if (scale >= 40 !== (lod === "near")) visible = 0;
+          if (scale >= 64 !== (lod === "near")) visible = 0;
         } else if (detailPixels) {
           const fraction = Math.min(1, Math.max(0, (scale - 5) / (detailPixels - 5)));
           visible = Math.round(cell.count * fraction * fraction);

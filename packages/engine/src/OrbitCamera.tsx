@@ -137,6 +137,7 @@ export const cameraZoomForViewport = (
 };
 
 interface OrbitCameraProps {
+  landscapeRadius?: number;
   viewKey?: string;
   locked?: boolean;
   viewActions?: React.RefObject<OrbitViewActions | null>;
@@ -158,6 +159,7 @@ export function OrbitCamera(props: OrbitCameraProps) {
 
 function OrbitCameraRig({
   viewKey,
+  landscapeRadius = 0,
   locked = false,
   viewActions,
   showRoof = false,
@@ -269,8 +271,10 @@ function OrbitCameraRig({
   const minDistance = Math.hypot(
     ...defaultFraming.position.map((value, index) => value - defaultFraming.target[index]),
   );
-  // Keep the home legible: manual zoom-out stops just beyond its fitted overview.
-  const minZoom = defaultFraming.minZoom;
+  // Zoom may reveal the scenery; the house remains the pivot at every magnification.
+  const minZoom = landscapeRadius
+    ? Math.min(defaultFraming.minZoom, Math.min(width, height) / (4.6 * landscapeRadius + 12))
+    : defaultFraming.minZoom;
   // Read once per home/floor mount. Metadata updates never reset a user view.
   const [framing] = useState<SavedOrbitView & { restored?: boolean }>(() => {
     const fallback: SavedOrbitView = {
@@ -281,6 +285,12 @@ function OrbitCameraRig({
     if (!saved) return fallback;
     const adapted = fitSavedOrbitView(saved, width, height);
     if (adapted.zoom < minZoom) return fallback;
+    // A saved underground scenery pivot cannot frame the house after switching back to Orbit.
+    if (
+      landscapeRadius &&
+      adapted.target[1] < defaultFraming.site.target[1] - landscapeRadius * 0.46
+    )
+      return fallback;
     // A removed/moved floor should not leave the home outside the camera.
     const span = new Vector3(...defaultFraming.position).distanceTo(
       new Vector3(...defaultFraming.target),
@@ -437,7 +447,7 @@ function OrbitCameraRig({
         position={framing.position}
         zoom={framing.zoom}
         near={0.1}
-        far={Math.max(150, minDistance * 5)}
+        far={Math.max(150, minDistance * 5, landscapeRadius * 5)}
       />
       <OrbitDoubleTapZoom controls={orbitRef} />
       <MapControls

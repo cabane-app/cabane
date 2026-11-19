@@ -41,6 +41,7 @@ import { RoomDashboardPanel } from "./HomeAssistantDashboards";
 
 import { HomeAssistantMappingScreen } from "./HomeAssistantMappingScreen";
 
+import { useCountryPlanetRadius } from "./landscapes/landscape-frame";
 import { CountryLawnContext } from "./landscapes/CountryTurf";
 import { useLandscape } from "./landscapes/landscape-preference";
 import { LandscapePicker } from "./landscapes/LandscapePicker";
@@ -166,6 +167,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
   const outsideCameraRoom =
     cameraRoom && cameraRoom.outsideFloorId !== undefined ? cameraRoom.room : undefined;
   const countryside = useLandscape(manifest.home.id) === "countryside";
+  const landscapeRadius = useCountryPlanetRadius(countryside, manifest, deviceModels);
   const orbitView = useDashboardOrbitView(manifest.home.id, floor.id);
   const equippedId = walkMode && !walkthrough ? equippedToolId : null;
   const equippedTool = props.walkTools?.find((tool) => tool.id === equippedId);
@@ -322,6 +324,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                       ) : (
                         <OrbitCamera
                           {...orbitView.cameraProps}
+                          landscapeRadius={landscapeRadius}
                           showRoof={wholeBuilding}
                           elevation={elevation}
                           buildingFloors={cameraFloors}

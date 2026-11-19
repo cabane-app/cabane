@@ -1,7 +1,6 @@
 import { withStockShadowDepth } from "../shadow-map-cache";
-import type { MeshStandardMaterial } from "three";
+import { MeshLambertMaterial, type MeshStandardMaterial, type Color } from "three";
 import { countryDepth } from "./country-survey";
-import type { Color } from "three";
 
 export type GardenLight = { breeze: { value: number }; air: { value: Color } };
 
@@ -13,7 +12,19 @@ export function plantMaterial(
   distant: boolean,
   lowCover = false,
 ) {
-  const material = source.clone();
+  // Slender blades and small horizon crowns only need diffuse light. Nearby
+  // tree canopies retain their full material and their shadows on the lawn.
+  const material =
+    lowCover || distant
+      ? new MeshLambertMaterial({
+          map: source.map,
+          color: source.color,
+          side: source.side,
+          alphaTest: source.alphaTest,
+          vertexColors: source.vertexColors,
+          alphaMap: source.alphaMap,
+        })
+      : source.clone();
   material.onBeforeCompile = (shader) => {
     shader.uniforms.gardenTime = light.breeze;
     shader.uniforms.gardenAir = light.air;
@@ -54,7 +65,7 @@ export function plantMaterial(
         "#include <opaque_fragment>",
         `
         float mist=1.-exp(-max(0.,gardenDepth-32.)*.0038);
-        outgoingLight=mix(outgoingLight,gardenAir,mist*.78);
+        if(!isOrthographic) outgoingLight=mix(outgoingLight,gardenAir,mist*.78);
         #include <opaque_fragment>
       `,
       );
@@ -62,5 +73,5 @@ export function plantMaterial(
   };
   material.customProgramCacheKey = () =>
     "garden-surface-" + foliage + "-" + distant + "-" + lowCover;
-  return withStockShadowDepth(material);
+  return material instanceof MeshLambertMaterial ? material : withStockShadowDepth(material);
 }

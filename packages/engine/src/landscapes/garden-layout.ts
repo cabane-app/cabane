@@ -1,4 +1,6 @@
 import type { FieldPlot } from "./country-survey";
+import { Vector3 } from "three";
+import type { CountryPlanet } from "./country-planet";
 import stems from "./assets/hedgerow-stems.json";
 
 export function gardenRandom(seed: number) {
@@ -16,7 +18,7 @@ export interface Plant {
 const tau = Math.PI * 2;
 
 /** Short, irregular drifts separated by open grass. All coordinates are local to the survey. */
-export function gardenLayout(plot: FieldPlot) {
+export function gardenLayout(plot: FieldPlot, planet: CountryPlanet) {
   const lot = plot.plantingLot;
   const garden = {
     trees: [] as Plant[],
@@ -41,6 +43,7 @@ export function gardenLayout(plot: FieldPlot) {
     const x = sx * plot.surveyScale,
       z = sz * plot.surveyScale;
     const size = Math.min(17, treeHeight * plot.surveyScale * 0.79);
+    if (Math.hypot(x - cx, z - cz) > planet.distanceAt(1.18)) continue;
     if (size < 3 || clear(x, z) < Math.max(2.1, size * 0.33)) continue;
     if (native.some((p) => Math.hypot(p.x - x, p.z - z) < (p.size + size) * 0.24)) continue;
     native.push({
@@ -147,6 +150,16 @@ export function gardenLayout(plot: FieldPlot) {
       }
     }
   }
+  // On the smallest parcels the far end of a grove can already be down on the coast.
+  const treeLimit = planet.distanceAt(1.46);
+  const surface = new Vector3(),
+    up = new Vector3(),
+    biome = new Vector3();
+  garden.trees = garden.trees.filter(({ x, z }) => {
+    if (Math.hypot(x - cx, z - cz) > treeLimit) return false;
+    planet.point(x, z, surface, up, biome);
+    return biome.x < 0.4 || biome.y > 0.035;
+  });
   // Layer fern colonies beneath crowns, where shade, litter and longer grass coincide.
   const understory = gardenRandom(6259);
   for (const tree of garden.trees) {
@@ -235,6 +248,55 @@ export function gardenLayout(plot: FieldPlot) {
       else if (i === 6) garden.stones.push({ ...p, size: p.size * 0.31 });
       else garden.litter.push(p);
     }
+  }
+  // Equal-area sites keep the far hemisphere sparse, with smaller trees on exposed ridges.
+  const farRandom = gardenRandom(47113);
+  // Short stands extend some groves down a slope. Keep the gaps between stands
+  // open, and stop at the same shoreline and rock outcrops the ground material uses.
+  for (let i = 0; i < 22; i++) {
+    const phi = ((i + farRandom() * 0.72) * tau) / 22,
+      d = planet.distanceAt(0.55 + farRandom() * 0.49);
+    const x0 = cx + d * Math.cos(phi),
+      z0 = cz + d * Math.sin(phi);
+    const count = 3 + Math.floor(farRandom() * 5);
+    for (let j = 0; j < count; j++) {
+      const x = x0 + (farRandom() - 0.5) * 13,
+        z = z0 + (farRandom() - 0.5) * 11;
+      if (clear(x, z) < 13 || garden.distant.some((p) => Math.hypot(p.x - x, p.z - z) < 3.4))
+        continue;
+      planet.point(x, z, surface, up, biome);
+      if (biome.y < 0.06 || biome.z > 0.65) continue;
+      garden.distant.push({
+        x,
+        z,
+        size: 3.6 + farRandom() * 3.8,
+        width: 0.82 + farRandom() * 0.47,
+        angle: farRandom() * tau,
+        tone: farRandom(),
+      });
+    }
+  }
+  const sites = 620;
+  for (let i = 0; i < sites; i++) {
+    const theta = Math.acos(1 - (2 * (i + 0.5)) / sites);
+    if (theta < 0.65) continue;
+    const phi = i * 2.39996323 + (farRandom() - 0.5) * 0.11;
+    const d = planet.distanceAt(theta);
+    const x = cx + d * Math.cos(phi),
+      z = cz + d * Math.sin(phi);
+    planet.point(x, z, surface, up, biome);
+    if (biome.y < 0.035 || biome.z > 0.67 || clear(x, z) < 8) continue;
+    const size =
+      (theta < 1.12 ? 4.1 + farRandom() * 3.8 : 2.4 + farRandom() * 3.4) *
+      Math.min(1, planet.radius / 42);
+    garden.distant.push({
+      x,
+      z,
+      size,
+      width: 0.84 + farRandom() * 0.38,
+      angle: farRandom() * tau,
+      tone: farRandom(),
+    });
   }
   return garden;
 }

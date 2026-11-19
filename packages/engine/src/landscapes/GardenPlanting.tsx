@@ -7,7 +7,6 @@ import {
   MeshStandardMaterial,
   NoColorSpace,
   type BufferGeometry,
-  type PlaneGeometry,
   type Mesh,
 } from "three";
 import { PlantInstances, Shelter } from "./PlantInstances";
@@ -15,14 +14,13 @@ import { fallenBough, fallenBoughMaterial } from "./fallen-bough";
 import { scan } from "../scanned-finishes";
 import type { gardenLayout } from "./garden-layout";
 import { fieldstone, groundcoverSpecimen } from "./garden-groundcover";
-import { meshHeightAt } from "./country-survey";
+import type { CountryPlanet } from "./country-planet";
 import { plantMaterial, type GardenLight } from "./plant-material";
 import gardenKitUrl from "./assets/garden-trees.glb?url";
-import stoneUrl from "./assets/mossy-stone.webp?url";
+import { countrysideStoneScan } from "./CountryTurf";
 import stoneNormalUrl from "./assets/mossy-stone-normal.webp?url";
 
-const stoneColor = scan(stoneUrl),
-  stoneNormal = scan(stoneNormalUrl, 1, NoColorSpace);
+const stoneNormal = scan(stoneNormalUrl, 1, NoColorSpace);
 const none = () => null;
 type Height = (x: number, z: number) => number;
 
@@ -38,7 +36,11 @@ const treeKinds = [
   "distantAsh",
 ] as const;
 function FieldstoneMaterial() {
-  const color = useSyncExternalStore(stoneColor.subscribe, stoneColor.snapshot, none);
+  const color = useSyncExternalStore(
+    countrysideStoneScan.subscribe,
+    countrysideStoneScan.snapshot,
+    none,
+  );
   const relief = useSyncExternalStore(stoneNormal.subscribe, stoneNormal.snapshot, none);
   return (
     <meshStandardMaterial
@@ -54,27 +56,16 @@ function FieldstoneMaterial() {
 export function GardenPlanting({
   layout,
   shelterAt,
-  near,
-  far,
+  planet,
   daylight,
   wind,
 }: {
   layout: Layout;
   shelterAt: Height;
-  near: PlaneGeometry;
-  far: PlaneGeometry;
+  planet: CountryPlanet;
   daylight: number;
   wind: boolean;
 }) {
-  const height = useMemo(
-    () => (x: number, z: number) =>
-      meshHeightAt(
-        Math.max(Math.abs(x), Math.abs(z)) <= near.parameters.width / 2 ? near : far,
-        x,
-        z,
-      ),
-    [near, far],
-  );
   const light = useMemo<GardenLight>(
     () => ({ breeze: { value: 0 }, air: { value: new Color() } }),
     [],
@@ -113,7 +104,7 @@ export function GardenPlanting({
     <Shelter.Provider value={shelterAt}>
       <group name="garden-planting">
         <Suspense fallback={null}>
-          <WoodyPlanting layout={layout} height={height} light={light} />
+          <WoodyPlanting layout={layout} planet={planet} light={light} />
         </Suspense>
         {(["ferns", "rosettes", "sedges", "grasses", "stones", "litter"] as const).map((k) => (
           <PlantInstances
@@ -121,10 +112,10 @@ export function GardenPlanting({
             name={"garden-" + k}
             geometry={shapes[k]}
             plants={layout[k]}
-            height={height}
+            planet={planet}
             material={k === "stones" || k === "litter" ? undefined : coverMaterial}
             detailPixels={
-              k === "grasses" ? 65 : k === "litter" ? 85 : k === "stones" ? undefined : 42
+              k === "grasses" ? 85 : k === "litter" ? 85 : k === "stones" ? undefined : 54
             }
             lieFlat={k === "litter" || k === "stones"}
             castShadow={k === "stones"}
@@ -143,11 +134,11 @@ export function GardenPlanting({
 
 function WoodyPlanting({
   layout,
-  height,
+  planet,
   light,
 }: {
   layout: Layout;
-  height: Height;
+  planet: CountryPlanet;
   light: GardenLight;
 }) {
   const { nodes } = useGLTF(gardenKitUrl, false, false);
@@ -206,7 +197,7 @@ function WoodyPlanting({
       <PlantInstances
         name="garden-deadwood"
         plants={layout.boughs}
-        height={height}
+        planet={planet}
         geometry={log.geometry}
         material={log.material}
         lieFlat
@@ -218,7 +209,7 @@ function WoodyPlanting({
             name={"garden-" + kind + "-" + (part === "bark" ? "wood" : part) + (i ? "-mid" : "")}
             geometry={shape}
             plants={kinds[kind]}
-            height={height}
+            planet={planet}
             material={material}
             distant={distant}
             castShadow={!distant}

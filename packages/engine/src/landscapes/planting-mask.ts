@@ -3,14 +3,18 @@ import type { FieldPlot } from "./country-survey";
 import type { gardenLayout } from "./garden-layout";
 
 /** The soil, leaf litter and shorter grasses follow the same planting pockets. */
-export function plantingMask(plot: FieldPlot, layout: ReturnType<typeof gardenLayout>) {
+export function plantingMask(
+  plot: FieldPlot,
+  layout: ReturnType<typeof gardenLayout>,
+  radius: number,
+) {
   const lot = plot.plantingLot,
-    width = lot.width + 52,
-    depth = lot.depth + 52;
+    width = Math.max(lot.width + 52, 2.1 * radius),
+    depth = Math.max(lot.depth + 52, 2.1 * radius);
   const left = lot.centerX - width / 2,
     top = lot.centerZ - depth / 2;
-  const w = Math.max(32, Math.min(384, Math.ceil(width * 3))),
-    h = Math.max(32, Math.min(384, Math.ceil(depth * 3)));
+  const w = Math.max(32, Math.min(704, Math.ceil(width * 3))),
+    h = Math.max(32, Math.min(704, Math.ceil(depth * 3)));
   const pixels = new Uint8Array(w * h * 4);
   function footprint(
     x: number,
@@ -33,10 +37,11 @@ export function plantingMask(plot: FieldPlot, layout: ReturnType<typeof gardenLa
     }
   }
   for (const d of layout.drifts) footprint(d.x, d.z, d.rx * 1.12, d.rz * 1.12, 0, 0.72);
-  for (const tree of layout.trees) {
+  const trees = [...layout.trees, ...layout.distant];
+  for (const tree of trees) {
     footprint(tree.x, tree.z, tree.size * 0.65, tree.size * 0.55, 2, 0.89);
   }
-  for (const p of [...layout.trees, ...layout.shrubs, ...layout.stones]) {
+  for (const p of [...trees, ...layout.shrubs, ...layout.stones]) {
     footprint(p.x, p.z, 0.22 + p.size * 0.41, 0.24 + p.size * 0.38, 1, 0.81);
     footprint(p.x, p.z, 0.5 + p.size * 0.29, 0.42 + p.size * 0.3, 0, 0.85);
   }

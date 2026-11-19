@@ -2,18 +2,16 @@ import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { ClampToEdgeWrapping, NoColorSpace, type Texture } from "three";
 import { scan } from "../scanned-finishes";
 import heightsUrl from "./assets/pasture-heights.png?url";
-import hillsUrl from "./assets/valley-heights.png?url";
 import { GardenPlanting } from "./GardenPlanting";
 import { gardenLayout } from "./garden-layout";
 import { plantingMask } from "./planting-mask";
 import { CountryTurf } from "./CountryTurf";
-import { surveyGeometry, type FieldPlot } from "./country-survey";
+import { surveyGrade, type FieldPlot } from "./country-survey";
+import { countryPlanet, planetGeometry } from "./country-planet";
 
-const clamp = (texture: Texture) => {
+const heights = scan(heightsUrl, 1, NoColorSpace, (texture: Texture) => {
   texture.wrapS = texture.wrapT = ClampToEdgeWrapping;
-};
-const heights = [scan(heightsUrl, 1, NoColorSpace, clamp), scan(hillsUrl, 1, NoColorSpace, clamp)];
-const localHeights = heights[0];
+});
 const none = () => null;
 
 export function CountryGround({
@@ -25,55 +23,40 @@ export function CountryGround({
   daylight: number;
   wind: boolean;
 }) {
-  const layout = useMemo(() => gardenLayout(plot), [plot]);
-  const cover = useMemo(() => plantingMask(plot, layout), [plot, layout]);
-  useEffect(() => () => cover.texture.dispose(), [cover]);
-  const nearRaster = useSyncExternalStore(localHeights.subscribe, localHeights.snapshot, none);
-  const farRaster = useSyncExternalStore(heights[1].subscribe, heights[1].snapshot, none);
-  const near = useMemo(
-    () => (nearRaster ? surveyGeometry(plot, nearRaster, false) : null),
-    [plot, nearRaster],
+  const raster = useSyncExternalStore(heights.subscribe, heights.snapshot, none);
+  const planet = useMemo(
+    () => raster && countryPlanet(plot, surveyGrade(plot, raster)),
+    [plot, raster],
   );
-  const far = useMemo(
-    () => (farRaster ? surveyGeometry(plot, farRaster, true) : null),
-    [plot, farRaster],
+  const geometry = useMemo(
+    () => planet && planetGeometry(planet, plot.surveyScale),
+    [planet, plot.surveyScale],
   );
-  useEffect(() => () => near?.dispose(), [near]);
-  useEffect(() => () => far?.dispose(), [far]);
-  return (
+  const layout = useMemo(() => planet && gardenLayout(plot, planet), [plot, planet]);
+  const cover = useMemo(
+    () => layout && planet && plantingMask(plot, layout, planet.radius),
+    [plot, layout, planet],
+  );
+  useEffect(() => () => geometry?.dispose(), [geometry]);
+  useEffect(() => () => cover?.texture.dispose(), [cover]);
+  return planet && geometry && layout && cover ? (
     <>
-      {near && (
-        <mesh
-          name="country-ground"
-          geometry={near}
-          receiveShadow
-          frustumCulled={false}
-          raycast={() => {}}
-        >
-          <CountryTurf
-            color={plot.groundColor}
-            plot={plot}
-            shade={nearRaster}
-            cover={cover}
-            daylight={daylight}
-          />
-        </mesh>
-      )}
-      {far && (
-        <mesh name="country-valley" geometry={far} frustumCulled={false} raycast={() => {}}>
-          <CountryTurf color={plot.groundColor} plot={plot} distant daylight={daylight} />
-        </mesh>
-      )}
-      {near && far && (
-        <GardenPlanting
-          layout={layout}
-          shelterAt={cover.shelterAt}
-          near={near}
-          far={far}
-          wind={wind}
+      <mesh name="country-ground" geometry={geometry} receiveShadow raycast={() => {}}>
+        <CountryTurf
+          color={plot.groundColor}
+          plot={plot}
+          shade={raster}
+          cover={cover}
           daylight={daylight}
         />
-      )}
+      </mesh>
+      <GardenPlanting
+        layout={layout}
+        shelterAt={cover.shelterAt}
+        planet={planet}
+        wind={wind}
+        daylight={daylight}
+      />
     </>
-  );
+  ) : null;
 }
