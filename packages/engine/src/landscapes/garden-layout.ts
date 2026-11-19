@@ -211,5 +211,30 @@ export function gardenLayout(plot: FieldPlot) {
       });
     }
   }
+  // Fallen wood traps litter. Ferns lean over it from the sides, with a few stones at its foot.
+  const deadwoodRandom = gardenRandom(51931);
+  for (const log of garden.boughs) {
+    const dx = Math.cos(log.angle),
+      dz = -Math.sin(log.angle);
+    for (let i = 0; i < 9; i++) {
+      const along = (deadwoodRandom() - 0.5) * 1.9 * log.size;
+      const across = (0.14 + deadwoodRandom() * 0.36) * log.size * (i % 2 === 0 ? -1 : 1);
+      const x = log.x + along * dx - across * dz,
+        z = log.z + along * dz + across * dx;
+      if (clear(x, z) < 0.4) continue;
+      const p = {
+        x,
+        z,
+        size: 0.62 + deadwoodRandom() * 0.56,
+        width: 0.91 + deadwoodRandom() * 0.42,
+        angle: deadwoodRandom() * tau,
+        tone: deadwoodRandom(),
+      };
+      if (i < 3) garden.ferns.push(p);
+      else if (i < 6) garden.sedges.push(p);
+      else if (i === 6) garden.stones.push({ ...p, size: p.size * 0.31 });
+      else garden.litter.push(p);
+    }
+  }
   return garden;
 }

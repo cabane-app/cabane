@@ -1,23 +1,14 @@
 import { withStockShadowDepth } from "../shadow-map-cache";
-import {
-  BufferGeometry,
-  Color,
-  Float32BufferAttribute,
-  Vector3,
-  type MeshStandardMaterial,
-} from "three";
+import { BufferGeometry, Float32BufferAttribute, Vector3, type MeshStandardMaterial } from "three";
 
 // Tapered, crooked deadwood with a partly sunken flank and moss along the upward face.
 export function fallenBough() {
   const positions: number[] = [],
     normals: number[] = [],
     uvs: number[] = [],
-    colors: number[] = [],
     surface: number[] = [],
     indices: number[] = [];
-  const moss = new Color("#859459"),
-    bark = new Color("#b8b1a1"),
-    up = new Vector3(0, 1, 0);
+  const up = new Vector3(0, 1, 0);
   const sweep = (points: number[][]) => {
     const sides = 10,
       start = positions.length / 3;
@@ -46,11 +37,6 @@ export function fallenBough() {
         surface.push(n.y, 0, 0);
         normals.push(n.x, n.y, n.z);
         uvs.push(j / sides, length * 1.8);
-        const c = bark
-          .clone()
-          .lerp(moss, Math.max(0, n.y) * (0.62 + 0.24 * Math.sin(i + a)))
-          .multiplyScalar(0.76 + 0.2 * n.y);
-        colors.push(c.r, c.g, c.b);
         if (i && j) {
           const d = start + i * (sides + 1) + j,
             c = d - 1,
@@ -72,14 +58,12 @@ export function fallenBough() {
         positions.push(positions[src], positions[src + 1], positions[src + 2]);
         normals.push(n.x, n.y, n.z);
         uvs.push(0.5 + 0.47 * Math.cos(angle), 0.5 + 0.47 * Math.sin(angle));
-        colors.push(1, 1, 1);
         surface.push(-2, Math.cos(angle), Math.sin(angle));
       }
       const center = positions.length / 3;
       positions.push(p.x - n.x * 0.013, p.y - n.y * 0.013, p.z - n.z * 0.013);
       normals.push(n.x, n.y, n.z);
       uvs.push(0.5, 0.5);
-      colors.push(1, 1, 1);
       surface.push(-2, 0, 0);
       for (let j = 0; j < sides; j++) {
         if (end) indices.push(center, cap + ((j + 1) % sides), cap + j);
@@ -101,19 +85,24 @@ export function fallenBough() {
     [0.39, 0.24, 0.39, 0.036],
     [0.5, 0.28, 0.47, 0.016],
   ]);
+  sweep([
+    [-0.42, 0.15, -0.015, 0.056],
+    [-0.46, 0.26, -0.11, 0.045],
+    [-0.53, 0.34, -0.15, 0.028],
+  ]);
   const geometry = new BufferGeometry();
   geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
   geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
-  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
   geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
   geometry.setAttribute("woodSurface", new Float32BufferAttribute(surface, 3));
   geometry.setIndex(indices);
+  geometry.translate(0, -0.04, 0);
   return geometry;
 }
 
 export function fallenBoughMaterial(source: MeshStandardMaterial) {
   const material = source.clone();
-  material.vertexColors = true;
+  material.vertexColors = false;
   material.onBeforeCompile = (shader) => {
     shader.vertexShader =
       "attribute vec3 woodSurface; varying vec3 vWoodSurface;\n" +
@@ -137,7 +126,7 @@ export function fallenBoughMaterial(source: MeshStandardMaterial) {
           diffuseColor.rgb=mix(vec3(.12,.073,.036),vec3(.29,.21,.119),rings*.37+fibres*.53)*(.73+.27*crack);
         } else {
           float mossCover=smoothstep(.2,.69,vWoodSurface.x*.70+fibres*.83+.14*sin(vMapUv.y*6.));
-          vec3 moss=mix(vec3(.032,.051,.017),vec3(.12,.15,.053),clamp(fibres*3.1,0.,1.));
+          vec3 moss=mix(vec3(.045,.072,.023),vec3(.18,.23,.068),clamp(fibres*3.1,0.,1.));
           diffuseColor.rgb=mix(diffuseColor.rgb,moss,mossCover*.83);
         }
       #endif
