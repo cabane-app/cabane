@@ -29,6 +29,7 @@ export function FurnishingProperties({
   onLightStateChange,
   onEntitySlotsChange,
   connections,
+  onHideWithRoofChange,
   onVariantChange,
   onColorChange,
   onClose,
@@ -55,6 +56,8 @@ export function FurnishingProperties({
   onColorChange?:
     | ((id: string, color: string | null, definition: SceneModelEditorDescriptor) => void)
     | undefined;
+  onHideWithRoofChange?:
+    ((id: string, hide: boolean, definition: SceneModelEditorDescriptor) => void) | undefined;
   onVariantChange?:
     ((id: string, variant: string, definition: SceneModelEditorDescriptor) => void) | undefined;
   onEntitySlotsChange?: ((id: string, slots: readonly EntityBindingSlotSpec[]) => void) | undefined;
@@ -94,7 +97,8 @@ export function FurnishingProperties({
           />
         </fieldset>
       )}
-      {((!!definition.defaultColor && !!onColorChange) ||
+      {(!!onHideWithRoofChange ||
+        (!!definition.defaultColor && !!onColorChange) ||
         (selected.kind === "device" &&
           !onEditLighting &&
           !!onLightStateChange &&
@@ -104,6 +108,18 @@ export function FurnishingProperties({
           ))) && (
         <fieldset>
           <legend>Appearance</legend>
+          {onHideWithRoofChange && (
+            <label>
+              <span>Hide with roof</span>
+              <input
+                type="checkbox"
+                checked={selected.hideWithRoof ?? false}
+                onChange={(event) =>
+                  onHideWithRoofChange(selected.id, event.currentTarget.checked, definition)
+                }
+              />
+            </label>
+          )}
           {definition.defaultColor && onColorChange && (
             <>
               <label>

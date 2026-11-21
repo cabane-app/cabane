@@ -34,6 +34,8 @@ export interface FurnishingInspectorProps {
     color: string | null,
     definition: SceneModelEditorDescriptor,
   ) => void;
+  onHideWithRoofChange?:
+    ((id: string, hide: boolean, definition: SceneModelEditorDescriptor) => void) | undefined;
   onVariantChange?: (id: string, variant: string, definition: SceneModelEditorDescriptor) => void;
   onEntitySlotsChange?: ((id: string, slots: readonly EntityBindingSlotSpec[]) => void) | undefined;
   onLightStateChange?: (
@@ -57,6 +59,7 @@ export function FurnishingInspector({
   onLightStateChange,
   onEntitySlotsChange,
   connections,
+  onHideWithRoofChange,
   onVariantChange,
   onColorChange,
   onClose,
@@ -88,6 +91,7 @@ export function FurnishingInspector({
       onLightStateChange={onLightStateChange}
       onEntitySlotsChange={onEntitySlotsChange}
       connections={connections}
+      onHideWithRoofChange={onHideWithRoofChange}
       onVariantChange={onVariantChange}
       onColorChange={onColorChange}
       onPlacementChange={onPlacementChange}

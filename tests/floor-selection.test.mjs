@@ -11,6 +11,22 @@ await withModules(async (load) => {
   const { FloorNavigationProvider, useFloorNavigation, FloorPicker } = await load(
     "/packages/engine/src/building/index.ts",
   );
+  const { showItemInFloorView } = await load("/packages/engine/src/building/floor-visibility.ts");
+  test("roof visibility belongs to each placed item and preserves editor selection", () => {
+    const pieces = [{ hideWithRoof: true }, {}, { hideWithRoof: false }];
+    for (const [view, expected] of [
+      ["cutaway", [false, true, true]],
+      ["whole", [true, true, true]],
+      ["cutaway", [false, true, true]],
+      ["walk", [true, true, true]],
+    ]) {
+      assert.deepEqual(
+        pieces.map((item) => showItemInFloorView(item, view, false)),
+        expected,
+      );
+    }
+    for (const view of ["plan", "cutaway"]) assert.ok(showItemInFloorView(pieces[0], view, true));
+  });
   const floors = [
     { id: "cellar", name: "Cellar", belowGround: true },
     { id: "ground", name: "Ground" },

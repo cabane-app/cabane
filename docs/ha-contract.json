@@ -1,9 +1,9 @@
 {
-  "revision": 45,
-  "fingerprint": "8e55f3c2f99ea75a7294a534a0ebf9a40f74020de2a1bfbcdd3f275175a9b5be",
-  "summary": "Show existing Home Assistant dashboard views in room controls",
+  "revision": 46,
+  "fingerprint": "86598d9745cdf2a3c35d3c95744bb09e86fbf1c5ce8f6c20823a8c4a5496b726",
+  "summary": "Add per-item roof visibility in Arrange",
   "breakingChanges": [
-    "Private room dashboard preferences require an updated Cabane frontend and matching Home Assistant panel. Existing rooms keep Cabane controls. Update older clients before opening a workspace with these preferences; portable home files and HA dashboard configurations are unchanged."
+    "Update older clients before opening a project that uses hideWithRoof. Existing projects keep their previous visibility."
   ],
   "history": [
     {
@@ -312,6 +312,13 @@
       "summary": "Add hinged garden gates to the Door tool",
       "breakingChanges": [
         "Existing doors remain compatible. Workspaces using the new garden gate styles require an updated Cabane frontend and matching Home Assistant panel."
+      ]
+    },
+    {
+      "revision": 45,
+      "summary": "Show existing Home Assistant dashboard views in room controls",
+      "breakingChanges": [
+        "Private room dashboard preferences require an updated Cabane frontend and matching Home Assistant panel. Existing rooms keep Cabane controls. Update older clients before opening a workspace with these preferences; portable home files and HA dashboard configurations are unchanged."
       ]
     }
   ],
