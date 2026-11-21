@@ -4668,6 +4668,19 @@
                         }
                       }
                     },
+                    "hideWithRoof": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": false
+                          },
+                          {
+                            "const": true
+                          }
+                        ]
+                      }
+                    },
                     "id": {
                       "optional": false,
                       "schema": {
@@ -5145,6 +5158,19 @@
                             }
                           }
                         }
+                      }
+                    },
+                    "hideWithRoof": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": false
+                          },
+                          {
+                            "const": true
+                          }
+                        ]
                       }
                     },
                     "id": {
@@ -9717,6 +9743,19 @@
                         }
                       }
                     },
+                    "hideWithRoof": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": false
+                          },
+                          {
+                            "const": true
+                          }
+                        ]
+                      }
+                    },
                     "id": {
                       "optional": false,
                       "schema": {
@@ -10194,6 +10233,19 @@
                             }
                           }
                         }
+                      }
+                    },
+                    "hideWithRoof": {
+                      "optional": true,
+                      "schema": {
+                        "anyOf": [
+                          {
+                            "const": false
+                          },
+                          {
+                            "const": true
+                          }
+                        ]
                       }
                     },
                     "id": {

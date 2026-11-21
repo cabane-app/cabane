@@ -40,6 +40,7 @@ export const normalizeSizeForPolicy = (
 };
 
 export type SceneItemPatch = {
+  hideWithRoof?: boolean;
   placement?: ItemPlacement;
   size?: SceneItemSize;
   variant?: string;
@@ -78,6 +79,8 @@ export function editSceneItem(
     ...(patch.entitySlots ? { entitySlots: patch.entitySlots } : {}),
     ...(patch.lightState !== undefined ? { lightState: patch.lightState } : {}),
   };
+  if (patch.hideWithRoof === true) next.hideWithRoof = true;
+  if (patch.hideWithRoof === false) delete next.hideWithRoof;
   if (patch.color === null) delete next.color;
   return next;
 }
