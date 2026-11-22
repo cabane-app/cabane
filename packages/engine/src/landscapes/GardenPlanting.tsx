@@ -28,6 +28,11 @@ const none = () => null;
 type Height = (x: number, z: number) => number;
 
 type Layout = ReturnType<typeof gardenLayout>;
+// Reserve individual fir sprays for crowns large enough to resolve them.
+const firLods = [
+  { near: true, pixels: 22 },
+  { near: false, pixels: 22 },
+] as const;
 const treeKinds = [
   "spreading",
   "upright",
@@ -70,13 +75,14 @@ export function GardenPlanting({
   wind: boolean;
 }) {
   const light = useMemo<GardenLight>(
-    () => ({ breeze: { value: 0 }, air: { value: new Color() } }),
+    () => ({ breeze: { value: 0 }, air: { value: new Color() }, halfHeight: { value: 0 } }),
     [],
   );
   useLayoutEffect(() => {
     light.air.value.setRGB(0.052 + 0.418 * daylight, 0.07 + 0.52 * daylight, 0.1 + 0.58 * daylight);
   }, [light, daylight]);
-  useFrame((_, delta) => {
+  useFrame(({ gl }, delta) => {
+    light.halfHeight.value = gl.domElement.height * 0.5;
     if (wind) light.breeze.value += Math.min(0.06, delta);
   }, -0.5);
   const shapes = useMemo(
@@ -153,9 +159,9 @@ function RidgeFirs({
     map.colorSpace = SRGBColorSpace;
     const source = new MeshStandardMaterial({ map, side: DoubleSide, vertexColors: true });
     // Preserve the coverage of fine needles as they collapse into the last mip levels.
-    const materials = [0.29, 0.13].map((alphaTest) => {
+    const materials = [0.29, 0.13].map((alphaTest, i) => {
       source.alphaTest = alphaTest;
-      return plantMaterial(source, light, false, true);
+      return plantMaterial(source, light, false, true, false, firLods[i]);
     });
     source.dispose();
     return materials;
@@ -172,9 +178,7 @@ function RidgeFirs({
       planet={planet}
       distant
       castShadow={false}
-      lod={i ? "mid" : "near"}
-      // Reserve individual sprays for crowns large enough to resolve them.
-      lodPixels={22}
+      lod={firLods[i]}
     />
   ));
 }
@@ -205,17 +209,21 @@ function WoodyPlanting({
   const batches = useMemo(
     () =>
       treeKinds.flatMap((kind) =>
-        (["bark", "leaves"] as const).map((part) => {
+        (["bark", "leaves"] as const).flatMap((part) => {
           const mesh = nodes[kind + "-" + part] as Mesh<BufferGeometry, MeshStandardMaterial>;
           const distant = kind.startsWith("distant");
-          return {
-            kind,
-            part,
-            geometry: mesh.geometry,
-            mid: (nodes[kind + "-" + part + "-mid"] as Mesh | undefined)?.geometry,
-            distant,
-            material: plantMaterial(mesh.material, light, part === "leaves", distant),
-          };
+          const mid = (nodes[kind + "-" + part + "-mid"] as Mesh | undefined)?.geometry;
+          return (mid ? [mesh.geometry, mid] : [mesh.geometry]).map((geometry, i) => {
+            const lod = mid ? { near: i === 0, pixels: 64 } : undefined;
+            return {
+              kind,
+              part,
+              geometry,
+              lod,
+              distant,
+              material: plantMaterial(mesh.material, light, part === "leaves", distant, false, lod),
+            };
+          });
         }),
       ),
     [nodes, light],
@@ -249,21 +257,27 @@ function WoodyPlanting({
         material={log.material}
         lieFlat
       />
-      {batches.flatMap(({ kind, part, geometry, mid, material, distant }) =>
-        (mid ? [geometry, mid] : [geometry]).map((shape, i) => (
+      {batches.map(({ kind, part, geometry, lod, material, distant }) => {
+        const name =
+          "garden-" +
+          kind +
+          "-" +
+          (part === "bark" ? "wood" : part) +
+          (lod && !lod.near ? "-mid" : "");
+        return (
           <PlantInstances
-            key={kind + part + i}
-            name={"garden-" + kind + "-" + (part === "bark" ? "wood" : part) + (i ? "-mid" : "")}
-            geometry={shape}
+            key={name}
+            name={name}
+            geometry={geometry}
             plants={kinds[kind]}
             planet={planet}
             material={material}
             distant={distant}
-            castShadow={!distant}
-            lod={mid ? (i ? "mid" : "near") : undefined}
+            castShadow={!distant && !lod?.near}
+            lod={lod}
           />
-        )),
-      )}
+        );
+      })}
     </>
   );
 }

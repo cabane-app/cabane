@@ -14,13 +14,14 @@ import {
   type BufferGeometry,
   type Material,
 } from "three";
+import { plantLodHigh, plantLodLow, type PlantLod } from "./plant-material";
 import type { CountryPlanet } from "./country-planet";
 import type { Plant } from "./garden-layout";
 
 type Sample = (x: number, z: number) => number;
 export const Shelter = createContext<Sample>(() => 0);
 
-type Cell = { start: number; count: number; bounds: Sphere; visible: number };
+type Cell = { start: number; count: number; bounds: Sphere; visible: number; growth: number };
 /** Pack spatial neighbours contiguously. A visible cell can be copied with two typed-array writes. */
 function plantCells(
   plants: Plant[],
@@ -81,7 +82,7 @@ function plantCells(
     }
     const bounds = box.getBoundingSphere(new Sphere());
     bounds.radius += padding;
-    cells.push({ start, count: i - start, bounds, visible: -1 });
+    cells.push({ start, count: i - start, bounds, visible: -1, growth: 0 });
   }
   return { cells, transforms, colors };
 }
@@ -98,7 +99,6 @@ export function PlantInstances({
   distant = false,
   detailPixels,
   lod,
-  lodPixels = 64,
 }: {
   name: string;
   geometry: BufferGeometry;
@@ -110,8 +110,7 @@ export function PlantInstances({
   castShadow?: boolean;
   distant?: boolean;
   detailPixels?: number | undefined;
-  lodPixels?: number | undefined;
-  lod?: "near" | "mid" | undefined;
+  lod?: PlantLod | undefined;
 }) {
   const mesh = useRef<InstancedMesh>(null),
     shelter = useContext(Shelter);
@@ -126,6 +125,7 @@ export function PlantInstances({
       previous: new Matrix4(),
       frustum: new Frustum(),
       center: new Vector3(),
+      cameraPosition: new Vector3(),
       core: new Vector3(),
       sight: new Vector3(),
       pixels: 0,
@@ -161,6 +161,7 @@ export function PlantInstances({
     scratch.previous.copy(scratch.clip);
     scratch.frustum.setFromProjectionMatrix(scratch.clip);
     const perspective = camera.projectionMatrix.elements[15] === 0;
+    scratch.cameraPosition.setFromMatrixPosition(camera.matrixWorld);
     scratch.core.set(planet.cx, -planet.centerDepth, planet.cz).applyMatrix4(scratch.view);
     let changed = false,
       total = 0;
@@ -168,7 +169,8 @@ export function PlantInstances({
       const { center, radius } = cell.bounds;
       // Allow off-screen crowns to cast into the view. The distant hills compress depth in their shader.
       const pad = castShadow ? radius + 5 : radius;
-      let visible = cell.count;
+      let visible = cell.count,
+        growth = 0;
       if (
         scratch.frustum.planes.some(
           (p, i) => (i !== 4 || !distant) && p.distanceToPoint(center) < -pad,
@@ -191,16 +193,30 @@ export function PlantInstances({
           visible = 0;
       }
       if (visible && (detailPixels || lod)) {
-        const z = -scratch.center.copy(center).applyMatrix4(scratch.view).z;
-        const scale = perspective ? pixels / Math.max(1, z - radius * 0.55) : pixels;
+        // A turn in place cannot change a plant's detail. For trees, conservatively
+        // submit both representations wherever the per-tree transition can intersect this cell.
+        const distance = perspective
+          ? scratch.center
+              .copy(center)
+              .applyMatrix4(batch.matrixWorld)
+              .distanceTo(scratch.cameraPosition)
+          : 0;
         if (lod) {
-          if (scale >= lodPixels !== (lod === "near")) visible = 0;
+          const largest = perspective ? pixels / Math.max(1, distance - radius) : pixels;
+          const smallest = perspective ? pixels / Math.max(1, distance + radius) : pixels;
+          if (lod.near && largest <= lod.pixels * plantLodLow) visible = 0;
+          // The mid mesh supplies a stable shadow even where only near foliage is drawn.
+          if (!lod.near && !castShadow && smallest >= lod.pixels * plantLodHigh) visible = 0;
         } else if (detailPixels) {
+          const scale = perspective ? pixels / Math.max(1, distance - radius * 0.55) : pixels;
           const fraction = Math.min(1, Math.max(0, (scale - 5) / (detailPixels - 5)));
-          visible = Math.round(cell.count * fraction * fraction);
+          const band = Math.max(1, cell.count * 0.08);
+          growth = fraction * fraction * (cell.count - 1 + band);
+          visible = Math.min(cell.count, Math.ceil(growth));
         }
       }
-      changed ||= visible !== cell.visible;
+      changed ||= visible !== cell.visible || growth !== cell.growth;
+      cell.growth = growth;
       cell.visible = visible;
       total += visible;
     }
@@ -208,13 +224,23 @@ export function PlantInstances({
     batch.count = total;
     batch.visible = total > 0;
     let n = 0;
-    for (const { start, visible } of data.cells) {
+    for (const { start, visible, count, growth } of data.cells) {
       if (!visible) continue;
       batch.instanceMatrix.array.set(
         data.transforms.subarray(start * 16, (start + visible) * 16),
         n * 16,
       );
       batch.instanceColor.array.set(data.colors.subarray(start * 3, (start + visible) * 3), n * 3);
+      if (detailPixels) {
+        // Ease only the fringe of the stable prefix up from its own roots.
+        const band = Math.max(1, count * 0.08);
+        for (let j = Math.max(0, Math.floor(growth - band) + 1); j < visible; j++) {
+          const t = Math.min(1, (growth - j) / band);
+          const size = t * t * (3 - 2 * t);
+          const offset = (n + j) * 16;
+          for (let k = 0; k < 12; k++) batch.instanceMatrix.array[offset + k] *= size;
+        }
+      }
       n += visible;
     }
     if (total) {
