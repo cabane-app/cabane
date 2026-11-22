@@ -4,6 +4,20 @@ Read during code review, rendering or model authoring, and when designing or spl
 [architecture guide](docs/product/architecture.md) routes to authoritative product
 contracts. Check those contracts for cross-file behavior and compatibility.
 
+## Editor controls
+
+Order inspector controls by what people do most often. Keep everyday edits together
+and place occasional settings at the bottom of the panel, grouped by their effect.
+Use the same component as comparable controls in the editor. For an on/off setting,
+use `EditorSwitch` with a clickable label that describes what enabling it does.
+For example, “Hide when the roof is hidden” belongs under “Dashboard visibility”
+because the item stays visible while editing.
+
+Open the real editor with a representative selection. Check the control in the
+surrounding panel at its normal width, including its order, size and label wrapping.
+Operate it with the pointer and keyboard and verify both states. When showing the
+change for review, capture enough of the panel to show where the control sits.
+
 ## Model cohesion
 
 Give each procedural model family and model-specific part a focused module named

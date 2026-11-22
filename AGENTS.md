@@ -29,7 +29,7 @@ no rerun. Report the result, checks, and material uncertainty briefly.
 - Home generation: [generation workflow](docs/agent-home-generation.md).
 - Editor features, fixes and verification needing a test scene:
   [home-building-harness](.agents/skills/home-building-harness/SKILL.md).
-- Review or model authoring: [coding standards](CODING_STANDARDS.md).
+- Editor UI changes, review or model authoring: [coding standards](CODING_STANDARDS.md).
 - Test changes or flaky tests: [test guidelines](docs/test-guidelines.md).
 - Setup, execution permissions, CI, or release details:
   [verification and delivery](docs/product/verification-and-delivery.md).

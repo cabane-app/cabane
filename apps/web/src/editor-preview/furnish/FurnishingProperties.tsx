@@ -1,3 +1,5 @@
+import { useId } from "react";
+import { EditorSwitch } from "../../editor-chrome/EditorSwitch";
 import { ItemEntitySlots } from "./ItemEntitySlots";
 import type { ItemConnectionContext } from "./ItemEntitySlots";
 import { EditorButton } from "../../editor-chrome/EditorButton";
@@ -68,6 +70,7 @@ export function FurnishingProperties({
   onEditLighting?: (() => void) | undefined;
   onClose: () => void;
 }) {
+  const roofSwitchId = useId();
   const updatePlacement = (patch: Partial<ItemPlacement>) =>
     onPlacementChange(selected.id, { ...selected.placement, ...patch } as ItemPlacement);
   const updateSize = (axis: number, value: number) => {
@@ -97,8 +100,7 @@ export function FurnishingProperties({
           />
         </fieldset>
       )}
-      {(!!onHideWithRoofChange ||
-        (!!definition.defaultColor && !!onColorChange) ||
+      {((!!definition.defaultColor && !!onColorChange) ||
         (selected.kind === "device" &&
           !onEditLighting &&
           !!onLightStateChange &&
@@ -108,18 +110,6 @@ export function FurnishingProperties({
           ))) && (
         <fieldset>
           <legend>Appearance</legend>
-          {onHideWithRoofChange && (
-            <label>
-              <span>Hide with roof</span>
-              <input
-                type="checkbox"
-                checked={selected.hideWithRoof ?? false}
-                onChange={(event) =>
-                  onHideWithRoofChange(selected.id, event.currentTarget.checked, definition)
-                }
-              />
-            </label>
-          )}
           {definition.defaultColor && onColorChange && (
             <>
               <label>
@@ -415,6 +405,22 @@ export function FurnishingProperties({
               );
             }}
           />
+        </fieldset>
+      )}
+      {onHideWithRoofChange && (
+        <fieldset>
+          <legend>Dashboard visibility</legend>
+          <div className="inspector-switch-row">
+            <label id={`${roofSwitchId}-label`} htmlFor={roofSwitchId}>
+              Hide when the roof is hidden
+            </label>
+            <EditorSwitch
+              id={roofSwitchId}
+              labelledBy={`${roofSwitchId}-label`}
+              checked={selected.hideWithRoof ?? false}
+              onChange={(hide) => onHideWithRoofChange(selected.id, hide, definition)}
+            />
+          </div>
         </fieldset>
       )}
     </SelectionDetailsPanel>
