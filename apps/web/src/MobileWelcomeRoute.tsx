@@ -19,6 +19,36 @@ import "./mobile-welcome.css";
 
 type TourModule = typeof import("./HostedWorkspace");
 
+let preloadRecovery: Promise<unknown> | undefined;
+
+async function loadTour() {
+  const failed = new Set<string>();
+  const rememberFailure = ({ target }: Event) => {
+    if (
+      target instanceof HTMLLinkElement &&
+      (target.rel === "modulepreload" || target.rel === "stylesheet") &&
+      new URL(target.href).origin === window.location.origin
+    )
+      failed.add(target.href);
+  };
+  window.addEventListener("error", rememberFailure, true);
+  try {
+    return await import("./HostedWorkspace");
+  } catch (cause) {
+    // WebKit can reuse a failed preload across document navigations. Refresh
+    // only the failed responses, once, while the visitor still has the poster.
+    preloadRecovery = Promise.allSettled(
+      Array.from(failed, async (url) => {
+        const response = await fetch(url, { cache: "reload", signal: AbortSignal.timeout(2000) });
+        if (response.ok) await response.arrayBuffer();
+      }),
+    );
+    throw cause;
+  } finally {
+    window.removeEventListener("error", rememberFailure, true);
+  }
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   try {
@@ -43,7 +73,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   // A browser caches a rejected module import for the lifetime of the document.
-  const reload = (await request.formData()).get("reload") === "1";
+  const recoveryDestination = (await request.formData()).get("recover");
+  if (recoveryDestination) {
+    await preloadRecovery;
+    if (request.signal.aborted) return null;
+    if (recoveryDestination === "/build" || recoveryDestination === "/welcome")
+      return redirectDocument(recoveryDestination);
+  }
   try {
     const { initializeWorkspaces } = await import("./workspaces/initialize-workspaces");
     if (request.signal.aborted) return null;
@@ -54,9 +90,9 @@ export async function action({ request }: ActionFunctionArgs) {
     } catch {
       // A failed preference write must still allow opening the demo.
     }
-    return reload ? redirectDocument("/demo") : redirect("/demo");
+    return recoveryDestination ? redirectDocument("/demo") : redirect("/demo");
   } catch (cause) {
-    if (reload) return redirectDocument("/demo");
+    if (recoveryDestination) return redirectDocument("/demo");
     return cause instanceof Error ? cause.message : "Could not open the demo. Please try again.";
   }
 }
@@ -70,7 +106,7 @@ export function Component() {
   const startTour = async () => {
     setTour("loading");
     try {
-      const workspace = await import("./HostedWorkspace");
+      const workspace = await loadTour();
       // Navigation can supersede the request while the tour is downloading.
       startTransition(() => setTour((current) => (current === "loading" ? workspace : current)));
     } catch {
@@ -78,17 +114,14 @@ export function Component() {
     }
   };
 
-  const explore = () => {
-    setTour("idle");
-    void submit({ reload: tour === "failed" ? "1" : "0" }, { method: "post", action: "/welcome" });
-  };
-  const build = () => {
-    if (tour === "failed") {
-      window.location.assign("/build");
-      return;
+  const open = (destination: "/build" | "/demo" | "/welcome") => {
+    if (tour === "failed")
+      void submit({ recover: destination }, { method: "post", action: "/welcome" });
+    else {
+      setTour("idle");
+      if (destination === "/demo") void submit({}, { method: "post", action: "/welcome" });
+      else void navigate(destination);
     }
-    setTour("idle");
-    void navigate("/build");
   };
   const LiveTour = typeof tour === "object" ? tour.Component : null;
   const loadingTour = tour === "loading" || Boolean(LiveTour);
@@ -105,7 +138,7 @@ export function Component() {
         <button
           type="button"
           className="mobile-welcome__tour"
-          onClick={() => (tour === "failed" ? window.location.reload() : void startTour())}
+          onClick={() => (tour === "failed" ? open("/welcome") : void startTour())}
           disabled={loadingTour}
         >
           {loadingTour ? "Loading 3D tour…" : tour === "failed" ? "Reload page" : "Start 3D tour"}
@@ -117,13 +150,16 @@ export function Component() {
         error={
           error ?? (tour === "failed" ? "The 3D tour couldn’t load. Reload to try again." : null)
         }
-        onExplore={explore}
-        onBuild={build}
-        onDismiss={explore}
+        onExplore={() => open("/demo")}
+        onBuild={() => open("/build")}
+        onDismiss={() => open("/demo")}
       />
       {navigation.state !== "idle" && (
         <div className="mobile-welcome__status" role="status">
-          {navigation.location.pathname === "/build" ? "Opening your home…" : "Opening the demo…"}
+          {navigation.location.pathname === "/build" ||
+          navigation.formData?.get("recover") === "/build"
+            ? "Opening your home…"
+            : "Opening the demo…"}
         </div>
       )}
     </main>
