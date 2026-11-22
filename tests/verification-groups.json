@@ -67,6 +67,7 @@
       "vacuum-flight.test.mjs",
       "wall-surface-finishes.test.mjs",
       "weather.test.mjs",
+      "mobile-welcome-browser.test.mjs",
       "workspace-startup-routing.test.mjs",
       "model-lighting.test.mjs",
       "model-lighting-surfaces.test.mjs",

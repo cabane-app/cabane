@@ -14,7 +14,7 @@ import {
 } from "./workspace-presentation";
 import { homeEntryDetails, HomeEntryScreen } from "./HomeEntryScreen";
 import { useWorkspaceOnboarding } from "./useWorkspaceOnboarding";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import {
   serializeCanonicalJson,
@@ -35,7 +35,7 @@ import { readEditorReturn } from "../editor-connect/connect-navigation";
 import { agentPilotPath, workspaceHomePath, workspaceIdForPath } from "../editor-routes";
 import { ownerProjectRegistries } from "../project-runtime";
 
-export function WorkspaceApplication() {
+export function WorkspaceApplication({ welcomeFallback }: { welcomeFallback?: ReactElement } = {}) {
   const location = useLocation();
   const hostSession = useHomeAssistantHostSession();
   const navigate = useNavigate();
@@ -122,7 +122,8 @@ export function WorkspaceApplication() {
   ) : awaitingDashboard && location.pathname === "/demo" && !onboarding.loaded ? (
     <HomeEntryScreen />
   ) : null;
-  const pendingHome = pendingDashboard ?? (
+  const welcome = location.pathname === "/welcome" ? welcomeFallback : undefined;
+  const pendingHome = welcome ?? pendingDashboard ?? (
     <main className="direction-project-loading">Loading your home…</main>
   );
   if (error)
@@ -135,6 +136,7 @@ export function WorkspaceApplication() {
     );
   if (!repository || !entries)
     return (
+      welcome ??
       pendingDashboard ?? (
         <main className="direction-project-loading">Loading your workspaces…</main>
       )

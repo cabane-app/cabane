@@ -82,7 +82,8 @@ source-authored homes live in `home/`. The bundled home seeds an ordinary demo
 workspace and uses the same portable project schema as other homes.
 
 Cross-package consumers use public exports from workspace `package.json` manifests.
-The engine exposes `@cabane/engine` and `@cabane/engine/styles.css`; the catalog
+The engine exposes `@cabane/engine`, `@cabane/engine/styles.css`, and a lightweight
+`@cabane/engine/welcome` entry for the hosted introduction. The catalog
 exposes `@cabane/catalog/architecture`, `@cabane/catalog/furnishing`, and
 `@cabane/catalog/device`. The web host installs optional walk tools, keeping them
 outside the engine, catalog and home dependencies.

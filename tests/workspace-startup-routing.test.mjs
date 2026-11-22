@@ -87,6 +87,30 @@ await withModules(async (load) => {
       ids.push((await repository.createBlank(`Home ${index}`)).metadata.id);
     return { repository, ids };
   }
+  const { mobileWelcomeEligibility } = await load("/packages/engine/src/welcome.ts");
+  test("mobile welcome checks installation and demo identity without seeding or reading home documents", () =>
+    withStorageDom(async (dom) => {
+      assert.equal(await mobileWelcomeEligibility(dom.indexedDB), "fresh");
+      const { repository } = await initializeWorkspaces(dom.indexedDB, dom.window.localStorage);
+      const demo = (await repository.readOnboarding()).demoWorkspaceId;
+      await repository.createBlank("Personal");
+      assert.equal(await mobileWelcomeEligibility(dom.indexedDB), "demo");
+      await repository.delete(demo, await repository.readRaw(demo));
+      assert.equal(await mobileWelcomeEligibility(dom.indexedDB), "other");
+      assert.deepEqual(
+        (await repository.list()).map((entry) => entry.metadata.name),
+        ["Personal"],
+      );
+    }));
+  test("a deleted Build destination retains the full introduction's recovery action", () =>
+    withStorageDom(async (dom) => {
+      const { repository } = await initializeWorkspaces(dom.indexedDB, dom.window.localStorage);
+      const build = await repository.startOnboarding("build");
+      assert.equal(await mobileWelcomeEligibility(dom.indexedDB), "demo");
+      const id = build.metadata.id;
+      await repository.delete(id, await repository.readRaw(id));
+      assert.equal(await mobileWelcomeEligibility(dom.indexedDB), "other");
+    }));
   for (const count of [0, 1, 2])
     test(`standalone startup routes ${count} saved homes using the real repository`, () =>
       withStorageDom(async (dom) => {

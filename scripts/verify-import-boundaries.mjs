@@ -8,6 +8,7 @@ const documentedPackageExports = new Set([
   "@cabane/walk-laser",
   "@cabane/engine",
   "@cabane/engine/styles.css",
+  "@cabane/engine/welcome",
   "@cabane/catalog/architecture",
   "@cabane/catalog/furnishing",
   "@cabane/catalog/device",

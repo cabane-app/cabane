@@ -81,7 +81,9 @@ on its existing workspace-scoped URLs. Direct Welcome/Demo visits never recreate
 a deleted demo, and missing Build workspaces retain the usual recovery link.
 Browser Back to Welcome reopens the introduction even after it was dismissed.
 Welcome renders the demo beside the introduction on desktop and below the entry
-actions on narrow screens. Its Orbit and Walk previews have their own cameras.
+actions on narrow screens. On mobile, the hosted introduction shows a still of the
+demo until the visitor starts the live 3D tour. Explore and Build are available immediately.
+Its Orbit and Walk previews have their own cameras.
 Playback starts with a first-person loop through the furnished living area when
 a safe route is available. It then orbits the ground floor, upper floor and roof
 before returning to Walk. The preview darkens during Walk, turns on its light fixtures
