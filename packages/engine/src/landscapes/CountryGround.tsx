@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useSyncExternalStore } from "react";
-import { ClampToEdgeWrapping, NoColorSpace, type Texture } from "three";
+import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { ClampToEdgeWrapping, NoColorSpace, type Mesh, type Texture } from "three";
+import { useThree } from "@react-three/fiber";
+import { countryOrbitBounds } from "./landscape-frame";
 import { scan } from "../scanned-finishes";
 import heightsUrl from "./assets/pasture-heights.png?url";
 import { GardenPlanting } from "./GardenPlanting";
@@ -23,6 +25,8 @@ export function CountryGround({
   daylight: number;
   wind: boolean;
 }) {
+  const mesh = useRef<Mesh>(null);
+  const scene = useThree((state) => state.scene);
   const raster = useSyncExternalStore(heights.subscribe, heights.snapshot, none);
   const planet = useMemo(
     () => raster && countryPlanet(plot, surveyGrade(plot, raster)),
@@ -37,11 +41,25 @@ export function CountryGround({
     () => layout && planet && plantingMask(plot, layout, planet.radius),
     [plot, layout, planet],
   );
+  useLayoutEffect(() => {
+    if (!mesh.current || !geometry?.boundingSphere || !layout) return;
+    mesh.current.updateWorldMatrix(true, false);
+    const bounds = geometry.boundingSphere.clone();
+    // Include the crowns growing above the terrain in every direction.
+    let canopy = 0;
+    for (const trees of [layout.trees, layout.distant])
+      for (const tree of trees) canopy = Math.max(canopy, tree.size * Math.max(1, tree.width));
+    bounds.radius += canopy;
+    countryOrbitBounds.set(scene, bounds.applyMatrix4(mesh.current.matrixWorld));
+    return () => {
+      countryOrbitBounds.delete(scene);
+    };
+  }, [geometry, layout, scene]);
   useEffect(() => () => geometry?.dispose(), [geometry]);
   useEffect(() => () => cover?.texture.dispose(), [cover]);
   return planet && geometry && layout && cover ? (
     <>
-      <mesh name="country-ground" geometry={geometry} receiveShadow raycast={() => {}}>
+      <mesh ref={mesh} name="country-ground" geometry={geometry} receiveShadow raycast={() => {}}>
         <CountryTurf
           color={plot.groundColor}
           plot={plot}
