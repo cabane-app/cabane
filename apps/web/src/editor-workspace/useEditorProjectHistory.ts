@@ -11,8 +11,6 @@ import { type HomeProject } from "@cabane/engine";
 
 import { useCallback, useEffect, useRef } from "react";
 
-import { type EditorMode } from "../editor-chrome/EditorModeNav";
-
 import { useConstructEditor, useFloorZoneDrawing } from "../editor-preview/construct";
 
 import { useFurnishingEditor } from "../editor-preview/furnish";
@@ -41,7 +39,6 @@ type Options = {
   previewSceneItems: ReturnType<typeof useFurnishingEditor>["items"];
   editorProjectJson: string;
   editorProject: HomeProject;
-  mode: EditorMode;
   onRestore: () => void;
 };
 export function useEditorProjectHistory({
@@ -59,7 +56,6 @@ export function useEditorProjectHistory({
   previewSceneItems,
   editorProjectJson,
   editorProject,
-  mode,
   onRestore,
 }: Options) {
   const { snapshot, commit, undo, redo } = workspace;
@@ -224,7 +220,6 @@ export function useEditorProjectHistory({
     snapshot,
     furnishingEditorItems,
     furnishingEditorTransaction,
-    mode,
     previewSceneItems,
     activeFloorId,
   ]);

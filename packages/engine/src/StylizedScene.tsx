@@ -4,7 +4,15 @@ import { SceneEnvironment } from "./SceneEnvironment";
 import { SceneStyleContext, useSceneStyle } from "./scene-style";
 import { ImportedContourMask } from "./imported-models/contour-mask";
 import { contourFragmentShader } from "./scene-contour-shader";
-import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
   Color,
@@ -21,6 +29,7 @@ import { ShadowMapCache } from "./shadow-map-cache";
 import { SceneGeometryLod } from "./scene-batching/SceneGeometryLod";
 import { SceneToonBatcher } from "./scene-batching/SceneToonBatcher";
 import { SceneLightWallMask, SceneLightWallMaskContext } from "./scene-light-wall-mask";
+import { SceneShaderPreparation } from "./scene-shader-preparation";
 
 /** Decorative mesh shells are replaced by a single visible-depth contour pass. */
 export const SceneContourContext = createContext(false);
@@ -29,10 +38,14 @@ function SceneContourPass({
   antialias,
   active,
   onFirstFrame,
+  prepareMaterials,
+  environmentPending,
 }: {
   antialias: boolean;
   active: boolean;
   onFirstFrame?: (() => void) | null | undefined;
+  prepareMaterials: boolean;
+  environmentPending: RefObject<boolean> | undefined;
 }) {
   const presented = useRef(false);
   const style = useSceneStyle();
@@ -79,8 +92,9 @@ function SceneContourPass({
       shadows: new ShadowMapCache(),
       batches: new SceneToonBatcher(),
       lod: new SceneGeometryLod(invalidate),
+      preparation: prepareMaterials ? new SceneShaderPreparation() : null,
     };
-  }, [antialias, invalidate]);
+  }, [antialias, invalidate, prepareMaterials]);
   useEffect(
     () => () => {
       resources.target.dispose();
@@ -93,9 +107,13 @@ function SceneContourPass({
     [resources],
   );
   useEffect(() => {
-    gl.domElement.addEventListener("webglcontextrestored", resources.shadows.reset);
-    return () => gl.domElement.removeEventListener("webglcontextrestored", resources.shadows.reset);
-  }, [gl, resources]);
+    const restored = () => {
+      resources.shadows.reset();
+      if (prepareMaterials) resources.preparation = new SceneShaderPreparation();
+    };
+    gl.domElement.addEventListener("webglcontextrestored", restored);
+    return () => gl.domElement.removeEventListener("webglcontextrestored", restored);
+  }, [gl, resources, prepareMaterials]);
   useEffect(() => {
     resources.material.uniforms.inkStrength.value = detailedFinishes ? 0.35 : 0.72;
     resources.material.uniforms.simsStyle.value = style === "sims";
@@ -108,6 +126,12 @@ function SceneContourPass({
       gl.render(scene, camera);
       return;
     }
+    if (
+      prepareMaterials &&
+      !presented.current &&
+      (environmentPending?.current || !scene.getObjectByName("architecture-scene"))
+    )
+      return;
     const { target, material, quad, size } = resources;
     gl.getDrawingBufferSize(size);
     if (target.width !== size.x || target.height !== size.y) target.setSize(size.x, size.y);
@@ -120,19 +144,30 @@ function SceneContourPass({
       gl.getPixelRatio() / size.x,
       gl.getPixelRatio() / size.y,
     );
+    resources.preparation?.prepareScreen(gl, material, camera);
     const previousTarget = gl.getRenderTarget();
     const autoClear = gl.autoClear;
+    let preparing = false;
     try {
       gl.autoClear = true;
       gl.setRenderTarget(target);
       resources.shadows.render(gl, scene, camera, () =>
         resources.lod.render(scene, camera, size.y / gl.getPixelRatio(), () => {
-          const pending = resources.batches.render(gl, scene, camera, () =>
-            lightWalls.render(gl, scene, camera),
-          );
+          const pending = resources.batches.render(gl, scene, camera, () => {
+            lightWalls.prepare(scene, resources.preparation?.observe);
+            if (resources.preparation && !resources.preparation.ready(gl, scene, camera)) {
+              preparing = true;
+              return;
+            }
+            gl.render(scene, camera);
+          });
           if (pending) invalidate();
         }),
       );
+      if (preparing) {
+        invalidate();
+        return;
+      }
       material.uniforms.hasImportedModels.value = resources.importedMask.render(
         gl,
         scene,
@@ -153,16 +188,17 @@ function SceneContourPass({
     // The architecture and compositor share a Suspense boundary. An empty
     // scene or a lost context can still let WebGL render an empty quad.
     if (
-      onFirstFrame &&
+      (onFirstFrame || prepareMaterials) &&
       !presented.current &&
-      scene.getObjectByName("architecture-scene")?.getObjectByProperty("isMesh", true)
+      (prepareMaterials ||
+        scene.getObjectByName("architecture-scene")?.getObjectByProperty("isMesh", true))
     ) {
       if (gl.getContext().isContextLost()) {
         onRenderFailure?.(new Error("The WebGL context was lost."));
         return;
       }
       presented.current = true;
-      onFirstFrame();
+      onFirstFrame?.();
     }
   }, 1);
   return null;
@@ -174,6 +210,7 @@ export function StylizedScene({
   antialias = true,
   active = true,
   onFirstFrame,
+  prepareMaterials = false,
 }: {
   children: ReactNode;
   enabled?: boolean;
@@ -181,20 +218,33 @@ export function StylizedScene({
   /** Suspend postprocessing without disposing its resources or changing model outlines. */
   active?: boolean;
   onFirstFrame?: (() => void) | null | undefined;
+  /** Prepare newly mounted editor materials and textures across frames so input can continue. */
+  prepareMaterials?: boolean;
 }) {
   const style = useSceneStyle();
   const studioLighting = useGraphicsFeature("lighting");
   const lightWalls = useMemo(() => new SceneLightWallMask(), []);
+  const environmentPending = useRef(true);
   useEffect(() => () => lightWalls.dispose(), [lightWalls]);
   return (
     <SceneLightWallMaskContext.Provider value={lightWalls}>
       <SceneContourContext.Provider value={enabled}>
         <SceneStyleContext.Provider value={active ? style : "default"}>
-          {active && studioLighting && style === "default" && <SceneEnvironment />}
+          {(active || prepareMaterials) && studioLighting && style === "default" && (
+            <SceneEnvironment active={active} pending={environmentPending} />
+          )}
           {children}
         </SceneStyleContext.Provider>
         {enabled && (
-          <SceneContourPass antialias={antialias} active={active} onFirstFrame={onFirstFrame} />
+          <SceneContourPass
+            antialias={antialias}
+            active={active}
+            onFirstFrame={onFirstFrame}
+            prepareMaterials={prepareMaterials}
+            environmentPending={
+              studioLighting && style === "default" ? environmentPending : undefined
+            }
+          />
         )}
       </SceneContourContext.Provider>
     </SceneLightWallMaskContext.Provider>

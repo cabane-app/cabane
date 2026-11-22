@@ -434,6 +434,47 @@ await withModules(async (load) => {
     reopened.dispose();
   });
 
+  test("large shadowless light pools compile one loop and retain lit slots on toggles", () => {
+    const mask = new SceneLightWallMask();
+    const scene = new Scene(),
+      camera = new PerspectiveCamera();
+    const material = new MeshStandardMaterial(),
+      mesh = new Mesh(new BoxGeometry(), material);
+    const lights = Array.from({ length: 61 }, () => new PointLight(0xffffff, 0));
+    scene.add(mesh, ...lights);
+    const renderer = { info: { render: { frame: 0 } }, render() {} };
+    mask.render(renderer, scene, camera);
+    const shader = {
+      uniforms: {},
+      fragmentShader: "#include <lights_fragment_begin>",
+      numPointLights: lights.length,
+      numPointLightShadows: 0,
+      shadowMapEnabled: false,
+    };
+    const updateLights = () => {
+      renderer.info.render.frame++;
+      material.onBeforeRender(renderer, scene, camera, mesh.geometry, mesh, null);
+      return shader.uniforms.cabanePointLightLimit.value;
+    };
+    try {
+      material.onBeforeCompile(shader, renderer);
+      assert.doesNotMatch(
+        shader.fragmentShader,
+        /#pragma unroll_loop_start\s+for \( int i = 0; i < NUM_POINT_LIGHTS/,
+      );
+      assert.equal(updateLights(), 0, "an unlit pool needs no iterations");
+      lights[60].intensity = 1;
+      assert.equal(updateLights(), 61, "every light can still illuminate the model");
+      lights[60].intensity = 0;
+      lights[1].intensity = 1;
+      assert.equal(updateLights(), 2);
+    } finally {
+      mask.dispose();
+      mesh.geometry.dispose();
+      material.dispose();
+    }
+  });
+
   test("wall lighting preserves static toon buffers and the existing batching shader", () => {
     const f = fixture(),
       mask = new SceneLightWallMask();

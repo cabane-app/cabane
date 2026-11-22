@@ -270,7 +270,6 @@ export function useHomeEditorController({
     previewSceneItems,
     editorProjectJson,
     editorProject,
-    mode,
     onRestore: resetRestoredSelection,
   });
   const { executeProjectAction, repairs } = useEditorProjectActions({
