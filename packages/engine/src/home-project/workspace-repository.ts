@@ -1,3 +1,4 @@
+import { refreshDemoSeed } from "./refresh-demo-seed";
 import {
   publishModelAssetReferences,
   referencedRecordAssets,
@@ -129,7 +130,11 @@ export function createWorkspaceRepository(factory: IDBFactory, registries: Proje
         );
       });
     });
-  const initialize = (seed: HomeProject, legacyUrl: string | null = null) =>
+  const initialize = (
+    seed: HomeProject,
+    legacyUrl: string | null = null,
+    previousDemoSeeds?: Readonly<Record<string, string | null>>,
+  ) =>
     projectTransaction<void>(factory, "readwrite", stores, (tx, request, done) => {
       const state = tx.objectStore(STATE_STORE);
       request(state.get("initialized"), (initialized) => {
@@ -137,6 +142,12 @@ export function createWorkspaceRepository(factory: IDBFactory, registries: Proje
           request(state.get(WORKSPACE_ONBOARDING_KEY), (existing) => {
             if (existing === undefined)
               state.put(initialWorkspaceOnboarding(null), WORKSPACE_ONBOARDING_KEY);
+            if (
+              previousDemoSeeds &&
+              parseWorkspaceOnboarding(existing)?.demoWorkspaceId === seed.home.id
+            ) {
+              refreshDemoSeed(tx, request, seed, previousDemoSeeds, parse);
+            }
             done();
           });
           return;
@@ -150,6 +161,7 @@ export function createWorkspaceRepository(factory: IDBFactory, registries: Proje
           );
           if (!keys.length) {
             const record = createSeedProjectRecord(seed);
+            if (previousDemoSeeds) state.put(true, `demo-seed-checked:${seed.seedRevision}`);
             records.put(serializeHomeProjectRecord(record), record.homeId);
             metadata.put(
               {
