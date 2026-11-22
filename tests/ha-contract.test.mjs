@@ -138,3 +138,32 @@ test("patch releases are idempotent, reject downgrades and retain intervening up
     /stable integration version/,
   );
 });
+
+test("the weekly panel release uses shipped file hashes and keeps the current contract", () => {
+  const contract = { revision: 3, fingerprint: "current", summary: "Wall colors" };
+  const previous = { source_commit: "a".repeat(40), files: { "cabane-panel.js": "old" } };
+  const current = { source_commit: "b".repeat(40), files: { "cabane-panel.js": "new" } };
+
+  assert.equal(
+    integrationReleasePlan("0.3.5", contract, contract, {
+      previous,
+      current: { ...current, files: { ...previous.files } },
+    }),
+    null,
+  );
+  assert.equal(integrationReleasePlan("0.3.5", contract, contract), null);
+
+  const plan = integrationReleasePlan("0.3.5", contract, contract, { previous, current });
+  assert.equal(plan.tag, "v0.3.6");
+  assert.equal(plan.contractChanged, false);
+  assert.match(plan.notes, /Workspace contract revision 3 is unchanged/);
+  assert.ok(plan.notes.includes(`${previous.source_commit}...${current.source_commit}`));
+  assert.throws(
+    () =>
+      integrationReleasePlan("0.3.5", { ...contract, revision: 4 }, contract, {
+        previous,
+        current,
+      }),
+    /newer integration contract/,
+  );
+});

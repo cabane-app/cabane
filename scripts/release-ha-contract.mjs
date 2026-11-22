@@ -9,7 +9,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const integration = resolve(process.argv[2] ?? "");
 if (!process.argv[2])
   throw new Error(
-    "Usage: node scripts/release-ha-contract.mjs INTEGRATION_CHECKOUT [--push] [--skip-tests]",
+    "Usage: node scripts/release-ha-contract.mjs INTEGRATION_CHECKOUT [--weekly] [--push] [--skip-tests]",
   );
 const run = (command, args, cwd = integration) =>
   execFileSync(command, args, { cwd, stdio: "inherit" });
@@ -40,11 +40,19 @@ if (
 const manifestPath = resolve(integration, "custom_components/cabane/manifest.json");
 const manifest = json(manifestPath);
 const prior = json(resolve(integration, "custom_components/cabane/frontend/manifest.json"));
-const plan = integrationReleasePlan(manifest.version, prior.workspace_contract, release);
+const weeklyPanel = process.argv.includes("--weekly")
+  ? { previous: prior, current: artifact }
+  : undefined;
+const plan = integrationReleasePlan(
+  manifest.version,
+  prior.workspace_contract,
+  release,
+  weeklyPanel,
+);
 if (!plan) {
   if (process.env.GITHUB_OUTPUT)
     writeFileSync(process.env.GITHUB_OUTPUT, `tag=v${manifest.version}\n`, { flag: "a" });
-  console.log("The integration already contains this workspace contract.");
+  console.log("The integration already contains the requested update.");
   process.exit(0);
 }
 if (process.env.GITHUB_OUTPUT)
@@ -70,8 +78,11 @@ run("git", [
   "custom_components/cabane/manifest.json",
   `docs/releases/${plan.tag}.md`,
 ]);
-run("git", ["commit", "-m", `Release ${plan.tag} for workspace contract ${release.revision}`]);
-run("git", ["tag", "-a", plan.tag, "-m", `Cabane workspace contract ${release.revision}`]);
+const releaseSubject = plan.contractChanged
+  ? `workspace contract ${release.revision}`
+  : "app updates";
+run("git", ["commit", "-m", `Release ${plan.tag} for ${releaseSubject}`]);
+run("git", ["tag", "-a", plan.tag, "-m", `Cabane ${releaseSubject}`]);
 // A concurrent maintainer push rejects atomically. Rerun from a fresh checkout.
 run("git", ["push", "--atomic", "origin", "HEAD:main", `refs/tags/${plan.tag}`]);
 console.log(`Pushed ${plan.tag}; the integration release workflow packages and publishes it.`);

@@ -5,12 +5,14 @@ Follow [the test guidelines](../test-guidelines.md) when changing coverage or te
 The persisted contract is explicitly defined by `docs/ha-compatibility.json`,
 with release revisions in `docs/ha-contract.json`, and checked by
 `verify:ha-contract` inside `verify:fast`. Portable field/type changes require a reviewed manifest snapshot; compatibility
-changes require a revision and upgrade notes. Rendering/UI and catalog model
-additions/deletions do not trigger automatic releases. Behavioral validation and
-migration changes require an explicit semantic revision. The GitHub `Home Assistant contract release` workflow checks
-PRs and pushes, then publishes a verified matching integration patch release once
-daily at 23:00 Europe/Paris when contract changes are pending, using its scoped
-deploy key. An explicit manual dispatch on main can publish an urgent release.
+changes require a revision and upgrade notes. Behavioral validation and
+migration changes require an explicit semantic revision. The GitHub
+`Home Assistant contract release` workflow checks PRs and pushes. It publishes
+pending contract updates daily at 23:00 Europe/Paris using its scoped deploy
+key. The Sunday run also publishes any changes to the built Home Assistant
+panel, including rendering, UI and catalog changes, with the current contract
+revision. An explicit manual dispatch on main can publish an urgent contract
+update.
 See [contract releases](../ha-contract-releases.md)
 for the source coverage, Codex reminder hook, credential and retry behavior.
 

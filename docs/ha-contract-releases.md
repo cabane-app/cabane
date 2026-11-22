@@ -8,8 +8,9 @@ interfaces and rejects stale field snapshots, without hashing runtime functions,
 rendering implementations, catalog registrations or model/variant IDs.
 
 Cosmetic edits (geometry, lighting, animations and UI) and catalog additions or
-deletions do not trigger automatic HA releases. Catalog lifecycle compatibility
-will be handled separately. Unknown saved fields remain blocked.
+deletions can ship in the weekly panel refresh without a contract revision.
+Catalog lifecycle compatibility will be handled separately. Unknown saved fields
+remain blocked.
 
 For parser, migration or archive behavior changes that alter compatibility
 without changing a TypeScript field, explicitly bump the corresponding
@@ -32,8 +33,11 @@ publication runs once daily at 23:00 Europe/Paris from `main`, or through an
 explicit manual workflow dispatch on `main` for an urgent release. The schedule
 follows daylight saving time; GitHub Actions may start it later when runners are
 busy. Pushes and PRs validate the contract without publishing. The daily run
-combines all pending contract revisions into one patch release and skips
-publication when the integration already has the current contract.
+combines all pending contract revisions into one patch release. On Sunday, the
+same run can also publish a patch with an unchanged contract if the built panel
+file inventory differs from the integration's. This picks up app changes such as
+UI and catalog updates while skipping empty releases. A pending contract update
+and the weekly panel refresh ship in the same patch.
 Keep incompatible imports blocked. Never strip unknown data to make them load.
 
 Full producer, panel and integration tests run locally before pushing a contract
@@ -51,8 +55,8 @@ dependency-tree fingerprint at the same revision, so switching detectors does
 not itself publish a release. A subsequent compatibility revision cannot use that
 exception.
 
-The workflow serializes releases. A matching contract skips another bump. A
-newer integration contract blocks a downgrade. A rejected concurrent push fails
+The workflow serializes releases. An already bundled update skips another bump.
+A newer integration contract blocks a downgrade. A rejected concurrent push fails
 without changing remote refs; rerun the producer workflow from a fresh checkout.
 If a tag was pushed but publication failed, rerun the integration's failed
 `Package release` workflow first, then rerun the producer workflow. The build is
@@ -71,6 +75,8 @@ npm run release:ha-contract -- /path/to/clean/cabane-home-assistant
 ```
 
 This prepares and tests the integration diff without committing or pushing it.
+Pass `--weekly` to also prepare a patch for changed panel files with the same
+contract revision.
 After the required producer checks, `--push` also commits and pushes the main
 update/tag, which starts the integration release workflow. Actions uses
 `--skip-tests` because tests are a local delivery gate; it retains contract, clean
