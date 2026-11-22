@@ -30,6 +30,7 @@ export function gardenLayout(plot: FieldPlot, planet: CountryPlanet) {
     litter: [] as Plant[],
     grasses: [] as Plant[],
     distant: [] as Plant[],
+    firs: [] as Plant[],
     boughs: [] as Plant[],
     drifts: [] as { x: number; z: number; rx: number; rz: number }[],
   };
@@ -276,27 +277,47 @@ export function gardenLayout(plot: FieldPlot, planet: CountryPlanet) {
       });
     }
   }
-  const sites = 620;
+  garden.distant = garden.distant.filter(({ x, z }) => {
+    planet.point(x, z, surface, up, biome);
+    return biome.y > 0.048 && biome.z < 0.64;
+  });
+  // Grow stands in a tangent disc at each site. Sampling in this plane keeps
+  // their physical spacing constant, even across the south pole.
+  const sites = 115,
+    center = new Vector3(),
+    east = new Vector3(),
+    north = new Vector3();
   for (let i = 0; i < sites; i++) {
     const theta = Math.acos(1 - (2 * (i + 0.5)) / sites);
-    if (theta < 0.65) continue;
-    const phi = i * 2.39996323 + (farRandom() - 0.5) * 0.11;
-    const d = planet.distanceAt(theta);
-    const x = cx + d * Math.cos(phi),
-      z = cz + d * Math.sin(phi);
-    planet.point(x, z, surface, up, biome);
-    if (biome.y < 0.035 || biome.z > 0.67 || clear(x, z) < 8) continue;
-    const size =
-      (theta < 1.12 ? 4.1 + farRandom() * 3.8 : 2.4 + farRandom() * 3.4) *
-      Math.min(1, planet.radius / 42);
-    garden.distant.push({
-      x,
-      z,
-      size,
-      width: 0.84 + farRandom() * 0.38,
-      angle: farRandom() * tau,
-      tone: farRandom(),
-    });
+    if (theta < 0.64) continue;
+    const phi = i * 2.39996323 + (farRandom() - 0.5) * 0.24;
+    center.set(Math.sin(theta) * Math.cos(phi), Math.cos(theta), Math.sin(theta) * Math.sin(phi));
+    east.set(-Math.sin(phi), 0, Math.cos(phi));
+    north.crossVectors(center, east);
+    const count = 3 + Math.floor(farRandom() * 7),
+      spread = 0.045 + 0.06 * farRandom();
+    for (let j = 0; j < count; j++) {
+      const angle = farRandom() * tau,
+        r = spread * Math.sqrt(farRandom());
+      up.copy(center)
+        .addScaledVector(east, r * Math.cos(angle))
+        .addScaledVector(north, r * Math.sin(angle))
+        .normalize();
+      const arc = planet.distanceAt(Math.acos(up.y)),
+        meridian = Math.atan2(up.z, up.x);
+      const x = cx + arc * Math.cos(meridian),
+        z = cz + arc * Math.sin(meridian);
+      planet.point(x, z, surface, up, biome);
+      if (biome.y < 0.057 || biome.z > 0.57 || clear(x, z) < 15) continue;
+      garden.firs.push({
+        x,
+        z,
+        size: (4.4 + 4.8 * farRandom()) * Math.min(1, planet.radius / 65),
+        width: 0.76 + 0.4 * farRandom(),
+        angle: farRandom() * tau,
+        tone: farRandom(),
+      });
+    }
   }
   return garden;
 }

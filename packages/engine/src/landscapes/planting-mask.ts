@@ -37,7 +37,7 @@ export function plantingMask(
     }
   }
   for (const d of layout.drifts) footprint(d.x, d.z, d.rx * 1.12, d.rz * 1.12, 0, 0.72);
-  const trees = [...layout.trees, ...layout.distant];
+  const trees = layout.trees;
   for (const tree of trees) {
     footprint(tree.x, tree.z, tree.size * 0.65, tree.size * 0.55, 2, 0.89);
   }

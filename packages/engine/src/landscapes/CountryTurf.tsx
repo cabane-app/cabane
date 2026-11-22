@@ -72,16 +72,12 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
   const grass = useSyncExternalStore(grassScan.subscribe, grassScan.snapshot, none);
   const floorSource = cover ? duffScan : idle,
     reliefSource = cover ? duffRelief : idle;
-  const stoneSource = plot ? countrysideStoneScan : idle;
-  const stone = useSyncExternalStore(stoneSource.subscribe, stoneSource.snapshot, none);
   const duff = useSyncExternalStore(floorSource.subscribe, floorSource.snapshot, none),
     relief = useSyncExternalStore(reliefSource.subscribe, reliefSource.snapshot, none);
   const profile = plot ? "garden" : "lawn";
   const [settings] = useState(() => ({
     bedMask: { value: null as Texture | null },
     bedBounds: { value: new Vector4() },
-    stoneMap: { value: null as Texture | null },
-    hasStone: { value: false },
     duff: { value: null as Texture | null },
     duffNormal: { value: null as Texture | null },
     hasDuff: { value: false },
@@ -93,8 +89,6 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
   useLayoutEffect(() => {
     settings.bedMask.value = cover?.texture ?? null;
     if (cover) settings.bedBounds.value.copy(cover.bounds);
-    settings.stoneMap.value = stone ?? null;
-    settings.hasStone.value = !!stone;
     settings.duff.value = duff ?? null;
     settings.duffNormal.value = relief ?? null;
     settings.hasDuff.value = Boolean(duff && relief);
@@ -108,7 +102,7 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
       0.07 + 0.52 * daylight,
       0.1 + 0.58 * daylight,
     );
-  }, [plot, shade, daylight, settings, cover, duff, relief, stone]);
+  }, [plot, shade, daylight, settings, cover, duff, relief]);
   const compile = useCallback<NonNullable<MeshStandardMaterial["onBeforeCompile"]>>(
     (shader) => {
       const varyings = "varying vec2 lawnMeters, terrainUv; varying float eyeDepth;\n";
@@ -134,7 +128,7 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
       if (profile === "lawn") return;
       Object.assign(shader.uniforms, settings);
       shader.fragmentShader =
-        "uniform sampler2D treeShade,bedMask,duff,duffNormal,stoneMap;uniform vec4 bedBounds;uniform bool hasDuff,hasStone; uniform vec2 plotCenter,plotHalf; uniform vec3 airColor;\n" +
+        "uniform sampler2D treeShade,bedMask,duff,duffNormal;uniform vec4 bedBounds;uniform bool hasDuff; uniform vec2 plotCenter,plotHalf; uniform vec3 airColor;\n" +
         shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader
         .replace(
@@ -146,7 +140,8 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
       vec2 box=abs(lawnMeters-plotCenter)-plotHalf+.39;
       float edge=length(max(box,0.))+min(max(box.x,box.y),0.)-.39;
       if(planetBiome.x < .5 && edge < -.06) discard;
-      ${lawn}
+      if(edge < 36.) {
+        ${lawn}
 
         vec2 bedUv=(lawnMeters-bedBounds.xy)/bedBounds.zw;
         vec2 maskEdge=min(bedUv,1.-bedUv)*bedBounds.zw;
@@ -161,28 +156,38 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
           float pockets=smoothstep(.22,.74,turfNoise(lawnMeters*.38)*.62+turfNoise(lawnMeters*1.77)*.38);
           diffuseColor.rgb=mix(diffuseColor.rgb,leaves*vec3(.59,.66,.53),coverage*(.16+.54*pockets));
         }
-        diffuseColor.rgb*=1.-shelter*.47;
+        diffuseColor.rgb*=1.-shelter*.30;
         diffuseColor.rgb*=1.-max(.38*bed.g,.21*texture2D(treeShade,terrainUv).g)*smoothstep(.1,1.4,edge);
-      if(planetBiome.z > .025 || planetBiome.y < .095){
-        // The seaward face has mossy headlands, exposed granite and shallow blue coves.
-        vec2 stone=planetMeters.xz*.48+planetMeters.y*vec2(.31,-.26);
-        float weathering=.64*turfNoise(stone)+.36*turfNoise(stone*3.8);
-        float geology=planetBiome.y+.056*(weathering-.5);
-        seaMask=1.-smoothstep(-.031,.014,geology);
-        float depth=smoothstep(.008,.47,-geology);
-        vec3 granite=mix(vec3(.099,.107,.106),vec3(.236,.215,.177),weathering);
-        if(hasStone){
-          vec3 grain=texture2D(stoneMap,stone*.31).rgb;
-          granite*=.67+grain*1.55;
+      }
+      if(edge > 14.){
+        float land=planetBiome.y, height=planetBiome.x-1.;
+        // Broad meadow colour follows the slopes. No projected lawn scan on the far side.
+        float meadow=clamp(.48+height*2.5+.24*sin(planetMeters.x*.052+planetMeters.z*.024)
+                           +.14*sin(planetMeters.y*.069-planetMeters.z*.041),0.,1.);
+        vec3 turf=mix(vec3(.048,.092,.056),vec3(.133,.157,.078),meadow);
+        vec2 soil=planetMeters.xy*.31+planetMeters.z*vec2(.17,-.23);
+        turf*=.94+.095*turfNoise(soil);
+        float bed=height*27.+.27*sin(planetMeters.z*.18)+.19*sin(planetMeters.x*.22);
+        float seam=smoothstep(.66,.83,fract(bed))*(1.-smoothstep(.87,1.,fract(bed)));
+        vec3 rock=mix(vec3(.090,.099,.099),vec3(.210,.177,.142),
+                      clamp(.51+height*2.2+.18*sin(bed*2.3),0.,1.));
+        float joints=turfNoise(soil*1.8);
+        rock*=.89+.15*joints-.13*seam;
+        vec3 ground=mix(turf,rock,smoothstep(.17,.76,planetBiome.z));
+        // Sandy gravel occupies only the waterline, with a fine band of pale stone.
+        float gravel=(1.-smoothstep(.003,.018,land));
+        ground=mix(ground,vec3(.167,.167,.126),gravel);
+        float aa=max(.001,fwidth(land)*.65);
+        seaMask=1.-smoothstep(-aa,aa,land);
+        float shoal=exp(min(0.,land)*49.);
+        vec3 water=mix(vec3(.012,.065,.084),vec3(.056,.207,.185),shoal);
+        if(seaMask>0.){
+          vec2 wind=vec2(dot(planetMeters,vec3(.23,.04,.11)),dot(planetMeters,vec3(-.19,.72,.45)));
+          float ripple=smoothstep(.66,.84,turfNoise(wind))*smoothstep(.28,.68,turfNoise(wind*.29));
+          water+=vec3(.014,.030,.034)*ripple;
         }
-        vec3 coast=mix(diffuseColor.rgb,granite,smoothstep(.28,.50,planetBiome.z+.35*(weathering-.5)));
-        float shingle=1.-smoothstep(.014,.080,geology);
-        coast=mix(coast,vec3(.19,.173,.131)*(.72+.47*weathering),shingle*.81);
-        vec3 sea=mix(vec3(.043,.145,.137),vec3(.016,.052,.074),depth);
-        float surf=1.-smoothstep(.012,.052,abs(geology+.021));
-        sea+=vec3(.086,.115,.105)*surf*smoothstep(.31,.75,weathering);
-        coast=mix(coast,sea,seaMask);
-        diffuseColor.rgb=coast;
+        ground=mix(ground,water,seaMask);
+        diffuseColor.rgb=mix(diffuseColor.rgb,ground,smoothstep(14.,36.,edge));
       }
 
     `,
@@ -205,12 +210,16 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
         .replace(
           "#include <roughnessmap_fragment>",
           `#include <roughnessmap_fragment>
-          roughnessFactor=mix(roughnessFactor,.31,planetBiome.x*seaMask);`,
+          roughnessFactor=mix(roughnessFactor,.28,seaMask);`,
         )
         .replace(
           "#include <normal_fragment_maps>",
           `
         #include <normal_fragment_maps>
+        if(planetBiome.z>.17){
+          vec3 facet=normalize(cross(dFdx(-vViewPosition),dFdy(-vViewPosition)));
+          normal=normalize(mix(normal,facet,.68*smoothstep(.17,.8,planetBiome.z)));
+        }
         if(hasDuff && coverage>.001){vec2 grainNormal=texture2D(duffNormal,debrisUv).rg*2.-1.;
           normal=normalize(normal+mat3(viewMatrix)*vec3(grainNormal.x,0.,-grainNormal.y)*coverage*.53);}
       `,

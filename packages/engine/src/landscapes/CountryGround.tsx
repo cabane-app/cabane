@@ -47,7 +47,7 @@ export function CountryGround({
     const bounds = geometry.boundingSphere.clone();
     // Include the crowns growing above the terrain in every direction.
     let canopy = 0;
-    for (const trees of [layout.trees, layout.distant])
+    for (const trees of [layout.trees, layout.distant, layout.firs])
       for (const tree of trees) canopy = Math.max(canopy, tree.size * Math.max(1, tree.width));
     bounds.radius += canopy;
     countryOrbitBounds.set(scene, bounds.applyMatrix4(mesh.current.matrixWorld));

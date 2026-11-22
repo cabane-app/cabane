@@ -38,6 +38,21 @@ await withModules(async (load) => {
       "home crown fits the spherical silhouette",
     );
   });
+  test("the shoulder outside a parcel corner has a continuous slope in orbit", () => {
+    const planet = countryPlanet(plot, () => 0);
+    const x = planet.cx + lot.width / 2 + 21,
+      z = planet.cz + lot.depth / 2 + 21;
+    const p = new Vector3(),
+      up = new Vector3(),
+      cover = new Vector3();
+    const height = (offset) => {
+      planet.point(x + offset, z - offset, p, up, cover);
+      return p.y;
+    };
+    const step = 0.005;
+    const changeInSlope = (height(step) - 2 * height(0) + height(-step)) / step;
+    assert.ok(Math.abs(changeInSlope) < 0.003);
+  });
   test("the exterior is a closed outward-facing surface, including both poles", () => {
     const geometry = planetGeometry(world, 1);
     try {

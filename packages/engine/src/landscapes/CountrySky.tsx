@@ -1,6 +1,8 @@
 import { useMemo, useSyncExternalStore } from "react";
-import { ClampToEdgeWrapping, SRGBColorSpace, type Texture } from "three";
+import { ClampToEdgeWrapping, SRGBColorSpace, Vector4, type Texture } from "three";
 import { scan } from "../scanned-finishes";
+import { planetDimensions } from "./landscape-frame";
+import type { FieldPlot } from "./country-survey";
 import cloudUrl from "./assets/day-sky.webp?url";
 import starsUrl from "./assets/night-sky.webp?url";
 const clamp = (t: Texture) => {
@@ -11,9 +13,12 @@ const sky = scan(cloudUrl, 1, SRGBColorSpace, clamp),
 const none = () => null,
   idle = { subscribe: () => () => {}, snapshot: none };
 const vertex = /* glsl */ `
+uniform vec4 planet;
+varying vec2 limbPoint;
 varying vec3 ray;
 void main(){
  vec3 view=(inverse(projectionMatrix)*vec4(position.xy,0.,1.)).xyz;
+ limbPoint=(view.xy-(modelViewMatrix*vec4(planet.xyz,1.)).xy)/planet.w;
  if(projectionMatrix[3][3]>.5) view=vec3(position.x*.57*projectionMatrix[1][1]/projectionMatrix[0][0],position.y*.57,-1.);
  ray=transpose(mat3(viewMatrix))*view;
  gl_Position=vec4(position.xy,.999999,1.);
@@ -22,6 +27,7 @@ const fragment = /* glsl */ `
 uniform sampler2D clouds,stars;
 uniform float daylight,overcast;
 uniform bool hasStars,orbit;
+varying vec2 limbPoint;
 varying vec3 ray;
 float hash(vec2 cell) {
  vec3 h=fract(cell.xyx*vec3(.1031,.1030,.0973));
@@ -39,15 +45,17 @@ vec3 starlight(vec3 dir) {
  vec2 pixel=max(fwidth(grid),.001);
  float size=mix(.45,1.3,pow(seed,8.));
  float core=1.-smoothstep(size*.25,size+.55,length(delta/pixel));
- return mix(vec3(.54,.69,1.),vec3(1.,.82,.67),hash(cell+53.))*core*step(.82,seed)*(.07+.62*pow(seed,14.));
+ return mix(vec3(.54,.69,1.),vec3(1.,.82,.67),hash(cell+53.))*core*step(.925,seed)*(.07+.62*pow(seed,14.));
 }
 void main(){
  vec3 dir=normalize(ray);
  if(orbit){
-   vec2 skyUv=vec2(.57+atan(dir.z,dir.x)/6.283185,.5+asin(clamp(dir.y,-1.,1.))/3.141593);
-   vec3 dust=hasStars?texture2D(stars,skyUv,4.).rgb:vec3(0.);
-   vec3 space=mix(vec3(.009,.018,.038),vec3(.030,.058,.085),smoothstep(-.65,.8,dir.x*.74+dir.z*.5));
-   gl_FragColor=vec4(space+max(dust-.026,0.)*.085+starlight(dir),1.);
+   float altitude=max(0.,length(limbPoint)-1.);
+   vec3 sunView=mat3(viewMatrix)*normalize(vec3(-.65,.86,.45));
+   float lit=.22+.78*smoothstep(-.65,.92,dot(limbPoint,sunView.xy));
+   float halo=exp(-26.*altitude)*lit*(.25+.75*daylight);
+   vec3 space=vec3(.0022,.0043,.009);
+   gl_FragColor=vec4(space+vec3(.036,.084,.15)*halo+starlight(dir),1.);
  } else {
  vec2 uv=vec2(.57+atan(dir.z,dir.x)/6.283185,asin(clamp(dir.y,0.,1.))/1.570796);
  vec3 day=texture2D(clouds,uv).rgb;
@@ -61,20 +69,33 @@ void main(){
  #include <colorspace_fragment>
 }`;
 export function CountrySky({
+  plot,
   daylight,
   overcast,
   orbit,
 }: {
+  plot: FieldPlot;
   daylight: number;
   overcast: number;
   orbit: boolean;
 }) {
   const daySource = orbit ? idle : sky;
   const clouds = useSyncExternalStore(daySource.subscribe, daySource.snapshot, none);
-  const source = orbit || daylight < 1 ? stars : idle;
+  const source = !orbit && daylight < 1 ? stars : idle;
   const night = useSyncExternalStore(source.subscribe, source.snapshot, none);
+  const globe = useMemo(() => {
+    const lot = plot.plantingLot;
+    const { radius, centerDepth } = planetDimensions(lot);
+    return new Vector4(
+      lot.centerX - plot.surveyX,
+      -centerDepth,
+      lot.centerZ - plot.surveyZ,
+      radius,
+    );
+  }, [plot]);
   const uniforms = useMemo(
     () => ({
+      planet: { value: globe },
       orbit: { value: orbit },
       clouds: { value: clouds },
       stars: { value: night },
@@ -82,7 +103,7 @@ export function CountrySky({
       overcast: { value: overcast },
       hasStars: { value: Boolean(night) },
     }),
-    [clouds, night, daylight, overcast, orbit],
+    [clouds, night, daylight, overcast, orbit, globe],
   );
   return (
     (orbit || clouds) && (

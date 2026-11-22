@@ -1,4 +1,4 @@
-import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
+import { BufferGeometry, CatmullRomCurve3, Float32BufferAttribute, Vector3 } from "three";
 import { ImprovedNoise } from "three/examples/jsm/math/ImprovedNoise.js";
 import type { FieldPlot } from "./country-survey";
 
@@ -10,6 +10,49 @@ const ease = (n: number) => {
   const t = clamp(n);
   return t * t * (3 - 2 * t);
 };
+
+// The river descends around the wooded crown into the lake. Bake its course
+// once, then measure distance to the same banks for the ground and the planting.
+const course = new CatmullRomCurve3(
+  [
+    [-0.73, 0.31, 0.61],
+    [-0.47, 0.6, 0.65],
+    [-0.24, 0.67, 0.71],
+    [-0.14, 0.59, 0.79],
+    [0.04, 0.61, 0.79],
+    [0.17, 0.68, 0.71],
+    [0.32, 0.63, 0.7],
+    [0.36, 0.53, 0.76],
+    [0.53, 0.34, 0.78],
+  ].map(([x, y, z]) => new Vector3(x, y, z).normalize()),
+)
+  .getPoints(36)
+  .map((p) => p.normalize());
+const bends = course.slice(1).map((end, i) => {
+  const start = course[i],
+    delta = end.clone().sub(start);
+  return {
+    start,
+    delta,
+    inverseLength: 1 / delta.lengthSq(),
+    width: 0.018 + (0.018 * i) / (course.length - 2),
+  };
+});
+function riverBank(x: number, y: number, z: number) {
+  let bank = 0.22;
+  if (z < 0.33 || y < 0.03 || y > 0.95) return bank;
+  for (const { start, delta, inverseLength, width } of bends) {
+    const dx = x - start.x,
+      dy = y - start.y,
+      dz = z - start.z;
+    const t = clamp((dx * delta.x + dy * delta.y + dz * delta.z) * inverseLength);
+    const ax = dx - t * delta.x,
+      ay = dy - t * delta.y,
+      az = dz - t * delta.z;
+    bank = Math.min(bank, Math.sqrt(ax * ax + ay * ay + az * az) - width);
+  }
+  return bank;
+}
 
 // Unroll distances from the home along meridians. The complete editable rectangle
 // is in the flat polar cap. Beyond it the tangent turns continuously to local gravity.
@@ -34,7 +77,12 @@ export function countryPlanet(plot: FieldPlot, sampleGrade: (x: number, z: numbe
       uz = d ? dz / d : 0;
     const nx = ux * sin,
       nz = uz * sin;
-    const out = Math.max(Math.abs(dx) - lot.width / 2, Math.abs(dz) - lot.depth / 2);
+    // Euclidean distance has a continuous slope around each corner. Taking
+    // the larger axis distance leaves a diagonal crease visible from Orbit.
+    const out = Math.hypot(
+      Math.max(0, Math.abs(dx) - lot.width / 2),
+      Math.max(0, Math.abs(dz) - lot.depth / 2),
+    );
     // Blend only outside the rectangle. Its corners stay usable while the woods
     // beside each edge acquire a gentle grade before joining the spherical surface.
     const curvature = ease(out / Math.max(46, flat * 1.45));
@@ -46,21 +94,61 @@ export function countryPlanet(plot: FieldPlot, sampleGrade: (x: number, z: numbe
       cover.set(0, 0.25, 0);
       return;
     }
-    // Sample the geology in 3D so shorelines and ridges cross the back meridian and poles.
-    const bedrock =
-      noise.noise(nx * 2.5 + 8.1, cos * 2.5 + 2, nz * 2.5 - 3.4) +
-      0.38 * noise.noise(nx * 6.1 + 1, cos * 6.1 - 8, nz * 6.1 + 4) +
-      0.13 * noise.noise(nx * 15, cos * 15 + 3, nz * 15 - 2) +
-      0.12;
-    // Inland headlands and coves are level sets of one continuous elevation field.
-    // Keep water away from the house, then let it follow the measured and rocky slopes.
-    const inland = 0.17 - ((out - 14) / radius) * 0.85 + 0.1 * noise.noise(nx * 8, cos * 8, nz * 8);
-    const land = Math.max(inland, bedrock);
-    const crag = ease((bedrock - 0.19) / 0.38) * ease((out - 8) / 12);
-    const relief = radius * (0.071 * Math.max(-0.032, land) + 0.032 * crag * crag);
+    // A fault follows a winding arc between two basins. Distances live on the
+    // unit sphere, so the watershed has no cut at the poles or back meridian.
+    const fold = noise.noise(nx * 3.8 + 11, cos * 3.8, nz * 3.8 + 5);
+    const fracture = 0.023 * noise.noise(nx * 12, cos * 12 - 4, nz * 12);
+    const fault =
+      nx * 0.55 + cos * 0.45 - nz * 0.7 + 0.21 * fold + 0.095 * Math.sin(5 * nx - 3 * nz);
+    const river = Math.max(Math.abs(fault) - 0.046, cos - 0.08);
+    const inlet = cos - 0.24 + (nx - 0.54) * 0.65;
+    const lake =
+      Math.hypot(nx - 0.54 + 0.09 * Math.sin(inlet * 10), inlet * 1.48, nz - 0.81) - 0.34;
+    const headland = 0.16 - Math.hypot(nx - 0.38, (cos - 0.4) * 1.2, nz - 0.83);
+    const tarn = Math.hypot((nx + 0.81) * 1.38, cos - 0.46, nz + 0.35) - 0.25;
+    const land = Math.max(
+      0.22 - (out - 8) / radius,
+      Math.min(
+        riverBank(nx, cos, nz) + fracture * 0.23,
+        Math.max(headland, Math.min(river, lake, tarn)) + 0.067 * fold + fracture,
+      ),
+    );
+    const bank = ease(land / 0.055);
+    // One bank cuts through a higher shelf; the opposite bank opens into meadow.
+    const plateau = 0.026 + 0.063 * ease((fault + 0.04) / 0.22) + 0.027 * fold;
+    const ledge = ease((land - 0.075 - 0.035 * fold) / 0.043);
+    const bluff = Math.max(
+      ease(1 - Math.hypot((nx - 0.16) * 0.91, (cos - 0.52) * 1.7, nz - 0.84) / 0.35),
+      ease(1 - Math.hypot((nx + 0.55) * 0.8, (cos - 0.46) * 1.5, nz - 0.7) / 0.44),
+      ease(1 - Math.hypot(nx + 0.72, cos - 0.42, nz + 0.49) / 0.3),
+    );
+    const cut = land + 0.027 * fold + fracture * 0.6;
+    const ramp = ease((cut - 0.025) / 0.036);
+    const terrace = ease((cut - 0.116) / 0.035);
+    const shelf =
+      bank * (0.034 + 0.53 * plateau) +
+      ledge * (0.47 * plateau) +
+      bluff * (0.12 * ramp + 0.055 * terrace);
+    const cliff =
+      bluff *
+      Math.max(1 - ease(Math.abs(cut - 0.047) / 0.054), 1 - ease(Math.abs(cut - 0.128) / 0.035));
+
+    // Slanted rock ribs rise from two separate massifs. Their broken crests
+    // change the silhouette while leaving broad stretches of land quiet.
+    const massif = Math.max(
+      ease(1 - Math.hypot((nx + 0.7) * 1.55, cos - 0.2, nz - 0.67) / 0.55),
+      ease(1 - Math.hypot(nx - 0.74, (cos + 0.32) * 1.35, nz + 0.58) / 0.6),
+    );
+    const strike = nx * 2.9 + cos * 1.8 + nz * 0.85 + 0.51 * fold + fracture;
+    const rib = Math.abs(strike - Math.round(strike));
+    const ridge = massif * (0.075 + 0.14 * ease(1 - rib / 0.38)) * bank;
+    const wall = (1 - ease((land - 0.008) / 0.064)) * ease(land / 0.012);
+    const stone = Math.max(wall, cliff * 1.55, massif * (0.45 + 0.72 * ease(1 - rib / 0.37)));
+    const relief = (-0.048 + shelf + ridge) * wild;
     const grade = wild === 1 ? 0 : sampleGrade(x, z);
-    pos.addScaledVector(up, grade * (1 - wild) + relief * wild);
-    cover.set(1, land, crag);
+    pos.addScaledVector(up, grade * (1 - wild) + radius * relief);
+    // x distinguishes the surveyed cap and carries radial height for rock bedding.
+    cover.set(1 + relief, land, clamp(stone) * wild);
   }
   return { cx, cz, radius, centerDepth, distanceAt, point };
 }
