@@ -15,7 +15,7 @@ await withModules(async (load) => {
   test("roof visibility belongs to each placed item and preserves editor selection", () => {
     const pieces = [{ hideWithRoof: true }, {}, { hideWithRoof: false }];
     for (const [view, expected] of [
-      ["cutaway", [false, true, true]],
+      ["plan", [false, true, true]],
       ["whole", [true, true, true]],
       ["cutaway", [false, true, true]],
       ["walk", [true, true, true]],
