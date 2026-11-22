@@ -1,3 +1,4 @@
+import { CONNECT_RETURN_KEY } from "./editor-return-key";
 import {
   MAX_ORTHOGRAPHIC_ZOOM,
   MIN_EDITOR_ZOOM,
@@ -27,7 +28,7 @@ export interface EditorOpenRequest {
 
 export type EditorReturnRequest = EditorOpenRequest & { workspaceId: string };
 
-export const CONNECT_RETURN_KEY = "cabane:editor-return:v1";
+export { CONNECT_RETURN_KEY } from "./editor-return-key";
 
 export function deviceRoom(manifest: HomeBindingManifest, deviceId: string) {
   return deviceMappingRooms(manifest).find((room) =>
