@@ -434,7 +434,7 @@ await withModules(async (load) => {
     reopened.dispose();
   });
 
-  test("large shadowless light pools compile one loop and retain lit slots on toggles", () => {
+  test("large light pools share one loop under directional shadows and retain lit slots on toggles", () => {
     const mask = new SceneLightWallMask();
     const scene = new Scene(),
       camera = new PerspectiveCamera();
@@ -449,7 +449,7 @@ await withModules(async (load) => {
       fragmentShader: "#include <lights_fragment_begin>",
       numPointLights: lights.length,
       numPointLightShadows: 0,
-      shadowMapEnabled: false,
+      shadowMapEnabled: true,
     };
     const updateLights = () => {
       renderer.info.render.frame++;
@@ -468,6 +468,18 @@ await withModules(async (load) => {
       lights[60].intensity = 0;
       lights[1].intensity = 1;
       assert.equal(updateLights(), 2);
+      const shadowed = {
+        ...shader,
+        uniforms: {},
+        fragmentShader: "#include <lights_fragment_begin>",
+        numPointLightShadows: 1,
+      };
+      material.onBeforeCompile(shadowed, renderer);
+      assert.match(
+        shadowed.fragmentShader,
+        /#pragma unroll_loop_start\s+for \( int i = 0; i < NUM_POINT_LIGHTS/,
+      );
+      assert.equal(shadowed.uniforms.cabanePointLightLimit, undefined);
     } finally {
       mask.dispose();
       mesh.geometry.dispose();

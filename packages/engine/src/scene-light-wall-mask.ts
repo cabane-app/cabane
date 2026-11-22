@@ -81,11 +81,14 @@ const maskedLighting = ShaderChunk.lights_fragment_begin
   )
   .replace(directLightContribution, `${directLightContribution}\n    } }`);
 
-// The editor has no shadow maps. Keep the same point-light shading and uniforms,
-// but compile its body once even when dozens of idle lamps reserve shader slots.
+// A point-shadow sampler needs a constant index in WebGL. When only the sun
+// casts shadows, every lamp can share one copy of the direct-light calculation.
 const loopedLighting = maskedLighting.replace(
   /#pragma unroll_loop_start(\s+for \( int i = 0; i < NUM_POINT_LIGHTS;[\s\S]*?)#pragma unroll_loop_end/,
-  (_, loop: string) => loop.replace("i < NUM_POINT_LIGHTS", "i < cabanePointLightLimit"),
+  (_, loop: string) =>
+    loop
+      .replace("i < NUM_POINT_LIGHTS", "i < cabanePointLightLimit")
+      .replace("UNROLLED_LOOP_INDEX < NUM_POINT_LIGHT_SHADOWS", "0"),
 );
 
 // Uniforms live on the linked WebGL program. Three uploads plain vec4 arrays
@@ -144,7 +147,9 @@ export class SceneLightWallMask {
       material.onBeforeCompile = function (shader, renderer) {
         onBeforeCompile.call(this, shader, renderer);
         shader.uniforms.cabaneLightWallPlanes = uniform;
-        const useLoop = !shader.shadowMapEnabled && shader.numPointLights > 8;
+        const useLoop =
+          shader.numPointLights > 8 &&
+          (!shader.shadowMapEnabled || shader.numPointLightShadows === 0);
         if (useLoop) shader.uniforms.cabanePointLightLimit = pointLightLimit;
         shader.fragmentShader = `#if NUM_POINT_LIGHTS > 0
           uniform vec4 cabaneLightWallPlanes[ NUM_POINT_LIGHTS ];
