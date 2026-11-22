@@ -45,6 +45,45 @@ await withModules(async (load) => {
     };
     return { scene, camera, batcher, a, b, child, renderer };
   }
+  test("packed draws preserve culled triangle order across cameras and reuse unchanged indices", () => {
+    const f = fixture();
+    for (let i = 0; i < 7; i++) f.scene.add(new Mesh(f.b.geometry, f.b.material));
+    try {
+      f.batcher.render(f.renderer, f.scene, f.camera, () => {
+        const mesh = f.scene.children.find((object) => object.isBatchedMesh);
+        const index = mesh.geometry.index;
+        const draw = (visible) => {
+          const ranges = visible.map(([id, z]) => ({ ...mesh.getGeometryRangeAt(id), z }));
+          const expected = ranges
+            .toSorted((a, b) => a.z - b.z)
+            .flatMap(({ start, count }) => [...index.array.slice(start, start + count)]);
+          mesh.customSort(ranges, f.camera);
+          assert.equal(ranges.length, 1);
+          const [{ start, count }] = ranges;
+          assert.deepEqual([...index.array.slice(start, start + count)], expected);
+        };
+        const visible = [
+          [2, 3],
+          [0, -1],
+          [8, 2],
+        ];
+        draw(visible);
+        const version = index.version;
+        draw(visible);
+        assert.equal(index.version, version);
+        draw([
+          [8, -3],
+          [2, 1],
+        ]);
+        assert.ok(index.version > version);
+        draw([[0, 1]]);
+        draw(visible);
+      });
+    } finally {
+      f.batcher.dispose();
+    }
+  });
+
   test("style shader defines survive batching and switching back", () => {
     const f = fixture();
     const draw = (flat) => {

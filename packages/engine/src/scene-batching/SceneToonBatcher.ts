@@ -2,6 +2,7 @@ import {
   BatchedMesh,
   BufferGeometry,
   Color,
+  DynamicDrawUsage,
   Float32BufferAttribute,
   Matrix4,
   Mesh,
@@ -30,6 +31,38 @@ type BatchGroup = { chunk: number; sources: Mesh[]; vertices: number };
 // Bound the work of a single rebuild and of all rebuilds in the same frame.
 const PACKED_VERTICES_PER_FRAME = 65_536;
 const identity = new Matrix4();
+
+// Three supplies the visible ranges for each beauty or shadow camera. These
+// batches have identity instance matrices and baked vertex colors, so a single
+// indexed draw can preserve the exact triangle order of all visible parts.
+function packVisibleRanges(mesh: BatchedMesh, offset: number) {
+  const index = mesh.geometry.getIndex()!;
+  index.setUsage(DynamicDrawUsage);
+  const previous: number[] = [];
+  let length = 0;
+  mesh.setCustomSort((ranges) => {
+    ranges.sort((a, b) => a.z - b.z);
+    if (ranges.length < 2) return;
+    if (
+      ranges.length !== previous.length ||
+      ranges.some((range, i) => range.start !== previous[i])
+    ) {
+      previous.length = ranges.length;
+      length = 0;
+      for (let i = 0; i < ranges.length; i++) {
+        const { start, count } = ranges[i];
+        previous[i] = start;
+        index.array.copyWithin(offset + length, start, start + count);
+        length += count;
+      }
+      index.addUpdateRange(offset, length);
+      index.needsUpdate = true;
+    }
+    ranges[0].start = offset;
+    ranges[0].count = length;
+    ranges.length = 1;
+  });
+}
 
 /** Render-only substitution. Original objects/materials remain intact between frames. */
 export class SceneToonBatcher {
@@ -73,7 +106,16 @@ export class SceneToonBatcher {
       (sum, geometry) => sum + (geometry.index?.count ?? geometry.attributes.position.count),
       0,
     );
-    const mesh = new BatchedMesh(sources.length, vertices, indices, material);
+    // The appended index range only needs room for one LOD per source.
+    const visibleIndices =
+      sources.length < 8
+        ? 0
+        : families.reduce(
+            (sum, family) =>
+              sum + Math.max(...family.map((g) => g.index?.count ?? g.attributes.position.count)),
+            0,
+          );
+    const mesh = new BatchedMesh(sources.length, vertices, indices + visibleIndices, material);
     mesh.name = "opaque-toon-batch";
     mesh.castShadow =
       (sources[0].userData.cameraFadeBaseCastShadow as boolean | undefined) ??
@@ -127,6 +169,7 @@ export class SceneToonBatcher {
       geometryIds.push(ids);
       mesh.addInstance(ids.get(source.geometry)!); // Identity: vertices are baked.
     });
+    if (visibleIndices) packVisibleRanges(mesh, indices);
     return {
       mesh,
       sources,
