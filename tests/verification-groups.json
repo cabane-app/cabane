@@ -305,6 +305,7 @@
       "catalog-device.test.mjs",
       "catalog-structure.test.mjs",
       "framed-wall-art.test.mjs",
+      "flashlight-browser.test.mjs",
       "showcase-placement.test.mjs",
       "editor-furnish-preview.test.mjs",
       "git-hooks.test.mjs",

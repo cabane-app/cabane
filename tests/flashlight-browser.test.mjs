@@ -3,40 +3,40 @@ import test from "node:test";
 import { withBrowserDiagnostics } from "./browser-test-diagnostics.mjs";
 import { createBrowserTestSession, getBrowserTestServer } from "./browser-test-environment.mjs";
 
-const fixture = `<!doctype html><style>.cabane-shell .scene-canvas{width:800px;height:600px}</style><div id="root"></div><script type="module">
+// Keep this in Chromium: activating a pre-mounted light must reuse the actual
+// WebGL program. Keyboard/action-bar behavior is covered by walk-tool-shortcuts.
+// Render only a production toon surface and the installed tool's world lighting;
+// dashboard startup, the handheld overlay and screenshots add no shader assertion.
+const fixture = `<!doctype html><div id="root" style="width:64px;height:64px"></div><script type="module">
 import React from 'react';
 import {createRoot} from 'react-dom/client';
-import {useFrame,useThree} from '@react-three/fiber';
-import {CabaneDashboard,HomeAssistantRuntimeProvider} from '@cabane/engine';
-import {stableArchitectureModelRegistry} from '@cabane/catalog/architecture';
-import {installedWalkTools} from '/src/walk-tools.ts'; const flashlight=installedWalkTools.find(tool=>tool.label==="Flashlight");
-import {neutralDemoManifest} from '/@fs/${process.cwd()}/packages/engine/src/demo.ts';
-import '@cabane/engine/styles.css';
-const manifest=structuredClone(neutralDemoManifest);
-manifest.floors[0].openings=[];
-manifest.home.walkStart={floorId:manifest.floors[0].id,at:[2.4,1.8]};
-delete manifest.actionBar;
-function ObservedTorch(props) {
- const {scene}=useThree();
- useFrame(()=>{window.beamOn=scene.getObjectsByProperty("isSpotLight",true).some(o=>o.intensity===48);});
- return React.createElement(flashlight.Scene,props);
+import {Canvas,useThree} from '@react-three/fiber';
+import {installedWalkTools} from '/src/walk-tools.ts';
+import {renderWorldLighting} from '/@fs/${process.cwd()}/packages/engine/src/walk-tools/world-lighting.tsx';
+import {ToonMaterial} from '/@fs/${process.cwd()}/packages/engine/src/rendering.tsx';
+const flashlight=installedWalkTools.find(tool=>tool.label==="Flashlight");
+function World() {
+ const state=useThree();
+ const [active,setActive]=React.useState(false);
+ React.useLayoutEffect(()=>{window.flashlightProbe={...state,active,setActive};},[state,active]);
+ return React.createElement(React.Fragment,null,
+  renderWorldLighting([flashlight],active?flashlight:undefined,true),
+  React.createElement('mesh',null,
+   React.createElement('planeGeometry',{args:[4,4]}),
+   React.createElement(ToonMaterial,{color:'#ffffff'})));
 }
 createRoot(document.getElementById('root')).render(
- React.createElement(HomeAssistantRuntimeProvider,null,
-  React.createElement(CabaneDashboard,{manifest,architectureModels:stableArchitectureModelRegistry,
-   walkTools:[{...flashlight,Scene:ObservedTorch}]})));
+ React.createElement(Canvas,{frameloop:'never',dpr:1,camera:{position:[0,0,5]}},
+  React.createElement(World)));
 </script>`;
 
 test(
   "equipping the flashlight reuses compiled world lighting programs",
-  { timeout: 30_000 },
+  { timeout: 10_000 },
   withBrowserDiagnostics(async () => {
     const { server } = await getBrowserTestServer("app");
     const session = await createBrowserTestSession();
-    const page = await session.newPage({
-      viewport: { width: 800, height: 600 },
-      reducedMotion: "reduce",
-    });
+    const page = await session.newPage();
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.addInitScript(() => {
@@ -61,16 +61,32 @@ test(
       }),
     );
     await page.goto(server.resolvedUrls.local[0] + "flashlight-smoke");
-    await page.getByRole("button", { name: "Walk mode", exact: true }).click();
-    await page.waitForFunction(() => document.pointerLockElement);
-    await page.getByRole("button", { name: "Exit walk mode", exact: true }).waitFor();
-    const before = await page.evaluate(() => window.spotlightPrograms);
-    await page.keyboard.press("t");
-    await page.waitForFunction(() => window.beamOn);
-    await page.screenshot({ path: "test-results/flashlight.png" });
-    await page.keyboard.press("t");
-    await page.waitForFunction(() => !document.querySelector('[aria-label="Unequip Flashlight"]'));
-    assert.equal(await page.evaluate(() => window.spotlightPrograms), before);
+    await page.waitForFunction(() => window.flashlightProbe);
+    const render = () =>
+      page.evaluate(() => {
+        const { gl, scene, camera } = window.flashlightProbe;
+        gl.render(scene, camera);
+        return {
+          programs: window.spotlightPrograms,
+          intensities: scene
+            .getObjectsByProperty("isSpotLight", true)
+            .map((light) => light.intensity),
+        };
+      });
+    const before = await render();
+    assert.ok(before.programs > 0, "compile a world program with the inactive spotlight present");
+    assert.deepEqual(before.intensities, [0]);
+    for (const active of [true, false]) {
+      await page.evaluate((value) => window.flashlightProbe.setActive(value), active);
+      await page.waitForFunction((value) => window.flashlightProbe.active === value, active);
+      const after = await render();
+      assert.deepEqual(after.intensities, [active ? 48 : 0]);
+      assert.equal(
+        after.programs,
+        before.programs,
+        "toggling the beam must not link another shader",
+      );
+    }
     assert.deepEqual(errors, []);
   }),
 );

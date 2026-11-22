@@ -331,6 +331,13 @@ reset and history, renderer tests for face colors, and isolated IndexedDB tests 
 publication and reopening. The coordinate-driven wall-color browser journey is
 removed; pointer picking and rendered highlight appearance remain manual review.
 
+The flashlight browser smoke checks real WebGL program reuse using the installed
+beam, production world-lighting mounting and a single toon surface. It explicitly
+renders before and after each toggle without a continuous frame loop or screenshot.
+The dashboard/pointer-lock/handheld journey is intentionally removed from this
+shader check; keyboard and action-bar behavior remain in Node/DOM coverage. This
+smoke does not establish beam appearance or complete Walk-mode integration.
+
 ### Coplanar surface checks
 
 `verify:furnishing-surfaces` runs during `verify`. Run it locally for changes to
