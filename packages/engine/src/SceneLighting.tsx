@@ -10,7 +10,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Color, Object3D, Vector3, type DirectionalLight, type HemisphereLight } from "three";
 import { transitionSolarDirection } from "./solar-direction-transition";
 import { HomeLandscape } from "./landscapes/HomeLandscape";
-import { useLandscape } from "./landscapes/landscape-preference";
+import { usePlanetMode } from "./landscapes/planet-mode";
 import type { DeviceModelRegistry, HomeManifest } from "./types";
 import { WalkSky } from "./WalkSky";
 import { deriveSolarLighting, type SolarLightingMode, type SunEntityState } from "./lighting";
@@ -47,7 +47,7 @@ export function SolarLighting({
   northAngleDegrees?: number;
   floors?: readonly RenderableFloorSpec[];
 }) {
-  const landscape = useLandscape(manifest?.home.id ?? "");
+  const planetMode = usePlanetMode(manifest?.home.id ?? "");
   const style = useSceneStyle();
   const studioDaylight = useGraphicsFeature("lighting");
   const solar = useMemo(
@@ -148,16 +148,14 @@ export function SolarLighting({
           reducedMotion={reducedMotion}
         />
       )}
-      {manifest && devices && landscape !== "none" && (
+      {manifest && devices && planetMode && (
         <HomeLandscape
-          landscape={landscape}
           reducedMotion={reducedMotion}
           devices={devices}
           walkMode={walkMode}
           manifest={manifest}
           daylight={solar.daylight}
           overcast={weather.darkness}
-          sunRef={sunRef}
         />
       )}
       <color attach="background" args={[initial.current.backgroundColor]} />

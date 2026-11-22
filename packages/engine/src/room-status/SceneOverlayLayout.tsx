@@ -9,7 +9,10 @@ import {
   type RefObject,
 } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Vector3, type Group } from "three";
+import { Html } from "@react-three/drei";
+import { OrthographicCamera, Vector3, type Group } from "three";
+import { worldBoundsForPolygon } from "../geometry";
+import type { useDashboardController } from "../useDashboardController";
 
 const DESKTOP_OVERLAY_LIMIT = 10;
 const COMPACT_OVERLAY_LIMIT = 6;
@@ -82,7 +85,23 @@ const OverlayLayoutContext = createContext<{
 } | null>(null);
 
 /** One screen-space budget for room labels, device states and attached readings. */
-export function SceneOverlayLayout({ children }: { children: ReactNode }) {
+export function SceneOverlayLayout({
+  children,
+  dashboard,
+}: {
+  children: ReactNode;
+  dashboard?: Pick<
+    ReturnType<typeof useDashboardController>,
+    "manifest" | "floor" | "mode" | "walkthrough" | "elevation"
+  >;
+}) {
+  const floor =
+    dashboard?.mode === "overview" && !dashboard.walkthrough ? dashboard.floor : undefined;
+  const footprint = useMemo(
+    () => floor && worldBoundsForPolygon(floor.footprint, floor.coordinates),
+    [floor],
+  );
+  const [showHome, setShowHome] = useState(false);
   const { invalidate } = useThree();
   const entries = useMemo(() => new Map<string, OverlayEntry>(), []);
   const retained = useRef<ReadonlySet<string>>(new Set());
@@ -100,8 +119,19 @@ export function SceneOverlayLayout({ children }: { children: ReactNode }) {
   );
 
   useFrame(({ camera, size }) => {
+    // Switch at a readable footprint size, with a dead band for pinch and wheel input.
+    const threshold = Math.min(280, size.width * 0.42, size.height * 0.42);
+    const homeScale = Boolean(
+      footprint &&
+      camera instanceof OrthographicCamera &&
+      (Math.max(footprint.width, footprint.depth) * camera.zoom * size.width) /
+        (camera.right - camera.left) <
+        threshold * (showHome ? 1.15 : 1),
+    );
+    if (homeScale !== showHome) setShowHome(homeScale);
     const candidates: SceneOverlayCandidate[] = [];
     for (const entry of entries.values()) {
+      if (homeScale) break;
       const anchor = entry.anchor.current;
       if (!anchor) continue;
       anchor.getWorldPosition(projected).project(camera);
@@ -135,7 +165,26 @@ export function SceneOverlayLayout({ children }: { children: ReactNode }) {
   });
 
   const layout = useMemo(() => ({ register, invalidate }), [register, invalidate]);
-  return <OverlayLayoutContext.Provider value={layout}>{children}</OverlayLayoutContext.Provider>;
+  return (
+    <OverlayLayoutContext.Provider value={layout}>
+      {children}
+      {dashboard && floor && footprint && showHome && (
+        <Html
+          center
+          position={[
+            footprint.centerX,
+            dashboard.elevation + floor.defaultCeilingHeightMeters,
+            footprint.centerZ,
+          ]}
+          zIndexRange={[8, 0]}
+          wrapperClass="room-status-overlay-anchor"
+          pointerEvents="none"
+        >
+          <div className="home-status-overlay">{dashboard.manifest.home.name}</div>
+        </Html>
+      )}
+    </OverlayLayoutContext.Provider>
+  );
 }
 
 export function useSceneOverlay<T extends HTMLElement = HTMLDivElement>({

@@ -68,3 +68,30 @@
   margin-top: 4px;
   background: linear-gradient(rgba(247, 245, 238, 0.75), transparent);
 }
+
+.home-status-overlay {
+  width: max-content;
+  max-width: min(240px, 75vw);
+  padding: 5px 12px;
+  transform: translateY(calc(-50% - 14px));
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 14px;
+  background: rgb(36 44 38 / 88%);
+  color: #f7f5ee;
+  font:
+    600 0.85rem/1.25 Georgia,
+    "Times New Roman",
+    serif;
+  overflow-wrap: anywhere;
+  text-align: center;
+  pointer-events: none;
+}
+.home-status-overlay::after {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  height: 14px;
+  width: 1px;
+  background: linear-gradient(#f7f5ee, rgb(247 245 238 / 35%));
+  content: "";
+}

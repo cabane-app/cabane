@@ -47,10 +47,14 @@ export class SceneGeometryLod {
       let vertices = 0;
       while (this.queue.length && pending.length < 12) {
         const { source, entry } = this.queue[0];
-        const count = source.attributes.position.count;
+        const position = source.attributes.position;
+        if (!position || this.entries.get(source) !== entry) {
+          this.queue.shift();
+          continue;
+        }
+        const count = position.count;
         if (pending.length && vertices + count > 32_768) break;
         this.queue.shift();
-        if (this.entries.get(source) !== entry) continue;
         vertices += count;
         pending.push(this.prepare(source).then((levels) => ({ source, entry, levels })));
       }
@@ -94,7 +98,7 @@ export class SceneGeometryLod {
         if (!mesh.isMesh) return;
         const source = mesh.geometry;
         if (source.userData.preservePlanarFaces === true) return;
-        if ((source.index?.count ?? source.attributes.position.count) < 300) return;
+        if ((source.index?.count ?? source.attributes.position?.count ?? 0) < 300) return;
         if (!isToonBatchCompatible(mesh, true, true)) return;
         used.add(source);
         const revision = geometryRevision(mesh);

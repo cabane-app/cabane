@@ -1,8 +1,9 @@
 import { Suspense, useEffect, useLayoutEffect, useMemo, useSyncExternalStore } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, useTexture } from "@react-three/drei";
 import {
   Color,
+  SRGBColorSpace,
   DoubleSide,
   MeshStandardMaterial,
   NoColorSpace,
@@ -10,6 +11,7 @@ import {
   type Mesh,
 } from "three";
 import { PlantInstances, Shelter } from "./PlantInstances";
+import firBoughUrl from "./assets/fir-bough.png?url";
 import { ridgeFir } from "./ridge-fir";
 import { fallenBough, fallenBoughMaterial } from "./fallen-bough";
 import { scan } from "../scanned-finishes";
@@ -79,7 +81,6 @@ export function GardenPlanting({
   }, -0.5);
   const shapes = useMemo(
     () => ({
-      fir: ridgeFir(),
       ferns: groundcoverSpecimen("ferns"),
       rosettes: groundcoverSpecimen("rosettes"),
       sedges: groundcoverSpecimen("sedges"),
@@ -95,13 +96,6 @@ export function GardenPlanting({
     },
     [shapes],
   );
-  const firMaterial = useMemo(() => {
-    const source = new MeshStandardMaterial({ vertexColors: true });
-    const material = plantMaterial(source, light, false, true);
-    source.dispose();
-    return material;
-  }, [light]);
-  useEffect(() => () => firMaterial.dispose(), [firMaterial]);
   const coverMaterial = useMemo(() => {
     const base = new MeshStandardMaterial({ vertexColors: true, roughness: 1, side: DoubleSide });
     const material = plantMaterial(base, light, true, false, true);
@@ -115,15 +109,9 @@ export function GardenPlanting({
         <Suspense fallback={null}>
           <WoodyPlanting layout={layout} planet={planet} light={light} />
         </Suspense>
-        <PlantInstances
-          name="garden-ridge-firs"
-          geometry={shapes.fir}
-          material={firMaterial}
-          plants={layout.firs}
-          planet={planet}
-          distant
-          castShadow={false}
-        />
+        <Suspense fallback={null}>
+          <RidgeFirs plants={layout.firs} planet={planet} light={light} />
+        </Suspense>
         {(["ferns", "rosettes", "sedges", "grasses", "stones", "litter"] as const).map((k) => (
           <PlantInstances
             key={k}
@@ -148,6 +136,47 @@ export function GardenPlanting({
       </group>
     </Shelter.Provider>
   );
+}
+
+function RidgeFirs({
+  plants,
+  planet,
+  light,
+}: {
+  plants: Layout["firs"];
+  planet: CountryPlanet;
+  light: GardenLight;
+}) {
+  const map = useTexture(firBoughUrl);
+  const geometry = useMemo(() => [ridgeFir(), ridgeFir(true)], []);
+  const materials = useMemo(() => {
+    map.colorSpace = SRGBColorSpace;
+    const source = new MeshStandardMaterial({ map, side: DoubleSide, vertexColors: true });
+    // Preserve the coverage of fine needles as they collapse into the last mip levels.
+    const materials = [0.29, 0.13].map((alphaTest) => {
+      source.alphaTest = alphaTest;
+      return plantMaterial(source, light, false, true);
+    });
+    source.dispose();
+    return materials;
+  }, [map, light]);
+  useEffect(() => () => geometry.forEach((shape) => shape.dispose()), [geometry]);
+  useEffect(() => () => materials.forEach((material) => material.dispose()), [materials]);
+  return geometry.map((shape, i) => (
+    <PlantInstances
+      key={i}
+      name={i ? "garden-ridge-firs-mid" : "garden-ridge-firs"}
+      geometry={shape}
+      material={materials[i]}
+      plants={plants}
+      planet={planet}
+      distant
+      castShadow={false}
+      lod={i ? "mid" : "near"}
+      // Reserve individual sprays for crowns large enough to resolve them.
+      lodPixels={22}
+    />
+  ));
 }
 
 function WoodyPlanting({

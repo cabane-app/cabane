@@ -272,19 +272,25 @@ await withModules(async (load) => {
       frame();
       assert.ok(waiting.size > 1 && waiting.size < meshes.length);
       const removed = meshes[0];
+      const queued = meshes.pop();
+      assert.ok(!waiting.has(queued.geometry));
       const stale = replacements.get(removed.geometry);
       let disposed = false;
       stale.addEventListener("dispose", () => {
         disposed = true;
       });
-      scene.remove(removed);
+      scene.remove(removed, queued);
+      queued.geometry.deleteAttribute("position");
+      queued.geometry.dispose();
       frame();
       while (waiting.size) {
         assert.equal(invalidations, 0);
         const replies = [...waiting].reverse();
         waiting.clear();
-        for (const [source, resolve] of replies)
+        for (const [source, resolve] of replies) {
+          assert.notEqual(source, queued.geometry);
           resolve([{ geometry: replacements.get(source), error: 0 }]);
+        }
         await new Promise(setImmediate);
       }
       await lod.ready;

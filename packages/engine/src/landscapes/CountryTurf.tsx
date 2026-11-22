@@ -1,4 +1,11 @@
-import { createContext, useCallback, useLayoutEffect, useState, useSyncExternalStore } from "react";
+import {
+  createContext,
+  useCallback,
+  useLayoutEffect,
+  useState,
+  useSyncExternalStore,
+  type ComponentProps,
+} from "react";
 import {
   Color,
   NoColorSpace,
@@ -23,7 +30,37 @@ const duffScan = scan(duffUrl),
 const none = () => null;
 const idle = { subscribe: () => () => {}, snapshot: none };
 
-type Props = {
+// The detailed sun map covers the house. Let canopy shadows yield to the
+// landscape's baked shelter before a receiver crosses any face of that map.
+const countrysideLights = /* glsl */ `
+  #if defined(USE_SHADOWMAP) && NUM_DIR_LIGHT_SHADOWS > 0
+    DirectionalLightShadow canopyShadows[ NUM_DIR_LIGHT_SHADOWS ];
+    #pragma unroll_loop_start
+    for ( int i = 0; i < NUM_DIR_LIGHT_SHADOWS; i ++ ) {
+      {
+        vec3 coord = vDirectionalShadowCoord[ i ].xyz / vDirectionalShadowCoord[ i ].w;
+        vec3 margin = min(coord, 1.0 - coord);
+        canopyShadows[ i ] = directionalLightShadows[ i ];
+        canopyShadows[ i ].shadowIntensity *= smoothstep(0.0, 0.14, min(min(margin.x, margin.y), margin.z));
+      }
+    }
+    #pragma unroll_loop_end
+    #define directionalLightShadows canopyShadows
+  #endif
+  #include <lights_fragment_begin>
+  #undef directionalLightShadows
+`;
+
+type Props = Pick<
+  ComponentProps<"meshStandardMaterial">,
+  | "alphaMap"
+  | "vertexColors"
+  | "transparent"
+  | "depthWrite"
+  | "polygonOffset"
+  | "polygonOffsetFactor"
+  | "polygonOffsetUnits"
+> & {
   color: string;
   aoMap?: Texture | null;
   plot?: FieldPlot;
@@ -68,7 +105,15 @@ const lawn = /* glsl */ `
     *(1.+blades*1.10+(growth-.5)*.14);
 `;
 
-export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight = 1 }: Props) {
+export function CountryTurf({
+  color,
+  aoMap = null,
+  plot,
+  shade,
+  cover,
+  daylight = 1,
+  ...surface
+}: Props) {
   const grass = useSyncExternalStore(grassScan.subscribe, grassScan.snapshot, none);
   const floorSource = cover ? duffScan : idle,
     reliefSource = cover ? duffRelief : idle;
@@ -131,6 +176,7 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
         "uniform sampler2D treeShade,bedMask,duff,duffNormal;uniform vec4 bedBounds;uniform bool hasDuff; uniform vec2 plotCenter,plotHalf; uniform vec3 airColor;\n" +
         shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader
+        .replace("#include <lights_fragment_begin>", countrysideLights)
         .replace(
           lawn,
           `
@@ -229,6 +275,7 @@ export function CountryTurf({ color, aoMap = null, plot, shade, cover, daylight 
   );
   return (
     <meshStandardMaterial
+      {...surface}
       key={profile}
       customProgramCacheKey={() => "country-lawn-" + profile}
       onBeforeCompile={compile}

@@ -287,15 +287,10 @@ export function gardenLayout(plot: FieldPlot, planet: CountryPlanet) {
     center = new Vector3(),
     east = new Vector3(),
     north = new Vector3();
-  for (let i = 0; i < sites; i++) {
-    const theta = Math.acos(1 - (2 * (i + 0.5)) / sites);
-    if (theta < 0.64) continue;
-    const phi = i * 2.39996323 + (farRandom() - 0.5) * 0.24;
+  function plantStand(theta: number, phi: number, count: number, spread: number) {
     center.set(Math.sin(theta) * Math.cos(phi), Math.cos(theta), Math.sin(theta) * Math.sin(phi));
     east.set(-Math.sin(phi), 0, Math.cos(phi));
     north.crossVectors(center, east);
-    const count = 3 + Math.floor(farRandom() * 7),
-      spread = 0.045 + 0.06 * farRandom();
     for (let j = 0; j < count; j++) {
       const angle = farRandom() * tau,
         r = spread * Math.sqrt(farRandom());
@@ -318,6 +313,24 @@ export function gardenLayout(plot: FieldPlot, planet: CountryPlanet) {
         tone: farRandom(),
       });
     }
+  }
+  for (let i = 0; i < sites; i++) {
+    const theta = Math.acos(1 - (2 * (i + 0.5)) / sites);
+    if (theta < 0.64) continue;
+    const phi = i * 2.39996323 + (farRandom() - 0.5) * 0.24;
+    plantStand(theta, phi, 3 + Math.floor(farRandom() * 7), 0.045 + 0.06 * farRandom());
+  }
+  // Cohorts of conifers occupy the sheltered slopes between the rock spurs.
+  for (let i = 0; i < 44; i++) {
+    const phi = -1.06 + 1.95 * farRandom();
+    const height =
+      (i % 3 === 0 ? 0.68 : 0.27 + 0.26 * Math.sin(phi * 2.2 + 0.36)) + (farRandom() - 0.5) * 0.52;
+    plantStand(
+      Math.acos(height),
+      phi,
+      8 + Math.floor(farRandom() * 12),
+      0.075 + 0.085 * farRandom(),
+    );
   }
   return garden;
 }

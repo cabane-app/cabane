@@ -98,6 +98,7 @@ export function PlantInstances({
   distant = false,
   detailPixels,
   lod,
+  lodPixels = 64,
 }: {
   name: string;
   geometry: BufferGeometry;
@@ -109,6 +110,7 @@ export function PlantInstances({
   castShadow?: boolean;
   distant?: boolean;
   detailPixels?: number | undefined;
+  lodPixels?: number | undefined;
   lod?: "near" | "mid" | undefined;
 }) {
   const mesh = useRef<InstancedMesh>(null),
@@ -187,11 +189,12 @@ export function PlantInstances({
           eye.sub(scratch.core).addScaledVector(sight, -along).lengthSq() < safeRadius * safeRadius
         )
           visible = 0;
-      } else if (detailPixels || lod) {
+      }
+      if (visible && (detailPixels || lod)) {
         const z = -scratch.center.copy(center).applyMatrix4(scratch.view).z;
         const scale = perspective ? pixels / Math.max(1, z - radius * 0.55) : pixels;
         if (lod) {
-          if (scale >= 64 !== (lod === "near")) visible = 0;
+          if (scale >= lodPixels !== (lod === "near")) visible = 0;
         } else if (detailPixels) {
           const fraction = Math.min(1, Math.max(0, (scale - 5) / (detailPixels - 5)));
           visible = Math.round(cell.count * fraction * fraction);

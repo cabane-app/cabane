@@ -1,25 +1,20 @@
 import { useSyncExternalStore } from "react";
 
-export const landscapes = {
-  none: "None",
-  countryside: "Countryside",
-  "new-york": "New York",
-} as const;
-export type Landscape = keyof typeof landscapes;
 const key = (home: string) => `cabane.landscape.v1:${home}`;
 const listeners = new Set<() => void>();
-const unsaved = new Map<string, Landscape>();
+const unsaved = new Map<string, boolean>();
 
-function read(home: string): Landscape {
+function read(home: string): boolean {
   const fallback = unsaved.get(home);
-  if (fallback) return fallback;
+  if (fallback !== undefined) return fallback;
   try {
     const value = window.localStorage.getItem(key(home));
-    if (value === "countryside" || value === "new-york") return value;
+    // Existing homes used the landscape name before Planet mode became a switch.
+    return value === "countryside" || value === "true";
   } catch {
     // Storage can be unavailable inside an embedded dashboard.
   }
-  return "none";
+  return false;
 }
 
 function subscribe(listener: () => void) {
@@ -31,17 +26,17 @@ function subscribe(listener: () => void) {
   };
 }
 
-export function useLandscape(home: string) {
+export function usePlanetMode(home: string) {
   return useSyncExternalStore(
     subscribe,
     () => read(home),
-    () => "none" as const,
+    () => false,
   );
 }
 
-export function chooseLandscape(home: string, value: Landscape) {
+export function setPlanetMode(home: string, value: boolean) {
   try {
-    window.localStorage.setItem(key(home), value);
+    window.localStorage.setItem(key(home), String(value));
     unsaved.delete(home);
   } catch {
     unsaved.set(home, value);

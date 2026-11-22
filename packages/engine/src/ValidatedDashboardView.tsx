@@ -43,8 +43,7 @@ import { HomeAssistantMappingScreen } from "./HomeAssistantMappingScreen";
 
 import { useCountryPlanetRadius } from "./landscapes/landscape-frame";
 import { CountryLawnContext } from "./landscapes/CountryTurf";
-import { useLandscape } from "./landscapes/landscape-preference";
-import { LandscapePicker } from "./landscapes/LandscapePicker";
+import { usePlanetMode } from "./landscapes/planet-mode";
 import { SolarLighting } from "./SceneLighting";
 import { SceneNightContext } from "./scene-light-state";
 
@@ -166,7 +165,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
   const cameraRoom = selectedCamera && resolvedBindings.rooms[selectedCamera.roomId];
   const outsideCameraRoom =
     cameraRoom && cameraRoom.outsideFloorId !== undefined ? cameraRoom.room : undefined;
-  const countryside = useLandscape(manifest.home.id) === "countryside";
+  const countryside = usePlanetMode(manifest.home.id);
   const landscapeRadius = useCountryPlanetRadius(countryside, manifest, deviceModels);
   const orbitView = useDashboardOrbitView(manifest.home.id, floor.id);
   const equippedId = walkMode && !walkthrough ? equippedToolId : null;
@@ -274,7 +273,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                 frameloop={!documentVisible ? "never" : walkMode ? "always" : "demand"}
                 antialias={quality.antialias}
               >
-                <SceneOverlayLayout>
+                <SceneOverlayLayout dashboard={dashboard}>
                   <RoomHoverProvider scope={`${floor.id}-${mode}`}>
                     <StylizedScene antialias={quality.antialias} onFirstFrame={onSceneReady}>
                       <ScenePreview enabled={!walkMode && !selectedRoomId} />
@@ -518,7 +517,6 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                         <span>Retry connection</span>
                       </button>
                     )}
-                    <LandscapePicker home={manifest.home.id} />
                     {settingsMenuItem}
                     <ProjectSupportMenuItems />
                     {!demoSession &&

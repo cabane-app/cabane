@@ -142,9 +142,39 @@ export function countryPlanet(plot: FieldPlot, sampleGrade: (x: number, z: numbe
     const strike = nx * 2.9 + cos * 1.8 + nz * 0.85 + 0.51 * fold + fracture;
     const rib = Math.abs(strike - Math.round(strike));
     const ridge = massif * (0.075 + 0.14 * ease(1 - rib / 0.38)) * bank;
+    // A crooked watershed rises behind the lake. The steep lake-facing scarp
+    // breaks into spurs at the gullies, with a longer wooded backslope.
+    const longitude = Math.atan2(nz, nx);
+    const extent = ease((longitude + 0.91) / 0.4) * ease((0.99 - longitude) / 0.39);
+    const crest =
+      0.28 + 0.29 * Math.sin(2.2 * longitude + 0.36) + 0.062 * Math.cos(5.4 * longitude - 1);
+    const cross = cos - crest - 0.07 * fold - fracture;
+    const spur = 0.5 + 0.5 * Math.cos(longitude * 17 + 2.3 * fold);
+    const backslope = ease(1 - Math.abs(cross) / (cross < 0 ? 0.14 + 0.1 * spur : 0.36));
+    const backbone = ease(1 - Math.abs(cross + 0.018) / (0.047 + 0.03 * spur));
+    const shoulder = extent * bank * backslope;
+    const scarp = shoulder * ease((-cross + 0.025) / 0.09);
+    // A shorter spur climbs across the grain above the saddle. Its stony
+    // face looks towards the valley, across from the main scarp.
+    const gully = ease(1 - Math.abs(cos - 0.55 + fold * 0.04) / 0.09);
+    const spurCross = longitude + 0.12 + (cos - 0.27) * 1.42 + 0.24 * fold + 0.11 * gully;
+    const spurEnd = ease((cos - 0.2) / 0.17) * ease((0.83 - cos) / 0.23);
+    const spurSide = 1 - Math.abs(spurCross) / (spurCross > 0 ? 0.16 : 0.34);
+    const spurHeight = spurEnd * bank * ease(spurSide) * (1 - 0.54 * gully);
+    const watershed = Math.max(
+      shoulder * (0.072 + 0.16 * spur + 0.075 * backbone),
+      spurHeight * (0.2 + 0.1 * Math.sin(17 * cos + fold)),
+    );
     const wall = (1 - ease((land - 0.008) / 0.064)) * ease(land / 0.012);
-    const stone = Math.max(wall, cliff * 1.55, massif * (0.45 + 0.72 * ease(1 - rib / 0.37)));
-    const relief = (-0.048 + shelf + ridge) * wild;
+    const stone = Math.max(
+      wall,
+      scarp * (1.1 + 0.85 * spur),
+      spurHeight * ease((spurCross + 0.03) / 0.07) * 1.8,
+      shoulder * backbone * 0.83,
+      cliff * 1.55,
+      massif * (0.45 + 0.72 * ease(1 - rib / 0.37)),
+    );
+    const relief = (-0.048 + shelf + ridge + watershed) * wild;
     const grade = wild === 1 ? 0 : sampleGrade(x, z);
     pos.addScaledVector(up, grade * (1 - wild) + radius * relief);
     // x distinguishes the surveyed cap and carries radial height for rock bedding.
