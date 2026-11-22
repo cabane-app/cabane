@@ -70,8 +70,7 @@ export function plantMaterial(
         `
         #include <project_vertex>
         vec3 base = (modelViewMatrix * instanceMatrix[3]).xyz;
-        float scale = gardenHalfHeight * projectionMatrix[1][1];
-        if (!isOrthographic) scale /= max(1., length(base));
+        float scale = gardenHalfHeight * projectionMatrix[1][1] / max(1., length(base));
         float middle = 1. + ${2 * stagger} * (fract(dot(instanceMatrix[3].xz, vec2(.37,.61))) - .5);
         gardenMix = smoothstep(middle - ${spread}, middle + ${spread}, scale / ${lod.pixels.toFixed(1)});
       `,

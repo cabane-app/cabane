@@ -161,7 +161,7 @@ export function PlantInstances({
     scratch.previous.copy(scratch.clip);
     scratch.frustum.setFromProjectionMatrix(scratch.clip);
     const perspective = camera.projectionMatrix.elements[15] === 0;
-    scratch.cameraPosition.setFromMatrixPosition(camera.matrixWorld);
+    if (perspective) scratch.cameraPosition.setFromMatrixPosition(camera.matrixWorld);
     scratch.core.set(planet.cx, -planet.centerDepth, planet.cz).applyMatrix4(scratch.view);
     let changed = false,
       total = 0;
@@ -201,18 +201,24 @@ export function PlantInstances({
               .applyMatrix4(batch.matrixWorld)
               .distanceTo(scratch.cameraPosition)
           : 0;
-        if (lod) {
-          const largest = perspective ? pixels / Math.max(1, distance - radius) : pixels;
-          const smallest = perspective ? pixels / Math.max(1, distance + radius) : pixels;
+        if (lod && !perspective) {
+          if (pixels >= lod.pixels !== lod.near) visible = 0;
+        } else if (lod) {
+          const largest = pixels / Math.max(1, distance - radius);
+          const smallest = pixels / Math.max(1, distance + radius);
           if (lod.near && largest <= lod.pixels * plantLodLow) visible = 0;
           // The mid mesh supplies a stable shadow even where only near foliage is drawn.
           if (!lod.near && !castShadow && smallest >= lod.pixels * plantLodHigh) visible = 0;
         } else if (detailPixels) {
           const scale = perspective ? pixels / Math.max(1, distance - radius * 0.55) : pixels;
           const fraction = Math.min(1, Math.max(0, (scale - 5) / (detailPixels - 5)));
-          const band = Math.max(1, cell.count * 0.08);
-          growth = fraction * fraction * (cell.count - 1 + band);
-          visible = Math.min(cell.count, Math.ceil(growth));
+          if (perspective) {
+            const band = Math.max(1, cell.count * 0.08);
+            growth = fraction * fraction * (cell.count - 1 + band);
+            visible = Math.min(cell.count, Math.ceil(growth));
+          } else {
+            visible = Math.round(cell.count * fraction * fraction);
+          }
         }
       }
       changed ||= visible !== cell.visible || growth !== cell.growth;
@@ -231,7 +237,7 @@ export function PlantInstances({
         n * 16,
       );
       batch.instanceColor.array.set(data.colors.subarray(start * 3, (start + visible) * 3), n * 3);
-      if (detailPixels) {
+      if (perspective && detailPixels) {
         // Ease only the fringe of the stable prefix up from its own roots.
         const band = Math.max(1, count * 0.08);
         for (let j = Math.max(0, Math.floor(growth - band) + 1); j < visible; j++) {

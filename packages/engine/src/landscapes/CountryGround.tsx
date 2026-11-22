@@ -19,10 +19,12 @@ const none = () => null;
 export function CountryGround({
   plot,
   daylight,
+  walkMode,
   wind,
 }: {
   plot: FieldPlot;
   daylight: number;
+  walkMode: boolean;
   wind: boolean;
 }) {
   const mesh = useRef<Mesh>(null);
@@ -72,6 +74,7 @@ export function CountryGround({
         layout={layout}
         shelterAt={cover.shelterAt}
         planet={planet}
+        walkMode={walkMode}
         wind={wind}
         daylight={daylight}
       />

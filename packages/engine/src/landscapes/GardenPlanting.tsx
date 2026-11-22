@@ -66,12 +66,14 @@ export function GardenPlanting({
   shelterAt,
   planet,
   daylight,
+  walkMode,
   wind,
 }: {
   layout: Layout;
   shelterAt: Height;
   planet: CountryPlanet;
   daylight: number;
+  walkMode: boolean;
   wind: boolean;
 }) {
   const light = useMemo<GardenLight>(
@@ -82,7 +84,7 @@ export function GardenPlanting({
     light.air.value.setRGB(0.052 + 0.418 * daylight, 0.07 + 0.52 * daylight, 0.1 + 0.58 * daylight);
   }, [light, daylight]);
   useFrame(({ gl }, delta) => {
-    light.halfHeight.value = gl.domElement.height * 0.5;
+    if (walkMode) light.halfHeight.value = gl.domElement.height * 0.5;
     if (wind) light.breeze.value += Math.min(0.06, delta);
   }, -0.5);
   const shapes = useMemo(
@@ -113,10 +115,10 @@ export function GardenPlanting({
     <Shelter.Provider value={shelterAt}>
       <group name="garden-planting">
         <Suspense fallback={null}>
-          <WoodyPlanting layout={layout} planet={planet} light={light} />
+          <WoodyPlanting layout={layout} planet={planet} light={light} walkMode={walkMode} />
         </Suspense>
         <Suspense fallback={null}>
-          <RidgeFirs plants={layout.firs} planet={planet} light={light} />
+          <RidgeFirs plants={layout.firs} planet={planet} light={light} walkMode={walkMode} />
         </Suspense>
         {(["ferns", "rosettes", "sedges", "grasses", "stones", "litter"] as const).map((k) => (
           <PlantInstances
@@ -148,10 +150,12 @@ function RidgeFirs({
   plants,
   planet,
   light,
+  walkMode,
 }: {
   plants: Layout["firs"];
   planet: CountryPlanet;
   light: GardenLight;
+  walkMode: boolean;
 }) {
   const map = useTexture(firBoughUrl);
   const geometry = useMemo(() => [ridgeFir(), ridgeFir(true)], []);
@@ -161,11 +165,11 @@ function RidgeFirs({
     // Preserve the coverage of fine needles as they collapse into the last mip levels.
     const materials = [0.29, 0.13].map((alphaTest, i) => {
       source.alphaTest = alphaTest;
-      return plantMaterial(source, light, false, true, false, firLods[i]);
+      return plantMaterial(source, light, false, true, false, walkMode ? firLods[i] : undefined);
     });
     source.dispose();
     return materials;
-  }, [map, light]);
+  }, [map, light, walkMode]);
   useEffect(() => () => geometry.forEach((shape) => shape.dispose()), [geometry]);
   useEffect(() => () => materials.forEach((material) => material.dispose()), [materials]);
   return geometry.map((shape, i) => (
@@ -187,10 +191,12 @@ function WoodyPlanting({
   layout,
   planet,
   light,
+  walkMode,
 }: {
   layout: Layout;
   planet: CountryPlanet;
   light: GardenLight;
+  walkMode: boolean;
 }) {
   const { nodes } = useGLTF(gardenKitUrl, false, false);
   const log = useMemo(() => {
@@ -213,6 +219,11 @@ function WoodyPlanting({
           const mesh = nodes[kind + "-" + part] as Mesh<BufferGeometry, MeshStandardMaterial>;
           const distant = kind.startsWith("distant");
           const mid = (nodes[kind + "-" + part + "-mid"] as Mesh | undefined)?.geometry;
+          // In Orbit only one level is visible, so both levels can reuse the original shader.
+          const shared =
+            walkMode && mid
+              ? null
+              : plantMaterial(mesh.material, light, part === "leaves", distant);
           return (mid ? [mesh.geometry, mid] : [mesh.geometry]).map((geometry, i) => {
             const lod = mid ? { near: i === 0, pixels: 64 } : undefined;
             return {
@@ -221,16 +232,18 @@ function WoodyPlanting({
               geometry,
               lod,
               distant,
-              material: plantMaterial(mesh.material, light, part === "leaves", distant, false, lod),
+              material:
+                shared ??
+                plantMaterial(mesh.material, light, part === "leaves", distant, false, lod),
             };
           });
         }),
       ),
-    [nodes, light],
+    [nodes, light, walkMode],
   );
   useEffect(
     () => () => {
-      for (const b of batches) b.material.dispose();
+      for (const material of new Set(batches.map((b) => b.material))) material.dispose();
     },
     [batches],
   );
@@ -273,7 +286,7 @@ function WoodyPlanting({
             planet={planet}
             material={material}
             distant={distant}
-            castShadow={!distant && !lod?.near}
+            castShadow={!distant && (!walkMode || !lod?.near)}
             lod={lod}
           />
         );
