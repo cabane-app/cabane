@@ -271,7 +271,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
                 shadows="percentage"
                 dpr={canvasDpr}
                 frameloop={!documentVisible ? "never" : walkMode ? "always" : "demand"}
-                antialias={quality.antialias}
+                antialias={false}
               >
                 <SceneOverlayLayout dashboard={dashboard}>
                   <RoomHoverProvider scope={`${floor.id}-${mode}`}>

@@ -64,10 +64,9 @@
 .scene-context,
 .scene-menu summary {
   color: #f4f7f2;
-  background: color-mix(in srgb, #11201c 76%, transparent);
+  background: color-mix(in srgb, #11201c 84%, transparent);
   border: 1px solid color-mix(in srgb, #f2fff8 17%, transparent);
   box-shadow: 0 16px 42px rgba(17, 29, 25, 0.18);
-  backdrop-filter: blur(16px) saturate(1.15);
 }
 
 .scene-context {

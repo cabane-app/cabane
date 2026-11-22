@@ -19,14 +19,12 @@
   background: transparent;
   border: 0;
   cursor: pointer;
-  filter: drop-shadow(0 7px 14px rgba(17, 28, 23, 0.18));
   opacity: 0;
   visibility: hidden;
   transform: translateY(5px) scale(0.97);
   transition:
     opacity 0.22s var(--ease-out-quart),
     transform 0.22s var(--ease-out-quart),
-    filter 0.18s ease,
     visibility 0s linear 0.22s;
   pointer-events: none;
   will-change: opacity, transform;
@@ -40,7 +38,6 @@
 }
 .room-status-overlay[data-visible="true"]:is(:hover, [data-hovered="true"]) {
   transform: translateY(-2px);
-  filter: drop-shadow(0 12px 22px rgba(17, 28, 23, 0.3));
 }
 .room-status-overlay:active {
   transform: translateY(0) scale(0.97);

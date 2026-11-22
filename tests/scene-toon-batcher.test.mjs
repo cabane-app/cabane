@@ -375,7 +375,9 @@ await withModules(async (load) => {
     scene.add(mesh);
     const original = material.onBeforeCompile;
     let shader;
+    const linked = { currentProgram: {} };
     const renderer = {
+      properties: { get: () => linked },
       info: { render: { frame: 0 } },
       render(currentScene, currentCamera) {
         currentScene.updateMatrixWorld(true);
@@ -394,7 +396,14 @@ await withModules(async (load) => {
       camera.position.set(x, 4, 5);
       camera.lookAt(0, 2.6, 0);
       mask.render(renderer, scene, camera);
-      const plane = shader.uniforms.cabaneLightWallPlanes.value[0];
+      const maskUniform = shader.uniforms.cabaneLightWallPlanes;
+      assert.equal(maskUniform.needsUpdate, true);
+      const plane = maskUniform.value[0];
+      assert.equal(maskUniform.needsUpdate, false, "the program already has this snapshot");
+      const previousProgram = linked.currentProgram;
+      linked.currentProgram = {};
+      assert.equal(maskUniform.needsUpdate, true, "a fresh shader variant needs its own upload");
+      linked.currentProgram = previousProgram;
       const distance = (x) => {
         const point = new Vector3(x, 1, 1)
           .applyMatrix4(floor.matrixWorld)
@@ -442,10 +451,10 @@ await withModules(async (load) => {
       };
       batch.material.onBeforeCompile(shader, f.renderer);
       assert.match(shader.vertexShader, /batchingMatrix = mat4\(1.0\)/);
-      assert.match(shader.fragmentShader, /directLight.color \*= step/);
+      assert.match(shader.fragmentShader, /pointLight.distance <= 0.0 \|\| dot\(toLamp,toLamp\)/);
       assert.match(
         shader.fragmentShader,
-        /if \(pointLight\.color != vec3\(0\.0\)\) \{\s*getPointLightInfo/,
+        /dot\(cabaneLightWallPlanes\[ i \], vec4\(geometryPosition, 1.0\)\) >= -0.001\) \{\s*getPointLightInfo/,
       );
     };
     for (let i = 0; i < 3; i++)

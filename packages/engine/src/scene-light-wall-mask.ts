@@ -19,7 +19,6 @@ type Hooks = Pick<Material, "onBeforeCompile" | "onBeforeRender" | "customProgra
 type Patch = {
   original: Hooks;
   owners: Set<SceneLightWallMask>;
-  uniform: { value: Vector4[] };
   onDispose: () => void;
 };
 const patches = new WeakMap<Material, Patch>();
@@ -65,16 +64,23 @@ function wallPlanes(renderer: WebGLRenderer, scene: Scene, camera: Camera): Vect
 const pointLightInfo = "getPointLightInfo( pointLight, geometryPosition, directLight );";
 const directLightContribution =
   "RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );";
-// Keep preallocated lights in the program layout so switching them on only
-// changes uniforms. Their zero color needs no attenuation, mask or shading.
+// Keep the existing shader layout on light toggles. Outside a lamp’s cutoff
+// or behind its wall the direct contribution is exactly zero; skip its BRDF.
 const maskedLighting = ShaderChunk.lights_fragment_begin
   .replace(
     pointLightInfo,
-    `if (pointLight.color != vec3(0.0)) {
-      ${pointLightInfo}
-      directLight.color *= step(-0.001, dot(cabaneLightWallPlanes[ i ], vec4(geometryPosition, 1.0)));`,
+    `{ vec3 toLamp = pointLight.position - geometryPosition;
+     if (pointLight.color != vec3(0.0) &&
+         (pointLight.distance <= 0.0 || dot(toLamp,toLamp) < pointLight.distance * pointLight.distance) &&
+         dot(cabaneLightWallPlanes[ i ], vec4(geometryPosition, 1.0)) >= -0.001) {
+       ${pointLightInfo}`,
   )
-  .replace(directLightContribution, `${directLightContribution}\n    }`);
+  .replace(directLightContribution, `${directLightContribution}\n    } }`);
+
+// Uniforms live on the linked WebGL program. Three uploads plain vec4 arrays
+// again on every material switch. Share the snapshot across materials using
+// that program, including when a mesh selects a different shader variant.
+const uploadedPlanes = new WeakMap<object, Vector4[]>();
 
 /** Clip each source at its wall's inner face, retaining illumination around the bulb. */
 export class SceneLightWallMask {
@@ -97,18 +103,33 @@ export class SceneLightWallMask {
       patch = {
         original: { onBeforeCompile, onBeforeRender, customProgramCacheKey },
         owners: new Set(),
-        uniform: { value: [] },
         onDispose: () => {},
       };
       const installed = patch;
+      let planes: Vector4[] = [];
+      let properties: { currentProgram?: object } | undefined;
+      const uniform = {
+        get needsUpdate() {
+          const program = properties?.currentProgram;
+          return !program || uploadedPlanes.get(program) !== planes;
+        },
+        get value() {
+          const program = properties?.currentProgram;
+          if (program) uploadedPlanes.set(program, planes);
+          return planes;
+        },
+      };
       material.onBeforeRender = function (renderer, scene, camera, geometry, object, group) {
         onBeforeRender.call(this, renderer, scene, camera, geometry, object, group);
         // Shared imported materials can also render in another canvas or an unmasked preview.
-        installed.uniform.value = wallPlanes(renderer, scene, camera);
+        planes = wallPlanes(renderer, scene, camera);
+        // Read currentProgram lazily in the upload above. Three selects it
+        // after onBeforeRender and before WebGLUniforms.upload.
+        properties = renderer.properties?.get(this) as typeof properties;
       };
       material.onBeforeCompile = function (shader, renderer) {
         onBeforeCompile.call(this, shader, renderer);
-        shader.uniforms.cabaneLightWallPlanes = installed.uniform;
+        shader.uniforms.cabaneLightWallPlanes = uniform;
         shader.fragmentShader = `#if NUM_POINT_LIGHTS > 0
           uniform vec4 cabaneLightWallPlanes[ NUM_POINT_LIGHTS ];
           #endif\n${shader.fragmentShader}`.replace(
@@ -121,7 +142,7 @@ export class SceneLightWallMask {
           customProgramCacheKey === Material.prototype.customProgramCacheKey
             ? onBeforeCompile.toString()
             : customProgramCacheKey.call(this);
-        return `${key}|cabane-light-wall-mask-v2`;
+        return `${key}|cabane-light-wall-mask-v3`;
       };
       patches.set(material, installed);
       installed.onDispose = () => {
