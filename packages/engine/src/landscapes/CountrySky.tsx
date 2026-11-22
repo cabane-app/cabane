@@ -58,12 +58,17 @@ void main(){
    gl_FragColor=vec4(space+vec3(.036,.084,.15)*halo+starlight(dir),1.);
  } else {
  vec2 uv=vec2(.57+atan(dir.z,dir.x)/6.283185,asin(clamp(dir.y,0.,1.))/1.570796);
- vec3 day=texture2D(clouds,uv).rgb;
+ // Adjacent rays can cross atan's longitude seam. Use their shortest wrapped
+ // distance so the panorama keeps the same mip level on both sides.
+ vec2 dx=dFdx(uv),dy=dFdy(uv);
+ dx.x-=round(dx.x);
+ dy.x-=round(dy.x);
+ vec3 day=textureGrad(clouds,uv,dx,dy).rgb;
  day=mix(day,vec3(.26,.38,.49),smoothstep(0.,.34,-dir.y));
  float luma=dot(day,vec3(.21,.72,.07));
  day=mix(day,vec3(luma)*vec3(.87,.95,1.05),.7*overcast)*(1.-.39*overcast);
  vec3 night=mix(vec3(.043,.054,.079),vec3(.007,.014,.034),smoothstep(0.,.5,uv.y));
- if(hasStars)night+=max(texture2D(stars,uv).rgb-.025,0.)*vec3(.4,.49,.66)*(.035+.965*smoothstep(.016,.57,dir.y))*(1.-overcast);
+ if(hasStars)night+=max(textureGrad(stars,uv,dx,dy).rgb-.025,0.)*vec3(.4,.49,.66)*(.035+.965*smoothstep(.016,.57,dir.y))*(1.-overcast);
  gl_FragColor=vec4(mix(night,day,daylight),1.);
  }
  #include <colorspace_fragment>

@@ -4,6 +4,7 @@ import { useSceneStyle } from "../scene-style";
 import type { DeviceModelRegistry, HomeManifest } from "../types";
 import { worldBoundsForFloorScene } from "../pools/pool-footprint";
 import { deriveFloorLevels } from "../building/floor-levels";
+import { GROUND_ELEVATION_METERS } from "../ground-elevation";
 
 import { homeGroundFrame } from "../architecture-scene/diorama-frame";
 import { createTerrainSurface } from "../terrain/terrain-surface";
@@ -70,7 +71,7 @@ export function HomeLandscape({
       terrain: !apartment ? createTerrainSurface(manifest.home.terrain, manifest.floors) : null,
       x: lot?.centerX ?? (minX + maxX) / 2,
       z: lot?.centerZ ?? (minZ + maxZ) / 2,
-      y: base - apartment - 0.07,
+      y: base - apartment + GROUND_ELEVATION_METERS,
     };
   }, [manifest, devices, walkMode, grounds, style]);
   return (

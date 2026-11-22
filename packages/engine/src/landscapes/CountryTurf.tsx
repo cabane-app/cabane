@@ -170,13 +170,16 @@ export function CountryTurf({
         varyings +
         turfNoise +
         shader.fragmentShader.replace("#include <map_fragment>", lawn);
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <lights_fragment_begin>",
+        countrysideLights,
+      );
       if (profile === "lawn") return;
       Object.assign(shader.uniforms, settings);
       shader.fragmentShader =
         "uniform sampler2D treeShade,bedMask,duff,duffNormal;uniform vec4 bedBounds;uniform bool hasDuff; uniform vec2 plotCenter,plotHalf; uniform vec3 airColor;\n" +
         shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader
-        .replace("#include <lights_fragment_begin>", countrysideLights)
         .replace(
           lawn,
           `
@@ -191,10 +194,12 @@ export function CountryTurf({
 
         vec2 bedUv=(lawnMeters-bedBounds.xy)/bedBounds.zw;
         vec2 maskEdge=min(bedUv,1.-bedUv)*bedBounds.zw;
-        vec3 bed=texture2D(bedMask,bedUv).rgb*smoothstep(0.,1.5,min(maskEdge.x,maskEdge.y));
+        // The surveyed cap and the parcel sample the same lawn at their shared edge.
+        float verge=smoothstep(.06,1.25+.85*growth,edge);
+        vec3 bed=texture2D(bedMask,bedUv).rgb*verge*smoothstep(0.,1.5,min(maskEdge.x,maskEdge.y));
         debrisUv=mat2(.89,.456,-.456,.89)*lawnMeters/2.4;
         float shelter=bed.b;
-        coverage=smoothstep(.09,.78,bed.r*(.67+.6*turfNoise(lawnMeters*1.5)))*smoothstep(.10,.8,edge);
+        coverage=smoothstep(.09,.78,bed.r*(.67+.6*turfNoise(lawnMeters*1.5)));
         vec3 understory=mix(vec3(.65,.82,.59),vec3(.36,.52,.39),shelter);
         diffuseColor.rgb*=mix(vec3(1.),understory,bed.r);
         if(hasDuff && coverage>.001){
@@ -243,12 +248,14 @@ export function CountryTurf({
           `
       #if NUM_DIR_LIGHTS > 0
         float terminator=smoothstep(-.50,.28,dot(normal,directionalLights[0].direction));
-        outgoingLight*=mix(vec3(.41,.53,.65),vec3(1.),terminator);
+        // Planet-scale lighting starts beyond the flat parcel, including at night.
+        float globe=smoothstep(2.,15.,edge);
+        outgoingLight*=mix(vec3(1.),vec3(.41,.53,.65),(1.-terminator)*globe);
       #endif
       float limb=pow(1.-clamp(dot(normal, isOrthographic?vec3(0.,0.,1.):normalize(vViewPosition)),0.,1.),4.);
-      outgoingLight+=vec3(.047,.129,.185)*limb*(.1+.9*airColor.g)*smoothstep(30.,110.,eyeDepth);
+      outgoingLight+=vec3(.047,.129,.185)*smoothstep(2.,15.,edge)*limb*(.1+.9*airColor.g)*smoothstep(30.,110.,eyeDepth);
       float haze=1.-exp(-max(0.,eyeDepth-65.)*.0017);
-      if(!isOrthographic) outgoingLight=mix(outgoingLight,airColor,haze*.65);
+      if(!isOrthographic) outgoingLight=mix(outgoingLight,airColor,haze*.65*smoothstep(2.,15.,edge));
       #include <opaque_fragment>
     `,
         );
