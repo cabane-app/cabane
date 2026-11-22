@@ -41,12 +41,20 @@ export class SceneGeometryLod {
     this.running = true;
     const prepared: Array<{ source: BufferGeometry; entry: Entry; levels: GeometryLod[] }> = [];
     while (this.queue.length && !this.disposed) {
-      const { source, entry } = this.queue.shift()!;
-      if (this.entries.get(source) !== entry) continue;
-      const levels = await this.prepare(source);
-      if (this.disposed || this.entries.get(source) !== entry)
-        levels.forEach((level) => level.geometry.dispose());
-      else prepared.push({ source, entry, levels });
+      // Keep the same worker busy while the main thread is presenting frames.
+      // Bound both the number of transfers and the geometry copied in one turn.
+      const pending = [];
+      let vertices = 0;
+      while (this.queue.length && pending.length < 12) {
+        const { source, entry } = this.queue[0];
+        const count = source.attributes.position.count;
+        if (pending.length && vertices + count > 32_768) break;
+        this.queue.shift();
+        if (this.entries.get(source) !== entry) continue;
+        vertices += count;
+        pending.push(this.prepare(source).then((levels) => ({ source, entry, levels })));
+      }
+      prepared.push(...(await Promise.all(pending)));
     }
     // Publish complete families together; partial worker replies must not cause
     // repeated GPU repacking while the remaining geometry is still preparing.

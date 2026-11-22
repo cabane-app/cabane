@@ -29,6 +29,7 @@ type BatchGroup = { chunk: number; sources: Mesh[]; vertices: number };
 // The full-detail and LOD buffers are transformed, copied and uploaded together.
 // Bound the work of a single rebuild and of all rebuilds in the same frame.
 const PACKED_VERTICES_PER_FRAME = 65_536;
+const identity = new Matrix4();
 
 /** Render-only substitution. Original objects/materials remain intact between frames. */
 export class SceneToonBatcher {
@@ -189,9 +190,11 @@ export class SceneToonBatcher {
       }
     }
     const originals: Array<[Mesh, Mesh["material"], number]> = [];
+    const hiddenLeaves: Mesh[] = [];
     const attached: BatchedMesh[] = [];
     let remaining = PACKED_VERTICES_PER_FRAME;
     let pending = false;
+    const worldSpace = scene.matrixWorld.equals(identity);
     this.inverse.copy(scene.matrixWorld).invert();
     try {
       for (const [key, { sources, vertices }] of groups) {
@@ -225,13 +228,15 @@ export class SceneToonBatcher {
         }
         for (let index = 0; index < sources.length; index++) {
           const source = sources[index];
-          this.matrix.multiplyMatrices(this.inverse, source.matrixWorld);
+          const relative = worldSpace
+            ? source.matrixWorld
+            : this.matrix.multiplyMatrices(this.inverse, source.matrixWorld);
           const material = source.material as MeshToonMaterial;
           // Animation/tint changes draw the original mesh, never rewrite static
           // vertex buffers during a frame. Children remain independently eligible.
           let visible =
             canRenderToonBatch(source) &&
-            batch.matrices[index].equals(this.matrix) &&
+            batch.matrices[index].equals(relative) &&
             batch.colors[index].equals(material.color);
           for (let parent: Mesh["parent"] = source; visible && parent; parent = parent.parent)
             visible = parent.visible;
@@ -242,13 +247,16 @@ export class SceneToonBatcher {
             batch.mesh.setGeometryIdAt(index, geometryId);
             batch.selectedIds[index] = geometryId;
           }
-          // Layer rejection precedes frustum tests, geometry uploads and depth
-          // sorting in Three. Unlike visible=false, it keeps children drawable.
-          // Retain material masking so downstream lighting preparation also
-          // skips the authored materials of these render-only substitutes.
-          originals.push([source, source.material, source.layers.mask]);
-          source.material = this.hidden;
-          source.layers.mask = 0;
+          if (!source.children.length) {
+            // Three can skip a replaced leaf before culling, lighting and shadow work.
+            hiddenLeaves.push(source);
+            source.visible = false;
+          } else {
+            // A batched parent can still have independently drawn children.
+            originals.push([source, source.material, source.layers.mask]);
+            source.material = this.hidden;
+            source.layers.mask = 0;
+          }
         }
         scene.add(batch.mesh);
         batch.mesh.matrixWorld.copy(scene.matrixWorld);
@@ -256,6 +264,7 @@ export class SceneToonBatcher {
       }
       render();
     } finally {
+      for (const source of hiddenLeaves) source.visible = true;
       for (const [source, material, layers] of originals) {
         source.material = material;
         source.layers.mask = layers;

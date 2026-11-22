@@ -249,6 +249,55 @@ await withModules(async (load) => {
     assert.equal(invalidations, 2);
     lod.dispose();
   });
+  test("pipelined detail preparation publishes together and discards removed sources", async () => {
+    const scene = new Scene();
+    const camera = new OrthographicCamera(-50, 50, 50, -50, 0.1, 100);
+    const material = new MeshToonMaterial();
+    const meshes = Array.from(
+      { length: 24 },
+      () => new Mesh(new SphereGeometry(1, 16, 12), material),
+    );
+    scene.add(...meshes);
+    const replacements = new Map(
+      meshes.map(({ geometry }) => [geometry, new SphereGeometry(1, 8, 6)]),
+    );
+    const waiting = new Map();
+    let invalidations = 0;
+    const lod = new SceneGeometryLod(
+      () => invalidations++,
+      (source) => new Promise((resolve) => waiting.set(source, resolve)),
+    );
+    const frame = (draw = () => {}) => lod.render(scene, camera, 100, draw);
+    try {
+      frame();
+      assert.ok(waiting.size > 1 && waiting.size < meshes.length);
+      const removed = meshes[0];
+      const stale = replacements.get(removed.geometry);
+      let disposed = false;
+      stale.addEventListener("dispose", () => {
+        disposed = true;
+      });
+      scene.remove(removed);
+      frame();
+      while (waiting.size) {
+        assert.equal(invalidations, 0);
+        const replies = [...waiting].reverse();
+        waiting.clear();
+        for (const [source, resolve] of replies)
+          resolve([{ geometry: replacements.get(source), error: 0 }]);
+        await new Promise(setImmediate);
+      }
+      await lod.ready;
+      assert.equal(invalidations, 1);
+      assert.ok(disposed);
+      const expected = meshes.slice(1).map((mesh) => replacements.get(mesh.geometry));
+      frame(() => meshes.slice(1).forEach((mesh, i) => assert.equal(mesh.geometry, expected[i])));
+    } finally {
+      lod.dispose();
+      meshes.forEach((mesh) => mesh.geometry.dispose());
+      material.dispose();
+    }
+  });
   test("repeated worker waves preserve stationary detail and GPU buffers of settled meshes", async () => {
     const source = new SphereGeometry(1, 48, 32);
     const low = new SphereGeometry(1, 8, 6);

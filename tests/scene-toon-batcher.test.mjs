@@ -142,6 +142,33 @@ await withModules(async (load) => {
     assert.equal(f.a.material, original);
     f.batcher.dispose();
   });
+  test("changing a device indicator only rebuilds its own batch", () => {
+    const f = fixture();
+    const indicators = [f.a.clone(false), f.b.clone(false)];
+    for (const mesh of indicators) mesh.userData.staticBatchGroup = "device-status";
+    f.scene.add(...indicators);
+    const buffers = () => {
+      let batches;
+      f.batcher.render(f.renderer, f.scene, f.camera, () => {
+        batches = f.scene.children.filter((o) => o.isBatchedMesh).map((o) => o.geometry);
+        assert.equal(batches.length, 2);
+        assert.ok(f.a.visible && f.child.visible, "the unbatched child still draws");
+        assert.ok(indicators.every((mesh) => !mesh.visible));
+      });
+      assert.ok(indicators.every((mesh) => mesh.visible));
+      return batches;
+    };
+    try {
+      const [house, indicatorsBefore] = buffers();
+      indicators[0].geometry = new SphereGeometry(0.016, 10, 6);
+      const [sameHouse, changedIndicators] = buffers();
+      assert.equal(sameHouse, house);
+      assert.notEqual(changedIndicators, indicatorsBefore);
+    } finally {
+      f.batcher.dispose();
+      indicators[0].geometry.dispose();
+    }
+  });
   test("preserves all instances instead of treating an InstancedMesh as one ordinary mesh", () => {
     const f = fixture();
     const instances = new InstancedMesh(f.a.geometry, f.a.material, 10);
@@ -302,7 +329,9 @@ await withModules(async (load) => {
             seen.add(batch.geometry);
             newVertices += batch.geometry.attributes.position.count;
           }
-          const drawnDirectly = sources.filter((mesh) => mesh.layers.test(f.camera.layers));
+          const drawnDirectly = sources.filter(
+            (mesh) => mesh.visible && mesh.layers.test(f.camera.layers),
+          );
           assert.equal(
             batches.reduce((count, batch) => count + batch.instanceCount, 0) + drawnDirectly.length,
             sources.length,
