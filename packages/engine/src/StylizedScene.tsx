@@ -21,6 +21,7 @@ import { ShadowMapCache } from "./shadow-map-cache";
 import { SceneGeometryLod } from "./scene-batching/SceneGeometryLod";
 import { SceneToonBatcher } from "./scene-batching/SceneToonBatcher";
 import { SceneLightWallMask, SceneLightWallMaskContext } from "./scene-light-wall-mask";
+import { SceneShaderWarmup } from "./scene-shader-warmup";
 
 /** Decorative mesh shells are replaced by a single visible-depth contour pass. */
 export const SceneContourContext = createContext(false);
@@ -79,6 +80,7 @@ function SceneContourPass({
       shadows: new ShadowMapCache(),
       batches: new SceneToonBatcher(),
       lod: new SceneGeometryLod(invalidate),
+      warmup: new SceneShaderWarmup(),
     };
   }, [antialias, invalidate]);
   useEffect(
@@ -89,13 +91,19 @@ function SceneContourPass({
       resources.quad.dispose();
       resources.batches.dispose();
       resources.lod.dispose();
+      resources.warmup.dispose();
     },
     [resources],
   );
   useEffect(() => {
-    gl.domElement.addEventListener("webglcontextrestored", resources.shadows.reset);
-    return () => gl.domElement.removeEventListener("webglcontextrestored", resources.shadows.reset);
-  }, [gl, resources]);
+    const restored = () => {
+      resources.shadows.reset();
+      resources.warmup.reset();
+      invalidate();
+    };
+    gl.domElement.addEventListener("webglcontextrestored", restored);
+    return () => gl.domElement.removeEventListener("webglcontextrestored", restored);
+  }, [gl, resources, invalidate]);
   useEffect(() => {
     resources.material.uniforms.inkStrength.value = detailedFinishes ? 0.35 : 0.72;
     resources.material.uniforms.simsStyle.value = style === "sims";
@@ -122,26 +130,38 @@ function SceneContourPass({
     );
     const previousTarget = gl.getRenderTarget();
     const autoClear = gl.autoClear;
+    // Set when new shader programs are compiling; the previous frame stays on screen.
+    let compiling = false;
     try {
       gl.autoClear = true;
       gl.setRenderTarget(target);
       resources.shadows.render(gl, scene, camera, () =>
         resources.lod.render(scene, camera, size.y / gl.getPixelRatio(), () => {
-          const pending = resources.batches.render(gl, scene, camera, () =>
-            lightWalls.render(gl, scene, camera),
-          );
+          const pending = resources.batches.render(gl, scene, camera, () => {
+            lightWalls.prepare(scene);
+            compiling = !resources.warmup.render(
+              gl,
+              scene,
+              camera,
+              () => gl.render(scene, camera),
+              invalidate,
+            );
+          });
           if (pending) invalidate();
         }),
       );
-      material.uniforms.hasImportedModels.value = resources.importedMask.render(
-        gl,
-        scene,
-        camera,
-        size.x,
-        size.y,
-      );
-      gl.setRenderTarget(previousTarget);
-      quad.render(gl);
+      // A synchronous compile here would queue behind the programs still compiling.
+      if (!compiling) {
+        material.uniforms.hasImportedModels.value = resources.importedMask.render(
+          gl,
+          scene,
+          camera,
+          size.x,
+          size.y,
+        );
+        gl.setRenderTarget(previousTarget);
+        quad.render(gl);
+      }
     } catch (error) {
       if (!onRenderFailure) throw error;
       onRenderFailure(error);
@@ -161,6 +181,7 @@ function SceneContourPass({
         onRenderFailure?.(new Error("The WebGL context was lost."));
         return;
       }
+      if (compiling) return; // Present once the compiled frame has drawn.
       presented.current = true;
       onFirstFrame();
     }

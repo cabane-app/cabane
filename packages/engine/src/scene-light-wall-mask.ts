@@ -139,13 +139,18 @@ export class SceneLightWallMask {
     this.materials.add(material);
   }
 
-  render(renderer: WebGLRenderer, scene: Scene, camera: Camera) {
+  /** Patch every visible lit material before its program is compiled or drawn. */
+  prepare(scene: Scene) {
     scene.traverseVisible((object) => {
       if (!(object instanceof Mesh)) return;
       const mesh = object as Mesh<BufferGeometry, Material | Material[]>;
       for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material])
         this.prepareMaterial(material);
     });
+  }
+
+  render(renderer: WebGLRenderer, scene: Scene, camera: Camera) {
+    this.prepare(scene);
     renderer.render(scene, camera);
   }
 
