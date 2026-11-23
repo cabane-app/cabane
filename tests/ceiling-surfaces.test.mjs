@@ -20,6 +20,38 @@ await withModules(async (load) => {
   const { composeHomeManifest, polygonSignedArea } = await load("/packages/engine/src/index.ts");
   const { makeStairProject, emptyExtensions } = await load("/tests/fixtures/multiple-floors.ts");
 
+  test("flat ceiling paint uses both footprint and room paths and omission restores the default", async () => {
+    const project = makeStairProject();
+    const floor = project.floors[0];
+    for (const partial of [false, true]) {
+      const painted = {
+        ...floor,
+        rooms: partial ? [...floor.rooms, { ...floor.rooms[0], id: "extra" }] : floor.rooms,
+        ceilings: [
+          {
+            id: "painted",
+            kind: "flat",
+            roomIds: floor.rooms.map((r) => r.id),
+            heightMeters: 2.4,
+            color: "#234567",
+          },
+        ],
+      };
+      const renderer = await create(createElement(CeilingSurfaces, { floor: painted }));
+      try {
+        assert.ok(renderer.scene.findAllByType("Mesh").length);
+        for (const mesh of renderer.scene.findAllByType("Mesh"))
+          assert.equal(mesh.instance.material.color.getHexString(), "234567");
+        delete painted.ceilings[0].color;
+        await renderer.update(createElement(CeilingSurfaces, { floor: { ...painted } }));
+        for (const mesh of renderer.scene.findAllByType("Mesh"))
+          assert.equal(mesh.instance.material.color.getHexString(), "f2efe6");
+      } finally {
+        await renderer.unmount();
+      }
+    }
+  });
+
   test("nearly coincident terrace edges preserve basement slabs, ceiling holes and every scene view", async () => {
     const polygon = [
       [0, 0],
@@ -230,7 +262,15 @@ await withModules(async (load) => {
       coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },
       footprint: polygon,
       rooms: [{ id: "living", polygon }],
-      ceilings: [{ id: "living-ceiling", kind: "flat", roomIds: ["living"], heightMeters: 3 }],
+      ceilings: [
+        {
+          id: "living-ceiling",
+          kind: "flat",
+          roomIds: ["living"],
+          heightMeters: 3,
+          color: "#234567",
+        },
+      ],
       defaultCeilingHeightMeters: 3,
       floorToFloorHeightMeters: 3.2,
     };

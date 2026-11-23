@@ -135,6 +135,7 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
       ...(ceiling?.kind === "flat"
         ? {
             ceilingId: ceiling.id,
+            ...(ceiling.color !== undefined ? { ceilingColor: ceiling.color } : {}),
             ceilingHeightMeters: ceiling.heightMeters,
           }
         : {}),

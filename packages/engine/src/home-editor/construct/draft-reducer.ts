@@ -501,7 +501,23 @@ const reduceDraftAction = (
       return {
         ...draft,
         rooms: previous
-          ? draft.rooms.map((room) => (room.id === action.roomId ? next : room))
+          ? draft.rooms.map((room) => {
+              const updated = room.id === action.roomId ? next : room;
+              // A flat ceiling can span several rooms; paint its shared identity.
+              if (
+                "ceilingColor" in action.changes &&
+                (room.id === action.roomId ||
+                  (previous.ceilingId &&
+                    room.ceilingId === previous.ceilingId &&
+                    room.ceilingHeightMeters === previous.ceilingHeightMeters))
+              ) {
+                const { ceilingColor: _color, ...rest } = updated;
+                return action.changes.ceilingColor === undefined
+                  ? rest
+                  : { ...rest, ceilingColor: action.changes.ceilingColor };
+              }
+              return updated;
+            })
           : [...draft.rooms, next],
         selection: { kind: "room", id: action.roomId },
       };

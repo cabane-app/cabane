@@ -55,6 +55,7 @@ export interface EditorRoomIdentity {
   floorFinish?: FloorFinishSpec;
   floorZones?: FloorFinishZoneSpec[];
   ceilingId?: string;
+  ceilingColor?: string | undefined;
   ceilingHeightMeters?: number;
   anchor: PlanPoint;
 }

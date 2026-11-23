@@ -16,6 +16,41 @@ await withModules(async (load) => {
     composeHomeManifest,
   } = homeProjectApi;
 
+  const { ceilingSchema } = await load("/packages/engine/src/home-project/schema-ceiling.ts");
+  test("flat ceiling color accepts optional six-digit hex and rejects invalid saved values", () => {
+    for (const color of [undefined, "#aBcD09", "#000000", "#ffffff"]) {
+      const issues = [];
+      ceilingSchema(
+        {
+          id: "ceiling",
+          kind: "flat",
+          roomIds: ["room"],
+          heightMeters: 2.5,
+          ...(color === undefined ? {} : { color }),
+        },
+        "ceiling",
+        issues,
+      );
+      assert.deepEqual(issues, []);
+    }
+    for (const color of [null, 123, "red", "#abc", "#12345678", "123456", "#gggggg"]) {
+      const issues = [];
+      ceilingSchema(
+        { id: "ceiling", kind: "flat", roomIds: ["room"], heightMeters: 2.5, color },
+        "ceiling",
+        issues,
+      );
+      assert.ok(issues.some((issue) => issue.path === "ceiling.color"));
+    }
+    const issues = [];
+    ceilingSchema(
+      { id: "slope", kind: "sloped", roomIds: ["room"], planes: [], color: "#123456" },
+      "ceiling",
+      issues,
+    );
+    assert.ok(issues.some((issue) => issue.path === "ceiling.color"));
+  });
+
   const fixtureFloorForPlacementTests = () => ({
     id: "floor",
     name: "Floor",

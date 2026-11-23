@@ -94,7 +94,10 @@ export function PlatformSlab({
               castShadow={!buryInTerrain}
               receiveShadow
             >
-              <ToonMaterial attach="material-0" color={CEILING_SURFACE_COLOR} />
+              <ToonMaterial
+                attach="material-0"
+                color={piece.ceilingColor ?? CEILING_SURFACE_COLOR}
+              />
               <ToonMaterial attach="material-1" color={PLATFORM_SLAB_EDGE_COLOR} />
             </mesh>
           )}
@@ -106,7 +109,7 @@ export function PlatformSlab({
             receiveShadow={false}
           >
             <ToonMaterial
-              color={CEILING_SURFACE_COLOR}
+              color={piece.ceilingColor ?? CEILING_SURFACE_COLOR}
               side={buryInTerrain ? BackSide : DoubleSide}
             />
           </mesh>

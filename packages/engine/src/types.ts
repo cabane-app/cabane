@@ -280,6 +280,7 @@ export type PassageSpec = PassageBaseSpec &
 export type OpeningSpec = DoorSpec | WindowSpec | PassageSpec;
 
 export interface FlatCeilingSpec {
+  color?: string;
   id: string;
   kind: "flat";
   roomIds: readonly string[];
