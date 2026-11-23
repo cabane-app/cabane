@@ -1,3 +1,4 @@
+import { usePlanetMode, setPlanetMode } from "./landscapes/planet-mode";
 import { useState } from "react";
 import { useSceneStyle, setSceneStyle } from "./scene-style";
 import { useMeasurementUnits, setMeasurementUnits } from "./measurement-units";
@@ -22,13 +23,16 @@ import "./walk-preferences.css";
 
 export function ScenePreferences({
   section,
+  homeId,
   profile,
   onWeatherSourceChange,
 }: {
+  homeId?: string;
   section: "orbital-view" | "editor" | "explore";
   profile?: RuntimeBindingProfile;
   onWeatherSourceChange?: ((source: WeatherSource) => Promise<void>) | undefined;
 }) {
+  const planetMode = usePlanetMode(homeId ?? "");
   const units = useMeasurementUnits();
   const sceneStyle = useSceneStyle();
   const [overlayPreferences, setOverlayPreferences] = useState(loadOverlayPreferences);
@@ -63,6 +67,22 @@ export function ScenePreferences({
     <div className="scene-preferences">
       {section === "orbital-view" && (
         <>
+          {homeId && (
+            <div className="walk-preferences__group">
+              <label className="walk-preferences__row">
+                <span>
+                  <strong>Planet mode</strong>
+                  <small>Surround this home with a countryside globe.</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={planetMode}
+                  onChange={(event) => setPlanetMode(homeId, event.target.checked)}
+                />
+                <span className="walk-preferences__switch" aria-hidden="true" />
+              </label>
+            </div>
+          )}
           <div className="walk-preferences__group">
             <h3>Visual style</h3>
             <fieldset className="walk-preferences__choices">

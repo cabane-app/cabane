@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement, useEffect } from "react";
 import { create } from "@react-three/test-renderer";
+import { MeshStandardMaterial, PerspectiveCamera, Scene, Texture } from "three";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -9,6 +10,46 @@ await withModules(async (load) => {
   const { RetainedArrangeScene } = await load(
     "/apps/web/src/editor-workspace/RetainedArrangeScene.tsx",
   );
+  const { SceneShaderPreparation } = await load("/packages/engine/src/scene-shader-preparation.ts");
+  test("the editor prepares arriving finish maps and tolerates disposal during compilation", () => {
+    const prepare = new SceneShaderPreparation();
+    const material = new MeshStandardMaterial(),
+      scene = new Scene(),
+      camera = new PerspectiveCamera();
+    const finish = new Texture({ width: 1, height: 1 });
+    const reflected = [],
+      uploads = [];
+    let linked = false,
+      compiles = 0;
+    const program = { program: {}, getUniforms: () => reflected.push(program) };
+    const abandoned = { program: {}, getUniforms: () => assert.fail("disposed program") };
+    const renderer = {
+      compile: () => compiles++,
+      info: { programs: [program, abandoned] },
+      initTexture: (texture) => uploads.push(texture),
+      getContext: () => ({
+        getExtension: () => ({ COMPLETION_STATUS_KHR: 1 }),
+        getProgramParameter: () => linked,
+      }),
+    };
+    prepare.observe(material);
+    assert.equal(prepare.ready(renderer, scene, camera), false);
+    material.map = finish;
+    prepare.observe(material);
+    assert.equal(prepare.ready(renderer, scene, camera), false);
+    assert.deepEqual(uploads, [finish]);
+    assert.equal(compiles, 2, "a texture arriving after the first compile changes the shader");
+    abandoned.program = undefined;
+    linked = true;
+    assert.equal(prepare.ready(renderer, scene, camera), true);
+    prepare.observe(material);
+    assert.equal(prepare.ready(renderer, scene, camera), true);
+    assert.deepEqual(reflected, [program]);
+    assert.deepEqual(uploads, [finish]);
+    assert.equal(compiles, 2, "unchanged material revisits need no preparation");
+    finish.dispose();
+    material.dispose();
+  });
   test("Arrange retains geometry while hidden and receives edits on return", async () => {
     let mounts = 0,
       unmounts = 0,

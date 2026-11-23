@@ -119,3 +119,40 @@ test("native initialization never reads or migrates legacy connection storage", 
     assert.equal(result.standaloneMigrationDone, true);
   });
 });
+
+test("returning browsers refresh only the untouched bundled demo", async () => {
+  await withModules(async (load) => {
+    const { initializeWorkspaces } = await load(
+      "/apps/web/src/workspaces/initialize-workspaces.ts",
+    );
+    const { createWorkspaceRepository } = await load("/packages/engine/src/home-project/index.ts");
+    const { ownerProjectRegistries } = await load("/apps/web/src/project-runtime.ts");
+    const { showcaseHomeProject } = await load("/home/src/showcase.ts");
+    const prior = structuredClone(showcaseHomeProject);
+    prior.seedRevision = "blank-v1";
+    delete prior.home.groundMargins;
+    const storage = { getItem: () => null, setItem() {}, removeItem() {} };
+    for (const edited of [false, true]) {
+      const factory = new IDBFactory();
+      const repository = createWorkspaceRepository(factory, ownerProjectRegistries);
+      await repository.initialize(prior);
+      const id = prior.home.id;
+      const copy = await repository.duplicate(id, 0, "Personal copy");
+      const originalCopy = await repository.readRaw(copy.metadata.id);
+      if (edited) await repository.rename(id, 0, "My edited demo");
+      const original = await repository.readRaw(id);
+      await initializeWorkspaces(factory, storage);
+      const refreshed = await repository.readRaw(id);
+      if (edited) assert.equal(refreshed, original);
+      else {
+        const record = (await repository.read(id)).record;
+        assert.deepEqual(record.published, showcaseHomeProject);
+        assert.deepEqual(record.draft, showcaseHomeProject);
+        assert.equal(record.revision, 1);
+      }
+      await initializeWorkspaces(factory, storage);
+      assert.equal(await repository.readRaw(id), refreshed);
+      assert.equal(await repository.readRaw(copy.metadata.id), originalCopy);
+    }
+  });
+});

@@ -45,6 +45,45 @@ await withModules(async (load) => {
     };
     return { scene, camera, batcher, a, b, child, renderer };
   }
+  test("packed draws preserve culled triangle order across cameras and reuse unchanged indices", () => {
+    const f = fixture();
+    for (let i = 0; i < 7; i++) f.scene.add(new Mesh(f.b.geometry, f.b.material));
+    try {
+      f.batcher.render(f.renderer, f.scene, f.camera, () => {
+        const mesh = f.scene.children.find((object) => object.isBatchedMesh);
+        const index = mesh.geometry.index;
+        const draw = (visible) => {
+          const ranges = visible.map(([id, z]) => ({ ...mesh.getGeometryRangeAt(id), z }));
+          const expected = ranges
+            .toSorted((a, b) => a.z - b.z)
+            .flatMap(({ start, count }) => [...index.array.slice(start, start + count)]);
+          mesh.customSort(ranges, f.camera);
+          assert.equal(ranges.length, 1);
+          const [{ start, count }] = ranges;
+          assert.deepEqual([...index.array.slice(start, start + count)], expected);
+        };
+        const visible = [
+          [2, 3],
+          [0, -1],
+          [8, 2],
+        ];
+        draw(visible);
+        const version = index.version;
+        draw(visible);
+        assert.equal(index.version, version);
+        draw([
+          [8, -3],
+          [2, 1],
+        ]);
+        assert.ok(index.version > version);
+        draw([[0, 1]]);
+        draw(visible);
+      });
+    } finally {
+      f.batcher.dispose();
+    }
+  });
+
   test("style shader defines survive batching and switching back", () => {
     const f = fixture();
     const draw = (flat) => {
@@ -141,6 +180,33 @@ await withModules(async (load) => {
     }
     assert.equal(f.a.material, original);
     f.batcher.dispose();
+  });
+  test("changing a device indicator only rebuilds its own batch", () => {
+    const f = fixture();
+    const indicators = [f.a.clone(false), f.b.clone(false)];
+    for (const mesh of indicators) mesh.userData.staticBatchGroup = "device-status";
+    f.scene.add(...indicators);
+    const buffers = () => {
+      let batches;
+      f.batcher.render(f.renderer, f.scene, f.camera, () => {
+        batches = f.scene.children.filter((o) => o.isBatchedMesh).map((o) => o.geometry);
+        assert.equal(batches.length, 2);
+        assert.ok(f.a.visible && f.child.visible, "the unbatched child still draws");
+        assert.ok(indicators.every((mesh) => !mesh.visible));
+      });
+      assert.ok(indicators.every((mesh) => mesh.visible));
+      return batches;
+    };
+    try {
+      const [house, indicatorsBefore] = buffers();
+      indicators[0].geometry = new SphereGeometry(0.016, 10, 6);
+      const [sameHouse, changedIndicators] = buffers();
+      assert.equal(sameHouse, house);
+      assert.notEqual(changedIndicators, indicatorsBefore);
+    } finally {
+      f.batcher.dispose();
+      indicators[0].geometry.dispose();
+    }
   });
   test("preserves all instances instead of treating an InstancedMesh as one ordinary mesh", () => {
     const f = fixture();
@@ -302,7 +368,9 @@ await withModules(async (load) => {
             seen.add(batch.geometry);
             newVertices += batch.geometry.attributes.position.count;
           }
-          const drawnDirectly = sources.filter((mesh) => mesh.layers.test(f.camera.layers));
+          const drawnDirectly = sources.filter(
+            (mesh) => mesh.visible && mesh.layers.test(f.camera.layers),
+          );
           assert.equal(
             batches.reduce((count, batch) => count + batch.instanceCount, 0) + drawnDirectly.length,
             sources.length,
@@ -346,7 +414,9 @@ await withModules(async (load) => {
     scene.add(mesh);
     const original = material.onBeforeCompile;
     let shader;
+    const linked = { currentProgram: {} };
     const renderer = {
+      properties: { get: () => linked },
       info: { render: { frame: 0 } },
       render(currentScene, currentCamera) {
         currentScene.updateMatrixWorld(true);
@@ -365,7 +435,14 @@ await withModules(async (load) => {
       camera.position.set(x, 4, 5);
       camera.lookAt(0, 2.6, 0);
       mask.render(renderer, scene, camera);
-      const plane = shader.uniforms.cabaneLightWallPlanes.value[0];
+      const maskUniform = shader.uniforms.cabaneLightWallPlanes;
+      assert.equal(maskUniform.needsUpdate, true);
+      const plane = maskUniform.value[0];
+      assert.equal(maskUniform.needsUpdate, false, "the program already has this snapshot");
+      const previousProgram = linked.currentProgram;
+      linked.currentProgram = {};
+      assert.equal(maskUniform.needsUpdate, true, "a fresh shader variant needs its own upload");
+      linked.currentProgram = previousProgram;
       const distance = (x) => {
         const point = new Vector3(x, 1, 1)
           .applyMatrix4(floor.matrixWorld)
@@ -396,6 +473,59 @@ await withModules(async (load) => {
     reopened.dispose();
   });
 
+  test("large light pools share one loop under directional shadows and retain lit slots on toggles", () => {
+    const mask = new SceneLightWallMask();
+    const scene = new Scene(),
+      camera = new PerspectiveCamera();
+    const material = new MeshStandardMaterial(),
+      mesh = new Mesh(new BoxGeometry(), material);
+    const lights = Array.from({ length: 61 }, () => new PointLight(0xffffff, 0));
+    scene.add(mesh, ...lights);
+    const renderer = { info: { render: { frame: 0 } }, render() {} };
+    mask.render(renderer, scene, camera);
+    const shader = {
+      uniforms: {},
+      fragmentShader: "#include <lights_fragment_begin>",
+      numPointLights: lights.length,
+      numPointLightShadows: 0,
+      shadowMapEnabled: true,
+    };
+    const updateLights = () => {
+      renderer.info.render.frame++;
+      material.onBeforeRender(renderer, scene, camera, mesh.geometry, mesh, null);
+      return shader.uniforms.cabanePointLightLimit.value;
+    };
+    try {
+      material.onBeforeCompile(shader, renderer);
+      assert.doesNotMatch(
+        shader.fragmentShader,
+        /#pragma unroll_loop_start\s+for \( int i = 0; i < NUM_POINT_LIGHTS/,
+      );
+      assert.equal(updateLights(), 0, "an unlit pool needs no iterations");
+      lights[60].intensity = 1;
+      assert.equal(updateLights(), 61, "every light can still illuminate the model");
+      lights[60].intensity = 0;
+      lights[1].intensity = 1;
+      assert.equal(updateLights(), 2);
+      const shadowed = {
+        ...shader,
+        uniforms: {},
+        fragmentShader: "#include <lights_fragment_begin>",
+        numPointLightShadows: 1,
+      };
+      material.onBeforeCompile(shadowed, renderer);
+      assert.match(
+        shadowed.fragmentShader,
+        /#pragma unroll_loop_start\s+for \( int i = 0; i < NUM_POINT_LIGHTS/,
+      );
+      assert.equal(shadowed.uniforms.cabanePointLightLimit, undefined);
+    } finally {
+      mask.dispose();
+      mesh.geometry.dispose();
+      material.dispose();
+    }
+  });
+
   test("wall lighting preserves static toon buffers and the existing batching shader", () => {
     const f = fixture(),
       mask = new SceneLightWallMask();
@@ -413,10 +543,10 @@ await withModules(async (load) => {
       };
       batch.material.onBeforeCompile(shader, f.renderer);
       assert.match(shader.vertexShader, /batchingMatrix = mat4\(1.0\)/);
-      assert.match(shader.fragmentShader, /directLight.color \*= step/);
+      assert.match(shader.fragmentShader, /pointLight.distance <= 0.0 \|\| dot\(toLamp,toLamp\)/);
       assert.match(
         shader.fragmentShader,
-        /if \(pointLight\.color != vec3\(0\.0\)\) \{\s*getPointLightInfo/,
+        /dot\(cabaneLightWallPlanes\[ i \], vec4\(geometryPosition, 1.0\)\) >= -0.001\) \{\s*getPointLightInfo/,
       );
     };
     for (let i = 0; i < 3; i++)

@@ -2,9 +2,11 @@ import { ElevationEditLayer } from "../editor-preview/construct/ElevationEditLay
 import { EditorConnectionMap } from "./EditorConnectionMap";
 import { NorthOrientationOverlay } from "../editor-preview/construct/NorthOrientationOverlay";
 import { editorCanvasEvents } from "./editor-canvas-events";
+import { EditorStudioLights } from "./EditorStudioLights";
 import { ConstructionPlatformLayer } from "../editor-preview/construct/ConstructionPlatformLayer";
 import { useReferenceCanvas } from "../editor-reference-plan/ReferenceCanvasLayers";
 import type { ReferencePlanController } from "../editor-reference-plan/useReferencePlan";
+import { GroundBorderLayer } from "../editor-preview/construct/GroundBorderLayer";
 import { ConstructionGrid } from "../editor-preview/construct/ConstructionGrid";
 import { WalkStartPointer } from "../editor-preview/construct/WalkStartPointer";
 import { EditableStair } from "../editor-floors/EditableStair";
@@ -21,13 +23,13 @@ import { stableArchitectureModelRegistry } from "@cabane/catalog/architecture";
 import {
   type ManifestIssue,
   deriveFloorLevels,
-  useGraphicsFeature,
+  homeGroundFrame,
   stairFloorIds,
   StylizedScene,
   ArchitectureScene,
 } from "@cabane/engine";
 
-import { Suspense, useMemo, type RefObject } from "react";
+import { Suspense, useMemo, useState, type RefObject } from "react";
 import { RetainedArrangeScene } from "./RetainedArrangeScene";
 
 import { FurnishingSelectionControls } from "../editor-preview/furnish/FurnishingSelectionControls";
@@ -187,10 +189,10 @@ export function HomeEditorScene({
   duplicateArrangeItem,
   deleteSceneItem,
 }: Props) {
-  const studioDaylight = useGraphicsFeature("lighting");
   const constructPlan = mode === "construct" && cameraView === "top";
   const constructPreview = mode === "construct" && cameraView === "3d";
   const showArchitecture = mode === "furnish" || constructPreview;
+  const [architectureReady, setArchitectureReady] = useState(false);
   const stairRegistries = useMemo(
     () => ({ furnishingModels, deviceModels }),
     [furnishingModels, deviceModels],
@@ -199,6 +201,10 @@ export function HomeEditorScene({
     reference,
     constructEditor.previewFloor,
     constructPlan,
+  );
+  const groundFrame = useMemo(
+    () => (constructPlan ? homeGroundFrame(visualManifest, deviceModels) : null),
+    [constructPlan, visualManifest, deviceModels],
   );
   const levels = deriveFloorLevels(visualManifest.floors);
   const activeLevel = levels.find((level) => level.floorId === activeFloorId)?.elevationMeters ?? 0;
@@ -261,18 +267,12 @@ export function HomeEditorScene({
         >
           <Suspense fallback={null}>
             {referenceCanvas.bridge}
-            <StylizedScene active={showArchitecture}>
-              {!constructPlan && (
-                <>
-                  <hemisphereLight args={["#ecf4ff", "#768b93", 0.95]} />
-                  <directionalLight
-                    position={studioDaylight ? [-8, 12, 7] : [7, 12, 8]}
-                    color="#fff0d7"
-                    intensity={1.8}
-                    castShadow={false}
-                  />
-                </>
-              )}
+            <StylizedScene
+              active={showArchitecture}
+              prepareMaterials
+              onFirstFrame={() => setArchitectureReady(true)}
+            >
+              {!constructPlan && <EditorStudioLights />}
               {constructPlan && (
                 <WalkStartPointer
                   floor={constructEditor.previewFloor}
@@ -288,6 +288,23 @@ export function HomeEditorScene({
                 />
               )}
               {constructPlan && !referenceCanvas.visible && <ConstructionGrid />}
+              {groundFrame &&
+                constructEditor.tool === "select" &&
+                !reference.adjusting &&
+                !northOrientation.active &&
+                !placingWalkStart &&
+                !stairPlacement &&
+                !editingLocked && (
+                  <GroundBorderLayer
+                    frame={groundFrame}
+                    onCommit={(groundMargins) =>
+                      executeProjectAction({
+                        type: "update-home-settings",
+                        changes: { groundMargins },
+                      })
+                    }
+                  />
+                )}
               <PreviewCamera
                 key={cameraReturn?.key}
                 initialPose={cameraReturn?.pose}
@@ -295,6 +312,7 @@ export function HomeEditorScene({
                 northOrientation={northOrientation.active}
                 planWheelNavigation={mode === "construct" || mode === "furnish"}
                 view={cameraView}
+                groundFrame={groundFrame}
                 resetKey={cameraResetKey}
                 floor={constructEditor.previewFloor}
                 controlsEnabled={!dragging && !placingWalkStart && !northOrientation.active}
@@ -689,6 +707,11 @@ export function HomeEditorScene({
             )}
           </Suspense>
         </Canvas>
+        {showArchitecture && !architectureReady && (
+          <div className="editor-scene-loading" role="status">
+            Opening home preview…
+          </div>
+        )}
       </div>
       {northOrientation.active && (
         <NorthOrientationOverlay

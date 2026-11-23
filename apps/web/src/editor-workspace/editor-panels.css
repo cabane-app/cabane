@@ -17,6 +17,18 @@
   right: 0;
   bottom: var(--editor-issues-clearance);
 }
+.editor-scene-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 8px;
+  padding: 10px 16px;
+  background: var(--preview-paper);
+  color: var(--preview-ink);
+  font-size: var(--editor-text-control);
+  pointer-events: none;
+}
 .direction-preview .direction-camera {
   bottom: calc(16px + var(--editor-issues-clearance));
 }

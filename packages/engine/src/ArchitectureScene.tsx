@@ -1,7 +1,7 @@
 import { ApartmentFloors } from "./building/ApartmentFloors";
 import { TerrainSurfaceContext, useSceneTerrain } from "./terrain/TerrainSurface";
 import { DioramaFrameContext, DioramaGround } from "./architecture-scene/DioramaGround";
-import { orbitDioramaFrame } from "./architecture-scene/diorama-frame";
+import { homeGroundFrame, orbitDioramaFrame } from "./architecture-scene/diorama-frame";
 import { SceneStyleContext } from "./scene-style";
 import { useGraphicsFeature } from "./graphics-features";
 import { worldBoundsForFloorScene } from "./pools";
@@ -89,9 +89,11 @@ export const ArchitectureScene = memo(function ArchitectureScene({
   const inheritedFrame = useContext(DioramaFrameContext);
   const siteFrame = useMemo(
     () =>
-      framedGround && fitGroundToSite && !walkMode && style === "default" && !terrain
-        ? orbitDioramaFrame(manifest, props.deviceModels)
-        : null,
+      walkMode || manifest.home.groundMargins
+        ? homeGroundFrame(manifest, props.deviceModels, walkMode ? "walk" : "orbit")
+        : framedGround && fitGroundToSite && !walkMode && style === "default" && !terrain
+          ? orbitDioramaFrame(manifest, props.deviceModels)
+          : null,
     [framedGround, fitGroundToSite, walkMode, style, terrain, manifest, props.deviceModels],
   );
   const apertureKey = JSON.stringify(deriveStairApertures(manifest));

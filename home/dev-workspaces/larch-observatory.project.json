@@ -317,54 +317,6 @@
           "style": "post-rail",
           "to": [-13.26, -1.15],
           "widthMeters": 0.3
-        },
-        {
-          "from": [-14.5, -8.3],
-          "heightMeters": 0.85,
-          "id": "ground-floor:hedge-50",
-          "style": "masonry",
-          "to": [-13, -8.3],
-          "widthMeters": 0.4
-        },
-        {
-          "from": [-7, -8.3],
-          "heightMeters": 0.85,
-          "id": "ground-floor:hedge-51",
-          "style": "masonry",
-          "to": [3.4, -8.3],
-          "widthMeters": 0.4
-        },
-        {
-          "from": [6.6, -8.3],
-          "heightMeters": 0.85,
-          "id": "ground-floor:hedge-52",
-          "style": "masonry",
-          "to": [32.5, -8.3],
-          "widthMeters": 0.4
-        },
-        {
-          "from": [32.5, -8.3],
-          "heightMeters": 1.35,
-          "id": "ground-floor:hedge-53",
-          "style": "clipped",
-          "to": [32.5, 19.5],
-          "widthMeters": 0.65
-        },
-        {
-          "from": [32.5, 19.5],
-          "heightMeters": 1.35,
-          "id": "ground-floor:hedge-54",
-          "style": "clipped",
-          "to": [-14.5, 19.5],
-          "widthMeters": 0.65
-        },
-        {
-          "from": [-14.5, 19.5],
-          "heightMeters": 1.35,
-          "id": "ground-floor:hedge-55",
-          "style": "clipped",
-          "to": [-14.5, -8.3],
-          "widthMeters": 0.65
         }
       ],
       "id": "ground-floor",
@@ -1949,6 +1901,7 @@
     }
   ],
   "home": {
+    "groundMargins": { "left": 0.5, "right": 0.5, "top": 0.5, "bottom": 0.5 },
     "id": "dev-larch-observatory",
     "locale": "en",
     "name": "Larch Observatory",
@@ -3397,45 +3350,45 @@
     },
     {
       "floorId": "ground-floor",
-      "id": "f9a2eb0b-d835-4d73-ac68-1e82225d5953",
+      "id": "39c94f04-5462-4377-9a8f-1619fe84ac51",
       "kind": "furnishing",
-      "modelId": "terracotta-planter",
+      "modelId": "flower-pot",
       "placement": {
         "at": [29.43, 1],
         "elevationMeters": -0.043,
         "kind": "absolute",
         "rotationYRadians": 0
       },
-      "size": [0.5, 0.5, 0.5],
-      "variant": "default"
+      "size": [0.5, 0.8, 0.5],
+      "variant": "coral"
     },
     {
       "floorId": "ground-floor",
-      "id": "a0ed7b80-2718-47d4-a6d7-073d98a4814f",
+      "id": "6f47fed3-99da-4837-904d-c8625c28a9c4",
       "kind": "furnishing",
-      "modelId": "terracotta-planter",
+      "modelId": "flower-pot",
       "placement": {
         "at": [29.43, 5.4],
         "elevationMeters": -0.043,
         "kind": "absolute",
         "rotationYRadians": 0
       },
-      "size": [0.5, 0.5, 0.5],
-      "variant": "default"
+      "size": [0.5, 0.8, 0.5],
+      "variant": "coral"
     },
     {
       "floorId": "ground-floor",
-      "id": "89048e7a-4053-4585-8d65-987559785c71",
+      "id": "0757bc66-4744-4992-b424-a6b180aec8f7",
       "kind": "furnishing",
-      "modelId": "terracotta-planter",
+      "modelId": "flower-pot",
       "placement": {
         "at": [29.43, 9.9],
         "elevationMeters": -0.043,
         "kind": "absolute",
         "rotationYRadians": 0
       },
-      "size": [0.5, 0.5, 0.5],
-      "variant": "default"
+      "size": [0.5, 0.8, 0.5],
+      "variant": "coral"
     },
     {
       "floorId": "ground-floor",
@@ -3828,48 +3781,6 @@
         "rotationYRadians": 0
       },
       "size": [0.24, 0.35, 0.24],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "0877602e-cec9-4cca-b96b-71035afd8aee",
-      "kind": "furnishing",
-      "modelId": "garden-shrub",
-      "placement": {
-        "at": [31.23, 1.4],
-        "elevationMeters": -0.043,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [1.35, 0.92, 1.15],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "7e64df14-9ebf-4911-bf54-73d11bad2eb4",
-      "kind": "furnishing",
-      "modelId": "garden-shrub",
-      "placement": {
-        "at": [31.23, 5.6],
-        "elevationMeters": -0.043,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [1.35, 0.92, 1.15],
-      "variant": "default"
-    },
-    {
-      "floorId": "ground-floor",
-      "id": "a1392239-f986-4725-bd55-bc6369af4ba8",
-      "kind": "furnishing",
-      "modelId": "garden-shrub",
-      "placement": {
-        "at": [31.23, 10.2],
-        "elevationMeters": -0.043,
-        "kind": "absolute",
-        "rotationYRadians": 0
-      },
-      "size": [1.35, 0.92, 1.15],
       "variant": "default"
     },
     {

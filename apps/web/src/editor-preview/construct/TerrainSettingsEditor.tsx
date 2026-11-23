@@ -15,10 +15,12 @@ const corners = [
 export function TerrainSettingsEditor({
   value = FLAT_TERRAIN,
   disabled = false,
+  onResetBorders,
   onChange,
 }: {
   value?: TerrainSettings | undefined;
   disabled?: boolean;
+  onResetBorders?: (() => void) | undefined;
   onChange: (settings: TerrainSettings) => void;
 }) {
   const id = useId();
@@ -27,12 +29,20 @@ export function TerrainSettingsEditor({
       <SidebarSectionSummary
         icon="outdoor-space"
         title="Terrain"
-        description="Slope the ground around your home."
+        description="Adjust the ground slope and map borders."
       />
       <section
         className="construction-inspector__floor-settings sidebar-section-content"
         aria-label="Terrain settings"
       >
+        <p className="sidebar-section-note">
+          In the 2D plan, use Select and drag a map border to change the ground around your home.
+        </p>
+        {onResetBorders && (
+          <EditorButton variant="text" onClick={onResetBorders}>
+            Reset map borders
+          </EditorButton>
+        )}
         <p className="sidebar-section-note">
           Corners match the 2D plan. Set 0 at ground-floor level, a positive height to raise the
           ground, or a negative height to lower it.

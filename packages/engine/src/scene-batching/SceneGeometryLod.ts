@@ -41,12 +41,24 @@ export class SceneGeometryLod {
     this.running = true;
     const prepared: Array<{ source: BufferGeometry; entry: Entry; levels: GeometryLod[] }> = [];
     while (this.queue.length && !this.disposed) {
-      const { source, entry } = this.queue.shift()!;
-      if (this.entries.get(source) !== entry) continue;
-      const levels = await this.prepare(source);
-      if (this.disposed || this.entries.get(source) !== entry)
-        levels.forEach((level) => level.geometry.dispose());
-      else prepared.push({ source, entry, levels });
+      // Keep the same worker busy while the main thread is presenting frames.
+      // Bound both the number of transfers and the geometry copied in one turn.
+      const pending = [];
+      let vertices = 0;
+      while (this.queue.length && pending.length < 12) {
+        const { source, entry } = this.queue[0];
+        const position = source.attributes.position;
+        if (!position || this.entries.get(source) !== entry) {
+          this.queue.shift();
+          continue;
+        }
+        const count = position.count;
+        if (pending.length && vertices + count > 32_768) break;
+        this.queue.shift();
+        vertices += count;
+        pending.push(this.prepare(source).then((levels) => ({ source, entry, levels })));
+      }
+      prepared.push(...(await Promise.all(pending)));
     }
     // Publish complete families together; partial worker replies must not cause
     // repeated GPU repacking while the remaining geometry is still preparing.
@@ -86,7 +98,7 @@ export class SceneGeometryLod {
         if (!mesh.isMesh) return;
         const source = mesh.geometry;
         if (source.userData.preservePlanarFaces === true) return;
-        if ((source.index?.count ?? source.attributes.position.count) < 300) return;
+        if ((source.index?.count ?? source.attributes.position?.count ?? 0) < 300) return;
         if (!isToonBatchCompatible(mesh, true, true)) return;
         used.add(source);
         const revision = geometryRevision(mesh);

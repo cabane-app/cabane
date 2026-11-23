@@ -108,6 +108,7 @@ function FinishSurface({
   const relief = useScannedFinish(
     scanId === "pine-bark" || scanId === "gravel" ? `${scanId}-normal` : undefined,
   );
+  const surface = useScannedFinish(scanId, "finishes", "surface");
   const texture =
     scan === undefined && finish.kind === "preset"
       ? textureSet.get(finish.preset, finish.color)
@@ -230,12 +231,17 @@ function FinishSurface({
       />
     ) : (
       <RoomFloorMaterial
-        key={`${texture ? "pattern" : "solid"}-${wallContact ? "contact" : "flat"}-${Boolean(relief)}`}
-        roughness={preset?.roughness ?? (finish.kind === "grass" ? 0.96 : 0.65)}
+        key={`${texture ? "pattern" : "solid"}-${wallContact ? "contact" : "flat"}-${Boolean(relief)}-${Boolean(surface)}`}
+        roughness={surface ? 1 : (preset?.roughness ?? (finish.kind === "grass" ? 0.96 : 0.65))}
         aoMap={wallContact}
         color={texture ? "#ffffff" : color}
         emphasis={emphasis}
         reducedMotion={reducedMotion}
+        {...(surface && {
+          bumpMap: surface,
+          roughnessMap: surface,
+          bumpScale: scanId === "limestone" || scanId === "travertine" ? 0.004 : 0.0014,
+        })}
         {...omitUndefinedProperties({ map: texture ?? undefined, normalMap: relief ?? undefined })}
         side={DoubleSide}
         polygonOffset={layer > 0}

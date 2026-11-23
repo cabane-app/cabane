@@ -122,8 +122,8 @@ Foundation; see the [official logo guidelines](https://github.com/home-assistant
 
 ## Architectural finish scans
 
-The bundled WebP finish maps derive from Poly Haven's 1K diffuse scans,
-retrieved on 17 November 2026 under [CC0 1.0](https://polyhaven.com/license).
+The bundled WebP finish maps derive from Poly Haven scans retrieved on 17–18 November 2026.
+Wood and stone floors use 2K colour, displacement and roughness sources. All are licensed under [CC0 1.0](https://polyhaven.com/license).
 
 - Jenelle van Heerden's [White Oak Veneer](https://polyhaven.com/a/white_oak_veneer) and [American Walnut Veneer](https://polyhaven.com/a/american_walnut_veneer) supply the grain for the 3.6 m plank repeats. Cabane arranges the scans into staggered 18 cm boards and grades them for the oak and walnut presets.
 - Timber door joinery uses a neutral monochrome grade of the White Oak Veneer scan so each door retains its selected stain.
@@ -136,3 +136,46 @@ retrieved on 17 November 2026 under [CC0 1.0](https://polyhaven.com/license).
 The architectural reflection probe is a 256 × 128 linear-light reduction of
 Sergej Majboroda’s [Studio Small 09](https://polyhaven.com/a/studio_small_09),
 bundled under [CC0](https://polyhaven.com/license).
+
+## Countryside landscape
+
+The ground and trees derive from IGN LiDAR HD ground and surface elevations,
+retrieved on 18 November 2026. The 384 m survey tile is centred at
+421438 E, 6875407 N in Lambert-93. Cabane quantizes the elevations and derives
+stems, canopy positions and soft ground shade. IGN BD ORTHO® informed the
+vegetation mask during asset preparation.
+[IGN BD ORTHO](https://www.data.gouv.fr/datasets/bd-ortho-r) ·
+[IGN LiDAR HD terrain](https://www.data.gouv.fr/datasets/mnt-lidar-hd) ·
+[IGN LiDAR HD surface](https://www.data.gouv.fr/datasets/mns-lidar-hd) ·
+[Licence Ouverte 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence/)
+
+The lawn uses blade detail and occlusion from ambientCG's [Grass 005](https://ambientcg.com/view?id=Grass005), published under [CC0](https://docs.ambientcg.com/license/).
+The sky uses the celestial portions of Kloppenheim 06 (Pure Sky) by Greg Zaal and Jarod Guest and Rogland Clear Night by Greg Zaal, retrieved on 18 November 2026. [Kloppenheim 06 (Pure Sky)](https://polyhaven.com/a/kloppenheim_06_puresky) · [Rogland Clear Night](https://polyhaven.com/a/rogland_clear_night) · [CC0](https://polyhaven.com/license)
+
+The forest floor, fieldstones and branches use photo textures by Rob Tuytel, retrieved on 19 November 2026. [Forest Leaves 04](https://polyhaven.com/a/forest_leaves_04) · [Mossy Rock](https://polyhaven.com/a/mossy_rock) · [Bark Brown 02](https://polyhaven.com/a/bark_brown_02) · [CC0](https://polyhaven.com/license)
+
+The oak, ash and shrub geometry was generated offline with Daniel Greenheck’s EZ Tree. The bundled meshes include its oak and ash leaf textures. [EZ Tree](https://github.com/dgreenheck/ez-tree)
+
+```text
+MIT License
+
+Copyright (c) 2024 Daniel Greenheck
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

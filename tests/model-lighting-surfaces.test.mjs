@@ -197,7 +197,7 @@ await withModules(async (load) => {
         );
         const parts = beacon.getObjectsByProperty("isMesh", true);
         assert.equal(parts.length, on ? 2 : 1);
-        assert.ok(parts.every((mesh) => mesh.userData.skipStaticBatch === true));
+        assert.ok(parts.every((mesh) => mesh.userData.staticBatchGroup === "device-status"));
       }
     } finally {
       await mounted.unmount();

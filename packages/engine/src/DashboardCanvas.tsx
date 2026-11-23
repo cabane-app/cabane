@@ -1,7 +1,9 @@
 import { Canvas, type CanvasProps } from "@react-three/fiber";
 import { Component } from "react";
-import { WebGLRenderer } from "three";
+import { WebGLRenderer, type RenderItem } from "three";
 import { DashboardFallbackReady, DashboardRenderFailureContext } from "./DashboardSceneReady";
+
+type OpaqueRenderItem = RenderItem & { material: { id: number } };
 
 /** R3F configures the renderer asynchronously, outside React's error boundaries.
  * Initialize the same canvas in its ref so a failed context can show recovery UI. */
@@ -45,12 +47,27 @@ export class DashboardCanvas extends Component<
     if (this.renderer?.domElement === canvas) return;
     this.releaseUnclaimed();
     try {
-      this.unclaimed = this.renderer = new WebGLRenderer({
+      const renderer = new WebGLRenderer({
         canvas,
-        alpha: true,
+        alpha: false,
         powerPreference: "high-performance",
         antialias: this.props.antialias,
       });
+      // Switching shaders makes Three refresh every scene-light uniform. Keep
+      // opaque draws on the same program together within their authored order.
+      const programId = (material: object) =>
+        (renderer.properties.get(material) as { currentProgram?: { id: number } }).currentProgram
+          ?.id ?? -1;
+      renderer.setOpaqueSort(
+        (a: OpaqueRenderItem, b: OpaqueRenderItem) =>
+          a.groupOrder - b.groupOrder ||
+          a.renderOrder - b.renderOrder ||
+          programId(a.material) - programId(b.material) ||
+          a.material.id - b.material.id ||
+          a.z - b.z ||
+          a.id - b.id,
+      );
+      this.unclaimed = this.renderer = renderer;
     } catch (error) {
       this.fail(error);
     }

@@ -1,0 +1,99 @@
+.construction-ground-borders {
+  position: relative;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgb(81 105 83 / 22%);
+  background: rgb(109 138 102 / 3%);
+}
+
+.construction-ground-border {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: #607461;
+  padding: 0;
+}
+.construction-ground-border:is([data-edge="top"], [data-edge="bottom"]) {
+  width: 100%;
+  height: 22px;
+  cursor: ns-resize;
+}
+.construction-ground-border:is([data-edge="left"], [data-edge="right"]) {
+  width: 22px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.construction-ground-border[data-edge="top"] {
+  top: -11px;
+  left: 0;
+}
+.construction-ground-border[data-edge="bottom"] {
+  bottom: -11px;
+  left: 0;
+}
+.construction-ground-border[data-edge="left"] {
+  left: -11px;
+  top: 0;
+}
+.construction-ground-border[data-edge="right"] {
+  right: -11px;
+  top: 0;
+}
+.construction-ground-border::before {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  border-top: 1px dashed currentColor;
+}
+.construction-ground-border:is([data-edge="left"], [data-edge="right"])::before {
+  inset: 0 auto 0 50%;
+  border: 0;
+  border-left: 1px dashed currentColor;
+}
+.construction-ground-border:is(:hover, :focus-visible, :active) {
+  color: #324f39;
+}
+.direction-preview .construction-ground-border:focus-visible {
+  outline: none;
+}
+.construction-ground-border:focus-visible .construction-ground-border__grip {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.construction-ground-border__grip {
+  position: relative;
+  width: 28px;
+  height: 6px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: #f6f8ef;
+}
+.construction-ground-border:is([data-edge="left"], [data-edge="right"])
+  .construction-ground-border__grip {
+  width: 6px;
+  height: 28px;
+}
+.construction-ground-border__name,
+.construction-ground-border__distance {
+  position: absolute;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+}
+.construction-ground-border__name {
+  bottom: calc(50% + 5px);
+}
+.construction-ground-border__distance {
+  top: calc(50% + 7px);
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: white;
+  background: #38533e;
+}

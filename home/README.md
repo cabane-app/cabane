@@ -8,7 +8,7 @@ simulate its existing device slots. Each indoor room has an air-quality monitor.
 The pool pavilion and sun terrace have weather consoles. Temperature, relative
 humidity and air-quality index update once per minute in the demo.
 
-Existing browser workspaces keep their saved contents. The original seed below
+Existing browsers refresh the original, unedited Larch demo when they reopen Cabane. Edited demos and personal workspaces keep their saved contents. The original seed below
 remains available for legacy connection migration and compatibility fixtures.
 
 The original home is an ordinary `HomeProject`, using the same schema as portable workspace

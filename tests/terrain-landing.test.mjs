@@ -12,7 +12,7 @@ await withModules(async (load) => {
   const { resolveWalkLanding } = await load("/packages/engine/src/navigation/walk-landing.ts");
   const { DioramaGround } = await load("/packages/engine/src/architecture-scene/DioramaGround.tsx");
   const { neutralDemoManifest } = await load("/packages/engine/src/demo.ts");
-  const { orbitDioramaFrame } = await load(
+  const { homeGroundFrame, orbitDioramaFrame } = await load(
     "/packages/engine/src/architecture-scene/diorama-frame.ts",
   );
   test("Orbit's plot includes detached rotated models and walls in world metres", () => {
@@ -66,6 +66,141 @@ await withModules(async (load) => {
     assert.ok(Math.abs(frame.centerZ + frame.depth / 2 - 8.1) < 1e-8);
     manifest.sceneItems[0].modelId = "unknown";
     assert.equal(orbitDioramaFrame(manifest, {}), null);
+  });
+  const { worldBoundsForFloorScene } = await load("/packages/engine/src/pools/pool-footprint.ts");
+  const { worldPointToPlan } = await load("/packages/engine/src/geometry.ts");
+  const { createWalkParcel } = await load("/packages/engine/src/navigation/walk-parcel.ts");
+  const { resolveCircleMovement } = await load("/packages/engine/src/navigation/walk-motion.ts");
+  const { safeBuildingSpawn, moveBuildingWalker } = await load(
+    "/packages/engine/src/stairs/stair-navigation.ts",
+  );
+  test("the outdoor parcel preserves basement entry, movement and relocation beyond the ground footprint", () => {
+    const floor = (id, width, depth, belowGround) => {
+      const polygon = [
+        [0, 0],
+        [width, 0],
+        [width, depth],
+        [0, depth],
+      ];
+      return {
+        ...neutralDemoManifest.floors[0],
+        id,
+        belowGround,
+        footprint: polygon,
+        footprintRegions: [polygon],
+        walls: [],
+        openings: [],
+        rooms: [{ ...neutralDemoManifest.floors[0].rooms[0], id: `${id}-room`, polygon }],
+      };
+    };
+    const basement = floor("basement", 20, 10, true);
+    const ground = floor("ground", 4, 4, false);
+    const manifest = {
+      ...neutralDemoManifest,
+      floors: [basement, ground],
+      stairs: [],
+      sceneItems: [],
+    };
+    const parcel = createWalkParcel(homeGroundFrame(manifest, {}));
+    assert.equal(parcel.contains({ x: 15, z: 5 }), false);
+    const spawn = safeBuildingSpawn(manifest, basement.id, [15, 5], undefined, [], parcel);
+    assert.ok(spawn, "the configured basement entry remains available");
+    const moved = moveBuildingWalker(
+      manifest,
+      spawn,
+      { x: 1, z: 0 },
+      new Set(),
+      [],
+      undefined,
+      {},
+      { parcel },
+    );
+    assert.ok(Math.abs(moved.x - 16) < 1e-8);
+    assert.equal(moved.floorId, basement.id);
+    const edge = moveBuildingWalker(
+      manifest,
+      { ...spawn, x: 19.9 },
+      { x: 1, z: 0 },
+      new Set(),
+      [],
+      undefined,
+      {},
+      { parcel, allowUnsupported: true },
+    );
+    assert.ok(
+      edge.x >= 19.9 && edge.x <= 20,
+      "leaving basement support never snaps to the outdoor lot",
+    );
+    assert.ok(
+      resolveWalkLanding(
+        manifest,
+        { x: 15, y: spawn.elevation, z: 5 },
+        () => [],
+        undefined,
+        parcel,
+      ),
+    );
+    assert.equal(
+      safeBuildingSpawn(manifest, ground.id, [15, 5], () => true, [], parcel),
+      null,
+      "outdoor ground entry still respects the parcel",
+    );
+  });
+  test("Walk and Construct share the automatic Walk board and keep movement and relocation inside edited edges", () => {
+    const manifest = { ...neutralDemoManifest, stairs: [], sceneItems: [] };
+    const floor = manifest.floors[0];
+    const legacy = homeGroundFrame(manifest, {}, "walk");
+    const bounds = worldBoundsForFloorScene(floor);
+    assert.equal(legacy.width, Math.max(bounds.width, bounds.depth) + 7);
+    assert.equal(legacy.depth, legacy.width);
+    assert.deepEqual(homeGroundFrame(manifest, {}), legacy);
+    const edited = {
+      ...manifest,
+      home: { ...manifest.home, groundMargins: { left: 1.6, right: 2.1, top: 0.6, bottom: 1.4 } },
+    };
+    const frame = homeGroundFrame(edited, {}, "walk");
+    assert.deepEqual(frame, homeGroundFrame(edited, {}, "orbit"));
+    const parcel = createWalkParcel(frame);
+    const center = { x: frame.centerX, z: frame.centerZ };
+    const corner = { x: frame.centerX + frame.width / 2, z: frame.centerZ + frame.depth / 2 };
+    const right = corner.x - 0.05 - 0.22;
+    const moved = resolveCircleMovement(center, { x: 100, z: 0 }, [], undefined, undefined, parcel);
+    assert.ok(Math.abs(moved.x - right) < 1e-8);
+    const slide = resolveCircleMovement(moved, { x: 1, z: 0.8 }, [], undefined, undefined, parcel);
+    assert.ok(Math.abs(slide.z - moved.z - 0.8) < 1e-8 && Math.abs(slide.x - right) < 1e-8);
+    const diagonal = resolveCircleMovement(
+      slide,
+      { x: 20, z: 20 },
+      [],
+      undefined,
+      undefined,
+      parcel,
+    );
+    assert.ok(parcel.contains(diagonal) && diagonal.x < right && diagonal.z < corner.z - 0.22);
+    assert.equal(
+      safeBuildingSpawn(
+        edited,
+        floor.id,
+        worldPointToPlan(corner, edited.coordinates),
+        () => true,
+        [],
+        parcel,
+      ),
+      null,
+    );
+    assert.equal(
+      resolveWalkLanding(
+        edited,
+        { ...corner, y: 0 },
+        () => [],
+        () => true,
+        parcel,
+      ),
+      null,
+    );
+    assert.ok(
+      parcel.contains(safeBuildingSpawn(edited, floor.id, undefined, undefined, [], parcel)),
+    );
   });
   test("terrain landings use the rendered outline and pool holes, without relaxing other-floor or obstacle checks", async () => {
     const floor = structuredClone(neutralDemoManifest.floors[0]);

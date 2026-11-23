@@ -4,6 +4,7 @@ import { act, createElement, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { withStorageDom } from "./dom-test-environment.mjs";
 import { create } from "@react-three/test-renderer";
+import { Sphere, Vector3 } from "three";
 import { withModules } from "./test-server.mjs";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -12,6 +13,7 @@ await withModules(async (load) => {
   const { OrbitNavigation } = await load("/packages/engine/src/OrbitNavigation.tsx");
   const { OrbitViewMenu } = await load("/packages/engine/src/action-bar/OrbitViewMenu.tsx");
   const { worldBoundsForFloorScene } = await load("/packages/engine/src/pools/pool-footprint.ts");
+  const { countryOrbitBounds } = await load("/packages/engine/src/landscapes/landscape-frame.ts");
   const { OrbitCamera, cameraZoomForViewport } = await load("/packages/engine/src/OrbitCamera.tsx");
   const { orbitViewKey, readOrbitView, writeOrbitView, fitSavedOrbitView, useDashboardOrbitView } =
     await load("/packages/engine/src/navigation/orbit-view.ts");
@@ -39,6 +41,46 @@ await withModules(async (load) => {
       assert.ok(Math.abs(n - expected[i]) < 0.001, `${n} vs ${expected[i]}`),
     );
   const frame = { left: 22, top: 156, width: 720, height: 620 };
+
+  test("a low, panned Orbit contains both sides of the planet at the same screen position", async () => {
+    const renderer = await create(
+      createElement(OrbitCamera, { floor, resetKey: 0, landscapeRadius: 100 }),
+      options,
+    );
+    try {
+      const controls = controlsFor(renderer);
+      const camera = controls.object;
+      const homeFar = camera.far;
+      const bounds = new Sphere(new Vector3(18, -95, 12), 125);
+      countryOrbitBounds.set(renderer.scene.instance, bounds);
+      for (const z of [-70, homeFar + 100]) {
+        controls.target.set(0, 0, z);
+        camera.position.set(0, 24, z + 78);
+        controls.update();
+        camera.updateWorldMatrix(true, false);
+        const original = pose(controls);
+        const screen = bounds.center.clone().project(camera);
+        await renderer.advanceFrames(1, 1 / 60);
+        const axis = camera.getWorldDirection(new Vector3());
+        for (const sign of [-1, 1]) {
+          const edge = bounds.center
+            .clone()
+            .addScaledVector(axis, sign * bounds.radius)
+            .project(camera);
+          assert.ok(edge.z >= -1.000001 && edge.z <= 1.000001, "globe crosses the clipping plane");
+        }
+        const projected = bounds.center.clone().project(camera);
+        close([projected.x, projected.y], [screen.x, screen.y]);
+        close(pose(controls), original);
+      }
+      countryOrbitBounds.delete(renderer.scene.instance);
+      await renderer.advanceFrames(1, 1 / 60);
+      assert.equal(camera.near, 0.1);
+      assert.equal(camera.far, homeFar);
+    } finally {
+      await renderer.unmount();
+    }
+  });
 
   test("manual views survive remounts, isolate homes/floors, and ignore temporary room animations", async () => {
     const viewKey = orbitViewKey("manual-home", floor.id);
@@ -329,6 +371,33 @@ await withModules(async (load) => {
     }
   });
 
+  test("landscape zoom and rotation keep the original home pivot and recover a saved planet pivot", async () => {
+    const props = { floor, resetKey: 0, reducedMotion: true };
+    const renderer = await create(createElement(OrbitCamera, props), options);
+    try {
+      const home = controlsFor(renderer).target.toArray();
+      const normalZoom = controlsFor(renderer).minZoom;
+      const viewKey = orbitViewKey("home-pivot", floor.id);
+      writeOrbitView(
+        viewKey,
+        { pose: { target: [12, -70, 19], position: [60, 34, 85], zoom: 4, viewport: [1200, 900] } },
+        false,
+      );
+      await renderer.update(
+        createElement(OrbitCamera, { ...props, viewKey, landscapeRadius: 100 }),
+      );
+      const controls = controlsFor(renderer);
+      close(controls.target.toArray(), home);
+      assert.ok(controls.minZoom < normalZoom);
+      controls.object.zoom = controls.minZoom;
+      controls.object.updateProjectionMatrix();
+      controls.setAzimuthalAngle(controls.getAzimuthalAngle() + Math.PI / 2);
+      controls.update();
+      close(controls.target.toArray(), home);
+    } finally {
+      await renderer.unmount();
+    }
+  });
   test("dashboard bindings follow replacement controls and persist lock per floor", async () => {
     let binding;
     function DashboardCamera({ floorId }) {

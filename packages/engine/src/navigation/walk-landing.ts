@@ -1,3 +1,4 @@
+import type { WalkParcel } from "./walk-parcel";
 import { localSurfaceAt } from "../elevation/surfaces";
 import { deriveFloorLevels } from "../building/floor-levels";
 import { pointInsidePolygon, worldPointToPlan } from "../geometry";
@@ -14,6 +15,7 @@ export function resolveWalkLanding(
   position: { x: number; y: number; z: number },
   furniture: (elevation: number) => readonly BoxWalkCollider[],
   supportsTerrain?: (point: WalkPoint) => boolean,
+  parcel?: WalkParcel,
 ): WalkToolLanding | null {
   if (![position.x, position.y, position.z].every(Number.isFinite)) return null;
   const plan = worldPointToPlan(position, building.coordinates);
@@ -47,6 +49,7 @@ export function resolveWalkLanding(
     plan,
     supportsTerrain,
     furniture(level.supportElevation),
+    parcel,
   );
   if (!spawn) return null;
   return {

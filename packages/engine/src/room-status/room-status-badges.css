@@ -67,11 +67,10 @@
 .room-status-badges[data-variant="compact"] {
   gap: 1px;
   padding: 4px 6px;
-  background: rgba(21, 33, 28, 0.78);
+  background: rgba(21, 33, 28, 0.87);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
   box-shadow: 0 8px 22px rgba(17, 26, 22, 0.2);
-  backdrop-filter: blur(12px) saturate(1.08);
 }
 .room-status-badges[data-variant="compact"] .room-status-badge {
   min-height: 22px;

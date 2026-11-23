@@ -1,3 +1,4 @@
+import type { WalkParcel } from "./walk-parcel";
 import { polygonContact } from "./walk-polygon-collision";
 import {
   BoxWalkCollider,
@@ -129,13 +130,21 @@ export const resolveCircleMovement = (
   colliders: readonly WalkCollider[],
   radius = WALK_PLAYER_RADIUS,
   maximumStep = 0.06,
+  parcel?: WalkParcel,
 ): WalkPoint => {
-  const result = { ...start };
+  const result = { ...(parcel?.constrain(start) ?? start) };
   const distance = Math.hypot(movement.x, movement.z);
   const steps = Math.max(1, Math.ceil(distance / maximumStep));
   for (let step = 0; step < steps; step += 1) {
+    const previousX = result.x,
+      previousZ = result.z;
     result.x += movement.x / steps;
     result.z += movement.z / steps;
+    const bounded = parcel?.constrain(result);
+    if (bounded && bounded !== result) {
+      result.x = bounded.x;
+      result.z = bounded.z;
+    }
     for (let pass = 0; pass < 2; pass += 1) {
       for (const collider of colliders) {
         if (collider.kind === "segment") {
@@ -150,6 +159,11 @@ export const resolveCircleMovement = (
           resolveBoxCollision(result, collider, radius);
         }
       }
+    }
+    // A solid object and the border can leave less than one player-width of space.
+    if (parcel && !parcel.contains(result)) {
+      result.x = previousX;
+      result.z = previousZ;
     }
   }
   return result;

@@ -1,3 +1,4 @@
+import { walkParcelForFloor, type WalkParcel } from "./navigation/walk-parcel";
 import { elevationAreas } from "./elevation/surfaces";
 import { omitUndefinedProperties } from "./defined-properties";
 import { useWalkToolNavigation } from "./walk-tools/useWalkToolNavigation";
@@ -23,6 +24,7 @@ import { createTerrainHeightQuery, createTerrainSupportQuery } from "./navigatio
 import { hasCustomTerrain } from "./terrain/terrain-settings";
 import {
   moveBuildingWalker,
+  safeBuildingSpawn,
   prepareBuildingWalk,
   type BuildingWalkPoint,
 } from "./stairs/stair-navigation";
@@ -56,6 +58,7 @@ import type { FloorSpec } from "./types";
 
 export function WalkCameraController({
   floor,
+  parcel,
   building,
   registries,
   elevation = 0,
@@ -74,6 +77,7 @@ export function WalkCameraController({
   onRoomChange,
 }: {
   floor: FloorSpec;
+  parcel?: WalkParcel | undefined;
   building?: BuildingGeometry;
   registries?: StairModelRegistries;
   elevation?: number;
@@ -159,6 +163,7 @@ export function WalkCameraController({
 
   useWalkToolNavigation(
     omitUndefinedProperties({
+      parcel,
       ...(building === undefined ? {} : { building: building }),
       floor,
       scene,
@@ -183,6 +188,15 @@ export function WalkCameraController({
 
   useEffect(() => {
     if (!cameraRef.current) return;
+    const floorParcel = walkParcelForFloor(parcel, floor);
+    if (parcel && floorParcel && !floorParcel.contains(poseRef.current)) {
+      const spawn =
+        building && safeBuildingSpawn(building, floor.id, undefined, undefined, undefined, parcel);
+      const inside = spawn ?? parcel.constrain(poseRef.current);
+      poseRef.current.x = inside.x;
+      poseRef.current.z = inside.z;
+      walker.current = null;
+    }
     cameraRef.current.rotation.order = "YXZ";
     cameraRef.current.position.set(
       poseRef.current.x,
@@ -191,7 +205,7 @@ export function WalkCameraController({
     );
     cameraRef.current.rotation.set(poseRef.current.pitch, poseRef.current.yaw, 0);
     invalidate();
-  }, [elevation, invalidate, poseRef]);
+  }, [building, floor, parcel, elevation, invalidate, poseRef]);
 
   const openIdsRef = useRef<ReadonlySet<string>>(new Set());
 
@@ -305,6 +319,7 @@ export function WalkCameraController({
           navigation.building,
           registries,
           {
+            ...(parcel && { parcel }),
             verticalRange,
             allowUnsupported: airborne,
             ...(terrainHeight ? { terrainHeight } : {}),
@@ -318,6 +333,9 @@ export function WalkCameraController({
               navigation.floor!(passable, furniture.current),
               verticalRange,
             ),
+            undefined,
+            undefined,
+            walkParcelForFloor(parcel, floor),
           ),
           floorId: floor.id,
           elevation,

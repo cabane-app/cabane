@@ -3688,6 +3688,37 @@
                   "type": "number"
                 }
               },
+              "groundMargins": {
+                "optional": true,
+                "schema": {
+                  "properties": {
+                    "bottom": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "left": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "right": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    },
+                    "top": {
+                      "optional": false,
+                      "schema": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
               "id": {
                 "optional": false,
                 "schema": {

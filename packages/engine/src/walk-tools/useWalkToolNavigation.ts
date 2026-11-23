@@ -1,3 +1,4 @@
+import type { WalkParcel } from "../navigation/walk-parcel";
 import { useLayoutEffect, type MutableRefObject, type RefObject } from "react";
 import type { Scene, PerspectiveCamera } from "three";
 import {
@@ -19,6 +20,7 @@ import type { WalkToolNavigation } from "./types";
 /** Connect generic tool relocation to the controller's authoritative movement state. */
 export function useWalkToolNavigation({
   building,
+  parcel,
   floor,
   scene,
   toolNavigationRef,
@@ -39,6 +41,7 @@ export function useWalkToolNavigation({
   invalidate,
 }: {
   building?: BuildingGeometry;
+  parcel?: WalkParcel;
   floor: FloorSpec;
   scene: Scene;
   toolNavigationRef?: MutableRefObject<WalkToolNavigation | null>;
@@ -74,6 +77,7 @@ export function useWalkToolNavigation({
         (targetElevation) =>
           collectSceneWalkColliders(scene, targetElevation, WALK_EYE_HEIGHT + 0.2),
         supportsTerrain,
+        parcel,
       );
     const navigation: WalkToolNavigation = {
       resolveLanding,
@@ -117,6 +121,7 @@ export function useWalkToolNavigation({
       if (toolNavigationRef.current === navigation) toolNavigationRef.current = null;
     };
   }, [
+    parcel,
     building,
     floor,
     scene,

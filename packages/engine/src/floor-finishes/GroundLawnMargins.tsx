@@ -1,6 +1,7 @@
-import { memo, useEffect, useMemo } from "react";
+import { memo, useContext, useEffect, useMemo } from "react";
 import { DoubleSide, type Texture } from "three";
 import { ArchitecturalMaterial } from "../architecture-scene/ArchitecturalMaterial";
+import { CountryLawnContext, CountryTurf } from "../landscapes/CountryTurf";
 import { useGraphicsFeature } from "../graphics-features";
 import { useScannedFinish, useTurfFringeMask } from "../scanned-finishes";
 import { useStairSurfaceApertures } from "../stairs/surface-apertures";
@@ -18,6 +19,7 @@ interface MarginProps {
 }
 
 const LawnMargins = memo(function LawnMargins({ floor, groundColor, wallContact }: MarginProps) {
+  const countryside = useContext(CountryLawnContext);
   const terrain = useTerrainSurface();
   const floorHoles = useStairSurfaceApertures("floor");
   const terrainHoles = useStairSurfaceApertures("terrain");
@@ -45,6 +47,16 @@ const LawnMargins = memo(function LawnMargins({ floor, groundColor, wallContact 
   useEffect(() => () => fringes.forEach((geometry) => geometry?.dispose()), [fringes]);
   useEffect(() => () => blades?.dispose(), [blades]);
   const offset = -((floor.groundZones?.length ?? 0) + 1);
+  const fringeSurface = {
+    aoMap: terrain ? null : wallContact,
+    vertexColors: true,
+    alphaMap: matte ?? null,
+    transparent: true,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: offset,
+    polygonOffsetUnits: offset,
+  };
   return (
     <group name="ground-lawn-verges">
       {matte &&
@@ -58,21 +70,18 @@ const LawnMargins = memo(function LawnMargins({ floor, groundColor, wallContact 
                 receiveShadow
                 raycast={() => {}}
               >
-                <ArchitecturalMaterial
-                  key={`${i === 0 && turf ? "turf" : "plain"}-${wallContact && !terrain ? "contact" : "flat"}`}
-                  feature="grounds"
-                  color={i === 0 ? groundColor : DEFAULT_TERRAIN_GRASS_COLOR}
-                  map={i === 0 ? (turf ?? null) : null}
-                  aoMap={terrain ? null : wallContact}
-                  roughness={1}
-                  vertexColors
-                  alphaMap={matte}
-                  transparent
-                  depthWrite={false}
-                  polygonOffset
-                  polygonOffsetFactor={offset}
-                  polygonOffsetUnits={offset}
-                />
+                {countryside && i === 0 ? (
+                  <CountryTurf color={groundColor} {...fringeSurface} />
+                ) : (
+                  <ArchitecturalMaterial
+                    key={`${i === 0 && turf ? "turf" : "plain"}-${wallContact && !terrain ? "contact" : "flat"}`}
+                    feature="grounds"
+                    color={i === 0 ? groundColor : DEFAULT_TERRAIN_GRASS_COLOR}
+                    map={i === 0 ? (turf ?? null) : null}
+                    roughness={1}
+                    {...fringeSurface}
+                  />
+                )}
               </mesh>
             ),
         )}

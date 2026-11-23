@@ -20,7 +20,18 @@ export async function initializeWorkspaces(
   }
   // Legacy connection profiles still belong to the original bundled home.
   const demo = previousOrigin ? ownerHomeProject : showcaseHomeProject;
-  await repository.initialize(demo, previousOrigin);
+  await repository.initialize(
+    demo,
+    previousOrigin,
+    previousOrigin
+      ? undefined
+      : {
+          "blank-v1": null,
+          // The open-garden update could already have refreshed an untouched demo once.
+          "larch-demo-open-garden-v2":
+            "0588ea1ae5257ce7a356e9b5dfc7c8e4bb93f74ea6039cf81302514efe11303e",
+        },
+  );
   try {
     if (!skipLegacyMigration)
       await migrateSingleHomeStorage(repository, ownerHomeProject.home.id, storage);

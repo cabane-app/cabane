@@ -36,6 +36,9 @@
   display: grid;
   gap: 2px;
   width: min(272px, calc(100vw - 28px));
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 11px;
   color: #f4f7f2;
   background: rgba(17, 31, 27, 0.94);

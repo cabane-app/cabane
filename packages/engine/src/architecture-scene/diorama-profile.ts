@@ -26,7 +26,7 @@ export const roundedDioramaShape = (
 };
 
 /** Feather only the exterior perimeter, leaving basement, pool and stair holes clear. */
-export function plinthContactShadow(width: number, depth: number) {
+export function plinthContactShadow(width: number, depth: number, radius = 0.42) {
   const spread = Math.min(1.5, Math.max(0.55, Math.min(width, depth) * 0.065));
   const bands = [
     [0, 0.37],
@@ -40,7 +40,13 @@ export function plinthContactShadow(width: number, depth: number) {
   const indices: number[] = [];
   for (const [band, [fraction, alpha]] of bands.entries()) {
     const inset = spread * fraction;
-    const outline = roundedDioramaShape(0, 0, width + 2 * inset, depth + 2 * inset, 0.42 + inset);
+    const outline = roundedDioramaShape(
+      0,
+      0,
+      width + 2 * inset,
+      depth + 2 * inset,
+      radius === 0 ? 0 : radius + inset,
+    );
     const points = outline.getPoints(12).slice(0, -1);
     for (const [i, point] of points.entries()) {
       positions.push(point.x, 0, -point.y);

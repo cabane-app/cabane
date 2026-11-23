@@ -22,7 +22,7 @@ export type EditorProjectAction =
       type: "update-home-settings";
       changes: Partial<
         Pick<HomeProject["home"], "roof" | "northAngleDegrees" | "apartmentFloor" | "terrain">
-      >;
+      > & { groundMargins?: NonNullable<HomeProject["home"]["groundMargins"]> | null };
     }
   | { type: "set-walk-start"; walkStart: HomeProject["home"]["walkStart"] | null }
   | { type: "add-stair" | "update-stair"; stair: StairSpec }
@@ -66,12 +66,14 @@ export function editProject(snapshot: EditorWorkspaceSnapshot, action: EditorPro
       }
       break;
     }
-    case "update-home-settings":
-      next = {
-        ...snapshot,
-        project: { ...snapshot.project, home: { ...snapshot.project.home, ...action.changes } },
-      };
+    case "update-home-settings": {
+      const { groundMargins, ...changes } = action.changes;
+      const home = { ...snapshot.project.home, ...changes };
+      if (groundMargins === null) delete home.groundMargins;
+      else if (groundMargins !== undefined) home.groundMargins = groundMargins;
+      next = { ...snapshot, project: { ...snapshot.project, home } };
       break;
+    }
     case "set-walk-start": {
       const { walkStart: _previous, ...home } = snapshot.project.home;
       next = {

@@ -5,6 +5,7 @@ import larchObservatory from "../dev-workspaces/larch-observatory.project.json";
 const result = parseHomeProject(
   JSON.stringify({
     ...larchObservatory,
+    seedRevision: "larch-demo-terrace-flowers-v3",
     home: { ...larchObservatory.home, id: "demo-larch-observatory" },
   }),
 );

@@ -170,6 +170,7 @@ export function toonBatchKey(
     mesh.layers.mask,
     mesh.renderOrder,
     mesh.frustumCulled,
+    mesh.userData.staticBatchGroup,
   ];
   // Three materials permit direct property edits without a version bump.
   const previous = groupKeys.get(mesh);

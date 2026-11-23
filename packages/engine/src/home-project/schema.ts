@@ -243,6 +243,7 @@ export const validateHomeProjectSchemaShape = (
         "northAngleDegrees",
         "apartmentFloor",
         "terrain",
+        "groundMargins",
       ],
       "home",
       issues,

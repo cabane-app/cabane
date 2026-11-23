@@ -1,8 +1,16 @@
+import { isGroundMargins } from "../terrain/ground-margins";
 import { finite, keys, record } from "./schema-json-values";
 import { FLAT_TERRAIN } from "../terrain/terrain-settings";
 import { addProjectIssue, type HomeProjectIssue, type JsonRecord } from "./validation-types";
 
 export function validateHomePosition(home: JsonRecord, issues: HomeProjectIssue[]) {
+  if (home.groundMargins !== undefined && !isGroundMargins(home.groundMargins))
+    addProjectIssue(
+      issues,
+      "project.ground-margins",
+      "home.groundMargins",
+      "Each map border needs a finite, nonnegative distance in metres.",
+    );
   if (home.terrain !== undefined) {
     const terrain = record(home.terrain, "home.terrain", issues);
     if (terrain) {

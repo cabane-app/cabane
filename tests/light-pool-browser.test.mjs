@@ -30,10 +30,11 @@ function Scene(){
  }))).flat();
  return h(React.Fragment,null,
   h(ActiveSceneLightPool,{floor,sources}),
-  ...Array.from({length:20},(_,i)=>h("mesh",{key:i,position:[(i%5-2)*2.2,0,Math.floor(i/5)*2-3]},
+  h("directionalLight",{position:[6,8,3],intensity:1,castShadow:true}),
+  ...Array.from({length:20},(_,i)=>h("mesh",{key:i,receiveShadow:true,castShadow:true,position:[(i%5-2)*2.2,0,Math.floor(i/5)*2-3]},
     h("boxGeometry",{args:[1.5,.8,1.3]}),h(i%2?"meshToonMaterial":"meshStandardMaterial",{color:"#bba998"}))));
 }
-createRoot(document.getElementById("root")).render(h(Canvas,{frameloop:"demand",dpr:1,
+createRoot(document.getElementById("root")).render(h(Canvas,{frameloop:"demand",dpr:1,shadows:true,
  camera:{position:[9,9,12],fov:45}},h(Scene)));
 </script></body></html>`;
 
