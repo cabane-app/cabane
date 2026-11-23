@@ -7,7 +7,7 @@ import { withStorageDom } from "./dom-test-environment.mjs";
 
 await withModules(async (load) => {
   const { ScenePreferences } = await load("/packages/engine/src/ScenePreferences.tsx");
-  test("Planet mode preserves each home's old preference and responds to storage changes", () =>
+  test("Planet mode defaults to on and preserves each home's saved preference", () =>
     withStorageDom(async ({ document, window, mount }) => {
       const key = (home) => `cabane.landscape.v1:${home}`;
       window.localStorage.setItem(key("country"), "countryside");
@@ -25,19 +25,21 @@ await withModules(async (load) => {
           label.textContent.includes("Planet mode"),
         )?.control;
       assert.equal(toggle().checked, true);
-      for (const home of ["city", "plain", "new"]) {
+      for (const home of ["city", "plain"]) {
         await act(() => render(home));
         assert.equal(toggle().checked, false);
       }
-      await act(() => toggle().click());
+      await act(() => render("new"));
       assert.equal(toggle().checked, true);
-      assert.equal(window.localStorage.getItem(key("new")), "true");
+      await act(() => toggle().click());
+      assert.equal(toggle().checked, false);
+      assert.equal(window.localStorage.getItem(key("new")), "false");
       assert.equal(window.localStorage.getItem(key("country")), "countryside");
       await act(() => {
-        window.localStorage.setItem(key("new"), "false");
+        window.localStorage.setItem(key("new"), "true");
         window.dispatchEvent(new window.StorageEvent("storage", { key: key("new") }));
       });
-      assert.equal(toggle().checked, false);
+      assert.equal(toggle().checked, true);
       for (const section of ["editor", "explore"]) {
         await act(() => render("country", section));
         assert.equal(toggle(), undefined);

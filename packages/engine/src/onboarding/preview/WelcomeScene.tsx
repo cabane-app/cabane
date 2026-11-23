@@ -12,10 +12,10 @@ import {
 import { ArchitectureScene } from "../../ArchitectureScene";
 import { useHomeAssistantRuntime } from "../../HomeAssistantRuntime";
 import { StylizedScene } from "../../StylizedScene";
-import { DioramaFrameContext } from "../../architecture-scene/DioramaGround";
 import { resolveHomeAssistantBindings } from "../../home-assistant-resolver";
+import { CountryLawnContext } from "../../landscapes/CountryTurf";
+import { useCountryPlanetRadius } from "../../landscapes/landscape-frame";
 import { resolveOpeningPositions } from "../../opening-pose";
-import { worldBoundsForFloorScene } from "../../pools/pool-footprint";
 import { useDocumentVisible } from "../../scene-input-preferences";
 import { SceneNightContext } from "../../scene-light-state";
 import type { RuntimeBindingProfileManager } from "../../RuntimeBindingSetup";
@@ -90,11 +90,7 @@ export function WelcomeScene({
   }, []);
   const walk = preview.mode === "walk";
   const ground = preview.ground;
-  const groundFrame = useMemo(() => {
-    if (!ground || manifest.home.apartmentFloor) return null;
-    const bounds = worldBoundsForFloorScene(ground);
-    return { width: bounds.width + 1.8, depth: bounds.depth + 1.8 };
-  }, [ground, manifest.home.apartmentFloor]);
+  const landscapeRadius = useCountryPlanetRadius(true, lightingManifest, deviceModels);
   const wholeBuilding = !walk && preview.orbitStage === "Roof";
   const activeFloor = !walk && preview.orbitStage === "Upstairs" ? preview.upper : ground;
   const playing = documentVisible && inView && preview.playing;
@@ -174,8 +170,10 @@ export function WelcomeScene({
             <Suspense fallback={null}>
               <StylizedScene>
                 <WelcomeLighting
-                  floors={manifest.floors}
+                  manifest={lightingManifest}
+                  devices={deviceModels}
                   walk={walk}
+                  reducedMotion={preview.reducedMotion}
                   daylightRef={preview.daylightRef}
                 />
                 {walk && preview.loop ? (
@@ -191,14 +189,16 @@ export function WelcomeScene({
                 ) : (
                   <WelcomeOrbitCamera
                     manifest={manifest}
+                    landscapeRadius={landscapeRadius}
                     playing={playing}
                     onPause={preview.pause}
                     advance={preview.advance}
                   />
                 )}
-                <DioramaFrameContext.Provider value={walk ? null : groundFrame}>
+                <CountryLawnContext.Provider value={true}>
                   <SceneNightContext.Provider value={preview.night}>
                     <ArchitectureScene
+                      fitGroundToSite
                       activeFloorId={activeFloor.id}
                       floorView={wholeBuilding ? "whole" : "cutaway"}
                       selectedRoomId={null}
@@ -214,7 +214,7 @@ export function WelcomeScene({
                       onInteract={ignoreInteraction}
                     />
                   </SceneNightContext.Provider>
-                </DioramaFrameContext.Provider>
+                </CountryLawnContext.Provider>
               </StylizedScene>
             </Suspense>
           </Canvas>

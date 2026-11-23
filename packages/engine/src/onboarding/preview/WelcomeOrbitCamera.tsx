@@ -1,24 +1,33 @@
 import { OrbitControls, OrthographicCamera } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
+import type { OrthographicCamera as ThreeOrthographicCamera } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { deriveFloorLevels } from "../../building/floor-levels";
+import { countryOrbitBounds, fitOrbitDepth } from "../../landscapes/landscape-frame";
 import { worldBoundsForFloorScene } from "../../pools/pool-footprint";
 import type { HomeManifest } from "../../types";
 import { usePreviewPlayback } from "./usePreviewPlayback";
 
 export function WelcomeOrbitCamera({
   manifest,
+  landscapeRadius,
   playing,
   onPause,
   advance,
 }: {
   manifest: HomeManifest;
+  landscapeRadius: number;
   playing: boolean;
   onPause: () => void;
   advance: (seconds: number) => void;
 }) {
   const controls = useRef<OrbitControlsImpl>(null);
+  const camera = useRef<ThreeOrthographicCamera>(null);
+  useFrame(({ scene }) => {
+    if (camera.current) fitOrbitDepth(camera.current, countryOrbitBounds.get(scene), 1000);
+  });
+
   usePreviewPlayback(playing, (seconds) => {
     advance(seconds);
     const orbit = controls.current;
@@ -45,15 +54,18 @@ export function WelcomeOrbitCamera({
     };
   }, [manifest.floors]);
   const zoom = Math.max(1, Math.min(width / (frame.span * 1.04), height / frame.height));
+  const minZoom = landscapeRadius
+    ? Math.min(zoom * 0.6, Math.min(width, height) / (4.6 * landscapeRadius + 12))
+    : zoom * 0.6;
   return (
     <>
-      <OrthographicCamera makeDefault position={frame.position} zoom={zoom} near={0.1} far={1000} />
+      <OrthographicCamera ref={camera} makeDefault position={frame.position} zoom={zoom} />
       <OrbitControls
         target={frame.target}
         ref={controls}
         enableDamping={false}
         enablePan={false}
-        minZoom={zoom * 0.6}
+        minZoom={minZoom}
         maxZoom={zoom * 4}
         minPolarAngle={0.55}
         maxPolarAngle={1.25}

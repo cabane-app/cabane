@@ -1,8 +1,9 @@
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, type RefObject } from "react";
+import { useMemo, useRef, useState, type RefObject } from "react";
 import { Color, Object3D, type DirectionalLight, type HemisphereLight } from "three";
+import { HomeLandscape } from "../../landscapes/HomeLandscape";
 import { solarShadowFrame } from "../../solar-shadow-frame";
-import type { HomeManifest } from "../../types";
+import type { DeviceModelRegistry, HomeManifest } from "../../types";
 
 const DAY = {
   sky: new Color("#c8d8dd"),
@@ -33,18 +34,24 @@ const NIGHT = {
 
 /** Keep the shadow angle fixed as the welcome tour passes through twilight. */
 export function WelcomeLighting({
-  floors,
+  manifest,
+  devices,
   walk,
+  reducedMotion,
   daylightRef,
 }: {
-  floors: HomeManifest["floors"];
+  manifest: HomeManifest;
+  devices: DeviceModelRegistry;
   walk: boolean;
+  reducedMotion: boolean;
   daylightRef: RefObject<number>;
 }) {
+  const [landscapeDaylight, setLandscapeDaylight] = useState(1);
   const sky = useRef<Color>(null);
   const ambient = useRef<HemisphereLight>(null);
   const sun = useRef<DirectionalLight>(null);
   const last = useRef({ daylight: -1, walk });
+  const { floors } = manifest;
   const { target, position, radius, far } = useMemo(() => {
     const frame = solarShadowFrame(floors);
     const target = new Object3D();
@@ -64,6 +71,10 @@ export function WelcomeLighting({
     )
       return;
     last.current = { daylight, walk };
+    // Keep the landscape in sync without rerendering the terrain at every camera frame.
+    const nextLandscapeDaylight = Math.round(daylight * 32) / 32;
+    if (nextLandscapeDaylight !== landscapeDaylight) setLandscapeDaylight(nextLandscapeDaylight);
+
     const from = daylight < 0.5 ? NIGHT : TWILIGHT;
     const to = daylight < 0.5 ? TWILIGHT : DAY;
     const blend = daylight < 0.5 ? daylight * 2 : daylight * 2 - 1;
@@ -82,6 +93,14 @@ export function WelcomeLighting({
   return (
     <>
       {walk && <color ref={sky} attach="background" args={[DAY.sky]} />}
+      <HomeLandscape
+        manifest={manifest}
+        devices={devices}
+        walkMode={walk}
+        reducedMotion={reducedMotion}
+        daylight={landscapeDaylight}
+        overcast={0}
+      />
       <hemisphereLight ref={ambient} args={[DAY.ambient, DAY.ground, DAY.ambientIntensity]} />
       <primitive object={target} />
       <directionalLight
