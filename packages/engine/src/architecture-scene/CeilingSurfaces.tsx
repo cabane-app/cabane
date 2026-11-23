@@ -34,11 +34,13 @@ function FlatCeilingSlab({
   floor,
   height,
   override = false,
+  color = CEILING_SURFACE_COLOR,
 }: {
   polygon: Polygon;
   floor: FloorSpec;
   height: number;
   override?: boolean;
+  color?: string | undefined;
 }) {
   const apertures = useStairSurfaceApertures("ceiling");
   const shape = useMemo(
@@ -52,7 +54,7 @@ function FlatCeilingSlab({
   return (
     <mesh position={[0, height, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
       <extrudeGeometry args={[shape, ceilingExtrusion]} />
-      <ToonMaterial color={CEILING_SURFACE_COLOR} side={DoubleSide} />
+      <ToonMaterial color={color} side={DoubleSide} />
     </mesh>
   );
 }
@@ -141,6 +143,7 @@ export function CeilingSurfaces({
               polygon={polygon as Polygon}
               floor={floor}
               height={ceiling.heightMeters}
+              color={ceiling.color}
             />
           ));
         }
@@ -153,6 +156,7 @@ export function CeilingSurfaces({
               polygon={room.polygon}
               floor={floor}
               height={ceiling.heightMeters}
+              color={ceiling.color}
             />,
           ];
         });

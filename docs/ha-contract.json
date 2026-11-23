@@ -1,9 +1,9 @@
 {
-  "revision": 47,
-  "fingerprint": "3a2b3a498185d587a10170c2db04a6aa37a44ba23c003d712c4843f5607c3101",
-  "summary": "Save adjustable map borders with the home",
+  "revision": 49,
+  "fingerprint": "66d6dbcea54c27e7f4c69e719778af6ff5a65d76230410450bff11e019f6ea46",
+  "summary": "Support bifold doors and multi-pane sliding windows",
   "breakingChanges": [
-    "Homes with edited map borders store four ground margins. Update older Cabane clients and the Home Assistant panel before opening these homes."
+    "Existing openings need no migration. Projects using bifold doors or sliding windows require the matching frontend and Home Assistant panel; older clients reject these operations."
   ],
   "history": [
     {
@@ -326,6 +326,20 @@
       "summary": "Add per-item roof visibility in Arrange",
       "breakingChanges": [
         "Update older clients before opening a project that uses hideWithRoof. Existing projects keep their previous visibility."
+      ]
+    },
+    {
+      "revision": 47,
+      "summary": "Save adjustable map borders with the home",
+      "breakingChanges": [
+        "Homes with edited map borders store four ground margins. Update older Cabane clients and the Home Assistant panel before opening these homes."
+      ]
+    },
+    {
+      "revision": 48,
+      "summary": "Add optional flat ceiling colors",
+      "breakingChanges": [
+        "Existing homes retain their ceiling appearance. Homes with a flat ceiling color require updated Cabane clients and the matching Home Assistant panel; older clients reject the new field. No migration is required."
       ]
     }
   ],

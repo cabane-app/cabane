@@ -1,3 +1,4 @@
+export { CEILING_SURFACE_COLOR } from "./architecture-scene/surface-colors";
 export { SceneActivityPulse } from "./SceneActivityPulse";
 export { SceneStateVisibilitySelect } from "./home-assistant-mapping/SceneStateVisibilitySelect";
 export { createBrowserUuid } from "./browser-uuid";

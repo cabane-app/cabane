@@ -57,6 +57,15 @@ export function openingPlanSymbol(
       line([center - leaf.slideSign * radius * 0.25, arrowZ], [tip, arrowZ], color);
       for (const side of [-1, 1])
         line([tip - leaf.slideSign * radius * 0.13, arrowZ + side * 0.07], [tip, arrowZ], color);
+    } else if (opening.operation === "bifold") {
+      const hinge = leaf.pivotRatio * width;
+      const half = radius / 2;
+      const fold: PlanPoint = [
+        hinge + leaf.extentSign * half * 0.25,
+        orientation.sideSign * half * 0.97,
+      ];
+      line([hinge, 0], fold, color, 0.04);
+      line(fold, [hinge + leaf.extentSign * half * 0.5, 0], color, 0.04);
     } else {
       const hinge = leaf.pivotRatio * width;
       const angle = opening.kind === "window" ? Math.PI / 4 : Math.PI / 2;

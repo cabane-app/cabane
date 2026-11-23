@@ -50,6 +50,7 @@ export function DoorDesignFields({
               const base = {
                 kind: "door" as const,
                 finish: value.finish,
+                color: value.color,
                 openingSide: value.openingSide,
                 widthMeters: value.widthMeters,
                 heightMeters: value.heightMeters,
@@ -57,6 +58,15 @@ export function DoorDesignFields({
               if (event.target.value === "roll-up")
                 onChange(
                   omitUndefinedProperties({ ...base, operation: "roll-up", variant: "slatted" }),
+                );
+              else if (event.target.value === "bifold")
+                onChange(
+                  omitUndefinedProperties({
+                    ...base,
+                    operation: "bifold",
+                    variant: "panel",
+                    leafCount: value.leafCount ?? 1,
+                  }),
                 );
               else if (event.target.value === "sliding")
                 onChange(
@@ -83,6 +93,7 @@ export function DoorDesignFields({
           >
             <option value="hinged">Hinged</option>
             <option value="sliding">Sliding</option>
+            <option value="bifold">Bifold</option>
             <option value="roll-up">Roll-up</option>
           </select>
         </label>
@@ -99,8 +110,10 @@ export function DoorDesignFields({
               Style
               <select
                 aria-label="Door style"
+                disabled={value.operation === "bifold"}
                 value={value.variant}
                 onChange={(event) => {
+                  if (value.operation === "bifold") return;
                   const variant = event.target.value as typeof value.variant;
                   if (isGardenGate(variant)) {
                     if (value.operation !== "hinged") return;
@@ -132,7 +145,7 @@ export function DoorDesignFields({
               </select>
             </label>
             <label>
-              Leaves
+              {value.operation === "bifold" ? "Folding pairs" : "Leaves"}
               <select
                 aria-label="Door leaf count"
                 value={value.leafCount}

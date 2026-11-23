@@ -184,9 +184,9 @@ await withModules(async (load) => {
       walkThrough: true,
     });
     Object.assign(manifest.floors[0].openings[1], {
-      operation: "sliding",
+      operation: "roll-up",
       variant: "panel",
-      panelCount: 3,
+      panelCount: 5,
       glazing: "opaque",
       muntins: { columns: 0, rows: 2 },
     });

@@ -5,7 +5,10 @@ export type OrientableOpening =
       DoorSpec,
       "kind" | "operation" | "leafCount" | "hingeSide" | "openingSide" | "slideDirection"
     >
-  | Pick<WindowSpec, "kind" | "operation" | "panelCount" | "hingeSide" | "openingSide">;
+  | Pick<
+      WindowSpec,
+      "kind" | "operation" | "panelCount" | "hingeSide" | "openingSide" | "slideDirection"
+    >;
 
 export type OpeningOrientationAction = "hinge" | "side" | "slide";
 
@@ -20,7 +23,7 @@ export function changeOpeningOrientation<T extends OrientableOpening>(
   if (action === "side" && orientation.canSwitchSide) {
     return { ...opening, openingSide: opening.openingSide === "left" ? "right" : "left" };
   }
-  if (action === "slide" && orientation.canReverseSlide && opening.kind === "door") {
+  if (action === "slide" && orientation.canReverseSlide) {
     return { ...opening, slideDirection: opening.slideDirection === "end" ? "start" : "end" };
   }
   return opening;
@@ -36,17 +39,22 @@ export function resolveOpeningOrientation(opening: OrientableOpening) {
   return {
     sideSign,
     canSwapHinge: operable && !rollUp && !sliding && count === 1,
-    canReverseSlide: sliding && count === 1,
+    canReverseSlide: sliding && (opening.kind === "window" || count === 1),
     canSwitchSide: operable,
     leaves: Array.from({ length: count ?? 0 }, (_, index) => {
-      const hingeAtEnd = count === 1 ? opening.hingeSide === "end" : index === 1;
+      const hingeAtEnd =
+        opening.kind === "window" && sliding
+          ? false
+          : count === 1
+            ? opening.hingeSide === "end"
+            : index === 1;
       const extentSign: -1 | 1 = hingeAtEnd ? -1 : 1;
       const slideSign: -1 | 1 =
-        count === 2
+        count === 2 && opening.kind === "door"
           ? index === 0
             ? -1
             : 1
-          : opening.kind === "door" && opening.slideDirection === "end"
+          : opening.slideDirection === "end"
             ? 1
             : -1;
       return {

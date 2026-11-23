@@ -3,7 +3,6 @@ import type { EditorOpening, FloorEditorDraft, FloorSpec } from "@cabane/engine"
 const withoutOrientation = (opening: EditorOpening) => {
   if (opening.kind === "passage") return opening;
   const { hingeSide: _hinge, openingSide: _side, ...rest } = opening;
-  if (rest.kind === "window") return rest;
   const { slideDirection: _slide, ...door } = rest;
   return door;
 };
@@ -69,10 +68,13 @@ export function floorWithOpeningOrientations(
       const base = { ...opening };
       delete base.hingeSide;
       delete base.openingSide;
-      if (base.kind === "door") delete base.slideDirection;
+      delete base.slideDirection;
       const side = next.openingSide !== undefined ? { openingSide: next.openingSide } : {};
       if (base.kind === "door" && next.kind === "door") {
-        if (base.operation === "hinged" && next.operation === "hinged")
+        if (
+          (base.operation === "hinged" && next.operation === "hinged") ||
+          (base.operation === "bifold" && next.operation === "bifold")
+        )
           return {
             ...base,
             ...side,
@@ -92,6 +94,7 @@ export function floorWithOpeningOrientations(
           ...base,
           ...side,
           ...(next.hingeSide !== undefined ? { hingeSide: next.hingeSide } : {}),
+          ...(next.slideDirection !== undefined ? { slideDirection: next.slideDirection } : {}),
         };
       return opening;
     }),

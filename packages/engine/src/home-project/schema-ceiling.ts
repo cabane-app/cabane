@@ -34,7 +34,17 @@ export const ceilingSchema = (value: unknown, path: string, issues: HomeProjectI
     }
     return;
   }
-  keys(ceiling, ["id", "kind", "roomIds", "heightMeters"], path, issues);
+  keys(ceiling, ["id", "kind", "roomIds", "heightMeters", "color"], path, issues);
+  if (
+    ceiling.color !== undefined &&
+    (typeof ceiling.color !== "string" || !/^#[0-9a-f]{6}$/i.test(ceiling.color))
+  )
+    addProjectIssue(
+      issues,
+      "project.ceiling-color",
+      `${path}.color`,
+      "Choose a six-digit hex ceiling color.",
+    );
   finite(ceiling.heightMeters, `${path}.heightMeters`, issues);
   if (ceiling.kind !== "flat") {
     addProjectIssue(
