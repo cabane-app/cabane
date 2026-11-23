@@ -11,6 +11,7 @@ export interface PlatformSlabPiece {
   polygon: ClipPolygon;
   bottom: number;
   depth: number;
+  ceilingColor?: string;
 }
 const worldPolygon = (points: readonly PlanPoint[], floor: FloorSpec): ClipPolygon => [
   points.map((p) => [...planPointToWorld(p, floor.coordinates)]),
@@ -32,6 +33,7 @@ export function derivePlatformSlabPieces(
             kind: "flat" as const,
             roomIds: rooms.map((r) => r.id),
             heightMeters: below.defaultCeilingHeightMeters,
+            color: undefined,
           },
         ]
       : []);
@@ -50,7 +52,14 @@ export function derivePlatformSlabPieces(
       const ceilingCoverage = unionClippingPolygons(coverage);
       const covered = intersectClippingGeometry(uncovered, ceilingCoverage);
       const depth = Math.max(0.004, below.floorToFloorHeightMeters - ceiling.heightMeters);
-      covered.forEach((polygon) => pieces.push({ polygon, bottom: -depth, depth }));
+      covered.forEach((polygon) =>
+        pieces.push({
+          polygon,
+          bottom: -depth,
+          depth,
+          ...(ceiling.color !== undefined ? { ceilingColor: ceiling.color } : {}),
+        }),
+      );
       uncovered = differenceClippingGeometry(uncovered, ceilingCoverage);
     }
   uncovered.forEach((polygon) => pieces.push({ polygon, bottom: -0.16, depth: 0.16 }));

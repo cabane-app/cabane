@@ -772,6 +772,12 @@
                       "anyOf": [
                         {
                           "properties": {
+                            "color": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
                             "heightMeters": {
                               "optional": false,
                               "schema": {
@@ -6544,6 +6550,12 @@
                     "anyOf": [
                       {
                         "properties": {
+                          "color": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
                           "heightMeters": {
                             "optional": false,
                             "schema": {

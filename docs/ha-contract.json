@@ -1,9 +1,9 @@
 {
-  "revision": 47,
-  "fingerprint": "3a2b3a498185d587a10170c2db04a6aa37a44ba23c003d712c4843f5607c3101",
-  "summary": "Save adjustable map borders with the home",
+  "revision": 48,
+  "fingerprint": "60a0e42c7c17faff48701d5cd105078e29c03a749873b26e8457d210cd4c56e3",
+  "summary": "Add optional flat ceiling colors",
   "breakingChanges": [
-    "Homes with edited map borders store four ground margins. Update older Cabane clients and the Home Assistant panel before opening these homes."
+    "Existing homes retain their ceiling appearance. Homes with a flat ceiling color require updated Cabane clients and the matching Home Assistant panel; older clients reject the new field. No migration is required."
   ],
   "history": [
     {
@@ -326,6 +326,13 @@
       "summary": "Add per-item roof visibility in Arrange",
       "breakingChanges": [
         "Update older clients before opening a project that uses hideWithRoof. Existing projects keep their previous visibility."
+      ]
+    },
+    {
+      "revision": 47,
+      "summary": "Save adjustable map borders with the home",
+      "breakingChanges": [
+        "Homes with edited map borders store four ground margins. Update older Cabane clients and the Home Assistant panel before opening these homes."
       ]
     }
   ],

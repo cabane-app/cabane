@@ -334,7 +334,13 @@ export const deriveFloorTopology = (input: FloorTopologyInput): FloorTopologyRes
     }
     ceilingGroups.set(preferredId, groups);
     reservedCeilingIds.add(id);
-    const ceiling = { id, kind: "flat" as const, roomIds: [room.id], heightMeters };
+    const ceiling = {
+      id,
+      kind: "flat" as const,
+      roomIds: [room.id],
+      heightMeters,
+      ...(identity?.ceilingColor !== undefined ? { color: identity.ceilingColor } : {}),
+    };
     groups.set(heightMeters, ceiling);
     flatCeilings.push(ceiling);
   }

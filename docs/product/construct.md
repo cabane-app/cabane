@@ -541,3 +541,5 @@ placement; legacy absolute placements retain their existing interpretation.
 Walking over a local sharp drop starts gravity without requiring a jump. The walker
 keeps the current storey and lands on the actual lower surface. Upward steps retain
 a 40 cm step-height limit; walkable slopes and stairs remain continuous.
+
+Selected rooms with flat ceilings expose Color and Reset ceiling color in the Ceiling properties. Color edits affect every room sharing that flat ceiling, without splitting its identity. Reset removes the override and restores the existing ceiling appearance. These edits use ordinary preview, undo/redo, autosave and Save. Sloped ceilings do not expose the color control.

@@ -1,3 +1,4 @@
+import { CeilingColorFields } from "./CeilingColorFields";
 import { ElevationFields } from "./ElevationFields";
 import { formatLength, formatArea, useMeasurementUnits } from "@cabane/engine";
 import { CommittedTextInput } from "./CommittedTextInput";
@@ -358,6 +359,7 @@ export function ConstructionSelectionProperties({
                       }
                     />
                   </label>
+                  <CeilingColorFields editor={editor} roomId={selectedRoom.id} />
                 </fieldset>
               </>
             )}

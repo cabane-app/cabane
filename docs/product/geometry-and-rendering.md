@@ -556,3 +556,5 @@ transition surfaces without creating same-storey ceiling openings.
 Lowered indoor areas extend adjacent wall solids downward. Local ceiling overrides
 replace the covered ceiling and close their vertical steps. Local offsets do not
 change the floor stack. Outdoor platform barriers follow their platform elevation.
+
+Flat ceiling slabs use their optional authored color, falling back to the existing warm off-white when omitted. This also colors ceiling liners beneath upper outdoor platforms. Sloped ceilings and separately authored local elevation ceiling overrides retain their existing appearance.
