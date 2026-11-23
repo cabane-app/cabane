@@ -10,6 +10,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 await withModules(async (load) => {
   const { stableDeviceRegistry } = await load("/packages/catalog/src/device/index.ts");
   const engine = await load("/packages/engine/src/index.ts");
+  const { PhysicalSceneLight } = await load("/packages/engine/src/SceneLightPool.tsx");
   const { isDeviceModelDefinition } = await load("/packages/engine/src/validation/core.ts");
   const { homeManifest } = await load("/tests/fixtures/bundled-home.ts");
   const { homeExtensions, ownerHomeProject } = await load("/tests/fixtures/bundled-home.ts");
@@ -663,6 +664,76 @@ await withModules(async (load) => {
         );
     } finally {
       await renderer.unmount();
+    }
+  });
+
+  test("wall masks retain exact endpoints and select an eligible adjacent partition", async () => {
+    const wall = (id, from, to) => ({
+      id,
+      from,
+      to,
+      thicknessMeters: 0.1,
+      classification: "interior",
+    });
+    const first = wall("first", [0, 0], [2, 0]);
+    const next = wall("next", [2, 0], [4, 0]);
+    for (const { name, walls, position, expected } of [
+      { name: "start", walls: [first], position: [0, 1, 0.3], expected: [0, 0, 1, -0.05] },
+      { name: "end", walls: [first], position: [2, 1, 0.3], expected: [0, 0, 1, -0.05] },
+      {
+        name: "continuous seam",
+        walls: [first, next],
+        position: [2, 1, 0.3],
+        expected: [0, 0, 1, -0.05],
+      },
+      {
+        name: "reversed seam",
+        walls: [wall("first", [2, 0], [0, 0]), next],
+        position: [2, 1, 0.3],
+        expected: [0, 0, 1, -0.05],
+      },
+      { name: "before start", walls: [first], position: [-0.3, 1, 0.3], expected: null },
+      { name: "after end", walls: [first], position: [2.3, 1, 0.3], expected: null },
+      {
+        name: "adjacent partition",
+        walls: [first, wall("adjacent", [2.8, 0], [2.8, 2])],
+        position: [2.3, 1, 0.3],
+        expected: [-1, 0, 0, 2.75],
+      },
+    ]) {
+      const floor = {
+        ...homeManifest.floors[0],
+        coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },
+        rooms: [
+          {
+            ...homeManifest.floors[0].rooms[0],
+            polygon: [
+              [-1, -1],
+              [5, -1],
+              [5, 4],
+              [-1, 4],
+            ],
+          },
+        ],
+        walls,
+        openings: [],
+      };
+      const renderer = await create(
+        createElement(PhysicalSceneLight, {
+          floor,
+          name,
+          position,
+          color: "#ffffff",
+          intensity: 1,
+          distance: 4,
+        }),
+      );
+      try {
+        const plane = renderer.scene.findByProps({ name }).instance.userData.cabaneLightWallPlane;
+        assert.deepEqual(plane, expected, name);
+      } finally {
+        await renderer.unmount();
+      }
     }
   });
 
