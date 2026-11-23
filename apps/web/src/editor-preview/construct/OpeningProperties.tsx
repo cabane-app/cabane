@@ -144,15 +144,27 @@ export function OpeningProperties({
             <select
               aria-label="Window operation"
               value={selectedOpening.operation}
-              onChange={(event) =>
+              onChange={(event) => {
+                const operation = event.target.value as typeof selectedOpening.operation;
+                const { slideDirection, ...shared } = selectedOpening;
                 editor.replaceSelectedOpening({
-                  ...selectedOpening,
-                  operation: event.target.value as typeof selectedOpening.operation,
-                })
-              }
+                  ...shared,
+                  operation,
+                  panelCount:
+                    operation === "sliding"
+                      ? selectedOpening.panelCount === 1
+                        ? 2
+                        : selectedOpening.panelCount
+                      : selectedOpening.panelCount > 2
+                        ? 2
+                        : selectedOpening.panelCount,
+                  ...(operation === "sliding" && slideDirection ? { slideDirection } : {}),
+                });
+              }}
             >
               <option value="fixed">Fixed</option>
               <option value="casement">Casement</option>
+              <option value="sliding">Sliding</option>
             </select>
           </label>
           <label>
@@ -203,12 +215,18 @@ export function OpeningProperties({
               onChange={(event) =>
                 editor.replaceSelectedOpening({
                   ...selectedOpening,
-                  panelCount: Number(event.target.value) as 1 | 2,
+                  panelCount: Number(event.target.value) as 1 | 2 | 3 | 4,
                 })
               }
             >
-              <option value={1}>One</option>
+              {selectedOpening.operation !== "sliding" && <option value={1}>One</option>}
               <option value={2}>Two</option>
+              {selectedOpening.operation === "sliding" && (
+                <>
+                  <option value={3}>Three</option>
+                  <option value={4}>Four</option>
+                </>
+              )}
             </select>
           </label>
           {selectedOpening.variant === "muntined" && (

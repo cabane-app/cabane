@@ -1,3 +1,4 @@
+import { BifoldDoorModel } from "./bifold-door-model";
 import { framedHingedDoorMount } from "./framed-hinged-door-mount";
 import { omitUndefinedProperties, useDetailedJoinery } from "@cabane/engine";
 import { SlidingGlassTrack } from "./sliding-glass-track";
@@ -32,6 +33,16 @@ export function DoorModel({
   reducedMotion,
 }: OpeningModelProps<DoorSpec>) {
   const detailed = useDetailedJoinery();
+  if (opening.operation === "bifold")
+    return (
+      <BifoldDoorModel
+        wall={wall}
+        opening={opening}
+        floor={floor}
+        position={position}
+        reducedMotion={reducedMotion}
+      />
+    );
   if (opening.operation === "roll-up")
     return (
       <RollUpDoorModel

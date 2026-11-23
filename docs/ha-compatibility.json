@@ -19,7 +19,7 @@
     }
   },
   "semantics": {
-    "validationRevision": 14,
+    "validationRevision": 15,
     "migrationRevision": 1,
     "archiveRevision": 1
   },
@@ -1648,6 +1648,153 @@
                             "operation": {
                               "optional": false,
                               "schema": {
+                                "const": "bifold"
+                              }
+                            },
+                            "sillHeightMeters": {
+                              "optional": false,
+                              "schema": {
+                                "type": "number"
+                              }
+                            },
+                            "variant": {
+                              "optional": false,
+                              "schema": {
+                                "const": "panel"
+                              }
+                            },
+                            "visualModel": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "wallId": {
+                              "optional": false,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "widthPlanUnits": {
+                              "optional": false,
+                              "schema": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "properties": {
+                            "color": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "finish": {
+                              "optional": false,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "white"
+                                  },
+                                  {
+                                    "const": "wood"
+                                  }
+                                ]
+                              }
+                            },
+                            "frontOverlayMeters": {
+                              "optional": true,
+                              "schema": {
+                                "type": "number"
+                              }
+                            },
+                            "frontSide": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "left"
+                                  },
+                                  {
+                                    "const": "right"
+                                  }
+                                ]
+                              }
+                            },
+                            "hingeSide": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "end"
+                                  },
+                                  {
+                                    "const": "start"
+                                  }
+                                ]
+                              }
+                            },
+                            "id": {
+                              "optional": false,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "kind": {
+                              "optional": false,
+                              "schema": {
+                                "const": "door"
+                              }
+                            },
+                            "leafCount": {
+                              "optional": false,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": 1
+                                  },
+                                  {
+                                    "const": 2
+                                  }
+                                ]
+                              }
+                            },
+                            "name": {
+                              "optional": true,
+                              "schema": {
+                                "type": "string"
+                              }
+                            },
+                            "offsetFromWallStartPlanUnits": {
+                              "optional": false,
+                              "schema": {
+                                "type": "number"
+                              }
+                            },
+                            "openingHeightMeters": {
+                              "optional": false,
+                              "schema": {
+                                "type": "number"
+                              }
+                            },
+                            "openingSide": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "left"
+                                  },
+                                  {
+                                    "const": "right"
+                                  }
+                                ]
+                              }
+                            },
+                            "operation": {
+                              "optional": false,
+                              "schema": {
                                 "const": "hinged"
                               }
                             },
@@ -2121,6 +2268,9 @@
                                   },
                                   {
                                     "const": "fixed"
+                                  },
+                                  {
+                                    "const": "sliding"
                                   }
                                 ]
                               }
@@ -2134,6 +2284,12 @@
                                   },
                                   {
                                     "const": 2
+                                  },
+                                  {
+                                    "const": 3
+                                  },
+                                  {
+                                    "const": 4
                                   }
                                 ]
                               }
@@ -2142,6 +2298,19 @@
                               "optional": false,
                               "schema": {
                                 "type": "number"
+                              }
+                            },
+                            "slideDirection": {
+                              "optional": true,
+                              "schema": {
+                                "anyOf": [
+                                  {
+                                    "const": "end"
+                                  },
+                                  {
+                                    "const": "start"
+                                  }
+                                ]
                               }
                             },
                             "variant": {
@@ -7462,6 +7631,153 @@
                           "operation": {
                             "optional": false,
                             "schema": {
+                              "const": "bifold"
+                            }
+                          },
+                          "sillHeightMeters": {
+                            "optional": false,
+                            "schema": {
+                              "type": "number"
+                            }
+                          },
+                          "variant": {
+                            "optional": false,
+                            "schema": {
+                              "const": "panel"
+                            }
+                          },
+                          "visualModel": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "wallId": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "widthPlanUnits": {
+                            "optional": false,
+                            "schema": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "properties": {
+                          "color": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "finish": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "white"
+                                },
+                                {
+                                  "const": "wood"
+                                }
+                              ]
+                            }
+                          },
+                          "frontOverlayMeters": {
+                            "optional": true,
+                            "schema": {
+                              "type": "number"
+                            }
+                          },
+                          "frontSide": {
+                            "optional": true,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "left"
+                                },
+                                {
+                                  "const": "right"
+                                }
+                              ]
+                            }
+                          },
+                          "hingeSide": {
+                            "optional": true,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "end"
+                                },
+                                {
+                                  "const": "start"
+                                }
+                              ]
+                            }
+                          },
+                          "id": {
+                            "optional": false,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "kind": {
+                            "optional": false,
+                            "schema": {
+                              "const": "door"
+                            }
+                          },
+                          "leafCount": {
+                            "optional": false,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": 1
+                                },
+                                {
+                                  "const": 2
+                                }
+                              ]
+                            }
+                          },
+                          "name": {
+                            "optional": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          },
+                          "offsetFromWallStartPlanUnits": {
+                            "optional": false,
+                            "schema": {
+                              "type": "number"
+                            }
+                          },
+                          "openingHeightMeters": {
+                            "optional": false,
+                            "schema": {
+                              "type": "number"
+                            }
+                          },
+                          "openingSide": {
+                            "optional": true,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "left"
+                                },
+                                {
+                                  "const": "right"
+                                }
+                              ]
+                            }
+                          },
+                          "operation": {
+                            "optional": false,
+                            "schema": {
                               "const": "hinged"
                             }
                           },
@@ -7935,6 +8251,9 @@
                                 },
                                 {
                                   "const": "fixed"
+                                },
+                                {
+                                  "const": "sliding"
                                 }
                               ]
                             }
@@ -7948,6 +8267,12 @@
                                 },
                                 {
                                   "const": 2
+                                },
+                                {
+                                  "const": 3
+                                },
+                                {
+                                  "const": 4
                                 }
                               ]
                             }
@@ -7956,6 +8281,19 @@
                             "optional": false,
                             "schema": {
                               "type": "number"
+                            }
+                          },
+                          "slideDirection": {
+                            "optional": true,
+                            "schema": {
+                              "anyOf": [
+                                {
+                                  "const": "end"
+                                },
+                                {
+                                  "const": "start"
+                                }
+                              ]
                             }
                           },
                           "variant": {

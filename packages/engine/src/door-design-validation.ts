@@ -28,23 +28,25 @@ export function doorDesignErrors(
         door.frontSide ===
           "right"), "frontSide", "Only concealed doors have a separate flush face.");
   const rollUp = door.operation === "roll-up";
-  require(["hinged", "sliding", "roll-up"].includes(
+  require(["hinged", "sliding", "bifold", "roll-up"].includes(
     String(door.operation),
-  ), "operation", "Door motion must be hinged, sliding, or roll-up.");
+  ), "operation", "Door motion must be hinged, sliding, bifold, or roll-up.");
   require((rollUp
     ? ["slatted"]
-    : [
-        "panel",
-        "panel-white-lever",
-        "french",
-        "full-glass",
-        "steel-arched",
-        "concealed",
-        "flush-knob",
-        "flush",
-        "plank",
-        ...(door.operation === "hinged" ? GARDEN_GATE_VARIANTS : []),
-      ]
+    : door.operation === "bifold"
+      ? ["panel"]
+      : [
+          "panel",
+          "panel-white-lever",
+          "french",
+          "full-glass",
+          "steel-arched",
+          "concealed",
+          "flush-knob",
+          "flush",
+          "plank",
+          ...(door.operation === "hinged" ? GARDEN_GATE_VARIANTS : []),
+        ]
   ).includes(String(door.variant)), "variant", "Door style must match its motion.");
   require(["wood", "white"].includes(
     String(door.finish),
@@ -55,7 +57,8 @@ export function doorDesignErrors(
     ? "Roll-up doors do not have leaves."
     : "Door leaf count must be 1 or 2.");
   require(door.operation === "hinged" ||
-    door.hingeSide === undefined, "hingeSide", "Only hinged doors have a hinge side.");
+    door.operation === "bifold" ||
+    door.hingeSide === undefined, "hingeSide", "Only hinged or bifold doors have a hinge side.");
   require(door.operation === "sliding" ||
     door.slideDirection ===
       undefined, "slideDirection", "Only sliding doors have a slide direction.");

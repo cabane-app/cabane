@@ -112,7 +112,7 @@ export const validateOpenings = (
       for (const [key, allowed] of Object.entries({
         hingeSide: ["start", "end"],
         openingSide: ["left", "right"],
-        ...(rawOpening.kind === "door" ? { slideDirection: ["start", "end"] } : {}),
+        slideDirection: ["start", "end"],
       })) {
         if (
           rawOpening[key] !== undefined &&
@@ -152,12 +152,12 @@ export const validateOpenings = (
         );
       }
     } else if (rawOpening.kind === "window") {
-      if (!["fixed", "casement"].includes(String(rawOpening.operation))) {
+      if (!["fixed", "casement", "sliding"].includes(String(rawOpening.operation))) {
         issues.push(
           issue(
             "opening.window-operation",
             `${openingPath}.operation`,
-            "Window operation must be fixed or casement.",
+            "Window operation must be fixed, casement, or sliding.",
           ),
         );
       }
@@ -170,15 +170,27 @@ export const validateOpenings = (
           ),
         );
       }
-      if (![1, 2].includes(Number(rawOpening.panelCount))) {
+      if (
+        !(rawOpening.operation === "sliding" ? [2, 3, 4] : [1, 2]).includes(
+          rawOpening.panelCount as number,
+        )
+      ) {
         issues.push(
           issue(
             "opening.window-panel-count",
             `${openingPath}.panelCount`,
-            "Window panelCount must be 1 or 2.",
+            "Sliding windows need 2, 3 or 4 panels; other windows need 1 or 2.",
           ),
         );
       }
+      if (rawOpening.operation !== "sliding" && rawOpening.slideDirection !== undefined)
+        issues.push(
+          issue(
+            "opening.window-slide-direction",
+            `${openingPath}.slideDirection`,
+            "Only sliding windows have a slide direction.",
+          ),
+        );
       if (!["clear", "privacy"].includes(String(rawOpening.glazing))) {
         issues.push(
           issue(

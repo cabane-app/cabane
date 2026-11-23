@@ -127,6 +127,7 @@
       "multiple-floor-schema.test.mjs",
       "opening-junction-clearance.test.mjs",
       "opening-orientation.test.mjs",
+      "opening-bifold-sliding.test.mjs",
       "outdoor-platforms.test.mjs",
       "outdoor-platform-rooms.test.mjs",
       "panel-dom.test.mjs",

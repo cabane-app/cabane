@@ -253,7 +253,7 @@ export function platformPatch(value: unknown): Partial<Omit<OutdoorPlatformSpec,
 }
 
 function doorDesign(input: Record<string, unknown>) {
-  const operation = oneOf(input.operation, "operation", ["hinged", "sliding", "roll-up"]);
+  const operation = oneOf(input.operation, "operation", ["hinged", "sliding", "bifold", "roll-up"]);
   oneOf(input.finish, "finish", ["wood", "white"]);
   if (operation === "roll-up") {
     oneOf(input.variant, "variant", ["slatted"]);
@@ -278,7 +278,9 @@ function doorDesign(input: Record<string, unknown>) {
     ]);
     if (input.leafCount !== 1 && input.leafCount !== 2)
       throw new Error("leafCount must be 1 or 2.");
-    if (operation === "hinged" && input.slideDirection !== undefined)
+    if (operation === "bifold" && input.variant !== "panel")
+      throw new Error("Bifold doors use Panel style.");
+    if ((operation === "hinged" || operation === "bifold") && input.slideDirection !== undefined)
       throw new Error("Hinged doors do not have a slide direction.");
     if (operation === "sliding" && input.hingeSide !== undefined)
       throw new Error("Sliding doors do not have a hinge side.");
@@ -359,16 +361,22 @@ export function opening(value: unknown): EditorWallAttachment {
       "operation",
       "variant",
       "panelCount",
+      "slideDirection",
       "glazing",
       "muntins",
       "hingeSide",
       "openingSide",
     ]);
-    oneOf(input.operation, "opening.operation", ["fixed", "casement"]);
+    oneOf(input.operation, "opening.operation", ["fixed", "casement", "sliding"]);
     oneOf(input.variant, "opening.variant", ["plain", "muntined", "steel-arched"]);
     oneOf(input.glazing, "opening.glazing", ["clear", "privacy"]);
-    if (input.panelCount !== 1 && input.panelCount !== 2)
-      throw new Error("panelCount must be 1 or 2.");
+    if (!(input.operation === "sliding" ? [2, 3, 4] : [1, 2]).includes(input.panelCount as number))
+      throw new Error("Sliding windows need 2, 3 or 4 panels; other windows need 1 or 2.");
+    if (input.slideDirection !== undefined) {
+      if (input.operation !== "sliding")
+        throw new Error("Only sliding windows have a slide direction.");
+      oneOf(input.slideDirection, "slideDirection", ["start", "end"]);
+    }
     if (input.color !== undefined) color(input.color, "opening.color");
     if (input.hingeSide !== undefined) oneOf(input.hingeSide, "hingeSide", ["start", "end"]);
     if (input.openingSide !== undefined) oneOf(input.openingSide, "openingSide", ["left", "right"]);
