@@ -28,10 +28,10 @@ const lightWallPlane = (
     const dz = endZ - startZ;
     const lengthSquared = dx * dx + dz * dz;
     if (lengthSquared === 0) continue;
-    const fraction = Math.max(
-      0,
-      Math.min(1, ((position[0] - startX) * dx + (position[2] - startZ) * dz) / lengthSquared),
-    );
+    const fraction = ((position[0] - startX) * dx + (position[2] - startZ) * dz) / lengthSquared;
+    // A light beyond a wall's end is not behind it. Clamping to the end point would give
+    // a diagonal plane through that point, darkening open floor in front of the wall.
+    if (fraction <= 0 || fraction >= 1) continue;
     const awayX = position[0] - (startX + fraction * dx);
     const awayZ = position[2] - (startZ + fraction * dz);
     const separation = Math.hypot(awayX, awayZ);

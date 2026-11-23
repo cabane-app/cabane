@@ -593,6 +593,79 @@ await withModules(async (load) => {
     }
   });
 
+  test("a lamp just past a wall's end does not cut a diagonal shadow across the room", async () => {
+    const floor = {
+      ...homeManifest.floors[0],
+      coordinates: { origin: [0, 0], metersPerPlanUnit: 1, scaleBasis: "measured" },
+      rooms: [
+        {
+          ...homeManifest.floors[0].rooms[0],
+          polygon: [
+            [0, 0],
+            [4, 0],
+            [4, 4],
+            [0, 4],
+          ],
+        },
+      ],
+      // A partial wall: the lamp stands 0.3 m beyond its end, inside the room.
+      walls: [
+        {
+          id: "partial",
+          from: [0, 0],
+          to: [2, 0],
+          thicknessMeters: 0.1,
+          classification: "interior",
+        },
+      ],
+      openings: [],
+    };
+    const definition = stableDeviceRegistry["table-lamp"];
+    const renderer = await create(
+      createElement(engine.HomeAssistantSceneLighting, {
+        floor,
+        resolvedBindings: { rooms: {}, openings: {}, issues: [] },
+        deviceModels: stableDeviceRegistry,
+        extensionDeviceModels: {},
+        sceneItems: [
+          {
+            id: "past-wall-end-lamp",
+            floorId: floor.id,
+            kind: "device",
+            modelId: "table-lamp",
+            size: definition.defaultSize,
+            lightState: "always-on",
+            entitySlots: [],
+            placement: {
+              kind: "absolute",
+              at: [2.3, 0.3],
+              elevationMeters: 0.6,
+              rotationYRadians: 0,
+            },
+          },
+        ],
+      }),
+    );
+    try {
+      const light = renderer.scene.findByProps({
+        name: "ha-device-light-past-wall-end-lamp",
+      }).instance;
+      assert.equal(light.isPointLight, true);
+      const plane = light.userData.cabaneLightWallPlane;
+      // The floor in front of the wall is in plain view of the lamp.
+      for (const [x, z] of [
+        [0.5, 0.5],
+        [1.5, 0.2],
+      ])
+        assert.ok(
+          !plane || plane[0] * x + plane[2] * z + plane[3] >= 0,
+          `receiver at ${x}, ${z} must stay lit (plane ${JSON.stringify(plane)})`,
+        );
+    } finally {
+      await renderer.unmount();
+    }
+  });
+
   test("primary bedroom bedside lamps cannot illuminate the gallery behind their wall", async () => {
     const floor = homeManifest.floors.find((candidate) => candidate.id === "first-floor");
     const items = ownerHomeProject.sceneItems
