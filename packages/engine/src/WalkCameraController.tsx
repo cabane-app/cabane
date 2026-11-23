@@ -1,4 +1,4 @@
-import type { WalkParcel } from "./navigation/walk-parcel";
+import { walkParcelForFloor, type WalkParcel } from "./navigation/walk-parcel";
 import { elevationAreas } from "./elevation/surfaces";
 import { omitUndefinedProperties } from "./defined-properties";
 import { useWalkToolNavigation } from "./walk-tools/useWalkToolNavigation";
@@ -188,7 +188,8 @@ export function WalkCameraController({
 
   useEffect(() => {
     if (!cameraRef.current) return;
-    if (parcel && !parcel.contains(poseRef.current)) {
+    const floorParcel = walkParcelForFloor(parcel, floor);
+    if (parcel && floorParcel && !floorParcel.contains(poseRef.current)) {
       const spawn =
         building && safeBuildingSpawn(building, floor.id, undefined, undefined, undefined, parcel);
       const inside = spawn ?? parcel.constrain(poseRef.current);
@@ -204,7 +205,7 @@ export function WalkCameraController({
     );
     cameraRef.current.rotation.set(poseRef.current.pitch, poseRef.current.yaw, 0);
     invalidate();
-  }, [building, floor.id, parcel, elevation, invalidate, poseRef]);
+  }, [building, floor, parcel, elevation, invalidate, poseRef]);
 
   const openIdsRef = useRef<ReadonlySet<string>>(new Set());
 
@@ -334,7 +335,7 @@ export function WalkCameraController({
             ),
             undefined,
             undefined,
-            parcel,
+            walkParcelForFloor(parcel, floor),
           ),
           floorId: floor.id,
           elevation,

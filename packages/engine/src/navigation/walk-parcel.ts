@@ -1,5 +1,8 @@
 import { groundEdgeProfile, type GroundMargins } from "../terrain/ground-margins";
 import { WALK_PLAYER_RADIUS, type WalkPoint } from "./walk-navigation-contract";
+import { worldPointToPlan } from "../geometry";
+import { pointOnFloorSupport } from "../outdoor-platforms/platform-geometry";
+import type { FloorSpec } from "../types";
 
 /** The player's entire footprint stays inside the lawn, even during a jump. */
 export function createWalkParcel(frame: {
@@ -31,3 +34,16 @@ export function createWalkParcel(frame: {
 }
 
 export type WalkParcel = ReturnType<typeof createWalkParcel>;
+
+/** The outdoor lot must not clip an authored basement extending beneath it. */
+export function walkParcelForFloor(parcel: WalkParcel | undefined, floor: FloorSpec) {
+  if (!parcel || !floor.belowGround) return parcel;
+  const supported = (point: WalkPoint) =>
+    pointOnFloorSupport(worldPointToPlan(point, floor.coordinates), floor);
+  return {
+    contains: (point: WalkPoint) => supported(point) || parcel.contains(point),
+    // Movement rejects unsupported steps using contains after collision resolution.
+    // Clamping them to the outdoor lot could teleport across a basement edge.
+    constrain: (point: WalkPoint) => point,
+  };
+}

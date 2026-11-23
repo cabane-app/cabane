@@ -71,7 +71,81 @@ await withModules(async (load) => {
   const { worldPointToPlan } = await load("/packages/engine/src/geometry.ts");
   const { createWalkParcel } = await load("/packages/engine/src/navigation/walk-parcel.ts");
   const { resolveCircleMovement } = await load("/packages/engine/src/navigation/walk-motion.ts");
-  const { safeBuildingSpawn } = await load("/packages/engine/src/stairs/stair-navigation.ts");
+  const { safeBuildingSpawn, moveBuildingWalker } = await load(
+    "/packages/engine/src/stairs/stair-navigation.ts",
+  );
+  test("the outdoor parcel preserves basement entry, movement and relocation beyond the ground footprint", () => {
+    const floor = (id, width, depth, belowGround) => {
+      const polygon = [
+        [0, 0],
+        [width, 0],
+        [width, depth],
+        [0, depth],
+      ];
+      return {
+        ...neutralDemoManifest.floors[0],
+        id,
+        belowGround,
+        footprint: polygon,
+        footprintRegions: [polygon],
+        walls: [],
+        openings: [],
+        rooms: [{ ...neutralDemoManifest.floors[0].rooms[0], id: `${id}-room`, polygon }],
+      };
+    };
+    const basement = floor("basement", 20, 10, true);
+    const ground = floor("ground", 4, 4, false);
+    const manifest = {
+      ...neutralDemoManifest,
+      floors: [basement, ground],
+      stairs: [],
+      sceneItems: [],
+    };
+    const parcel = createWalkParcel(homeGroundFrame(manifest, {}));
+    assert.equal(parcel.contains({ x: 15, z: 5 }), false);
+    const spawn = safeBuildingSpawn(manifest, basement.id, [15, 5], undefined, [], parcel);
+    assert.ok(spawn, "the configured basement entry remains available");
+    const moved = moveBuildingWalker(
+      manifest,
+      spawn,
+      { x: 1, z: 0 },
+      new Set(),
+      [],
+      undefined,
+      {},
+      { parcel },
+    );
+    assert.ok(Math.abs(moved.x - 16) < 1e-8);
+    assert.equal(moved.floorId, basement.id);
+    const edge = moveBuildingWalker(
+      manifest,
+      { ...spawn, x: 19.9 },
+      { x: 1, z: 0 },
+      new Set(),
+      [],
+      undefined,
+      {},
+      { parcel, allowUnsupported: true },
+    );
+    assert.ok(
+      edge.x >= 19.9 && edge.x <= 20,
+      "leaving basement support never snaps to the outdoor lot",
+    );
+    assert.ok(
+      resolveWalkLanding(
+        manifest,
+        { x: 15, y: spawn.elevation, z: 5 },
+        () => [],
+        undefined,
+        parcel,
+      ),
+    );
+    assert.equal(
+      safeBuildingSpawn(manifest, ground.id, [15, 5], () => true, [], parcel),
+      null,
+      "outdoor ground entry still respects the parcel",
+    );
+  });
   test("Walk and Construct share the automatic Walk board and keep movement and relocation inside edited edges", () => {
     const manifest = { ...neutralDemoManifest, stairs: [], sceneItems: [] };
     const floor = manifest.floors[0];
