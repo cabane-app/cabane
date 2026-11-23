@@ -21,6 +21,7 @@ import oakUrl from "./assets/finishes/oak.webp?url";
 import pineBarkUrl from "./assets/finishes/pine-bark.webp?url";
 import pineBarkNormalUrl from "./assets/finishes/pine-bark-normal.webp?url";
 import plasterUrl from "./assets/finishes/painted-plaster.webp?url";
+import wallPaintUrl from "./assets/finishes/wall-paint.webp?url";
 import travertineUrl from "./assets/finishes/travertine.webp?url";
 import turfFringeMaskUrl from "./assets/finishes/turf-fringe-mask.webp?url";
 import walnutUrl from "./assets/finishes/walnut.webp?url";
@@ -115,6 +116,7 @@ const surfaceSources: Partial<Record<ScanId, ReturnType<typeof scan>>> = {
 type ScanId =
   | FloorPatternPresetId
   | "painted-plaster"
+  | "wall-paint"
   | "joinery-oak"
   | "ground-cover"
   | "boxwood"
@@ -133,6 +135,7 @@ const sources: Partial<Record<ScanId, ReturnType<typeof scan>>> = {
   "pine-bark-normal": scan(pineBarkNormalUrl, barkRepeat, NoColorSpace),
   travertine: scan(travertineUrl),
   "painted-plaster": scan(plasterUrl),
+  "wall-paint": scan(wallPaintUrl),
   "joinery-oak": scan(joineryOakUrl),
   "ground-cover": scan(grassUrl, 1 / 2.5),
   boxwood: scan(boxwoodUrl, 1 / 0.92),
@@ -163,6 +166,11 @@ export function useScannedFinish(
   }, [id, texture]);
   useEffect(() => () => rotated?.dispose(), [rotated]);
   return rotated ?? texture;
+}
+
+/** Continuous white oak veneer from the same scan as the plank flooring. */
+export function useOakVeneer() {
+  return useScannedFinish("joinery-oak");
 }
 
 // The image is a linear coverage mask. Albedo, contact and coverage each use their own UV set.

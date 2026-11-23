@@ -24,7 +24,7 @@ export function RoomMembershipFields({
   return (
     <fieldset>
       <legend>Room</legend>
-      <div className="construction-inspector__room-toggle">
+      <div className="inspector-switch-row">
         <label id={`${id}-label`} htmlFor={id}>
           Use as room
         </label>

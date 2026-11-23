@@ -21,7 +21,7 @@ import { StairSurfaceApertures } from "./stairs/surface-apertures";
 import { memo, useContext, useMemo } from "react";
 import { FloorScene, type FloorSceneProps } from "./building/FloorScene";
 import { deriveFloorLevels } from "./building/floor-levels";
-import { visibleFloorIds, type FloorView } from "./building/floor-visibility";
+import { showItemInFloorView, visibleFloorIds, type FloorView } from "./building/floor-visibility";
 import { BuildingRoof } from "./roof";
 import { planPointToWorld } from "./geometry";
 import type { MultiPolygon } from "polygon-clipping";
@@ -148,11 +148,15 @@ export const ArchitectureScene = memo(function ArchitectureScene({
           floor.id,
           {
             ...manifest,
-            sceneItems: manifest.sceneItems.filter((item) => item.floorId === floor.id),
+            sceneItems: manifest.sceneItems.filter(
+              (item) =>
+                item.floorId === floor.id &&
+                showItemInFloorView(item, view, props.interactionMode === "editor"),
+            ),
           },
         ]),
       ),
-    [manifest],
+    [manifest, view, props.interactionMode],
   );
   const levels = deriveFloorLevels(manifest.floors);
   const activeElevation = levels.find((level) => level.floorId === active)?.elevationMeters ?? 0;

@@ -1,0 +1,43 @@
+.mobile-welcome {
+  position: relative;
+  isolation: isolate;
+  height: 100dvh;
+}
+
+.mobile-welcome.onboarding-shell--open > .setup-shell__scene,
+.mobile-welcome .onboarding-intro__body {
+  animation: none;
+}
+
+.mobile-welcome .setup-shell__scene img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mobile-welcome__tour,
+.mobile-welcome__status {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--welcome-rule);
+  border-radius: 6px;
+  background: var(--welcome-paper);
+  color: var(--welcome-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mobile-welcome__tour {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  min-height: 44px;
+}
+
+.mobile-welcome__status {
+  position: fixed;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  justify-self: center;
+  pointer-events: none;
+}

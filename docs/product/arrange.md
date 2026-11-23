@@ -18,7 +18,7 @@ and Properties open the full-screen panel only on request; a successful catalog
 placement closes it so the newly added object is visible on the canvas. New toilets
 face forward on the floor. Snapping either toilet to a wall places its back against
 the selected face and points the bowl into the room. Properties edit
-dimensions and placement. In 3D, a matching elevation button beside the rotation
+dimensions and placement. Enable **Hide when the roof is hidden** under **Dashboard visibility** to hide an individual item in dashboard cutaways. It stays visible in Arrange, Walk, and the whole-building view. In 3D, a matching elevation button beside the rotation
 controls raises or lowers the selected item while dragged vertically. Release
 commits one undo step; Escape, pointer cancellation, or focus loss restores its
 initial placement. Elevation preserves horizontal position, rotation, and wall or

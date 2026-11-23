@@ -751,20 +751,20 @@
   display: grid;
   gap: 8px;
 }
-.construction-inspector__room-toggle {
+.inspector-switch-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 44px;
   align-items: center;
   min-height: 44px;
   gap: 8px 12px;
 }
-.construction-inspector__room-toggle label {
+.direction-preview .inspector-switch-row label {
   display: block;
   color: var(--preview-ink);
   font-weight: 500;
   cursor: pointer;
 }
-.construction-inspector__room-toggle .construction-inspector__room-action-note {
+.inspector-switch-row .construction-inspector__room-action-note {
   grid-column: 1 / -1;
 }
 .direction-preview .construction-inspector__room-actions > button.editor-button {

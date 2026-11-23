@@ -1,3 +1,5 @@
+import { useId } from "react";
+import { EditorSwitch } from "../../editor-chrome/EditorSwitch";
 import { ItemEntitySlots } from "./ItemEntitySlots";
 import type { ItemConnectionContext } from "./ItemEntitySlots";
 import { EditorButton } from "../../editor-chrome/EditorButton";
@@ -29,6 +31,7 @@ export function FurnishingProperties({
   onLightStateChange,
   onEntitySlotsChange,
   connections,
+  onHideWithRoofChange,
   onVariantChange,
   onColorChange,
   onClose,
@@ -55,6 +58,8 @@ export function FurnishingProperties({
   onColorChange?:
     | ((id: string, color: string | null, definition: SceneModelEditorDescriptor) => void)
     | undefined;
+  onHideWithRoofChange?:
+    ((id: string, hide: boolean, definition: SceneModelEditorDescriptor) => void) | undefined;
   onVariantChange?:
     ((id: string, variant: string, definition: SceneModelEditorDescriptor) => void) | undefined;
   onEntitySlotsChange?: ((id: string, slots: readonly EntityBindingSlotSpec[]) => void) | undefined;
@@ -65,6 +70,7 @@ export function FurnishingProperties({
   onEditLighting?: (() => void) | undefined;
   onClose: () => void;
 }) {
+  const roofSwitchId = useId();
   const updatePlacement = (patch: Partial<ItemPlacement>) =>
     onPlacementChange(selected.id, { ...selected.placement, ...patch } as ItemPlacement);
   const updateSize = (axis: number, value: number) => {
@@ -399,6 +405,22 @@ export function FurnishingProperties({
               );
             }}
           />
+        </fieldset>
+      )}
+      {onHideWithRoofChange && (
+        <fieldset>
+          <legend>Dashboard visibility</legend>
+          <div className="inspector-switch-row">
+            <label id={`${roofSwitchId}-label`} htmlFor={roofSwitchId}>
+              Hide when the roof is hidden
+            </label>
+            <EditorSwitch
+              id={roofSwitchId}
+              labelledBy={`${roofSwitchId}-label`}
+              checked={selected.hideWithRoof ?? false}
+              onChange={(hide) => onHideWithRoofChange(selected.id, hide, definition)}
+            />
+          </div>
         </fieldset>
       )}
     </SelectionDetailsPanel>

@@ -175,6 +175,9 @@ export function EditorSelectionDetails({
                 onLightStateChange={furnishingEditor.updateLightState}
                 onEntitySlotsChange={furnishingEditor.updateEntitySlots}
                 connections={itemConnections}
+                onHideWithRoofChange={(id, hideWithRoof, definition) =>
+                  furnishingEditor.updateItem(id, { hideWithRoof }, definition)
+                }
                 onVariantChange={furnishingEditor.updateVariant}
                 onColorChange={furnishingEditor.updateColor}
                 onEditLighting={() => setLightingModel(selectedItem.modelId)}

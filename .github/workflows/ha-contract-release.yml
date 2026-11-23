@@ -5,19 +5,22 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "0 23 * * *"
+    - cron: "0 23 * * 1-6"
+      timezone: Europe/Paris
+    - cron: "0 23 * * 0"
       timezone: Europe/Paris
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: ha-contract-release-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  group: ha-contract-release-${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'publish' || github.ref }}
   cancel-in-progress: false
 jobs:
   contract:
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.contract.outputs.changed }}
+      published_tag: ${{ steps.contract.outputs.published_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,6 +39,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag=$(gh release view --repo cabane-app/cabane-home-assistant --json tagName --jq .tagName)
+          echo "published_tag=$tag" >> "$GITHUB_OUTPUT"
           curl --fail --retry 3 --location "https://raw.githubusercontent.com/cabane-app/cabane-home-assistant/$tag/custom_components/cabane/frontend/manifest.json" --output /tmp/ha-panel-manifest.json
           node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
           import { readFileSync } from 'node:fs';
@@ -50,9 +54,13 @@ jobs:
     needs: contract
     if: >-
       (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
-      github.ref == 'refs/heads/main' && needs.contract.outputs.changed == 'true'
+      github.ref == 'refs/heads/main' &&
+      (needs.contract.outputs.changed == 'true' ||
+       (github.event_name == 'schedule' && github.event.schedule == '0 23 * * 0'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      WEEKLY_RELEASE: ${{ github.event_name == 'schedule' && github.event.schedule == '0 23 * * 0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -77,11 +85,15 @@ jobs:
           ssh-key: ${{ secrets.CABANE_INTEGRATION_DEPLOY_KEY }}
       - name: Build, validate and push the integration patch release
         id: publish
+        shell: bash
         run: |
           git -C integration-release config user.name 'cabane-release[bot]'
           git -C integration-release config user.email 'cabane-release[bot]@users.noreply.github.com'
-          npm run release:ha-contract -- integration-release --push --skip-tests
+          args=(--push --skip-tests)
+          if [ "$WEEKLY_RELEASE" = true ]; then args+=(--weekly); fi
+          npm run release:ha-contract -- integration-release "${args[@]}"
       - name: Confirm the integration release is published
+        if: steps.publish.outputs.tag != needs.contract.outputs.published_tag || needs.contract.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.publish.outputs.tag }}
@@ -92,12 +104,14 @@ jobs:
             if [ "$published" = true ]; then
               gh release download "$RELEASE_TAG" --repo cabane-app/cabane-home-assistant --pattern cabane.zip --dir /tmp/published-ha-release
               python3 - <<'PY'
-          import json, zipfile
+          import json, os, zipfile
           with zipfile.ZipFile('/tmp/published-ha-release/cabane.zip') as release:
-              actual = json.loads(release.read('frontend/manifest.json'))['workspace_contract']
-          with open('docs/ha-contract.json') as source:
+              actual = json.loads(release.read('frontend/manifest.json'))
+          with open('apps/web/dist-panel/manifest.json') as source:
               expected = json.load(source)
-          assert actual['fingerprint'] == expected['fingerprint'], 'Published contract differs from tested producer'
+          assert actual['workspace_contract'] == expected['workspace_contract'], 'Published contract differs from tested producer'
+          if os.environ['WEEKLY_RELEASE'] == 'true':
+              assert actual['files'] == expected['files'], 'Published panel differs from tested producer'
           PY
               exit 0
             fi

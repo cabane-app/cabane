@@ -1,4 +1,5 @@
-import { ToonMaterial, type SceneItemSize } from "@cabane/engine";
+import { OakVeneerMaterial } from "../construction/oak-veneer";
+import { type SceneItemSize } from "@cabane/engine";
 import { Vector2 } from "three";
 import { RoundedFurniturePanel } from "../construction";
 
@@ -24,6 +25,7 @@ export function RectangularCoffeeTable({
       userData={{ walkCollider: true, walkSupport: true }}
     >
       <RoundedFurniturePanel
+        grain="x"
         name="coffee-table-top"
         size={[1.1, 0.045, 0.6]}
         position={[0, 0.3775, 0]}
@@ -32,6 +34,7 @@ export function RectangularCoffeeTable({
         outlineColor="#9e7f53"
       />
       <RoundedFurniturePanel
+        grain="x"
         name="undercut-top-edge"
         size={[1.05, 0.026, 0.55]}
         position={[0, 0.349, 0]}
@@ -44,10 +47,11 @@ export function RectangularCoffeeTable({
           {[-0.215, 0.215].map((z) => (
             <mesh key={z} name="coffee-table-leg" position={[x, 0, z]} castShadow receiveShadow>
               <latheGeometry args={[leg, 12]} />
-              <ToonMaterial color="#b98f5e" />
+              <OakVeneerMaterial color="#b98f5e" />
             </mesh>
           ))}
           <RoundedFurniturePanel
+            grain="z"
             name="shelf-bearer"
             size={[0.047, 0.036, 0.446]}
             position={[x, 0.128, 0]}
@@ -59,6 +63,7 @@ export function RectangularCoffeeTable({
       ))}
       {[-2, -1, 0, 1, 2].map((i) => (
         <RoundedFurniturePanel
+          grain="x"
           key={i}
           name="coffee-table-lower-rail"
           size={[0.949, 0.022, 0.06]}

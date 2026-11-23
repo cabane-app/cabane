@@ -9,6 +9,10 @@ Full local verification is for broad side effects or uncertain impact; reuse
 passing results until relevant inputs change. A commit or push retry alone needs
 no rerun. Report the result, checks, and material uncertainty briefly.
 
+When changing or reviewing editor UI, find a comparable control in the same
+panel or a neighboring inspector first. Apply the [editor control standards](CODING_STANDARDS.md#editor-controls)
+and verify the result in the running editor with the surrounding controls visible.
+
 ## Scope and safety
 
 - Preserve unrelated work and consume documented public engine/catalog imports.

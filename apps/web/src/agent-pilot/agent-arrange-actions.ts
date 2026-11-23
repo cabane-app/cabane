@@ -103,7 +103,15 @@ export async function executeArrangeAction(
   if (type !== "update-item") throw new Error(`Unsupported Arrange action: ${type}.`);
   const patch = objectParams(action.patch);
   const keys = Object.keys(patch);
-  const allowed = ["placement", "variant", "color", "size", "lightState", "entitySlots"];
+  const allowed = [
+    "placement",
+    "variant",
+    "color",
+    "size",
+    "lightState",
+    "entitySlots",
+    "hideWithRoof",
+  ];
   if (!keys.length || keys.some((key) => !allowed.includes(key)))
     throw new Error(`patch must contain editable fields: ${allowed.join(", ")}.`);
   if (

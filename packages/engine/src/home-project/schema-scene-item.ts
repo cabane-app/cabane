@@ -94,6 +94,7 @@ export const sceneItem = (
           "color",
           "lightSlotId",
           "group",
+          "hideWithRoof",
         ]
       : [
           "id",
@@ -108,10 +109,18 @@ export const sceneItem = (
           "lightSlotId",
           "lightState",
           "group",
+          "hideWithRoof",
         ],
     path,
     issues,
   );
+  if (candidate.hideWithRoof !== undefined && typeof candidate.hideWithRoof !== "boolean")
+    addProjectIssue(
+      issues,
+      "project.item-roof-visibility",
+      `${path}.hideWithRoof`,
+      "Hide with roof must be a boolean.",
+    );
   if (candidate.group !== undefined) {
     const group = record(candidate.group, `${path}.group`, issues);
     if (group) {

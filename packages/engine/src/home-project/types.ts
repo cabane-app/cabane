@@ -74,6 +74,8 @@ export type ItemPlacement =
     };
 
 interface SceneItemBase {
+  /** Hide this item in dashboard cutaways alongside the building roof. */
+  hideWithRoof?: boolean;
   /** Flat Arrange group. Members share this metadata and retain independent bindings. */
   group?: { id: string; name: string };
   /** Independent lighting relationship; the entity slot is derived as <id>-entity. */

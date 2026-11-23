@@ -1,6 +1,6 @@
 {
-  "revision": 46,
-  "fingerprint": "14fc78454a3cf88665b0ccca6a8e785be6f2da42b00f3e4bf275bdb28bca5905",
+  "revision": 47,
+  "fingerprint": "3a2b3a498185d587a10170c2db04a6aa37a44ba23c003d712c4843f5607c3101",
   "summary": "Save adjustable map borders with the home",
   "breakingChanges": [
     "Homes with edited map borders store four ground margins. Update older Cabane clients and the Home Assistant panel before opening these homes."
@@ -319,6 +319,13 @@
       "summary": "Show existing Home Assistant dashboard views in room controls",
       "breakingChanges": [
         "Private room dashboard preferences require an updated Cabane frontend and matching Home Assistant panel. Existing rooms keep Cabane controls. Update older clients before opening a workspace with these preferences; portable home files and HA dashboard configurations are unchanged."
+      ]
+    },
+    {
+      "revision": 46,
+      "summary": "Add per-item roof visibility in Arrange",
+      "breakingChanges": [
+        "Update older clients before opening a project that uses hideWithRoof. Existing projects keep their previous visibility."
       ]
     }
   ],

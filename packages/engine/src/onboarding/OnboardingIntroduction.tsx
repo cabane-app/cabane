@@ -88,7 +88,7 @@ export function OnboardingIntroduction({
       </div>
       <div className="onboarding-demo-label">
         <span aria-hidden="true" />
-        Live 3D demo{" "}
+        {preview ? "Live 3D demo" : "Demo home"}{" "}
         <span className="onboarding-demo-label__detail">
           ·{" "}
           {showWalkHint ? (

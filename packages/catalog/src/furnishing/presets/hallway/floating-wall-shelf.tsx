@@ -1,4 +1,4 @@
-import type { SceneItemSize } from "@cabane/engine";
+import { useOakVeneer, type SceneItemSize } from "@cabane/engine";
 import { ExtrudeGeometry, Shape } from "three";
 import {
   cabinetBoard,
@@ -33,22 +33,18 @@ function foldedBracket(x: number) {
 const brackets = joinCabinetParts([-0.27, 0.27].map(foldedBracket));
 
 export function FloatingWallShelf({ size = FLOATING_WALL_SHELF_SIZE }: { size?: SceneItemSize }) {
+  const veneer = useOakVeneer() ?? oakGrainTexture;
   return (
     <group name="floating-wall-shelf" scale={[size[0] / 0.8, size[1] / 0.22, size[2] / 0.25]}>
       <CabinetPiece
         name="floating-shelf-board"
         geometry={board}
         color="#d4af7a"
-        map={oakGrainTexture}
+        map={veneer}
         outline="#a68a63"
       />
-      <CabinetPiece geometry={rebate} color="#c49a68" map={oakGrainTexture} />
-      <CabinetPiece
-        name="floating-shelf-back-lip"
-        geometry={back}
-        color="#c49a68"
-        map={oakGrainTexture}
-      />
+      <CabinetPiece geometry={rebate} color="#c49a68" map={veneer} />
+      <CabinetPiece name="floating-shelf-back-lip" geometry={back} color="#c49a68" map={veneer} />
       <CabinetPiece name="shelf-wall-bracket" geometry={brackets} color="#747a75" />
     </group>
   );
