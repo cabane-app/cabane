@@ -549,3 +549,5 @@ they fold. Window motion includes Sliding with two, three or four panels. Revers
 slide direction chooses the stacking jamb; Switch wall side mirrors the track
 order. Switching back to Fixed/Casement caps the count at two and clears the slide
 direction. These edits retain ordinary history, autosave, Apply and import/export.
+
+Selected rooms with flat ceilings expose Color and Reset ceiling color in the Ceiling properties. Color edits affect every room sharing that flat ceiling, without splitting its identity. Reset removes the override and restores the existing ceiling appearance. These edits use ordinary preview, undo/redo, autosave and Save. Sloped ceilings do not expose the color control.

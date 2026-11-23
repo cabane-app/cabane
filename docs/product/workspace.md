@@ -357,3 +357,5 @@ Sliding windows accept `operation: "sliding"`, `panelCount: 2 | 3 | 4` and optio
 one/two panels and cannot store a slide direction. Existing projects need no
 migration. These new operations require a matching frontend and Home Assistant
 panel; older clients reject unsupported data instead of removing it.
+
+Flat ceilings accept an optional `color` in six-digit `#RRGGBB` hexadecimal notation, case-insensitively. Omission preserves the default ceiling appearance; reset omits the field. The color belongs to the ceiling identity and round-trips through Construct, saved projects and Home Assistant synchronization. Sloped ceilings retain their existing schema. Older clients and panels must update before opening projects containing this field.

@@ -165,6 +165,7 @@ export interface RoomSpec {
 }
 
 export interface FlatCeilingSpec {
+  color?: string;
   id: string;
   kind: "flat";
   roomIds: readonly string[];

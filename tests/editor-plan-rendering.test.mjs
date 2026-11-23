@@ -24,9 +24,13 @@ await withModules(async (load) => {
   const { stableArchitectureModelRegistry } = await load(
     "/packages/catalog/src/architecture/index.ts",
   );
-  const { ArchitectureScene, createFloorEditorDraft, deriveFloorTopology } = await load(
-    "/packages/engine/src/index.ts",
-  );
+  const {
+    ArchitectureScene,
+    createFloorEditorDraft,
+    deriveFloorTopology,
+    createFloorEditorHistory,
+    floorEditorReducer,
+  } = await load("/packages/engine/src/index.ts");
   const { createFurnishingEditorState, furnishingEditorReducer } = await load(
     "/apps/web/src/editor-preview/furnish/editor-state.ts",
   );
@@ -266,6 +270,51 @@ await withModules(async (load) => {
     } finally {
       await renderer.unmount();
     }
+  });
+
+  test("shared ceiling paint survives topology, reopening and undo without splitting its identity", () => {
+    const source = structuredClone(floor);
+    const shared = source.ceilings.find(
+      (ceiling) => ceiling.kind === "flat" && ceiling.roomIds.length > 1,
+    );
+    shared.color = "#AAbbCC";
+    let history = createFloorEditorHistory(createFloorEditorDraft(source));
+    const room = history.present.rooms.find((room) => room.id === shared.roomIds[0]);
+    assert.equal(room.ceilingColor, shared.color);
+    const edit = (ceilingColor) => {
+      history = floorEditorReducer(history, {
+        type: "update-room-metadata",
+        roomId: room.id,
+        anchor: room.anchor,
+        changes: { ceilingColor },
+      });
+    };
+    edit("#123456");
+    const result = deriveFloorTopology(history.present).floor;
+    const ceiling = result.ceilings.find((c) => c.id === shared.id);
+    assert.equal(ceiling.color, "#123456");
+    assert.deepEqual([...ceiling.roomIds].sort(), [...shared.roomIds].sort());
+    assert.equal(result.ceilings.length, source.ceilings.length);
+    const reopened = deriveFloorTopology(
+      createFloorEditorDraft(JSON.parse(JSON.stringify(result))),
+    ).floor;
+    assert.deepEqual(reopened.ceilings, result.ceilings);
+    edit(undefined);
+    assert.ok(
+      !Object.hasOwn(
+        deriveFloorTopology(history.present).floor.ceilings.find((c) => c.id === shared.id),
+        "color",
+      ),
+    );
+    history = floorEditorReducer(history, { type: "undo" });
+    assert.equal(
+      deriveFloorTopology(history.present).floor.ceilings.find((c) => c.id === shared.id).color,
+      "#123456",
+    );
+    assert.deepEqual(
+      result.ceilings.filter((c) => c.kind === "sloped"),
+      source.ceilings.filter((c) => c.kind === "sloped"),
+    );
   });
 
   test("a shared ceiling retains one ID after edits and splits safely for different heights", () => {

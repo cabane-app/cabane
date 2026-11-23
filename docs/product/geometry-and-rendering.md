@@ -568,3 +568,5 @@ All panels stack over the stationary end panel selected by slideDirection
 (default start), leaving (count - 1) / count of the width open. openingSide mirrors
 track depth, not travel direction. Tracks retain their depth throughout motion;
 curtain clearance includes their closed envelope. Windows remain Walk barriers.
+
+Flat ceiling slabs use their optional authored color, falling back to the existing warm off-white when omitted. This also colors ceiling liners beneath upper outdoor platforms. Sloped ceilings and separately authored local elevation ceiling overrides retain their existing appearance.

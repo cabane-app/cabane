@@ -234,7 +234,13 @@ export const useConstructEditor = (
       changes: Partial<
         Pick<
           FloorEditorHistory["present"]["rooms"][number],
-          "name" | "accent" | "floorFinish" | "floorZones" | "ceilingHeightMeters" | "isSolid"
+          | "name"
+          | "accent"
+          | "floorFinish"
+          | "floorZones"
+          | "ceilingHeightMeters"
+          | "ceilingColor"
+          | "isSolid"
         >
       >,
     ) => {
