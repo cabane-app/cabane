@@ -107,7 +107,7 @@ side borders the platform. Walls with platform on both sides or touching neither
 footprint nor a platform keep no outward fade direction.
 Openings inherit wall thickness, orientation, fade,
 and cutout behavior. Door/window orientation is relative to wall direction.
-Doors support hinged/sliding variants, windows fixed/casement variants, and
+Doors support hinged/sliding/bifold/roll-up variants, windows fixed/casement/sliding variants, and
 passages rectangular/arched variants.
 Walls may also own optional rectangular blind `niches[]`, with a stable ID,
 left/right directed face, plan offset/width, bottom/height and depth in metres.
@@ -556,3 +556,15 @@ transition surfaces without creating same-storey ceiling openings.
 Lowered indoor areas extend adjacent wall solids downward. Local ceiling overrides
 replace the covered ceiling and close their vertical steps. Local offsets do not
 change the floor stack. Outdoor platform barriers follow their platform elevation.
+
+Bifold Panel doors use equal-width panel pairs. The jamb panel rotates up to
+86.4 degrees toward openingSide; its partner counter-rotates at twice that angle
+so the free tip stays on the guide. One pair uses hingeSide (default start), two
+pairs use opposite jambs. Panel thickness, meeting gaps and outside-face pivots
+keep the folded faces separated. They share ordinary door approach opening and
+Walk aperture behavior; leaf meshes are not independent Walk obstacles.
+Sliding windows telescope on separate 12 cm tracks, centered about the wall.
+All panels stack over the stationary end panel selected by slideDirection
+(default start), leaving (count - 1) / count of the width open. openingSide mirrors
+track depth, not travel direction. Tracks retain their depth throughout motion;
+curtain clearance includes their closed envelope. Windows remain Walk barriers.

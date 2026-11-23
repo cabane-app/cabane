@@ -18,6 +18,8 @@ export function WindowModel({
   const placement = openingWorldPlacement(wall, opening, floor.coordinates);
   const orientation = resolveOpeningOrientation(opening);
   const panelWidth = placement.widthMeters / opening.panelCount;
+  const sliding = opening.operation === "sliding";
+  const trackSpacing = 0.12;
   const columns = opening.variant === "muntined" ? opening.muntins!.columns : 1;
   const rows = opening.variant === "muntined" ? opening.muntins!.rows : 1;
 
@@ -33,16 +35,22 @@ export function WindowModel({
     >
       {orientation.leaves.map((leaf, index) => {
         const pivotX = leaf.pivotRatio * placement.widthMeters;
+        const track = sliding
+          ? (index - (opening.panelCount - 1) / 2) * trackSpacing * orientation.sideSign
+          : 0;
+        const travel = sliding
+          ? (opening.slideDirection === "end" ? opening.panelCount - 1 - index : index) * panelWidth
+          : 0;
         const childX = (leaf.extentSign * panelWidth) / 2;
 
         return (
-          <group key={index} position={[pivotX, 0, 0]}>
+          <group key={index} name="window-panel-track" position={[pivotX, 0, track]}>
             <AnimatedOpeningLeaf
               operation={opening.operation}
               position={position}
               reducedMotion={reducedMotion}
-              direction={leaf.rotationSign}
-              travel={0}
+              direction={sliding ? leaf.slideSign : leaf.rotationSign}
+              travel={travel}
             >
               <group position={[childX, 0, 0]}>
                 {opening.variant === "steel-arched" ? (

@@ -11,7 +11,7 @@ export function closedOpeningCoverClearance(opening: OpeningSpec, face: "left" |
       depthMeters:
         opening.operation === "casement" && handleFacesCover
           ? Math.max(frame, opening.glazing === "privacy" ? 0.121 : 0.1025)
-          : frame,
+          : frame + (opening.operation === "sliding" ? ((opening.panelCount - 1) * 0.12) / 2 : 0),
       sillInsetMeters: opening.variant === "steel-arched" ? 0 : 0.015,
     };
   }

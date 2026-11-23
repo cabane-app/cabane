@@ -541,3 +541,11 @@ placement; legacy absolute placements retain their existing interpretation.
 Walking over a local sharp drop starts gravity without requiring a jump. The walker
 keeps the current storey and lands on the actual lower surface. Upward steps retain
 a 40 cm step-height limit; walkable slopes and stairs remain continuous.
+
+Door motion includes Bifold in Panel style. Single means one folding pair (two
+panels) hinged at the selected wall start/end; Double means two pairs hinged at
+opposite jambs. Reverse opening direction chooses the wall face toward which
+they fold. Window motion includes Sliding with two, three or four panels. Reverse
+slide direction chooses the stacking jamb; Switch wall side mirrors the track
+order. Switching back to Fixed/Casement caps the count at two and clears the slide
+direction. These edits retain ordinary history, autosave, Apply and import/export.

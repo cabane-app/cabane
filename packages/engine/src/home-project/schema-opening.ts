@@ -34,6 +34,7 @@ export const openingSchema = (value: unknown, path: string, issues: HomeProjectI
             "operation",
             "variant",
             "panelCount",
+            "slideDirection",
             "glazing",
             "muntins",
             "hingeSide",
@@ -69,7 +70,7 @@ export const openingSchema = (value: unknown, path: string, issues: HomeProjectI
     for (const [key, allowed] of Object.entries({
       hingeSide: ["start", "end"],
       openingSide: ["left", "right"],
-      ...(candidate.kind === "door" ? { slideDirection: ["start", "end"] } : {}),
+      slideDirection: ["start", "end"],
     })) {
       if (
         candidate[key] !== undefined &&
@@ -88,7 +89,7 @@ export const openingSchema = (value: unknown, path: string, issues: HomeProjectI
     for (const error of doorDesignErrors(candidate))
       addProjectIssue(issues, `project.door-${error.code}`, `${path}.${error.key}`, error.message);
   } else if (candidate.kind === "window") {
-    if (!["fixed", "casement"].includes(String(candidate.operation)))
+    if (!["fixed", "casement", "sliding"].includes(String(candidate.operation)))
       addProjectIssue(
         issues,
         "project.window-operation",
@@ -102,12 +103,23 @@ export const openingSchema = (value: unknown, path: string, issues: HomeProjectI
         `${path}.variant`,
         "Window variant is invalid.",
       );
-    if (![1, 2].includes(candidate.panelCount as number))
+    if (
+      !(candidate.operation === "sliding" ? [2, 3, 4] : [1, 2]).includes(
+        candidate.panelCount as number,
+      )
+    )
       addProjectIssue(
         issues,
         "project.window-panel-count",
         `${path}.panelCount`,
         "Window panelCount is invalid.",
+      );
+    if (candidate.operation !== "sliding" && candidate.slideDirection !== undefined)
+      addProjectIssue(
+        issues,
+        "project.window-slide-direction",
+        `${path}.slideDirection`,
+        "Only sliding windows have a slide direction.",
       );
     if (!["clear", "privacy"].includes(String(candidate.glazing)))
       addProjectIssue(

@@ -29,6 +29,7 @@ areas:
     code:
       [
         packages/engine/src/architecture-scene/,
+        packages/engine/src/opening-types.ts,
         packages/engine/src/rendering.tsx,
         packages/engine/src/styles.css,
       ]

@@ -94,6 +94,7 @@ export const createFloorEditorDraft = (floor: FloorSpec): FloorEditorDraft => ({
         operation: opening.operation,
         variant: opening.variant,
         panelCount: opening.panelCount,
+        ...(opening.slideDirection !== undefined ? { slideDirection: opening.slideDirection } : {}),
         ...(opening.hingeSide !== undefined ? { hingeSide: opening.hingeSide } : {}),
         ...(opening.openingSide !== undefined ? { openingSide: opening.openingSide } : {}),
         glazing: opening.glazing,

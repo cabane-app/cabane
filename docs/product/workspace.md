@@ -349,3 +349,11 @@ storey-relative coordinates. Terrain stair connections can set `surfaces: true`
 to resolve both endpoints on local surfaces of the indicated floor. These
 optional V2 fields round-trip through drafts, Save, and export/import; older
 clients that reject unknown fields cannot edit projects containing them.
+
+Openings additionally support `door.operation: "bifold"` with `variant: "panel"`
+and `leafCount: 1 | 2` folding pairs, using the existing hinge/opening side fields.
+Sliding windows accept `operation: "sliding"`, `panelCount: 2 | 3 | 4` and optional
+`slideDirection: "start" | "end"` (default start). Fixed and casement windows keep
+one/two panels and cannot store a slide direction. Existing projects need no
+migration. These new operations require a matching frontend and Home Assistant
+panel; older clients reject unsupported data instead of removing it.
