@@ -222,7 +222,10 @@ upward illumination and the space between the bulb and wall. Native toon batches
 and imported lit materials share the mask; camera and floor transforms move its
 plane with the wall. Toon materials prepare their shader hook before extension
 effect warmup so first use retains the precompiled programs. Sources at openings, above low walls, and farther from walls
-remain unrestricted. Moving across the near-wall threshold changes a uniform,
+remain unrestricted. Walls beyond whose endpoints the source projects are skipped,
+avoiding diagonal masks across visible floor. Exact endpoint projections retain
+the perpendicular mask, including at seams between collinear wall segments. This
+can allow light behind the end of a short partition. Moving across the near-wall threshold changes a uniform,
 without changing the light type or shader light count. This avoids lighting
 through the wall without allocating point-light shadow maps. The nearest-plane
 mask remains an approximation rather than full shadow or finite-wall ray tracing.
