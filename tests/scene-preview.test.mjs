@@ -54,7 +54,8 @@ await withModules(async (load) => {
       renderer = await create(createElement(Preview));
       await frame(0);
       await frame(2500, (camera) => camera.position.x++);
-      assert.equal(captures, 0, "a scheduled thumbnail must not interrupt a pan");
+      assert.equal(captures, 0, "a scheduled thumbnail waits for the first rendered frame");
+      state.gl.info.render.frame = 1;
       await frame(2900, (camera) => (camera.zoom *= 1.1));
       await frame(3300, (camera) => (camera.rotation.y += 0.1));
       assert.equal(captures, 0, "zoom and rotation defer the same pending snapshot");

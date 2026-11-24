@@ -490,8 +490,9 @@ cutaway visibility. The roof renderer and shelter share the same height function
 a cached conservative height field keeps particles out of covered space while
 retaining courtyards. Particle fragments are depth-tested, do not write depth and
 do not receive contour ink. Cloud particles stay out of static batching, write no depth and cast
-no shadows. Drei Clouds uses a version-pinned hosted texture in one instanced draw,
-with isolated loading and error handling. Our weather clock controls drift and
+no shadows. When weather has cloud cover, Drei Clouds loads a version-pinned
+hosted texture for one instanced draw, with isolated loading and error handling.
+Our weather clock controls drift and
 foreground fading. A single far-depth atmospheric backdrop adds layered cloud banks,
 peripheral shading and distant rain behind architecture in overview and Walk. Its
 palette follows solar daylight and weather darkness; it writes no depth or shadows,
