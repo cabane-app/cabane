@@ -1,15 +1,15 @@
-import { Canvas } from "@react-three/fiber";
 import {
-  Component,
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
   type PointerEvent,
-  type ReactNode,
 } from "react";
 import { ArchitectureScene } from "../../ArchitectureScene";
+import { DashboardCanvas } from "../../DashboardCanvas";
+import { DashboardSceneReadyContext } from "../../DashboardSceneReady";
 import { useHomeAssistantRuntime } from "../../HomeAssistantRuntime";
 import { StylizedScene } from "../../StylizedScene";
 import { resolveHomeAssistantBindings } from "../../home-assistant-resolver";
@@ -36,16 +36,6 @@ function isNearPress(event: PointerEvent, press: PreviewPress) {
   return Math.hypot(event.clientX - press.x, event.clientY - press.y) <= TAP_DISTANCE;
 }
 
-class PreviewBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  override state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  override render() {
-    return this.state.failed ? <UnavailablePreview /> : this.props.children;
-  }
-}
-
 function UnavailablePreview() {
   return <p className="welcome-scene__unavailable">The 3D preview is unavailable.</p>;
 }
@@ -68,6 +58,8 @@ export function WelcomeScene({
   const host = useRef<HTMLDivElement>(null);
   const press = useRef<PreviewPress | null>(null);
   const [inView, setInView] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
+  const revealScene = useCallback(() => setSceneReady(true), []);
   const documentVisible = useDocumentVisible();
   const runtime = useHomeAssistantRuntime();
   const lightingManifest = useMemo(
@@ -93,7 +85,7 @@ export function WelcomeScene({
   const landscapeRadius = useCountryPlanetRadius(true, lightingManifest, deviceModels);
   const wholeBuilding = !walk && preview.orbitStage === "Roof";
   const activeFloor = !walk && preview.orbitStage === "Upstairs" ? preview.upper : ground;
-  const playing = documentVisible && inView && preview.playing;
+  const playing = sceneReady && documentVisible && inView && preview.playing;
 
   const startPress = (event: PointerEvent) => {
     press.current = null;
@@ -150,10 +142,15 @@ export function WelcomeScene({
       }}
     >
       {ground && activeFloor ? (
-        <PreviewBoundary>
-          <Canvas
+        <DashboardSceneReadyContext.Provider value={revealScene}>
+          {!sceneReady && (
+            <p className="welcome-scene__loading" role="status">
+              Preparing the 3D tour…
+            </p>
+          )}
+          <DashboardCanvas
             aria-label={walk ? "First-person view of the demo home" : "3D cutaway of the demo home"}
-            fallback={<UnavailablePreview />}
+            inert={!sceneReady}
             onCreated={({ gl }) => {
               gl.domElement.tabIndex = 0;
               gl.domElement.setAttribute(
@@ -164,11 +161,11 @@ export function WelcomeScene({
             }}
             dpr={[1, 1.25]}
             frameloop={documentVisible ? "demand" : "never"}
-            gl={{ alpha: true, antialias: false }}
+            antialias={false}
             shadows="percentage"
           >
             <Suspense fallback={null}>
-              <StylizedScene>
+              <StylizedScene waitForPlanet>
                 <WelcomeLighting
                   manifest={lightingManifest}
                   devices={deviceModels}
@@ -217,8 +214,8 @@ export function WelcomeScene({
                 </CountryLawnContext.Provider>
               </StylizedScene>
             </Suspense>
-          </Canvas>
-        </PreviewBoundary>
+          </DashboardCanvas>
+        </DashboardSceneReadyContext.Provider>
       ) : (
         <UnavailablePreview />
       )}

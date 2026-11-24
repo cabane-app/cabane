@@ -19,17 +19,8 @@ import { StylizedScene } from "./StylizedScene";
 import { PerformanceMonitor } from "@react-three/drei";
 
 import { DashboardCanvas } from "./DashboardCanvas";
-import { DashboardSceneReadyContext } from "./DashboardSceneReady";
 
-import {
-  Suspense,
-  useMemo,
-  useEffect,
-  useContext,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { Suspense, useMemo, useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { ArchitectureScene } from "./ArchitectureScene";
 
@@ -68,7 +59,6 @@ import { useDashboardController } from "./useDashboardController";
 
 export function ValidatedDashboardView(props: Parameters<typeof useDashboardController>[0]) {
   const dom = useCabaneDom();
-  const onSceneReady = useContext(DashboardSceneReadyContext);
   const toolNavigationRef = useRef<WalkToolNavigation | null>(null);
   const roomFocus = useRoomFocusFrame();
   const [overlayPreferences] = useState(loadOverlayPreferences);
@@ -275,7 +265,7 @@ export function ValidatedDashboardView(props: Parameters<typeof useDashboardCont
               >
                 <SceneOverlayLayout dashboard={dashboard}>
                   <RoomHoverProvider scope={`${floor.id}-${mode}`}>
-                    <StylizedScene antialias={quality.antialias} onFirstFrame={onSceneReady}>
+                    <StylizedScene antialias={quality.antialias} waitForPlanet={countryside}>
                       <ScenePreview enabled={!walkMode && !selectedRoomId} />
                       <SolarLighting
                         devices={deviceModels}

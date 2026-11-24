@@ -41,7 +41,7 @@ export function ScenePreview({ enabled }: { enabled: boolean }) {
   }, [enabled, capture, invalidate]);
   // StylizedScene renders at priority 1. Copy before the drawing buffer is cleared.
   useFrame(({ gl, camera }) => {
-    if (!enabled || !capture) return;
+    if (!enabled || !capture || gl.info.render.frame === 0) return;
     const now = performance.now();
     if (
       cameraMoved(camera.matrixWorld, pose.world) ||

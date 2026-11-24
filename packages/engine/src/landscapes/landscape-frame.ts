@@ -25,6 +25,7 @@ export function useCountryPlanetRadius(
 
 // The terrain may load after the controls. Each canvas owns its measured world bounds.
 export const countryOrbitBounds = new WeakMap<Scene, Sphere>();
+export const completePlanetScenes = new WeakSet<Scene>();
 
 export function fitOrbitDepth(
   camera: OrthographicCamera,

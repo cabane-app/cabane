@@ -6,27 +6,13 @@ import {
   useSyncExternalStore,
   type ComponentProps,
 } from "react";
-import {
-  Color,
-  NoColorSpace,
-  Vector2,
-  Vector4,
-  type MeshStandardMaterial,
-  type Texture,
-} from "three";
-import { scan } from "../scanned-finishes";
-import stoneUrl from "./assets/mossy-stone.webp?url";
-import duffUrl from "./assets/understory-ground.webp?url";
-import duffNormalUrl from "./assets/understory-ground-normal.webp?url";
+import { Color, Vector2, Vector4, type MeshStandardMaterial, type Texture } from "three";
 import type { plantingMask } from "./planting-mask";
-import grassUrl from "./assets/lawn-detail.webp?url";
 import { countryDepth, type FieldPlot } from "./country-survey";
+import { planetScans } from "./planet-scans";
 
 export const CountryLawnContext = createContext(false);
-const grassScan = scan(grassUrl, 1, NoColorSpace);
-export const countrysideStoneScan = scan(stoneUrl);
-const duffScan = scan(duffUrl),
-  duffRelief = scan(duffNormalUrl, 1, NoColorSpace);
+const { grass: grassScan, duff: duffScan, duffNormal: duffRelief } = planetScans;
 const none = () => null;
 const idle = { subscribe: () => () => {}, snapshot: none };
 

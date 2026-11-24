@@ -31,7 +31,9 @@ function groundHeight(plot: FieldPlot, x: number, z: number, surveyHeight: numbe
   return grade + (surveyHeight * plot.surveyScale - grade) * t * t * (3 - 2 * t);
 }
 
-export function surveyGrade(plot: FieldPlot, raster: Texture) {
+export function surveyGrade(plot: FieldPlot, raster: Texture | null | undefined) {
+  if (!raster)
+    return (x: number, z: number) => groundHeight(plot, plot.surveyX + x, plot.surveyZ + z, 0);
   const source = raster.image as HTMLImageElement;
   const canvas = document.createElement("canvas");
   canvas.width = source.width;
