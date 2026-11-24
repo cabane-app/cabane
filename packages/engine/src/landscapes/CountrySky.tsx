@@ -1,17 +1,10 @@
 import { useMemo, useSyncExternalStore } from "react";
-import { ClampToEdgeWrapping, SRGBColorSpace, Vector4, type Texture } from "three";
-import { scan } from "../scanned-finishes";
+import { Vector4 } from "three";
 import { planetDimensions } from "./landscape-frame";
 import type { FieldPlot } from "./country-survey";
-import cloudUrl from "./assets/day-sky.webp?url";
-import starsUrl from "./assets/night-sky.webp?url";
-const clamp = (t: Texture) => {
-  t.wrapT = ClampToEdgeWrapping;
-};
-const sky = scan(cloudUrl, 1, SRGBColorSpace, clamp),
-  stars = scan(starsUrl, 1, SRGBColorSpace, clamp);
-const none = () => null,
-  idle = { subscribe: () => () => {}, snapshot: none };
+import { planetScans } from "./planet-scans";
+const { daySky, nightSky } = planetScans;
+const none = () => null;
 const vertex = /* glsl */ `
 uniform vec4 planet;
 varying vec2 limbPoint;
@@ -26,7 +19,7 @@ void main(){
 const fragment = /* glsl */ `
 uniform sampler2D clouds,stars;
 uniform float daylight,overcast;
-uniform bool hasStars,orbit;
+uniform bool hasClouds,hasStars,orbit;
 varying vec2 limbPoint;
 varying vec3 ray;
 float hash(vec2 cell) {
@@ -63,7 +56,8 @@ void main(){
  vec2 dx=dFdx(uv),dy=dFdy(uv);
  dx.x-=round(dx.x);
  dy.x-=round(dy.x);
- vec3 day=textureGrad(clouds,uv,dx,dy).rgb;
+ vec3 day=hasClouds?textureGrad(clouds,uv,dx,dy).rgb:
+    mix(vec3(.52,.64,.72),vec3(.18,.37,.59),smoothstep(0.,.75,dir.y));
  day=mix(day,vec3(.26,.38,.49),smoothstep(0.,.34,-dir.y));
  float luma=dot(day,vec3(.21,.72,.07));
  day=mix(day,vec3(luma)*vec3(.87,.95,1.05),.7*overcast)*(1.-.39*overcast);
@@ -84,10 +78,8 @@ export function CountrySky({
   overcast: number;
   orbit: boolean;
 }) {
-  const daySource = orbit ? idle : sky;
-  const clouds = useSyncExternalStore(daySource.subscribe, daySource.snapshot, none);
-  const source = !orbit && daylight < 1 ? stars : idle;
-  const night = useSyncExternalStore(source.subscribe, source.snapshot, none);
+  const clouds = useSyncExternalStore(daySky.subscribe, daySky.snapshot, none);
+  const night = useSyncExternalStore(nightSky.subscribe, nightSky.snapshot, none);
   const globe = useMemo(() => {
     const lot = plot.plantingLot;
     const { radius, centerDepth } = planetDimensions(lot);
@@ -106,23 +98,22 @@ export function CountrySky({
       stars: { value: night },
       daylight: { value: daylight },
       overcast: { value: overcast },
+      hasClouds: { value: Boolean(clouds) },
       hasStars: { value: Boolean(night) },
     }),
     [clouds, night, daylight, overcast, orbit, globe],
   );
   return (
-    (orbit || clouds) && (
-      <mesh name="country-sky" frustumCulled={false} renderOrder={990} raycast={() => {}}>
-        <planeGeometry args={[2, 2]} />
-        <shaderMaterial
-          uniforms={uniforms}
-          depthWrite={false}
-          depthTest
-          toneMapped={false}
-          vertexShader={vertex}
-          fragmentShader={fragment}
-        />
-      </mesh>
-    )
+    <mesh name="country-sky" frustumCulled={false} renderOrder={990} raycast={() => {}}>
+      <planeGeometry args={[2, 2]} />
+      <shaderMaterial
+        uniforms={uniforms}
+        depthWrite={false}
+        depthTest
+        toneMapped={false}
+        vertexShader={vertex}
+        fragmentShader={fragment}
+      />
+    </mesh>
   );
 }

@@ -235,3 +235,85 @@ test(
     }
   }),
 );
+
+test(
+  "the compositor keeps the home hidden until the terrain, planting and sky can draw together",
+  { timeout: 10_000 },
+  withBrowserDiagnostics(async () => {
+    const { server } = await getBrowserTestServer("app");
+    const session = await createBrowserTestSession();
+    try {
+      const page = await session.newPage();
+      const assets = ["night-sky.webp", "garden-trees.glb"];
+      const requests = new Map(assets.map((asset) => [asset, Promise.withResolvers()]));
+      for (const [asset, { resolve }] of requests)
+        await page.route(`**/${asset}`, (route) => resolve(route));
+      const html = await server.transformIndexHtml(
+        "/__planet-ready",
+        `<div id="root" style="width:256px;height:256px"></div><script type="module">
+          import React from 'react';
+          import {createRoot} from 'react-dom/client';
+          import {useFrame,useThree} from '@react-three/fiber';
+          import {DashboardCanvas} from '/@fs/${process.cwd()}/packages/engine/src/DashboardCanvas.tsx';
+          import {StylizedScene} from '/@fs/${process.cwd()}/packages/engine/src/StylizedScene.tsx';
+          import {Countryside} from '/@fs/${process.cwd()}/packages/engine/src/landscapes/RuralLandscape.tsx';
+          const h=React.createElement;
+          const frame={
+            x:0,y:-0.05,z:0,width:16,depth:14,surveyX:0,surveyZ:28,surveyScale:0.48,
+            groundColor:'#77905e',plantingLot:{centerX:0,centerZ:0,width:16,depth:14},terrain:null
+          };
+          window.probe={frames:0,draws:0,houseMounted:false};
+          function PlanetScene(){
+            const scene=useThree(state=>state.scene);
+            const invalidate=useThree(state=>state.invalidate);
+            window.advanceFrame=invalidate;
+            useFrame(({gl})=>{
+              window.probe.frames++;
+              window.probe.draws=gl.info.render.frame;
+              window.probe.houseMounted=!!scene.getObjectByName('architecture-scene');
+            },2);
+            const ready=()=>{
+              window.firstFrame=['architecture-scene','country-ground','country-sky','garden-deadwood']
+                .map(name=>!!scene.getObjectByName(name));
+            };
+            return h(StylizedScene,{waitForPlanet:true,onFirstFrame:ready,antialias:false},
+              h('group',{name:'architecture-scene'},h('mesh',{},h('boxGeometry'),
+                h('meshBasicMaterial',{color:'coral'}))),
+              h(Countryside,{frame,walkMode:true,daylight:0.35,overcast:0,reducedMotion:true}));
+          }
+          createRoot(document.querySelector('#root')).render(
+            h(DashboardCanvas,{antialias:false,dpr:1,frameloop:'demand',camera:{position:[0,1,5]}},
+              h(PlanetScene)));
+        </script>`,
+      );
+      await page.route("**/__planet-ready", (route) =>
+        route.fulfill({ contentType: "text/html", body: html }),
+      );
+      await page.goto(server.resolvedUrls.local[0] + "__planet-ready", {
+        waitUntil: "domcontentloaded",
+      });
+      const [sky, trees] = await Promise.all(assets.map((asset) => requests.get(asset).promise));
+      await page.waitForFunction(() => window.probe.frames > 0 && window.probe.houseMounted);
+      assert.equal(await page.evaluate(() => window.probe.draws), 0);
+
+      const skyResponse = page.waitForResponse((response) =>
+        response.url().endsWith("/night-sky.webp"),
+      );
+      await sky.continue();
+      await (await skyResponse).finished();
+      const frames = await page.evaluate(() => {
+        window.advanceFrame();
+        return window.probe.frames;
+      });
+      await page.waitForFunction((previous) => window.probe.frames > previous, frames);
+      assert.equal(await page.evaluate(() => window.probe.draws), 0);
+
+      await trees.continue();
+      await page.waitForFunction(() => window.firstFrame);
+      assert.deepEqual(await page.evaluate(() => window.firstFrame), [true, true, true, true]);
+      assert.ok(await page.evaluate(() => window.probe.draws > 0));
+    } finally {
+      await session.close();
+    }
+  }),
+);

@@ -1,5 +1,5 @@
 import { useGraphicsFeature } from "./graphics-features";
-import { DashboardRenderFailureContext } from "./DashboardSceneReady";
+import { DashboardRenderFailureContext, DashboardSceneReadyContext } from "./DashboardSceneReady";
 import { SceneEnvironment } from "./SceneEnvironment";
 import { SceneStyleContext, useSceneStyle } from "./scene-style";
 import { ImportedContourMask } from "./imported-models/contour-mask";
@@ -30,6 +30,7 @@ import { SceneGeometryLod } from "./scene-batching/SceneGeometryLod";
 import { SceneToonBatcher } from "./scene-batching/SceneToonBatcher";
 import { SceneLightWallMask, SceneLightWallMaskContext } from "./scene-light-wall-mask";
 import { SceneShaderPreparation } from "./scene-shader-preparation";
+import { completePlanetScenes } from "./landscapes/landscape-frame";
 
 /** Decorative mesh shells are replaced by a single visible-depth contour pass. */
 export const SceneContourContext = createContext(false);
@@ -38,12 +39,14 @@ function SceneContourPass({
   antialias,
   active,
   onFirstFrame,
+  waitForPlanet,
   prepareMaterials,
   environmentPending,
 }: {
   antialias: boolean;
   active: boolean;
   onFirstFrame?: (() => void) | null | undefined;
+  waitForPlanet: boolean;
   prepareMaterials: boolean;
   environmentPending: RefObject<boolean> | undefined;
 }) {
@@ -126,6 +129,13 @@ function SceneContourPass({
       gl.render(scene, camera);
       return;
     }
+    // Keep the previous complete frame (or the initial loading screen) until
+    // terrain, vegetation and sky are mounted together in this canvas.
+    if (
+      waitForPlanet &&
+      (!completePlanetScenes.has(scene) || (!presented.current && environmentPending?.current))
+    )
+      return;
     if (
       prepareMaterials &&
       !presented.current &&
@@ -210,6 +220,7 @@ export function StylizedScene({
   antialias = true,
   active = true,
   onFirstFrame,
+  waitForPlanet = false,
   prepareMaterials = false,
 }: {
   children: ReactNode;
@@ -218,11 +229,13 @@ export function StylizedScene({
   /** Suspend postprocessing without disposing its resources or changing model outlines. */
   active?: boolean;
   onFirstFrame?: (() => void) | null | undefined;
+  waitForPlanet?: boolean;
   /** Prepare newly mounted editor materials and textures across frames so input can continue. */
   prepareMaterials?: boolean;
 }) {
   const style = useSceneStyle();
   const studioLighting = useGraphicsFeature("lighting");
+  const dashboardReady = useContext(DashboardSceneReadyContext);
   const lightWalls = useMemo(() => new SceneLightWallMask(), []);
   const environmentPending = useRef(true);
   useEffect(() => () => lightWalls.dispose(), [lightWalls]);
@@ -239,7 +252,8 @@ export function StylizedScene({
           <SceneContourPass
             antialias={antialias}
             active={active}
-            onFirstFrame={onFirstFrame}
+            onFirstFrame={onFirstFrame ?? dashboardReady}
+            waitForPlanet={waitForPlanet}
             prepareMaterials={prepareMaterials}
             environmentPending={
               studioLighting && style === "default" ? environmentPending : undefined

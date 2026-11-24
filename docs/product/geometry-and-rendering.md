@@ -23,6 +23,9 @@ on the local browser origin. Production uses the updated settings.
 Settings → Orbital view includes a **Planet mode** switch for Orbit and Walk.
 It starts on for homes without a saved landscape preference. Each browser
 remembers the setting separately for each home.
+The first frame in the demo, Welcome and personal workspaces waits for the
+terrain, planting and sky. Both Walk panoramas load together so switching
+views or lighting can use them immediately.
 The countryside keeps the lawn open around the home. Groups of oak and ash frame all four sides at different depths. Ferns, sedges, fallen branches and mossy stones follow the terrain outside the parcel. Both views share the same planting positions and patches of leaf litter. Distant trees retain their silhouettes with simpler meshes. Fine ground cover thins as it shrinks on screen, and idle Orbit renders on demand.
 The countryside wraps around a finite planet. The editable parcel retains its authored grade, and woods beyond its edges follow the curve into a winding river, terraced bluffs and lakes. Fir groves occupy the higher banks, and a thin atmospheric rim picks out the horizon in Orbit. Zooming out in Orbit reveals the globe while rotation stays anchored to the home.
 The yard and surrounding ground share a world-space grass finish, and the
@@ -487,8 +490,9 @@ cutaway visibility. The roof renderer and shelter share the same height function
 a cached conservative height field keeps particles out of covered space while
 retaining courtyards. Particle fragments are depth-tested, do not write depth and
 do not receive contour ink. Cloud particles stay out of static batching, write no depth and cast
-no shadows. Drei Clouds uses a version-pinned hosted texture in one instanced draw,
-with isolated loading and error handling. Our weather clock controls drift and
+no shadows. When weather has cloud cover, Drei Clouds loads a version-pinned
+hosted texture for one instanced draw, with isolated loading and error handling.
+Our weather clock controls drift and
 foreground fading. A single far-depth atmospheric backdrop adds layered cloud banks,
 peripheral shading and distant rain behind architecture in overview and Walk. Its
 palette follows solar daylight and weather darkness; it writes no depth or shadows,

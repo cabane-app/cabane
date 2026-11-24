@@ -9,7 +9,7 @@ const fixture = `<!doctype html><style>.cabane-shell .scene-canvas{width:240px;h
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {useFrame,useThree} from '@react-three/fiber';
-import {CabaneDashboard,HomeAssistantRuntimeProvider,HomeAssistantSceneLighting,ToonMaterial} from '@cabane/engine';
+import {CabaneDashboard,DashboardSceneReadyContext,HomeAssistantRuntimeProvider,HomeAssistantSceneLighting,ToonMaterial} from '@cabane/engine';
 import {stableArchitectureModelRegistry} from '@cabane/catalog/architecture';
 import {laserWalkTool} from '@cabane/walk-laser';
 import {neutralDemoManifest} from '/@fs/${process.cwd()}/packages/engine/src/demo.ts';
@@ -22,24 +22,31 @@ const item={id:'probe',floorId:manifest.floors[0].id,kind:'device',modelId:'prob
 const models={probe:{bounds:{min:[0,0,0],max:[1,1,1]},sceneLight:{position:[0,0,0],color:'#ffffff',maxIntensity:5,distance:6}}};
 function ObservedGun(props) {
  const {gl,scene}=useThree();
+ const lastDraw=React.useRef(gl.info.render.frame);
  const [on,setOn]=React.useState(false);
  const bindings={rooms:{'demo-room':{sections:{},devices:[{slot,issues:[],entities:[{slotId:'power',domain:'light',issues:[],state:{entityId:'light.test',available:true,stale:false,state:on?'on':'off',attributes:{}}}]}]}},openings:{},issues:[]};
  React.useEffect(()=>{const ctx=gl.getContext(),original=ctx.compileShader;window.compiles=0;
  ctx.compileShader=function(...args){window.compiles++;return original.apply(this,args)};
  return()=>{ctx.compileShader=original};},[gl]);
  useFrame(()=>{
+  if(gl.info.render.frame===lastDraw.current)return;
+  lastDraw.current=gl.info.render.frame;
   window.shotFrames=(window.shotFrames??0)+1;window.lightOn=on;
   window.shotEffectsActive=false;
   scene.traverse(object=>{
    if((object.name==='laser-pulse'||object.name==='laser-impact')&&object.visible)window.shotEffectsActive=true;
   });
- });
+ },2);
  return React.createElement(React.Fragment,null,
  React.createElement(laserWalkTool.Scene,{...props,canActivateTarget:()=>true,activateTarget:target=>activateWalkTarget(target,bindings,{canMutate:true,callService:async()=>setOn(value=>!value)})}),
  React.createElement(HomeAssistantSceneLighting,{floor:manifest.floors[0],resolvedBindings:bindings,deviceModels:models,extensionDeviceModels:{},sceneItems:[item]}),
  React.createElement('mesh',{position:[2.4,1.52,2.6],userData:{walkDeviceInteraction:{id:'probe',label:'Probe light'}}},React.createElement('boxGeometry',{args:[.5,.5,.5]}),React.createElement(ToonMaterial,{color:'#ffffff'})));
 }
-createRoot(document.getElementById('root')).render(React.createElement(HomeAssistantRuntimeProvider,null,React.createElement(CabaneDashboard,{manifest,architectureModels:stableArchitectureModelRegistry,walkTools:[{...laserWalkTool,Scene:ObservedGun}]})));
+createRoot(document.getElementById('root')).render(
+ React.createElement(DashboardSceneReadyContext.Provider,{value:()=>{window.sceneReady=true}},
+  React.createElement(HomeAssistantRuntimeProvider,null,
+   React.createElement(CabaneDashboard,{manifest,architectureModels:stableArchitectureModelRegistry,
+    walkTools:[{...laserWalkTool,Scene:ObservedGun}]}))));
 </script>`;
 
 for (const reducedMotion of ["reduce", "no-preference"])
@@ -62,6 +69,7 @@ for (const reducedMotion of ["reduce", "no-preference"])
           }),
         );
         await page.goto(server.resolvedUrls.local[0] + "laser-device-fixture");
+        await page.waitForFunction(() => window.sceneReady);
         await page.getByRole("button", { name: "Walk mode", exact: true }).click();
         await page.waitForFunction(() => document.pointerLockElement);
         await page.getByRole("button", { name: "Exit walk mode", exact: true }).waitFor();

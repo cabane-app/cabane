@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { solarShadowFrame } from "../solar-shadow-frame";
 import type { RenderableFloorSpec } from "../types";
@@ -30,6 +30,11 @@ export function WeatherScene({
   daylight: number;
   quality: number;
 }) {
+  const hasClouds = appearance.clouds > 0;
+  const [cloudsStarted, setCloudsStarted] = useState(hasClouds);
+  // Clear weather needs no cloud sprite. Once started, keep the field mounted
+  // so a later transition back to clear can fade out normally.
+  if (hasClouds && !cloudsStarted) setCloudsStarted(true);
   const bounds = useMemo(() => solarShadowFrame(floors), [floors]);
   const center = useMemo(() => [bounds.center[0], bounds.center[2]] as const, [bounds]);
   const shelter = useMemo(() => createWeatherShelter(floors, roof), [floors, roof]);
@@ -74,15 +79,17 @@ export function WeatherScene({
   return (
     <group name="weather-atmosphere">
       <WeatherBackdrop frame={frame} reducedMotion={reducedMotion} />
-      <WeatherClouds
-        frame={frame}
-        center={center}
-        radius={Math.max(12, bounds.radius)}
-        top={shelter.maxHeight + 5}
-        detail={detailed}
-        reducedMotion={reducedMotion}
-        walkMode={walkMode}
-      />
+      {cloudsStarted && (
+        <WeatherClouds
+          frame={frame}
+          center={center}
+          radius={Math.max(12, bounds.radius)}
+          top={shelter.maxHeight + 5}
+          detail={detailed}
+          reducedMotion={reducedMotion}
+          walkMode={walkMode}
+        />
+      )}
       {counts.map((count, kind) => (
         <WeatherParticles
           key={kind}

@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useLayoutEffect, useMemo, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useMemo, useSyncExternalStore } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF, useTexture } from "@react-three/drei";
 import {
@@ -6,24 +6,22 @@ import {
   SRGBColorSpace,
   DoubleSide,
   MeshStandardMaterial,
-  NoColorSpace,
   type BufferGeometry,
   type Mesh,
+  type Texture,
 } from "three";
 import { PlantInstances, Shelter } from "./PlantInstances";
 import firBoughUrl from "./assets/fir-bough.png?url";
 import { ridgeFir } from "./ridge-fir";
 import { fallenBough, fallenBoughMaterial } from "./fallen-bough";
-import { scan } from "../scanned-finishes";
 import type { gardenLayout } from "./garden-layout";
 import { fieldstone, groundcoverSpecimen } from "./garden-groundcover";
 import type { CountryPlanet } from "./country-planet";
 import { plantMaterial, type GardenLight } from "./plant-material";
 import gardenKitUrl from "./assets/garden-trees.glb?url";
-import { countrysideStoneScan } from "./CountryTurf";
-import stoneNormalUrl from "./assets/mossy-stone-normal.webp?url";
+import { planetScans } from "./planet-scans";
 
-const stoneNormal = scan(stoneNormalUrl, 1, NoColorSpace);
+const { stone, stoneNormal } = planetScans;
 const none = () => null;
 type Height = (x: number, z: number) => number;
 
@@ -44,11 +42,7 @@ const treeKinds = [
   "distantAsh",
 ] as const;
 function FieldstoneMaterial() {
-  const color = useSyncExternalStore(
-    countrysideStoneScan.subscribe,
-    countrysideStoneScan.snapshot,
-    none,
-  );
+  const color = useSyncExternalStore(stone.subscribe, stone.snapshot, none);
   const relief = useSyncExternalStore(stoneNormal.subscribe, stoneNormal.snapshot, none);
   return (
     <meshStandardMaterial
@@ -61,7 +55,21 @@ function FieldstoneMaterial() {
   );
 }
 
+export function preloadGardenPlanting() {
+  useGLTF.preload(gardenKitUrl, false, false);
+  useTexture.preload(firBoughUrl);
+}
+
+export function useGardenPlantingAssets() {
+  const { nodes } = useGLTF(gardenKitUrl, false, false);
+  const firMap = useTexture(firBoughUrl);
+  return { nodes, firMap };
+}
+
+type GardenPlantingAssets = ReturnType<typeof useGardenPlantingAssets>;
+
 export function GardenPlanting({
+  assets,
   layout,
   shelterAt,
   planet,
@@ -69,6 +77,7 @@ export function GardenPlanting({
   walkMode,
   wind,
 }: {
+  assets: GardenPlantingAssets;
   layout: Layout;
   shelterAt: Height;
   planet: CountryPlanet;
@@ -114,12 +123,20 @@ export function GardenPlanting({
   return (
     <Shelter.Provider value={shelterAt}>
       <group name="garden-planting">
-        <Suspense fallback={null}>
-          <WoodyPlanting layout={layout} planet={planet} light={light} walkMode={walkMode} />
-        </Suspense>
-        <Suspense fallback={null}>
-          <RidgeFirs plants={layout.firs} planet={planet} light={light} walkMode={walkMode} />
-        </Suspense>
+        <WoodyPlanting
+          nodes={assets.nodes}
+          layout={layout}
+          planet={planet}
+          light={light}
+          walkMode={walkMode}
+        />
+        <RidgeFirs
+          map={assets.firMap}
+          plants={layout.firs}
+          planet={planet}
+          light={light}
+          walkMode={walkMode}
+        />
         {(["ferns", "rosettes", "sedges", "grasses", "stones", "litter"] as const).map((k) => (
           <PlantInstances
             key={k}
@@ -147,17 +164,18 @@ export function GardenPlanting({
 }
 
 function RidgeFirs({
+  map,
   plants,
   planet,
   light,
   walkMode,
 }: {
+  map: Texture;
   plants: Layout["firs"];
   planet: CountryPlanet;
   light: GardenLight;
   walkMode: boolean;
 }) {
-  const map = useTexture(firBoughUrl);
   const geometry = useMemo(() => [ridgeFir(), ridgeFir(true)], []);
   const materials = useMemo(() => {
     map.colorSpace = SRGBColorSpace;
@@ -188,17 +206,18 @@ function RidgeFirs({
 }
 
 function WoodyPlanting({
+  nodes,
   layout,
   planet,
   light,
   walkMode,
 }: {
+  nodes: GardenPlantingAssets["nodes"];
   layout: Layout;
   planet: CountryPlanet;
   light: GardenLight;
   walkMode: boolean;
 }) {
-  const { nodes } = useGLTF(gardenKitUrl, false, false);
   const log = useMemo(() => {
     const geometry = fallenBough();
     const source = nodes["spreading-bark"] as Mesh<BufferGeometry, MeshStandardMaterial>;

@@ -9,7 +9,7 @@ const fixture = `<!doctype html><style>.cabane-shell .scene-canvas{width:240px;h
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {useFrame,useThree} from '@react-three/fiber';
-import {CabaneDashboard,HomeAssistantRuntimeProvider} from '@cabane/engine';
+import {CabaneDashboard,DashboardSceneReadyContext,HomeAssistantRuntimeProvider} from '@cabane/engine';
 import {stableArchitectureModelRegistry} from '@cabane/catalog/architecture';
 import {laserWalkTool} from '@cabane/walk-laser';
 import {neutralDemoManifest} from '/@fs/${process.cwd()}/packages/engine/src/demo.ts';
@@ -24,9 +24,10 @@ function ObservedGun(props) {
  return React.createElement(laserWalkTool.Scene,props);
 }
 createRoot(document.getElementById('root')).render(
- React.createElement(HomeAssistantRuntimeProvider,null,
+ React.createElement(DashboardSceneReadyContext.Provider,{value:()=>{window.sceneReady=true}},
+  React.createElement(HomeAssistantRuntimeProvider,null,
   React.createElement(CabaneDashboard,{manifest,architectureModels:stableArchitectureModelRegistry,
-   walkTools:[{...laserWalkTool,Scene:ObservedGun}]})));
+   walkTools:[{...laserWalkTool,Scene:ObservedGun}]}))));
 </script>`;
 
 test(
@@ -48,6 +49,7 @@ test(
       }),
     );
     await page.goto(server.resolvedUrls.local[0] + "portal-smoke");
+    await page.waitForFunction(() => window.sceneReady);
     await page.getByRole("button", { name: "Walk mode", exact: true }).click();
     await page.waitForFunction(() => document.pointerLockElement);
     await page.getByRole("button", { name: "Exit walk mode", exact: true }).waitFor();
