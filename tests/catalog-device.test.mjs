@@ -356,6 +356,70 @@ await withModules(async (load) => {
       assert.equal(engine.coverPosition(state), expected);
   });
 
+  test("motorized curtains travel steadily toward each variant's stack side", async () => {
+    const definition = catalog.stableDeviceRegistry["motorized-curtain"];
+    assert.deepEqual(
+      definition.variants.map(({ id }) => id),
+      ["center-split", "stack-left", "stack-right"],
+    );
+    const curtainProps = (variant, position, reducedMotion = false) => ({
+      ...blindProps,
+      slot: { ...blindProps.slot, id: "fixture-curtain", model: "motorized-curtain" },
+      variant,
+      reducedMotion,
+      state: coverState(position === 0 ? "closed" : "open", position),
+    });
+    const panels = (renderer) =>
+      renderer.scene.instance
+        .getObjectByName("catalog-motorized-curtain")
+        .children.filter((child) => child.name === "motorized-curtain-panel");
+    for (const [variant, anchors, closedWidth] of [
+      [undefined, [-0.95, 0.95], 0.94],
+      ["stack-left", [-0.95], 1.9],
+      ["stack-right", [0.95], 1.9],
+    ]) {
+      const renderer = await create(createElement(definition.component, curtainProps(variant, 0)));
+      assert.deepEqual(
+        panels(renderer).map(({ position }) => position.x),
+        anchors,
+      );
+      const closed = new Box3().setFromObject(panels(renderer)[0]).getSize(new Vector3()).x;
+      assert.ok(Math.abs(closed - closedWidth) < 0.002, `${variant} closed width ${closed}`);
+      await renderer.update(createElement(definition.component, curtainProps(variant, 100)));
+      const scales = [];
+      for (let second = 0; second < 12; second += 1) {
+        await renderer.advanceFrames(10, 0.1);
+        scales.push(panels(renderer)[0].scale.x);
+      }
+      assert.ok(scales[0] < 1 && scales[0] > 0.85, `${variant} after 1 s: ${scales[0]}`);
+      for (let second = 1; second < 9; second += 1)
+        assert.ok(
+          scales[second] < scales[second - 1],
+          `${variant} still moving at ${second + 1} s`,
+        );
+      assert.equal(scales.at(-1), scales.at(-2), `${variant} stopped at the stack`);
+      const open = new Box3().setFromObject(panels(renderer)[0]).getSize(new Vector3()).x;
+      assert.ok(open < 0.42, `${variant} stacked width ${open}`);
+      const meshes = renderer.scene.findAll((node) => node.type === "Mesh");
+      assert.ok(meshes.length <= definition.complexity.visibleMeshes);
+      await renderer.unmount();
+    }
+  });
+
+  test("motorized curtains jump to the reported position with reduced motion", async () => {
+    const definition = catalog.stableDeviceRegistry["motorized-curtain"];
+    const props = (position) => ({
+      ...blindProps,
+      variant: "stack-right",
+      state: coverState(position === 0 ? "closed" : "open", position),
+    });
+    const renderer = await create(createElement(definition.component, props(0)));
+    await renderer.update(createElement(definition.component, props(100)));
+    const panel = renderer.scene.instance.getObjectByName("motorized-curtain-panel");
+    assert.ok(Math.abs(panel.scale.x - 0.4 / 1.9) < 1e-9);
+    await renderer.unmount();
+  });
+
   test("the closed blind matches its envelope and resized axes with bounded toon geometry", async () => {
     const definition = catalog.stableDeviceRegistry["motorized-blind"];
     for (const scale of [

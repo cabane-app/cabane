@@ -735,6 +735,11 @@ export const stableDeviceRegistry = defineDeviceModelRegistry({
     component: MotorizedCurtainModel,
     label: "Motorized curtain",
     defaultColor: "#d8c8ad",
+    variants: [
+      { id: "center-split", label: "Center split" },
+      { id: "stack-left", label: "Single panel, stacks left" },
+      { id: "stack-right", label: "Single panel, stacks right" },
+    ],
     category: "Covers",
     defaultSize: [2, 2.4, 0.16],
     resizePolicy: { kind: "axes", axes: ["width", "height"] },
