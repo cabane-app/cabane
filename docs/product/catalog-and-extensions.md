@@ -114,6 +114,14 @@ Fit to window aligns one window; adding another prefers an unoccupied window.
 The inferred default envelope is 120 × 240 × 12 cm; the panel drops 232 cm
 below its track. Existing paired and motorized curtains remain unchanged.
 
+The `motorized-curtain` device offers Center split (the default, used when no
+variant is stored), Single panel, stacks left, and Single panel, stacks right,
+as viewed from the room facing the window. Its fabric follows the reported cover
+position at a steady track-motor speed (about 10 s for full travel, easing at the
+stop) and gathers toward the stack side; reduced motion shows the reported
+position immediately. Without a reported position the panels hold their last
+position.
+
 Native catalog models with upholstery, bedding, rugs, cushions, towels or canvas,
 including motorized curtains and fabric roller blinds, offer Color and Reset color
 in Arrange Details. The same control recolors the wheelie bin's body, lid and molded
